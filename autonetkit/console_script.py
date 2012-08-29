@@ -21,11 +21,20 @@ def main():
     opt = optparse.OptionParser()
     opt.add_option('--file', '-f', default= None, help="Load topology from FILE")        
     opt.add_option('--monitor', '-m',  action="store_true", default= False, help="Monitor input file for changes")        
+    opt.add_option('--debug',  action="store_true", default= False, help="Debug mode")        
     options, arguments = opt.parse_args()
 
     input_filename = options.file
     if not options.file:
         input_filename = "ank.graphml"
+
+    if options.debug:
+        #TODO: fix this
+        import logging
+        print "HERE"
+        logger = logging.getLogger("ANK")
+        logger.setLevel(logging.DEBUG)
+    
 
     anm = build_network(input_filename)
     anm.save()

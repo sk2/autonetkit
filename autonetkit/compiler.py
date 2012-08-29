@@ -320,7 +320,7 @@ class NetkitCompiler(PlatformCompiler):
 
 
 #TODO: include ram, etc from here
-        lab_topology.config_items = config_items
+        lab_topology.config_items = sort_attribute(config_items, "device")
         lab_topology.tap_ips = sort_attribute(tap_ips, "device")
 
 class CiscoCompiler(PlatformCompiler):

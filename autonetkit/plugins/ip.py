@@ -166,7 +166,7 @@ def allocate_ips(G_ip):
 # if node or subnet has IP already allocated, then skip from this tree
 
     for asn in routers_by_asn:
-        log.info("Allocating IPs for ASN %s" % asn)
+        log.debug("Allocating IPs for ASN %s" % asn)
 # Need to iterate by asn with routers, as single router AS may not have a cd
         asn_cds = cds_by_asn.get(asn) or []
         asn_cds = sorted(asn_cds)
