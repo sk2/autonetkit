@@ -299,7 +299,7 @@ class NetkitCompiler(PlatformCompiler):
         G_ip = self.anm['ip']
         config_items = []
         for node in subgraph.nodes("is_l3device"):
-            for edge in node.edges('is_router'):
+            for edge in node.edges():
                 collision_domain = "%s.%s" % (G_ip.edge(edge).ip_address, 
                         G_ip.edge(edge).dst.subnet.prefixlen)
                 numeric_id = edge.id.replace("eth", "") # netkit lab.conf uses 1 instead of eth1
@@ -320,10 +320,8 @@ class NetkitCompiler(PlatformCompiler):
 
 
 #TODO: include ram, etc from here
-
         lab_topology.config_items = config_items
         lab_topology.tap_ips = sort_attribute(tap_ips, "device")
-# taps
 
 class CiscoCompiler(PlatformCompiler):
     """Cisco Platform Compiler"""
