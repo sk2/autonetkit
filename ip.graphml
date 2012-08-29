@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?><graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
+  <key attr.name="edge_id" attr.type="string" for="edge" id="d11" />
+  <key attr.name="ip_address" attr.type="string" for="edge" id="d10" />
+  <key attr.name="asn" attr.type="int" for="node" id="d9" />
+  <key attr.name="collision_domain" attr.type="boolean" for="node" id="d8" />
+  <key attr.name="cd_id" attr.type="int" for="node" id="d7" />
+  <key attr.name="subnet" attr.type="string" for="node" id="d6" />
+  <key attr.name="loopback" attr.type="string" for="node" id="d5" />
+  <key attr.name="device_type" attr.type="string" for="node" id="d4" />
+  <key attr.name="label" attr.type="string" for="node" id="d3" />
+  <key attr.name="x" attr.type="double" for="node" id="d2" />
+  <key attr.name="y" attr.type="double" for="node" id="d1" />
+  <key attr.name="asn_blocks" attr.type="string" for="graph" id="d0" />
+  <graph edgedefault="undirected">
+    <data key="d0">defaultdict(&lt;type 'list'&gt;, {1: [IPNetwork('10.0.0.0/16')], 2: [IPNetwork('10.1.0.0/16')]})</data>
+    <node id="cd_r1_r4" />
+    <node id="r3.as2">
+      <data key="d1">711.567462808</data>
+      <data key="d2">718.168652174</data>
+      <data key="d3">r3.as2</data>
+      <data key="d4">router</data>
+      <data key="d5">10.1.0.6</data>
+    </node>
+    <node id="12.as2">
+      <data key="d1">817.023951258</data>
+      <data key="d2">718.168652174</data>
+      <data key="d3">12.as2</data>
+      <data key="d4">router</data>
+      <data key="d5">10.1.0.5</data>
+    </node>
+    <node id="sw4.as2">
+      <data key="d6">10.1.0.16/30</data>
+      <data key="d7">1</data>
+      <data key="d8">True</data>
+      <data key="d3">sw4.as2</data>
+      <data key="d4">collision_domain</data>
+      <data key="d1">712.741462808</data>
+      <data key="d2">867.290111187</data>
+      <data key="d9">2</data>
+    </node>
+    <node id="sw3.as1">
+      <data key="d6">10.0.0.8/29</data>
+      <data key="d7">5</data>
+      <data key="d8">True</data>
+      <data key="d3">sw3.as1</data>
+      <data key="d4">collision_domain</data>
+      <data key="d1">489.915337192</data>
+      <data key="d2">711.233893796</data>
+      <data key="d9">1</data>
+    </node>
+    <node id="cd_r2_r3" />
+    <node id="r2.as1">
+      <data key="d1">600.1544</data>
+      <data key="d2">874.224869565</data>
+      <data key="d3">r2.as1</data>
+      <data key="d4">router</data>
+      <data key="d5">10.0.0.19</data>
+    </node>
+    <node id="www.as2">
+      <data key="d1">807.980525617</data>
+      <data key="d2">882.482034783</data>
+      <data key="d4">server</data>
+      <data key="d3">www.as2</data>
+    </node>
+    <node id="11.as1">
+      <data key="d1">458.1544</data>
+      <data key="d2">581.112434783</data>
+      <data key="d3">11.as1</data>
+      <data key="d4">router</data>
+      <data key="d5">10.0.0.17</data>
+    </node>
+    <node id="cd_r3_r4" />
+    <node id="r1.as1">
+      <data key="d1">600.1544</data>
+      <data key="d2">562.112434783</data>
+      <data key="d3">r1.as1</data>
+      <data key="d4">router</data>
+      <data key="d5">10.0.0.18</data>
+    </node>
+    <node id="cd_12_r3" />
+    <node id="cd_12_r4" />
+    <node id="r5.as1">
+      <data key="d1">488.741337192</data>
+      <data key="d2">874.224869565</data>
+      <data key="d3">r5.as1</data>
+      <data key="d4">router</data>
+      <data key="d5">10.0.0.21</data>
+    </node>
+    <node id="r4.as1">
+      <data key="d1">711.567462808</data>
+      <data key="d2">562.112434783</data>
+      <data key="d3">r4.as1</data>
+      <data key="d4">router</data>
+      <data key="d5">10.0.0.20</data>
+    </node>
+    <edge source="cd_r1_r4" target="r1.as1">
+      <data key="d10">10.0.0.2</data>
+      <data key="d11">r1_r4</data>
+    </edge>
+    <edge source="cd_r1_r4" target="r4.as1">
+      <data key="d10">10.0.0.1</data>
+      <data key="d11">r1_r4</data>
+    </edge>
+    <edge source="r3.as2" target="cd_r2_r3">
+      <data key="d10">10.1.0.26</data>
+      <data key="d11">r2_r3</data>
+    </edge>
+    <edge source="r3.as2" target="cd_r3_r4">
+      <data key="d10">10.1.0.2</data>
+      <data key="d11">r3_r4</data>
+    </edge>
+    <edge source="r3.as2" target="cd_12_r3">
+      <data key="d10">10.1.0.30</data>
+      <data key="d11">r3_12</data>
+    </edge>
+    <edge source="r3.as2" target="sw4.as2">
+      <data key="d10">10.1.0.18</data>
+      <data key="d11">r3_sw4</data>
+    </edge>
+    <edge source="r3.as2" target="sw3.as1">
+      <data key="d10">10.0.0.13</data>
+      <data key="d11">r3_sw1</data>
+    </edge>
+    <edge source="12.as2" target="cd_12_r3">
+      <data key="d10">10.1.0.29</data>
+      <data key="d11">r3_12</data>
+    </edge>
+    <edge source="12.as2" target="cd_12_r4">
+      <data key="d10">10.1.0.22</data>
+      <data key="d11">12_r4</data>
+    </edge>
+    <edge source="sw4.as2" target="www.as2">
+      <data key="d10">10.1.0.17</data>
+      <data key="d11">www_sw4</data>
+    </edge>
+    <edge source="sw3.as1" target="r5.as1">
+      <data key="d10">10.0.0.10</data>
+      <data key="d11">r5_sw1</data>
+    </edge>
+    <edge source="sw3.as1" target="r2.as1">
+      <data key="d10">10.0.0.12</data>
+      <data key="d11">sw1_r2</data>
+    </edge>
+    <edge source="sw3.as1" target="r1.as1">
+      <data key="d10">10.0.0.11</data>
+      <data key="d11">r1_sw1</data>
+    </edge>
+    <edge source="sw3.as1" target="11.as1">
+      <data key="d10">10.0.0.9</data>
+      <data key="d11">11_sw3</data>
+    </edge>
+    <edge source="cd_r2_r3" target="r2.as1">
+      <data key="d10">10.1.0.25</data>
+      <data key="d11">r2_r3</data>
+    </edge>
+    <edge source="cd_r3_r4" target="r4.as1">
+      <data key="d10">10.1.0.1</data>
+      <data key="d11">r3_r4</data>
+    </edge>
+    <edge source="cd_12_r4" target="r4.as1">
+      <data key="d10">10.1.0.21</data>
+      <data key="d11">12_r4</data>
+    </edge>
+  </graph>
+</graphml>
