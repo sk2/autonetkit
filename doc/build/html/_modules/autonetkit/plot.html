@@ -1,0 +1,279 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>autonetkit.plot &mdash; AutoNetkit</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/bootstrap.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.6.1dev-20120713',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/bootstrap.js"></script>
+    <link rel="top" title="AutoNetkit" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" />
+<script type="text/javascript">
+(function () {
+  /**
+   * Patch TOC list.
+   *
+   * Will mutate the underlying span to have a correct ul for nav.
+   *
+   * @param $span: Span containing nested UL's to mutate.
+   * @param minLevel: Starting level for nested lists. (1: global, 2: local).
+   */
+  var patchToc = function ($ul, minLevel) {
+    var findA;
+
+    // Find all a "internal" tags, traversing recursively.
+    findA = function ($elem, level) {
+      var level = level || 0,
+        $items = $elem.find("> li > a.internal, > ul, > li > ul");
+
+      // Iterate everything in order.
+      $items.each(function (index, item) {
+        var $item = $(item),
+          tag = item.tagName.toLowerCase(),
+          pad = 15 + ((level - minLevel) * 10);
+
+        if (tag === 'a' && level >= minLevel) {
+          // Add to existing padding.
+          $item.css('padding-left', pad + "px");
+          console.log(level, $item, 'padding-left', pad + "px");
+        } else if (tag === 'ul') {
+          // Recurse.
+          findA($item, level + 1);
+        }
+      });
+    };
+
+    console.log("HERE");
+    findA($ul);
+  };
+
+  $(document).ready(function () {
+    // Add styling, structure to TOC's.
+    $(".dropdown-menu").each(function () {
+      $(this).find("ul").each(function (index, item){
+        var $item = $(item);
+        $item.addClass('unstyled');
+      });
+      $(this).find("li").each(function () {
+        $(this).parent().append(this);
+      });
+    });
+
+    // Patch in level.
+    patchToc($("ul.globaltoc"), 2);
+    patchToc($("ul.localtoc"), 2);
+
+    // Enable dropdown.
+    $('.dropdown-toggle').dropdown();
+  });
+}());
+</script>
+
+  </head>
+  <body>
+  <div id="navbar" class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container-fluid">
+        <a class="brand" href="../../index.html">AutoNetkit</a>
+        <span class="navbar-text pull-left"><b>0.6.1dev-20120713</b></span>
+          <ul class="nav">
+            <li class="divider-vertical"></li>
+            
+              <li class="dropdown">
+  <a href="../../index.html" class="dropdown-toggle" data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"></ul>
+  <!--<span class="localtoc"></span>-->
+</li>
+            
+            
+              
+            
+            
+              
+            
+          </ul>
+          
+            
+<form class="navbar-search pull-right" style="margin-bottom:-3px;" action="../../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<div class="container">
+   
+  <h1>Source code for autonetkit.plot</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">networkx</span> <span class="kn">as</span> <span class="nn">nx</span>
+
+<span class="k">def</span> <span class="nf">plot_dot</span><span class="p">(</span><span class="n">overlay_graph</span><span class="p">,</span> <span class="n">edge_label_attribute</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">save</span> <span class="o">=</span> <span class="bp">True</span><span class="p">,</span> <span class="n">show</span> <span class="o">=</span> <span class="bp">False</span><span class="p">):</span>
+    <span class="c">#TODO: turn off rescaling</span>
+    <span class="kn">import</span> <span class="nn">subprocess</span>
+    <span class="n">graph</span> <span class="o">=</span> <span class="n">overlay_graph</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">graph_name</span> <span class="o">=</span> <span class="n">overlay_graph</span><span class="o">.</span><span class="n">name</span>
+
+    <span class="n">graph</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">to_undirected</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">overlay_graph</span><span class="p">:</span>
+        <span class="n">graph</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">node_id</span><span class="p">][</span><span class="s">&#39;label&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">graphics</span><span class="o">.</span><span class="n">label</span>
+        <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">graphics</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">graphics</span><span class="o">.</span><span class="n">y</span>
+        <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="o">=</span> <span class="n">x</span><span class="o">/</span><span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="n">y</span><span class="o">/</span><span class="mi">4</span>
+        <span class="n">graph</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">node_id</span><span class="p">][</span><span class="s">&#39;pos&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">,</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="n">graph</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">node_id</span><span class="p">][</span><span class="s">&#39;image&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&quot;icons/</span><span class="si">%s</span><span class="s">.png&quot;</span> <span class="o">%</span> <span class="n">node</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">graphics</span><span class="o">.</span><span class="n">device_type</span>
+        <span class="n">graph</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">node_id</span><span class="p">][</span><span class="s">&#39;shape&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;none&#39;</span>
+        <span class="n">graph</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">node_id</span><span class="p">][</span><span class="s">&#39;fontsize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">25</span>
+        <span class="n">graph</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">node_id</span><span class="p">][</span><span class="s">&#39;labelloc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;b&#39;</span> 
+        <span class="n">graph</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">node_id</span><span class="p">][</span><span class="s">&#39;fontcolor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;white&#39;</span> 
+
+    <span class="n">filename</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">.dot&quot;</span> <span class="o">%</span> <span class="n">graph_name</span>
+    <span class="n">nx</span><span class="o">.</span><span class="n">to_dot</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span> 
+    <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;dot&quot;</span><span class="p">,</span> <span class="s">&quot;-Kfdp&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="s">&quot;-Tpdf&quot;</span><span class="p">,</span> <span class="s">&quot;-o&quot;</span><span class="p">,</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">.pdf&quot;</span> <span class="o">%</span> <span class="n">graph_name</span><span class="p">]</span>
+    <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+
+<div class="viewcode-block" id="plot_pylab"><a class="viewcode-back" href="../../reference/plot.html#autonetkit.plot.plot_pylab">[docs]</a><span class="k">def</span> <span class="nf">plot_pylab</span><span class="p">(</span><span class="n">overlay_graph</span><span class="p">,</span> <span class="n">edge_label_attribute</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">node_label_attribute</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">save</span> <span class="o">=</span> <span class="bp">True</span><span class="p">,</span> <span class="n">show</span> <span class="o">=</span> <span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Plot a graph&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="k">print</span> <span class="p">(</span><span class="s">&quot;Matplotlib not found, not plotting using Matplotlib&quot;</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="n">graph</span> <span class="o">=</span> <span class="n">overlay_graph</span><span class="o">.</span><span class="n">_graph</span>
+    <span class="n">graph_name</span> <span class="o">=</span> <span class="n">overlay_graph</span><span class="o">.</span><span class="n">name</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">numpy</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&quot;Matplotlib plotting requires numpy for graph layout&quot;</span><span class="p">)</span>
+        <span class="k">return</span>
+    
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">ids</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="p">[(</span><span class="n">node</span><span class="o">.</span><span class="n">id</span> <span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">graphics</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">graphics</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">overlay_graph</span><span class="p">])</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+<span class="c">#TODO: combine these two operations together</span>
+        <span class="n">x</span> <span class="o">-=</span> <span class="n">x</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="n">x</span> <span class="o">*=</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">x</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> 
+        <span class="n">y</span> <span class="o">-=</span> <span class="n">y</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="n">y</span> <span class="o">*=</span> <span class="o">-</span><span class="mf">1.0</span><span class="o">/</span><span class="n">y</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="c"># invert</span>
+        <span class="n">y</span> <span class="o">+=</span> <span class="mi">1</span> <span class="c"># rescale from 0-&gt;1 not 1-&gt;0</span>
+<span class="c">#TODO: see if can use reshape-type commands here</span>
+        <span class="n">co_ords</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="nb">list</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
+        <span class="n">co_ords</span> <span class="o">=</span> <span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">])</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">co_ords</span><span class="p">]</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span> <span class="nb">zip</span><span class="p">(</span><span class="n">ids</span><span class="p">,</span> <span class="n">co_ords</span><span class="p">))</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="n">pos</span><span class="o">=</span><span class="n">nx</span><span class="o">.</span><span class="n">spring_layout</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">clf</span><span class="p">()</span>
+    <span class="n">cf</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gcf</span><span class="p">()</span>
+    <span class="n">ax</span><span class="o">=</span><span class="n">cf</span><span class="o">.</span><span class="n">add_axes</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+    <span class="c"># Create axes to allow adding of text relative to map</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_axis_off</span><span class="p">()</span> 
+    <span class="n">font_color</span> <span class="o">=</span> <span class="s">&quot;k&quot;</span>
+    <span class="n">node_color</span> <span class="o">=</span> <span class="s">&quot;#336699&quot;</span>
+    <span class="n">edge_color</span> <span class="o">=</span> <span class="s">&quot;#888888&quot;</span>
+
+    <span class="n">nodes</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx_nodes</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> 
+                           <span class="n">node_size</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> 
+                           <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.8</span><span class="p">,</span> <span class="n">linewidths</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span>
+                           <span class="n">node_color</span> <span class="o">=</span> <span class="n">node_color</span><span class="p">,</span>
+                           <span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">jet</span><span class="p">)</span>
+
+    <span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx_edges</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">arrows</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                           <span class="n">edge_color</span><span class="o">=</span><span class="n">edge_color</span><span class="p">,</span>
+                           <span class="n">alpha</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">edge_label_attribute</span><span class="p">:</span>
+        <span class="n">edge_labels</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">overlay_graph</span><span class="o">.</span><span class="n">edges</span><span class="p">():</span>
+            <span class="n">attr</span> <span class="o">=</span> <span class="n">edge</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">edge_label_attribute</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">attr</span><span class="p">:</span>
+                <span class="n">label</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">attr</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">label</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+
+            <span class="n">edge_labels</span><span class="p">[(</span><span class="n">edge</span><span class="o">.</span><span class="n">src</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span> <span class="n">edge</span><span class="o">.</span><span class="n">dst</span><span class="o">.</span><span class="n">node_id</span><span class="p">)]</span> <span class="o">=</span> <span class="n">label</span>
+        <span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx_edge_labels</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> 
+                            <span class="n">edge_labels</span> <span class="o">=</span> <span class="n">edge_labels</span><span class="p">,</span>
+                            <span class="n">font_size</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+                            <span class="n">font_color</span> <span class="o">=</span> <span class="n">font_color</span><span class="p">)</span>
+
+<span class="c">#TODO: where is anm from here? global? :/</span>
+    <span class="k">if</span> <span class="n">node_label_attribute</span><span class="p">:</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">overlay_graph</span><span class="p">:</span>
+            <span class="n">attr</span> <span class="o">=</span> <span class="n">n</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">node_label_attribute</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">attr</span><span class="p">:</span>
+                <span class="n">label</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="se">\n</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">label</span> <span class="o">=</span> <span class="n">n</span>
+
+            <span class="n">labels</span><span class="p">[</span><span class="n">n</span><span class="o">.</span><span class="n">node_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">label</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span> <span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">overlay_graph</span><span class="p">)</span>
+
+<span class="c">#TODO: need to strip out </span>
+    <span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx_labels</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> 
+                            <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
+                            <span class="n">font_size</span> <span class="o">=</span> <span class="mi">12</span><span class="p">,</span>
+                            <span class="n">font_color</span> <span class="o">=</span> <span class="n">font_color</span><span class="p">)</span>
+
+    <span class="n">title</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s"> graph&quot;</span> <span class="o">%</span> <span class="n">graph_name</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.98</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">horizontalalignment</span><span class="o">=</span><span class="s">&#39;left&#39;</span><span class="p">,</span>
+                            <span class="n">weight</span><span class="o">=</span><span class="s">&#39;heavy&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;k&#39;</span><span class="p">,</span>
+                            <span class="n">verticalalignment</span><span class="o">=</span><span class="s">&#39;top&#39;</span><span class="p">,</span> 
+                            <span class="n">transform</span><span class="o">=</span><span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">save</span><span class="p">:</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">.pdf&quot;</span> <span class="o">%</span> <span class="n">graph_name</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div></div>
+
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right"><a href="#">Back to top</a></p>
+    <p>
+        &copy; Copyright 2009--2012, Simon Knight, Hung Nguyen, Nick Falkner, Iain Phillips, Olaf Maennel, Askar Jaboldinov, Matthew Roughan.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

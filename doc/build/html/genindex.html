@@ -1,0 +1,618 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Index &mdash; AutoNetkit</title>
+    
+    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.6.1dev-20120713',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/bootstrap.js"></script>
+    <link rel="top" title="AutoNetkit" href="index.html" />
+<script type="text/javascript">
+(function () {
+  /**
+   * Patch TOC list.
+   *
+   * Will mutate the underlying span to have a correct ul for nav.
+   *
+   * @param $span: Span containing nested UL's to mutate.
+   * @param minLevel: Starting level for nested lists. (1: global, 2: local).
+   */
+  var patchToc = function ($ul, minLevel) {
+    var findA;
+
+    // Find all a "internal" tags, traversing recursively.
+    findA = function ($elem, level) {
+      var level = level || 0,
+        $items = $elem.find("> li > a.internal, > ul, > li > ul");
+
+      // Iterate everything in order.
+      $items.each(function (index, item) {
+        var $item = $(item),
+          tag = item.tagName.toLowerCase(),
+          pad = 15 + ((level - minLevel) * 10);
+
+        if (tag === 'a' && level >= minLevel) {
+          // Add to existing padding.
+          $item.css('padding-left', pad + "px");
+          console.log(level, $item, 'padding-left', pad + "px");
+        } else if (tag === 'ul') {
+          // Recurse.
+          findA($item, level + 1);
+        }
+      });
+    };
+
+    console.log("HERE");
+    findA($ul);
+  };
+
+  $(document).ready(function () {
+    // Add styling, structure to TOC's.
+    $(".dropdown-menu").each(function () {
+      $(this).find("ul").each(function (index, item){
+        var $item = $(item);
+        $item.addClass('unstyled');
+      });
+      $(this).find("li").each(function () {
+        $(this).parent().append(this);
+      });
+    });
+
+    // Patch in level.
+    patchToc($("ul.globaltoc"), 2);
+    patchToc($("ul.localtoc"), 2);
+
+    // Enable dropdown.
+    $('.dropdown-toggle').dropdown();
+  });
+}());
+</script>
+
+  </head>
+  <body>
+  <div id="navbar" class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container-fluid">
+        <a class="brand" href="index.html">AutoNetkit</a>
+        <span class="navbar-text pull-left"><b>0.6.1dev-20120713</b></span>
+          <ul class="nav">
+            <li class="divider-vertical"></li>
+            
+              <li class="dropdown">
+  <a href="index.html" class="dropdown-toggle" data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference/index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"></ul>
+  <!--<span class="localtoc"></span>-->
+</li>
+            
+            
+
+   
+              
+            
+
+            
+              
+            
+          </ul>
+          
+            
+<form class="navbar-search pull-right" style="margin-bottom:-3px;" action="search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<div class="container">
+   
+
+<h1 id="index">Index</h1>
+
+<div class="genindex-jumpbox">
+ <a href="#A"><strong>A</strong></a>
+ | <a href="#C"><strong>C</strong></a>
+ | <a href="#D"><strong>D</strong></a>
+ | <a href="#E"><strong>E</strong></a>
+ | <a href="#F"><strong>F</strong></a>
+ | <a href="#G"><strong>G</strong></a>
+ | <a href="#H"><strong>H</strong></a>
+ | <a href="#I"><strong>I</strong></a>
+ | <a href="#J"><strong>J</strong></a>
+ | <a href="#L"><strong>L</strong></a>
+ | <a href="#M"><strong>M</strong></a>
+ | <a href="#N"><strong>N</strong></a>
+ | <a href="#O"><strong>O</strong></a>
+ | <a href="#P"><strong>P</strong></a>
+ | <a href="#Q"><strong>Q</strong></a>
+ | <a href="#R"><strong>R</strong></a>
+ | <a href="#S"><strong>S</strong></a>
+ | <a href="#T"><strong>T</strong></a>
+ | <a href="#U"><strong>U</strong></a>
+ | <a href="#W"><strong>W</strong></a>
+ 
+</div>
+<h2 id="A">A</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference/anm.html#autonetkit.anm.overlay_graph.add_edges_from">add_edges_from() (autonetkit.anm.overlay_graph method)</a>
+  </dt>
+
+      
+  <dt><a href="reference/ank.html#autonetkit.ank.aggregate_nodes">aggregate_nodes() (in module autonetkit.ank)</a>
+  </dt>
+
+      
+  <dt><a href="reference/anm.html#autonetkit.anm.overlay_edge.attr_any">attr_any() (autonetkit.anm.overlay_edge method)</a>
+  </dt>
+
+      
+  <dt><a href="reference/anm.html#autonetkit.anm.overlay_edge.attr_both">attr_both() (autonetkit.anm.overlay_edge method)</a>
+  </dt>
+
+      
+  <dt><a href="reference/anm.html#autonetkit.anm.overlay_edge.attr_equal">attr_equal() (autonetkit.anm.overlay_edge method)</a>
+  </dt>
+
+      
+  <dt><a href="reference/ank.html#module-autonetkit.ank">autonetkit.ank (module)</a>
+  </dt>
+
+      
+  <dt><a href="reference/ank_utils.html#module-autonetkit.ank_utils">autonetkit.ank_utils (module)</a>
+  </dt>
+
+      
+  <dt><a href="reference/anm.html#module-autonetkit.anm">autonetkit.anm (module)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference/change_monitor.html#module-autonetkit.change_monitor">autonetkit.change_monitor (module)</a>
+  </dt>
+
+      
+  <dt><a href="reference/compiler.html#module-autonetkit.compiler">autonetkit.compiler (module)</a>
+  </dt>
+
+      
+  <dt><a href="reference/console_script.html#module-autonetkit.console_script">autonetkit.console_script (module)</a>
+  </dt>
+
+      
+  <dt><a href="reference/deploy.html#module-autonetkit.deploy">autonetkit.deploy (module)</a>
+  </dt>
+
+      
+  <dt><a href="reference/diff.html#module-autonetkit.diff">autonetkit.diff (module)</a>
+  </dt>
+
+      
+  <dt><a href="reference/nidb.html#module-autonetkit.nidb">autonetkit.nidb (module)</a>
+  </dt>
+
+      
+  <dt><a href="reference/plot.html#module-autonetkit.plot">autonetkit.plot (module)</a>
+  </dt>
+
+      
+  <dt><a href="reference/render.html#module-autonetkit.render">autonetkit.render (module)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="C">C</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference/compiler.html#autonetkit.compiler.CiscoCompiler">CiscoCompiler (class in autonetkit.compiler)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="D">D</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference/anm.html#autonetkit.anm.OverlayBase.device">device() (autonetkit.anm.OverlayBase method)</a>
+  </dt>
+
+      
+  <dt><a href="reference/diff.html#autonetkit.diff.dict_diff">dict_diff() (in module autonetkit.diff)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference/compiler.html#autonetkit.compiler.dict_to_sorted_list">dict_to_sorted_list() (in module autonetkit.compiler)</a>
+  </dt>
+
+      
+  <dt><a href="reference/compiler.html#autonetkit.compiler.DynagenCompiler">DynagenCompiler (class in autonetkit.compiler)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="E">E</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference/anm.html#autonetkit.anm.OverlayBase.edge">edge() (autonetkit.anm.OverlayBase method)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference/ank.html#autonetkit.ank.explode_nodes">explode_nodes() (in module autonetkit.ank)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="F">F</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference/anm.html#autonetkit.anm.OverlayBase.filter">filter() (autonetkit.anm.OverlayBase method)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="G">G</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference/anm.html#autonetkit.anm.overlay_edge.get">get() (autonetkit.anm.overlay_edge method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="reference/nidb.html#autonetkit.nidb.overlay_edge.get">(autonetkit.nidb.overlay_edge method)</a>
+  </dt>
+
+      </dl></dd>
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference/anm.html#autonetkit.anm.OverlayBase.groupby">groupby() (autonetkit.anm.OverlayBase method)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="H">H</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference/anm.html#autonetkit.anm.OverlayBase.has_edge">has_edge() (autonetkit.anm.OverlayBase method)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="I">I</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference/compiler.html#autonetkit.compiler.IosCompiler">IosCompiler (class in autonetkit.compiler)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference/nidb.html#autonetkit.nidb.nidb_node.is_l3device">is_l3device (autonetkit.nidb.nidb_node attribute)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="J">J</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference/compiler.html#autonetkit.compiler.JunosCompiler">JunosCompiler (class in autonetkit.compiler)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference/compiler.html#autonetkit.compiler.JunosphereCompiler">JunosphereCompiler (class in autonetkit.compiler)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="L">L</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference/nidb.html#autonetkit.nidb.lab_topology">lab_topology (class in autonetkit.nidb)</a>
+  </dt>
+
+      
+  <dt><a href="reference/nidb.html#autonetkit.nidb.lab_topology_accessor">lab_topology_accessor (class in autonetkit.nidb)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference/ank.html#autonetkit.ank.TreeNode.leaf">leaf (autonetkit.ank.TreeNode attribute)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="M">M</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference/ank.html#autonetkit.ank.most_frequent">most_frequent() (in module autonetkit.ank)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="N">N</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference/ank.html#autonetkit.ank.neigh_attr">neigh_attr() (in module autonetkit.ank)</a>
+  </dt>
+
+      
+  <dt><a href="reference/ank.html#autonetkit.ank.neigh_average">neigh_average() (in module autonetkit.ank)</a>
+  </dt>
+
+      
+  <dt><a href="reference/compiler.html#autonetkit.compiler.NetkitCompiler">NetkitCompiler (class in autonetkit.compiler)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference/nidb.html#autonetkit.nidb.nidb_graph_data">nidb_graph_data (class in autonetkit.nidb)</a>
+  </dt>
+
+      
+  <dt><a href="reference/nidb.html#autonetkit.nidb.nidb_node">nidb_node (class in autonetkit.nidb)</a>
+  </dt>
+
+      
+  <dt><a href="reference/anm.html#autonetkit.anm.OverlayBase.node">node() (autonetkit.anm.OverlayBase method)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="O">O</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference/compiler.html#autonetkit.compiler.RouterCompiler.ospf">ospf() (autonetkit.compiler.RouterCompiler method)</a>
+  </dt>
+
+      
+  <dt><a href="reference/anm.html#autonetkit.anm.overlay_edge.overlay">overlay (autonetkit.anm.overlay_edge attribute)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="reference/anm.html#autonetkit.anm.OverlayBase.overlay">(autonetkit.anm.OverlayBase attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference/nidb.html#autonetkit.nidb.overlay_edge.overlay">(autonetkit.nidb.overlay_edge attribute)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="reference/anm.html#autonetkit.anm.overlay_accessor">overlay_accessor (class in autonetkit.anm)</a>
+  </dt>
+
+      
+  <dt><a href="reference/nidb.html#autonetkit.nidb.overlay_data_dict">overlay_data_dict (class in autonetkit.nidb)</a>
+  </dt>
+
+      
+  <dt><a href="reference/anm.html#autonetkit.anm.overlay_edge">overlay_edge (class in autonetkit.anm)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="reference/nidb.html#autonetkit.nidb.overlay_edge">(class in autonetkit.nidb)</a>
+  </dt>
+
+      </dl></dd>
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference/anm.html#autonetkit.anm.overlay_edge_accessor">overlay_edge_accessor (class in autonetkit.anm)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="reference/nidb.html#autonetkit.nidb.overlay_edge_accessor">(class in autonetkit.nidb)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="reference/anm.html#autonetkit.anm.overlay_graph">overlay_graph (class in autonetkit.anm)</a>
+  </dt>
+
+      
+  <dt><a href="reference/anm.html#autonetkit.anm.overlay_graph_data">overlay_graph_data (class in autonetkit.anm)</a>
+  </dt>
+
+      
+  <dt><a href="reference/anm.html#autonetkit.anm.overlay_node_accessor">overlay_node_accessor (class in autonetkit.anm)</a>
+  </dt>
+
+      
+  <dt><a href="reference/anm.html#autonetkit.anm.OverlayBase">OverlayBase (class in autonetkit.anm)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="P">P</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference/compiler.html#autonetkit.compiler.PlatformCompiler">PlatformCompiler (class in autonetkit.compiler)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference/plot.html#autonetkit.plot.plot_pylab">plot_pylab() (in module autonetkit.plot)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="Q">Q</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference/compiler.html#autonetkit.compiler.QuaggaCompiler">QuaggaCompiler (class in autonetkit.compiler)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="R">R</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference/render.html#autonetkit.render.resource_path">resource_path() (in module autonetkit.render)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference/compiler.html#autonetkit.compiler.RouterCompiler">RouterCompiler (class in autonetkit.compiler)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="S">S</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference/ank.html#autonetkit.ank.set_node_default">set_node_default() (in module autonetkit.ank)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference/ank.html#autonetkit.ank.subnet_size">subnet_size() (in module autonetkit.ank)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="T">T</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference/ank.html#autonetkit.ank.TreeNode">TreeNode (class in autonetkit.ank)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="U">U</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference/ank_utils.html#autonetkit.ank_utils.unwrap_edges">unwrap_edges() (in module autonetkit.ank_utils)</a>
+  </dt>
+
+      
+  <dt><a href="reference/ank_utils.html#autonetkit.ank_utils.unwrap_graph">unwrap_graph() (in module autonetkit.ank_utils)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference/ank_utils.html#autonetkit.ank_utils.unwrap_nodes">unwrap_nodes() (in module autonetkit.ank_utils)</a>
+  </dt>
+
+      
+  <dt><a href="reference/anm.html#autonetkit.anm.overlay_graph.update">update() (autonetkit.anm.overlay_graph method)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="W">W</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference/ank.html#autonetkit.ank.wrap_edges">wrap_edges() (in module autonetkit.ank)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference/ank.html#autonetkit.ank.wrap_nodes">wrap_nodes() (in module autonetkit.ank)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+
+
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right"><a href="#">Back to top</a></p>
+    <p>
+        &copy; Copyright 2009--2012, Simon Knight, Hung Nguyen, Nick Falkner, Iain Phillips, Olaf Maennel, Askar Jaboldinov, Matthew Roughan.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

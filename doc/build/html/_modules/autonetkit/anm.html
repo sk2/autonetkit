@@ -1,0 +1,890 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>autonetkit.anm &mdash; AutoNetkit</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/bootstrap.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.6.1dev-20120713',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/bootstrap.js"></script>
+    <link rel="top" title="AutoNetkit" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" />
+<script type="text/javascript">
+(function () {
+  /**
+   * Patch TOC list.
+   *
+   * Will mutate the underlying span to have a correct ul for nav.
+   *
+   * @param $span: Span containing nested UL's to mutate.
+   * @param minLevel: Starting level for nested lists. (1: global, 2: local).
+   */
+  var patchToc = function ($ul, minLevel) {
+    var findA;
+
+    // Find all a "internal" tags, traversing recursively.
+    findA = function ($elem, level) {
+      var level = level || 0,
+        $items = $elem.find("> li > a.internal, > ul, > li > ul");
+
+      // Iterate everything in order.
+      $items.each(function (index, item) {
+        var $item = $(item),
+          tag = item.tagName.toLowerCase(),
+          pad = 15 + ((level - minLevel) * 10);
+
+        if (tag === 'a' && level >= minLevel) {
+          // Add to existing padding.
+          $item.css('padding-left', pad + "px");
+          console.log(level, $item, 'padding-left', pad + "px");
+        } else if (tag === 'ul') {
+          // Recurse.
+          findA($item, level + 1);
+        }
+      });
+    };
+
+    console.log("HERE");
+    findA($ul);
+  };
+
+  $(document).ready(function () {
+    // Add styling, structure to TOC's.
+    $(".dropdown-menu").each(function () {
+      $(this).find("ul").each(function (index, item){
+        var $item = $(item);
+        $item.addClass('unstyled');
+      });
+      $(this).find("li").each(function () {
+        $(this).parent().append(this);
+      });
+    });
+
+    // Patch in level.
+    patchToc($("ul.globaltoc"), 2);
+    patchToc($("ul.localtoc"), 2);
+
+    // Enable dropdown.
+    $('.dropdown-toggle').dropdown();
+  });
+}());
+</script>
+
+  </head>
+  <body>
+  <div id="navbar" class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container-fluid">
+        <a class="brand" href="../../index.html">AutoNetkit</a>
+        <span class="navbar-text pull-left"><b>0.6.1dev-20120713</b></span>
+          <ul class="nav">
+            <li class="divider-vertical"></li>
+            
+              <li class="dropdown">
+  <a href="../../index.html" class="dropdown-toggle" data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"></ul>
+  <!--<span class="localtoc"></span>-->
+</li>
+            
+            
+              
+            
+            
+              
+            
+          </ul>
+          
+            
+<form class="navbar-search pull-right" style="margin-bottom:-3px;" action="../../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<div class="container">
+   
+  <h1>Source code for autonetkit.anm</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">networkx</span> <span class="kn">as</span> <span class="nn">nx</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">pprint</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">ank_utils</span> <span class="kn">import</span> <span class="n">unwrap_edges</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">cPickle</span> <span class="kn">as</span> <span class="nn">pickle</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">pickle</span>
+
+<span class="c">#TODO: add helper functions such as router, ie ank.router(device): return device.overlay.phys.device_type == &quot;router&quot;</span>
+
+<span class="c">#Add plotting abilities, and allow legend attribute to be set: for both color and symbol</span>
+
+<span class="c"># working with views allows us to spin off subgraphs, and work with them the same as a standard overlay</span>
+
+<span class="k">class</span> <span class="nc">AutoNetkitException</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+<span class="k">class</span> <span class="nc">OverlayNotFound</span><span class="p">(</span><span class="n">AutoNetkitException</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Errors</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Errors</span> <span class="o">=</span> <span class="n">Errors</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;Overlay </span><span class="si">%s</span><span class="s"> not found&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">Errors</span>
+
+<span class="k">class</span> <span class="nc">IntegrityException</span><span class="p">(</span><span class="n">AutoNetkitException</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Errors</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Errors</span> <span class="o">=</span> <span class="n">Errors</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;Device </span><span class="si">%s</span><span class="s"> not found in physical graph&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">Errors</span>
+
+<span class="k">class</span> <span class="nc">DeviceNotFoundException</span><span class="p">(</span><span class="n">AutoNetkitException</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">Errors</span><span class="p">):</span>
+        <span class="ne">Exception</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Errors</span> <span class="o">=</span> <span class="n">Errors</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;Unable to find </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">Errors</span>
+
+<span class="k">class</span> <span class="nc">NodeNotFoundException</span><span class="p">(</span><span class="n">AutoNetkitException</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">Errors</span><span class="p">):</span>
+        <span class="ne">Exception</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Errors</span> <span class="o">=</span> <span class="n">Errors</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;Unable to find </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">Errors</span>
+
+<span class="k">class</span> <span class="nc">EdgeNotFound</span><span class="p">(</span><span class="n">AutoNetkitException</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">Errors</span><span class="p">):</span>
+        <span class="ne">Exception</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Errors</span> <span class="o">=</span> <span class="n">Errors</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;Unable to find </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">Errors</span>
+
+<div class="viewcode-block" id="overlay_node_accessor"><a class="viewcode-back" href="../../reference/anm.html#autonetkit.anm.overlay_node_accessor">[docs]</a><span class="k">class</span> <span class="nc">overlay_node_accessor</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;API to access overlay nodes in ANM&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">anm</span><span class="p">,</span>  <span class="n">node_id</span><span class="p">):</span>
+<span class="c">#Set using this method to bypass __setattr__ </span>
+        <span class="nb">object</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;anm&#39;</span><span class="p">,</span> <span class="n">anm</span><span class="p">)</span>
+        <span class="nb">object</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;node_id&#39;</span><span class="p">,</span> <span class="n">node_id</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c">#TODO: make this list overlays the node is present in</span>
+        <span class="k">return</span> <span class="s">&quot;Overlay graphs: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="s">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="o">.</span><span class="n">_overlays</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+
+    <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">overlay_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Access overlay graph&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">overlay_node</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="p">,</span> <span class="n">overlay_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_id</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="overlay_edge_accessor"><a class="viewcode-back" href="../../reference/anm.html#autonetkit.anm.overlay_edge_accessor">[docs]</a><span class="k">class</span> <span class="nc">overlay_edge_accessor</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;API to access overlay nodes in ANM&quot;&quot;&quot;</span>
+<span class="c">#TODO: fix consistency between node_id (id) and edge (overlay edge)</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">anm</span><span class="p">,</span> <span class="n">edge</span><span class="p">):</span>
+<span class="c">#Set using this method to bypass __setattr__ </span>
+        <span class="nb">object</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;anm&#39;</span><span class="p">,</span> <span class="n">anm</span><span class="p">)</span>
+        <span class="nb">object</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;edge&#39;</span><span class="p">,</span> <span class="n">edge</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c">#TODO: make this list overlays the node is present in</span>
+        <span class="k">return</span> <span class="s">&quot;Overlay edge accessor: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">edge</span>
+
+    <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">overlay_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Access overlay edge&quot;&quot;&quot;</span>
+<span class="c">#TODO: check on returning list or single edge if multiple found with same id (eg in G_igp from explode)</span>
+        <span class="n">overlay</span>  <span class="o">=</span> <span class="n">overlay_graph</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="p">,</span> <span class="n">overlay_id</span><span class="p">)</span>
+        <span class="n">edge</span> <span class="o">=</span> <span class="n">overlay</span><span class="o">.</span><span class="n">edge</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">edge</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">edge</span>
+</div>
+<span class="k">class</span> <span class="nc">overlay_node</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">anm</span><span class="p">,</span> <span class="n">overlay_id</span><span class="p">,</span> <span class="n">node_id</span><span class="p">):</span>
+<span class="c">#Set using this method to bypass __setattr__ </span>
+        <span class="nb">object</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;anm&#39;</span><span class="p">,</span> <span class="n">anm</span><span class="p">)</span>
+        <span class="nb">object</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;overlay_id&#39;</span><span class="p">,</span> <span class="n">overlay_id</span><span class="p">)</span>
+<span class="c">#TODO: check node_id is in graph, otherwise return NodeNotFoundException</span>
+<span class="c"># should be able to use _graph from here as anm and overlay_id are defined</span>
+        <span class="nb">object</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;node_id&#39;</span><span class="p">,</span> <span class="n">node_id</span><span class="p">)</span>
+
+<span class="c">#TODO: allow access back up to overlays from this</span>
+<span class="c"># eg self.ip.property self.bgp.property etc</span>
+
+    <span class="k">def</span> <span class="nf">__nonzero__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Allows for checking if node exists</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">node_id</span><span class="p">]</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+    <span class="k">def</span> <span class="nf">__getnewargs__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__getstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;For pickling&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlay_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_id</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__setstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="c"># Make self.history = state and last_change and value undefined</span>
+        <span class="p">(</span><span class="n">anm</span><span class="p">,</span> <span class="n">overlay_id</span><span class="p">,</span> <span class="n">node_id</span><span class="p">)</span> <span class="o">=</span> <span class="n">state</span>
+        <span class="nb">object</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;anm&#39;</span><span class="p">,</span> <span class="n">anm</span><span class="p">)</span>
+        <span class="nb">object</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;overlay_id&#39;</span><span class="p">,</span> <span class="n">overlay_id</span><span class="p">)</span>
+        <span class="nb">object</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;node_id&#39;</span><span class="p">,</span> <span class="n">node_id</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_id</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">node_id</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return graph the node belongs to&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="o">.</span><span class="n">_overlays</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">overlay_id</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">is_router</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">phy</span><span class="o">.</span><span class="n">device_type</span> <span class="o">==</span> <span class="s">&quot;router&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">is_switch</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">phy</span><span class="o">.</span><span class="n">device_type</span> <span class="o">==</span> <span class="s">&quot;switch&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">is_server</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">phy</span><span class="o">.</span><span class="n">device_type</span> <span class="o">==</span> <span class="s">&quot;server&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">is_l3device</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Layer 3 devices: router, server, cloud, host</span>
+<span class="sd">        ie not switch</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_router</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_server</span>
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">overlay_node</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_id</span><span class="p">)</span>
+
+<span class="c">#TODO: Add other base device_types</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">asn</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">node_id</span><span class="p">][</span><span class="s">&#39;asn&#39;</span><span class="p">]</span> <span class="c"># not in this graph</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="o">.</span><span class="n">_overlays</span><span class="p">[</span><span class="s">&#39;phy&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">node_id</span><span class="p">][</span><span class="s">&#39;asn&#39;</span><span class="p">]</span> <span class="c">#try from phy</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_id</span>
+
+    <span class="k">def</span> <span class="nf">degree</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">degree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">node_id</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">label</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__repr__</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">phy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Shortcut back to physical overlay_node</span>
+<span class="sd">        Same as node.overlay.phy</span>
+<span class="sd">        ie node.phy.x is same as node.overlay.phy.x</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+<span class="c"># refer back to the physical node, to access attributes such as name</span>
+<span class="c">#TODO: handle case of trying to access phy in phy: loop, can&#39;t just return self</span>
+        <span class="k">return</span> <span class="n">overlay_node</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="p">,</span> <span class="s">&quot;phy&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_id</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">node_id</span><span class="p">])</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">overlay</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Access node in another overlay graph&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">overlay_node_accessor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_id</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">edges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c">#TODO: want to add filter for *args and **kwargs here too</span>
+        <span class="k">return</span> <span class="n">overlay_graph</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlay_id</span><span class="p">)</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Try label if set in overlay, otherwise from physical, otherwise node id&quot;&quot;&quot;</span>
+<span class="c">#TODO: make access direct from phy, and can then do &quot;%s: %s&quot; % (overlay_id, label)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="o">.</span><span class="n">node_label</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">node_id</span><span class="p">][</span><span class="s">&#39;label&#39;</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_id</span> <span class="c"># node not in physical graph</span>
+
+    <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns node property</span>
+<span class="sd">        This is useful for accesing attributes passed through from graphml&quot;&quot;&quot;</span>
+<span class="c">#TODO: make this log to debug on a miss, ie if key not found: do a try/except for KeyError for this</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">node_id</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;For consistency, node.get(key) is neater than getattr(node, key)&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Sets node property</span>
+<span class="sd">        This is useful for accesing attributes passed through from graphml&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">node_id</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">node_id</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;For consistency, node.set(key, value) is neater than setattr(node, key, value)&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+
+<div class="viewcode-block" id="overlay_edge"><a class="viewcode-back" href="../../reference/anm.html#autonetkit.anm.overlay_edge">[docs]</a><span class="k">class</span> <span class="nc">overlay_edge</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;API to access link in network&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">anm</span><span class="p">,</span> <span class="n">overlay_id</span><span class="p">,</span> <span class="n">src_id</span><span class="p">,</span> <span class="n">dst_id</span><span class="p">):</span>
+<span class="c">#Set using this method to bypass __setattr__ </span>
+        <span class="nb">object</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;anm&#39;</span><span class="p">,</span> <span class="n">anm</span><span class="p">)</span>
+        <span class="nb">object</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;overlay_id&#39;</span><span class="p">,</span> <span class="n">overlay_id</span><span class="p">)</span>
+        <span class="nb">object</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;src_id&#39;</span><span class="p">,</span> <span class="n">src_id</span><span class="p">)</span>
+        <span class="nb">object</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;dst_id&#39;</span><span class="p">,</span> <span class="n">dst_id</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">: (</span><span class="si">%s</span><span class="s">, </span><span class="si">%s</span><span class="s">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlay_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dst</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__getnewargs__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="n">overlay</span>  <span class="o">=</span> <span class="n">overlay_graph</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">overlay</span><span class="o">.</span><span class="n">edge</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__getstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;For pickling&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlay_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">src_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dst_id</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__setstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;For pickling&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_overlays</span> <span class="o">=</span> <span class="n">state</span>
+        <span class="p">(</span><span class="n">anm</span><span class="p">,</span> <span class="n">overlay_id</span><span class="p">,</span> <span class="n">src_id</span><span class="p">,</span> <span class="n">dst_id</span><span class="p">)</span> <span class="o">=</span> <span class="n">state</span>
+<span class="c">#TODO: call to self __init__ ???</span>
+        <span class="nb">object</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;anm&#39;</span><span class="p">,</span> <span class="n">anm</span><span class="p">)</span>
+        <span class="nb">object</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;overlay_id&#39;</span><span class="p">,</span> <span class="n">overlay_id</span><span class="p">)</span>
+        <span class="nb">object</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;src_id&#39;</span><span class="p">,</span> <span class="n">src_id</span><span class="p">)</span>
+        <span class="nb">object</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;dst_id&#39;</span><span class="p">,</span> <span class="n">dst_id</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">src</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">overlay_node</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlay_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">src_id</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">dst</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">overlay_node</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlay_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dst_id</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">src_id</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">dst_id</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">__nonzero__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Allows for checking if edge exists</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">src_id</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">dst_id</span><span class="p">]</span> <span class="c"># edge exists</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="overlay_edge.overlay"><a class="viewcode-back" href="../../reference/anm.html#autonetkit.anm.overlay_edge.overlay">[docs]</a>    <span class="k">def</span> <span class="nf">overlay</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Access node in another overlay graph&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">overlay_edge_accessor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+</div>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return graph the node belongs to&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="o">.</span><span class="n">_overlays</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">overlay_id</span><span class="p">]</span>
+
+<div class="viewcode-block" id="overlay_edge.get"><a class="viewcode-back" href="../../reference/anm.html#autonetkit.anm.overlay_edge.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;For consistency, edge.get(key) is neater than getattr(edge, key)&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__getattr__</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns edge property&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">src_id</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">dst_id</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Sets edge property&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">src_id</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">dst_id</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+</div>
+<div class="viewcode-block" id="overlay_graph_data"><a class="viewcode-back" href="../../reference/anm.html#autonetkit.anm.overlay_graph_data">[docs]</a><span class="k">class</span> <span class="nc">overlay_graph_data</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;API to access link in network&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">anm</span><span class="p">,</span> <span class="n">overlay_id</span><span class="p">):</span>
+<span class="c">#Set using this method to bypass __setattr__ </span>
+        <span class="nb">object</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;anm&#39;</span><span class="p">,</span> <span class="n">anm</span><span class="p">)</span>
+        <span class="nb">object</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;overlay_id&#39;</span><span class="p">,</span> <span class="n">overlay_id</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;Data for (</span><span class="si">%s</span><span class="s">, </span><span class="si">%s</span><span class="s">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlay_id</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c">#access underlying graph for this overlay_node</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="o">.</span><span class="n">_overlays</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">overlay_id</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns edge property&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Sets edge property&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+</div>
+<div class="viewcode-block" id="OverlayBase"><a class="viewcode-back" href="../../reference/anm.html#autonetkit.anm.OverlayBase">[docs]</a><span class="k">class</span> <span class="nc">OverlayBase</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base class for overlays - overlay graphs, subgraphs, projections, etc&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">anm</span><span class="p">,</span> <span class="n">overlay_id</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">overlay_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">anm</span><span class="o">.</span><span class="n">_overlays</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">OverlayNotFound</span><span class="p">(</span><span class="n">overlay_id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_anm</span> <span class="o">=</span> <span class="n">anm</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_overlay_id</span> <span class="o">=</span> <span class="n">overlay_id</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_overlay_id</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">overlay_graph_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_anm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_overlay_id</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">n</span><span class="o">.</span><span class="n">node_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span>
+
+<div class="viewcode-block" id="OverlayBase.edge"><a class="viewcode-back" href="../../reference/anm.html#autonetkit.anm.OverlayBase.edge">[docs]</a>    <span class="k">def</span> <span class="nf">edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">edge_to_find</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;returns edge in this graph with same src and same edge_id&quot;&quot;&quot;</span>
+        <span class="n">src_id</span> <span class="o">=</span> <span class="n">edge_to_find</span><span class="o">.</span><span class="n">src_id</span>
+        <span class="n">search_id</span> <span class="o">=</span> <span class="n">edge_to_find</span><span class="o">.</span><span class="n">edge_id</span>
+<span class="c">#TODO: if no edge_id then search for src, dst pair</span>
+
+        <span class="k">for</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">edges_iter</span><span class="p">(</span><span class="n">src_id</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="p">[</span><span class="n">src</span><span class="p">][</span><span class="n">dst</span><span class="p">][</span><span class="s">&#39;edge_id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">search_id</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">overlay_edge</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_anm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_overlay_id</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="k">pass</span> <span class="c"># no edge_id for this edge</span>
+</div>
+<div class="viewcode-block" id="OverlayBase.node"><a class="viewcode-back" href="../../reference/anm.html#autonetkit.anm.OverlayBase.node">[docs]</a>    <span class="k">def</span> <span class="nf">node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns node based on name</span>
+<span class="sd">        This is currently O(N). Could use a lookup table&quot;&quot;&quot;</span>
+<span class="c">#TODO: check if node.node_id in graph, if so return wrapped node for this...</span>
+<span class="c"># returns node based on name</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span class="n">node_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">overlay_node</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_anm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_overlay_id</span><span class="p">,</span> <span class="n">key</span><span class="o">.</span><span class="n">node_id</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="c"># doesn&#39;t have node_id, likely a label string, search based on this label</span>
+            <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="o">==</span> <span class="n">key</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">node</span>
+            <span class="k">print</span> <span class="s">&quot;Unable to find node&quot;</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="s">&quot;in&quot;</span><span class="p">,</span> <span class="bp">self</span>
+            <span class="k">return</span> <span class="bp">None</span>
+
+<span class="c">#TODO: Allow overlay data to be set/get, ie graph.graph eg for asn subnet allocations</span>
+</div>
+    <span class="k">def</span> <span class="nf">degree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">node</span><span class="o">.</span><span class="n">degree</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">neighbors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="n">overlay_node</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_anm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_overlay_id</span><span class="p">,</span> <span class="n">node</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">node_id</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="OverlayBase.overlay"><a class="viewcode-back" href="../../reference/anm.html#autonetkit.anm.OverlayBase.overlay">[docs]</a>    <span class="k">def</span> <span class="nf">overlay</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get to other overlay graphs in functions&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">overlay_accessor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_anm</span><span class="p">)</span>
+</div>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__repr__</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">node_label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">repr</span><span class="p">(</span><span class="n">overlay_node</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_anm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_overlay_id</span><span class="p">,</span> <span class="n">node</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c">#TODO: map this to ank functions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_anm</span><span class="o">.</span><span class="n">dump_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+<div class="viewcode-block" id="OverlayBase.has_edge"><a class="viewcode-back" href="../../reference/anm.html#autonetkit.anm.OverlayBase.has_edge">[docs]</a>    <span class="k">def</span> <span class="nf">has_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">edge</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Tests if edge in graph&quot;&quot;&quot;</span>
+<span class="c">#TODO: handle case of user creating edge, eg test tuples and ids directly</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">edge</span><span class="o">.</span><span class="n">src</span><span class="p">,</span> <span class="n">edge</span><span class="o">.</span><span class="n">dst</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="n">overlay_node</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_anm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_overlay_id</span><span class="p">,</span> <span class="n">node</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__iter__</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+<div class="viewcode-block" id="OverlayBase.device"><a class="viewcode-back" href="../../reference/anm.html#autonetkit.anm.OverlayBase.device">[docs]</a>    <span class="k">def</span> <span class="nf">device</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;To access programatically&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">overlay_node</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_anm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_overlay_id</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="OverlayBase.groupby"><a class="viewcode-back" href="../../reference/anm.html#autonetkit.anm.OverlayBase.groupby">[docs]</a>    <span class="k">def</span> <span class="nf">groupby</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">,</span> <span class="n">nodes</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a dictionary sorted by attribute</span>
+<span class="sd">#TODO: Also want to be able to return list of subgraphs based on groupby, eg per ASN subgraphs</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; G_in.groupby(&quot;asn&quot;)</span>
+<span class="sd">        {u&#39;1&#39;: [r1, r2, r3, sw1], u&#39;2&#39;: [r4]}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">result</span><span class="o">=</span><span class="p">{}</span>
+    
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">nodes</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nodes</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">nodes</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attribute</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attribute</span><span class="p">)):</span>
+            <span class="n">result</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+
+        <span class="c">#TODO: should this return .items() to be consistent with other iterables?</span>
+        <span class="k">return</span> <span class="n">result</span>
+</div>
+<div class="viewcode-block" id="OverlayBase.filter"><a class="viewcode-back" href="../../reference/anm.html#autonetkit.anm.OverlayBase.filter">[docs]</a>    <span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nbunch</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c">#TODO: also allow nbunch to be passed in to subfilter on...?</span>
+        <span class="sd">&quot;&quot;&quot;TODO: expand this to allow args also, ie to test if value evaluates to True&quot;&quot;&quot;</span>
+        <span class="c"># need to allow filter_func to access these args</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">nbunch</span><span class="p">:</span>
+            <span class="n">nbunch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nodes</span><span class="p">()</span>
+        <span class="k">def</span> <span class="nf">filter_func</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">(</span>
+                    <span class="nb">all</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">args</span><span class="p">)</span> <span class="ow">and</span>
+                    <span class="nb">all</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span> <span class="o">==</span> <span class="n">val</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+                    <span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">nbunch</span> <span class="k">if</span> <span class="n">filter_func</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
+</div>
+    <span class="k">def</span> <span class="nf">edges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src_nbunch</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">dst_nbunch</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="c"># nbunch may be single node</span>
+<span class="c">#TODO: Apply edge filters</span>
+        <span class="k">if</span> <span class="n">src_nbunch</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">src_nbunch</span> <span class="o">=</span> <span class="n">src_nbunch</span><span class="o">.</span><span class="n">node_id</span>
+            <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                <span class="n">src_nbunch</span> <span class="o">=</span> <span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">node_id</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">src_nbunch</span><span class="p">)</span> <span class="c"># only store the id in overlay</span>
+
+        <span class="k">def</span> <span class="nf">filter_func</span><span class="p">(</span><span class="n">edge</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">(</span>
+                    <span class="nb">all</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">args</span><span class="p">)</span> <span class="ow">and</span>
+                    <span class="nb">all</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span> <span class="o">==</span> <span class="n">val</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+                    <span class="p">)</span>
+
+        <span class="n">valid_edges</span> <span class="o">=</span> <span class="p">(</span> <span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">edges_iter</span><span class="p">(</span><span class="n">src_nbunch</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">dst_nbunch</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">dst_nbunch</span> <span class="o">=</span> <span class="n">dst_nbunch</span><span class="o">.</span><span class="n">node_id</span>
+            <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                <span class="n">dst_nbunch</span> <span class="o">=</span> <span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">node_id</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">dst_nbunch</span><span class="p">)</span> <span class="c"># only store the id in overlay_edge</span>
+
+            <span class="n">dst_nbunch</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">dst_nbunch</span><span class="p">)</span> <span class="c"># faster membership test than other sequences</span>
+            <span class="n">valid_edges</span>  <span class="o">=</span> <span class="p">((</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span> <span class="ow">in</span> <span class="n">valid_edges</span>
+                    <span class="k">if</span> <span class="n">dst</span> <span class="ow">in</span> <span class="n">dst_nbunch</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="n">all_edges</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">overlay_edge</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_anm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_overlay_id</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span> <span class="ow">in</span> <span class="n">valid_edges</span><span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span>  <span class="p">(</span><span class="n">edge</span> <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">all_edges</span> <span class="k">if</span> <span class="n">filter_func</span><span class="p">(</span><span class="n">edge</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span>  <span class="p">(</span><span class="n">overlay_edge</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_anm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_overlay_id</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span> <span class="ow">in</span> <span class="n">valid_edges</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span>
+</div>
+<span class="k">class</span> <span class="nc">overlay_subgraph</span><span class="p">(</span><span class="n">OverlayBase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">anm</span><span class="p">,</span> <span class="n">overlay_id</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">overlay_subgraph</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">anm</span><span class="p">,</span> <span class="n">overlay_id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span> <span class="o">=</span> <span class="n">graph</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_subgraph_name</span> <span class="o">=</span> <span class="n">name</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_subgraph_name</span>
+
+<div class="viewcode-block" id="overlay_graph"><a class="viewcode-back" href="../../reference/anm.html#autonetkit.anm.overlay_graph">[docs]</a><span class="k">class</span> <span class="nc">overlay_graph</span><span class="p">(</span><span class="n">OverlayBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;API to interact with an overlay graph in ANM&quot;&quot;&quot;</span>
+<span class="c">#TODO: provide an strip_id function to turn node tuples back into just ids for the graph</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c">#access underlying graph for this overlay_node</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_anm</span><span class="o">.</span><span class="n">_overlays</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_overlay_id</span><span class="p">]</span>
+
+    <span class="c"># these work similar to their nx counterparts: just need to strip the node_id</span>
+    <span class="k">def</span> <span class="nf">add_nodes_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nbunch</span><span class="p">,</span> <span class="n">retain</span><span class="o">=</span><span class="p">[],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">retain</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="n">retain</span> <span class="o">=</span> <span class="p">[</span><span class="n">retain</span><span class="p">]</span> <span class="c"># was a string, put into list</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">pass</span> <span class="c"># already a list</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">retain</span><span class="p">):</span>
+            <span class="n">add_nodes</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">nbunch</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">n</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">))</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">retain</span><span class="p">)</span>
+                <span class="n">add_nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span> <span class="p">)</span>
+            <span class="n">nbunch</span> <span class="o">=</span> <span class="n">add_nodes</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">nbunch</span> <span class="o">=</span> <span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">node_id</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">nbunch</span><span class="p">)</span> <span class="c"># only store the id in overlay</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">add_nodes_from</span><span class="p">(</span><span class="n">nbunch</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">add_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">,</span> <span class="n">retain</span><span class="o">=</span><span class="p">[],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">retain</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="n">retain</span> <span class="o">=</span> <span class="p">[</span><span class="n">retain</span><span class="p">]</span> <span class="c"># was a string, put into list</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">pass</span> <span class="c"># already a list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">([(</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">)],</span> <span class="n">retain</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">remove_edges_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ebunch</span><span class="p">):</span>
+        <span class="c">#TODO: check if this try/except consumes generator</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">ebunch</span> <span class="o">=</span> <span class="n">unwrap_edges</span><span class="p">(</span><span class="n">ebunch</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">pass</span> <span class="c"># don&#39;t need to unwrap</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">remove_edges_from</span><span class="p">(</span><span class="n">ebunch</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="overlay_graph.add_edges_from"><a class="viewcode-back" href="../../reference/anm.html#autonetkit.anm.overlay_graph.add_edges_from">[docs]</a>    <span class="k">def</span> <span class="nf">add_edges_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ebunch</span><span class="p">,</span> <span class="n">bidirectional</span> <span class="o">=</span> <span class="bp">False</span><span class="p">,</span> <span class="n">retain</span><span class="o">=</span><span class="p">[],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add edges. Unlike NetworkX, can only add an edge if both src and dst in graph already.</span>
+<span class="sd">        If they are not, then they will not be added (silently ignored)</span>
+
+<span class="sd">        Bidirectional will add edge in both directions. Useful if going from an undirected graph to a </span>
+<span class="sd">        directed, eg G_in to G_bgp</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#TODO: need to test if given a (id, id) or an edge overlay pair... use try/except for speed</span>
+<span class="c">#TODO: tidy this logic up, use edge unwrap and </span>
+<span class="c"># data = dict( (key, graph[src][dst][key]) for key in retain)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">retain</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="n">retain</span> <span class="o">=</span> <span class="p">[</span><span class="n">retain</span><span class="p">]</span> <span class="c"># was a string, put into list</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">pass</span> <span class="c"># already a list</span>
+
+        <span class="n">retain</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&quot;edge_id&quot;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">retain</span><span class="p">):</span>
+                <span class="c">#TODO: cleanup this logic: will always at least retain edge_id</span>
+                <span class="n">add_edges</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">ebunch</span><span class="p">:</span>
+                    <span class="n">data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">))</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">retain</span><span class="p">)</span>
+                    <span class="n">add_edges</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">src</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">dst</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span> <span class="p">)</span>
+                <span class="n">ebunch</span> <span class="o">=</span> <span class="n">add_edges</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ebunch</span> <span class="o">=</span> <span class="p">[(</span><span class="n">e</span><span class="o">.</span><span class="n">src</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">dst</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span> <span class="p">{})</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">ebunch</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="n">ebunch</span> <span class="o">=</span> <span class="p">[(</span><span class="n">src</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span> <span class="n">dst</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span> <span class="p">{})</span> <span class="k">for</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span> <span class="ow">in</span> <span class="n">ebunch</span><span class="p">]</span>
+
+        <span class="n">ebunch</span> <span class="o">=</span> <span class="p">[(</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span> <span class="ow">in</span> <span class="n">ebunch</span> <span class="k">if</span> <span class="n">src</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span> <span class="ow">and</span> <span class="n">dst</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">bidirectional</span><span class="p">:</span>
+            <span class="n">ebunch</span> <span class="o">+=</span> <span class="p">[(</span><span class="n">dst</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span> <span class="ow">in</span> <span class="n">ebunch</span> <span class="k">if</span> <span class="n">src</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span> <span class="ow">and</span> <span class="n">dst</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="p">]</span>
+<span class="c">#TODO: log to debug any filtered out nodes... if if lengths not the same</span>
+
+        <span class="c">#TODO: decide if want to allow nodes to be created when adding edge if not already in graph</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">(</span><span class="n">ebunch</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="overlay_graph.update"><a class="viewcode-back" href="../../reference/anm.html#autonetkit.anm.overlay_graph.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nbunch</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Sets property defined in kwargs to all nodes in nbunch&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nbunch</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">node</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">subgraph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nbunch</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">nbunch</span> <span class="o">=</span> <span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">node_id</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">nbunch</span><span class="p">)</span> <span class="c"># only store the id in overlay</span>
+        <span class="k">return</span> <span class="n">overlay_subgraph</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_anm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_overlay_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">subgraph</span><span class="p">(</span><span class="n">nbunch</span><span class="p">),</span> <span class="n">name</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="overlay_accessor"><a class="viewcode-back" href="../../reference/anm.html#autonetkit.anm.overlay_accessor">[docs]</a><span class="k">class</span> <span class="nc">overlay_accessor</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;API to access overlay graphs in ANM&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">anm</span><span class="p">):</span>
+<span class="c">#Set using this method to bypass __setattr__ </span>
+        <span class="nb">object</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;anm&#39;</span><span class="p">,</span> <span class="n">anm</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;Available overlay graphs: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="s">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="o">.</span><span class="n">_overlays</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+
+    <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Access overlay graph&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">overlay_graph</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+</div>
+<span class="k">class</span> <span class="nc">AbstractNetworkModel</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_overlays</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_overlay</span><span class="p">(</span><span class="s">&quot;phy&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">label_seperator</span> <span class="o">=</span> <span class="s">&quot;_&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">label_attrs</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;label&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_build_node_label</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">=</span>  <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&quot;%Y%m</span><span class="si">%d</span><span class="s">_%H%M%S&quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">localtime</span><span class="p">())</span>
+        
+        
+    <span class="k">def</span> <span class="nf">__getnewargs__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__getstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;For pickling&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_overlays</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_seperator</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_attrs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__setstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;For pickling&quot;&quot;&quot;</span>
+        <span class="p">(</span><span class="n">overlays</span><span class="p">,</span> <span class="n">label_seperator</span><span class="p">,</span> <span class="n">label_attrs</span><span class="p">)</span> <span class="o">=</span> <span class="n">state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_overlays</span> <span class="o">=</span> <span class="n">overlays</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">label_seperator</span> <span class="o">=</span> <span class="n">label_seperator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">label_attrs</span> <span class="o">=</span> <span class="n">label_attrs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_build_node_label</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">import</span> <span class="nn">os</span>
+<span class="c">#TODO: try cPickle</span>
+        <span class="n">pickle_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s">&quot;versions&quot;</span><span class="p">,</span> <span class="s">&quot;anm&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">pickle_dir</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">pickle_dir</span><span class="p">)</span>
+
+        <span class="n">pickle_file</span> <span class="o">=</span> <span class="s">&quot;anm_</span><span class="si">%s</span><span class="s">.pickle.tar.gz&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">timestamp</span>
+        <span class="n">pickle_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pickle_dir</span><span class="p">,</span> <span class="n">pickle_file</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">pickle_path</span><span class="p">,</span> <span class="s">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">pickle_fh</span><span class="p">:</span>
+            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pickle_fh</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_phy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">overlay_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&quot;phy&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">add_overlay</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">graph</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">directed</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">multi_edge</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Adds overlay graph of name name&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">graph</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">directed</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">multi_edge</span><span class="p">:</span>
+            <span class="n">graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">directed</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">multi_edge</span><span class="p">:</span>
+            <span class="n">graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">directed</span> <span class="ow">and</span> <span class="n">multi_edge</span><span class="p">:</span>
+            <span class="n">graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">MultiGraph</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">directed</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">multi_edge</span><span class="p">:</span>
+            <span class="n">graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">MultiDiGraph</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_overlays</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">graph</span>
+        <span class="k">return</span> <span class="n">overlay_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">overlay</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">overlay_accessor</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">overlays</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_overlays</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">devices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_phy</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">overlay_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">node_label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns node label from physical graph&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_node_label</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_build_node_label</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">custom_label</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_seperator</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_overlays</span><span class="p">[</span><span class="s">&#39;phy&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">node_id</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_attrs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_label</span> <span class="o">=</span> <span class="n">custom_label</span>
+
+    <span class="k">def</span> <span class="nf">set_node_label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seperator</span><span class="p">,</span> <span class="n">label_attrs</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">label_attrs</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="n">label_attrs</span> <span class="o">=</span> <span class="p">[</span><span class="n">label_attrs</span><span class="p">]</span> <span class="c"># was a string, put into list</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">pass</span> <span class="c"># already a list</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">label_seperator</span> <span class="o">=</span> <span class="n">seperator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">label_attrs</span> <span class="o">=</span> <span class="n">label_attrs</span>
+
+
+    <span class="c">#TODO: move this out into debug module</span>
+    <span class="k">def</span> <span class="nf">dump_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graph</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s">&quot;----Graph </span><span class="si">%s</span><span class="s">----&quot;</span> <span class="o">%</span> <span class="n">graph</span>
+        <span class="k">print</span> <span class="s">&quot;Graph&quot;</span>
+        <span class="k">print</span> <span class="bp">self</span><span class="o">.</span><span class="n">dump_graph_data</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&quot;Nodes&quot;</span>
+        <span class="k">print</span> <span class="bp">self</span><span class="o">.</span><span class="n">dump_nodes</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&quot;Edges&quot;</span>
+        <span class="k">print</span> <span class="bp">self</span><span class="o">.</span><span class="n">dump_edges</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">dump_graph_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graph</span><span class="p">):</span>
+        <span class="n">debug_data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
+        <span class="k">return</span> <span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">debug_data</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">dump_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graph</span><span class="p">):</span>
+        <span class="n">debug_data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span> <span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">node_label</span><span class="p">(</span><span class="n">node</span><span class="p">),</span> <span class="n">data</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">node</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">True</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">debug_data</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">dump_edges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graph</span><span class="p">):</span>
+        <span class="n">debug_data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span> <span class="p">((</span><span class="n">graph</span><span class="o">.</span><span class="n">node_label</span><span class="p">(</span><span class="n">src</span><span class="p">),</span> <span class="n">graph</span><span class="o">.</span><span class="n">node_label</span><span class="p">(</span><span class="n">dst</span><span class="p">)),</span> <span class="n">data</span>
+            <span class="p">)</span> <span class="k">for</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">True</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">debug_data</span><span class="p">)</span>
+
+
+
+<span class="sd">&quot;&quot;&quot;TODO: allow graphs to be frozen for integrity, </span>
+<span class="sd">eg load input, freeze, </span>
+<span class="sd">and once done with overlays freeze them before nidb</span>
+<span class="sd">&quot;&quot;&quot;</span>
+</pre></div>
+
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right"><a href="#">Back to top</a></p>
+    <p>
+        &copy; Copyright 2009--2012, Simon Knight, Hung Nguyen, Nick Falkner, Iain Phillips, Olaf Maennel, Askar Jaboldinov, Matthew Roughan.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

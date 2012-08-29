@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>AutoNetkit</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+
+    <script type="text/javascript">
+
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-351760-8']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+       var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+       ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+       var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+       })();
+
+     </script>
+
+    <!-- Le styles -->
+    <link href="bootstrap/css/bootstrap.css" rel="stylesheet">
+    <link href="font-awesome.css" rel="stylesheet">
+    <style type="text/css">
+      body {
+        padding-top: 60px;
+        padding-bottom: 40px;
+      }
+    </style>
+    <link href="bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le fav and touch icons -->
+    <link rel="shortcut icon" href="bootstrap/ico/favicon.ico">
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="bootstrap/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="bootstrap/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="bootstrap/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="bootstrap/ico/apple-touch-icon-57-precomposed.png">
+  </head>
+
+  <body>
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="#">AutoNetkit</a>
+          <div class="nav-collapse">
+            <ul class="nav">
+              <li class="active"><a href="#">Home</a></li>
+              <li><a href="#installation">Installation</a></li>
+              <li><a href="#publications">Publications</a></li>
+              <li><a href="#contact">Contact</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+
+      <!-- Main hero unit for a primary marketing message or call to action -->
+      <div class="hero-unit">
+        <div class="row">
+          <div class="span5">
+            <h1>Simplify Network Management.</h1>
+            <p>
+            Build your network from a diagram. Easily configure protocols. Automatically allocate IP addresses. Get live visual feedback. Generate configuration files from templates. Deploy to emulated networks. Measure the results.
+            </p>
+          <br>
+            <p>
+            <i class="icon-bullhorn"></i> A number of the features described here refer to the upcoming release of AutoNetkit, which will be available shortly. Subscribe to our Twitter feed for updates</a>.
+          </p>
+          <br>
+            <p>
+            <i class="icon-download-alt"></i> <a href="#installation">Install</a> from Python Package Index. 
+            <br>
+            <i class="icon-twitter"></i> <a href="https://twitter.com/autonetkit/">Follow</a> on Twitter.
+            <br>
+            <i class="icon-envelope"></i> <a href="https://groups.google.com/group/autonetkit">Discuss</a> on Google Groups.
+            <br>
+            <i class="icon-github"></i> <a href="https://github.com/sk2/autonetkit">Fork</a> on Github.
+            </p>
+          </div>
+          <div class="span5">
+            <img src="images/flowchart_pt2.png">
+          </div>
+        </div>
+      </div>
+
+      <!-- Example row of columns -->
+      <div class="row">
+        <div class="span4">
+          <div style="font-size: 24px;">
+            <i class="icon-picture"></i> Succinct Capture
+          </div>
+          <p>Draw your network in a visual editor such as <a href="http://www.yworks.com/en/products_yed_about.html">yEd</a>. Add attributes such as device type, ASN, link speeds, or OSPF costs.</p>
+          <p><a class="btn" href="#capture">View details &raquo;</a></p>
+        </div>
+
+        <div class="span4">
+          <div style="font-size: 24px;">
+            <i class="icon-magic"></i> High-Level Design
+          </div>
+          <p>Build networks from these attributes. Protocols such as BGP and OSPF can be designed at a high level, using attributes such as device type and ASN. Work with native Python syntax.</p>
+          <p><a class="btn" href="#design">View details &raquo;</a></p>
+        </div>
+
+        <div class="span4">
+          <div style="font-size: 24px;">
+            <i class="icon-refresh"></i> Visual Feedback
+          </div>
+          <p>View the results of network designs in real time, using browser-based visualizations powered by <a href="http://www.d3js.org">d3</a>.</p>
+          <p><a class="btn" href="#visualization">View details &raquo;</a></p>
+        </div>
+      </div>
+      <div class="row">
+
+        <div class="span4">
+          <div style="font-size: 24px;">
+            <i class="icon-edit"></i> Template-Based Configuration
+          </div>
+          <p>Generate configurations from abstract network model using plain-text templates: no complex XML transforms to learn and debug.</p>
+          <p><a class="btn" href="#design">View details &raquo;</a></p>
+        </div>
+
+        <div class="span4">
+          <div style="font-size: 24px;">
+            <i class="icon-circle-arrow-right"></i> Automated Deployment
+          </div>
+          <p>AutoNetkit includes scripts to push generated configurations to emulation platforms such as Netkit, Dynagen, and Junosphere.</p>
+          <p><a class="btn" href="#deployment">View details &raquo;</a></p>
+        </div>
+
+        <div class="span4">
+          <div style="font-size: 24px;">
+            <i class="icon-comments"></i> Open-Source
+          </div>
+          <p>AutoNetkit is available on Github under a BSD licence, and builds on Python projects including NetworkX, Mako,  Exscript and TextFSM. </p>
+          <p><a class="btn" href="#opensource">View details &raquo;</a></p>
+        </div>
+
+
+
+      </div>
+
+      <section id="capture">
+      <div class="page-header">
+        <h1>Visual Capture</h1>
+        <img src="images/yed.png">
+        <p>
+        Draw your network in a visual tool such as yEd. AutoNetkit supports the GraphML input format.
+        </p>
+      </div>
+
+
+        <section id="abstractions">
+      <div class="page-header">
+        <h1>Built on Abstract Model</h1>
+        <img src="images/flowchart_pt1.png">
+        <p>
+        AutoNetkit builds on our research work into abstract network representations, providing a formal and flexible approach to network design.
+        </p>
+      </div>
+
+      <section id="design">
+      <div class="page-header">
+        <h1>Designing Network Services</h1>
+<pre>
+for asn, devices in G_phy.groupby("asn").items():
+  routers = [d for d in devices if d.is_router]
+  ibgp_edges = [ (s, t) for s in routers for t in routers if s!=t]
+  G_bgp.add_edges_from(ibgp_edges, type = 'ibgp')
+</pre>
+
+<pre>
+G_bgp = anm.add_overlay("bgp", directed = True)
+G_bgp.add_nodes_from(G_in.nodes("is_router"))
+
+ebgp_edges = [edge for edge in G_in.edges() if edge.src.asn != edge.dst.asn]
+G_bgp.add_edges_from(ebgp_edges, bidirectional = True, type = 'ebgp')</pre>
+<p>
+Design your network using Python syntax.
+</p>
+      </div>
+
+      <section id="building">
+
+      <div class="row">
+        <div class="span6">
+          <h3 class="callout">OSPF Template</h3>
+          <pre>
+hostname ${node}
+password ${node.zebra.password}   
+banner motd file /etc/quagga/motd.txt
+!
+% for interface in node.interfaces:  
+  interface ${interface.id}
+  #Link ${interface.description}
+  ip ospf cost ${interface.ospf_cost}
+  !
+%endfor
+!
+% if node.ospf: 
+router ospf
+% for ospf_link in node.ospf.ospf_links:
+  network ${ospf_link.network.cidr} area ${ospf_link.area} 
+% endfor    
+% endif           
+!</pre>
+          </div>
+
+          <div class="span6">
+            <h3 class="callout">Template output</h3>
+            <pre>
+hostname 1a.1
+password 1234   
+banner motd file /etc/quagga/motd.txt
+!
+  interface eth0
+  #Link to 1a.1 to 1b.1
+  ip ospf cost 1
+  !
+  interface eth1
+  #Link to 1a.1 to 1c.1
+  ip ospf cost 1
+  !
+!
+router ospf
+  network 10.0.0.0/30 area 0 
+  network 10.0.0.4/30 area 0 
+!</pre>
+            </div>
+          </div>
+
+
+          <div class="row">
+            <div class="span6">
+              <h3 class="callout">Directory Structure</h3>
+<pre>
+quagga/
+└── etc
+    ├── hostname
+    ├── hostname.mako
+    ├── ssh
+    │   └── sshd_config
+    └── zebra
+        ├── bgp.conf.mako
+        ├── motd.txt.mako
+        ├── ospf.conf.mako
+        ├── zebra.conf.mako
+        └── zebra_daemons.conf.mako</pre>
+              </div>
+
+              <div class="span6">
+                <h3 class="callout">Rendered Directory Output</h3>
+<pre>
+├── 1a.1
+│   └── etc
+│       ├── hostname
+│       ├── ssh
+│       │   └── sshd_config
+│       └── zebra
+│           ├── bgp.conf
+│           ├── motd.txt
+│           ├── ospf.conf
+│           ├── zebra.conf
+│           └── zebra_daemons.conf
+├── 1a_1.startup
+</pre>
+                </div>
+              </div>
+              <p>
+              Create templates using Mako templating. Directory structures are also supported, ideal for configuring Unix services such as Bind or Apache.
+              </p>
+
+              <section id="deployment">
+            <div class="page-header">
+            <h1>Deployment</h1>
+            </div>
+            <p>
+            Automated deployment using <a href="https://github.com/knipknap/exscript/wiki">Exscript</a>.
+            </p>
+
+              <section id="allocation">
+              <div class="page-header">
+                <h1>Resource Allocation</h1>
+              </div>
+              <img src="images/ip_tree_as1.png">
+              <p>
+              Automatically allocate network resources such as IP addresses.
+              </p>
+
+
+              <section id="visualization">
+              <div class="page-header">
+                <h1>Visual Feedback</h1>
+              </div>
+              <img src="images/plot.png">
+              <p>
+              Real-time feedback of network designs using the D3 visualization library, requiring only a web browser.
+              </p>
+
+              <section id="topology_zoo">
+              <div class="page-header">
+                <h1>Topology Zoo Integration</h1>
+              </div>
+              <p>
+              AutoNetkit works with network topologies from our <a href="http://www.topology-zoo.org">Internet Topology Zoo</a> Project. Simply download a network in GraphML format and run AutoNetkit.
+              </p>
+              <img src="images/Geant2012.jpg">
+              <pre>
+        $ autonetkit -f Geant2012.graphml</pre>
+
+              <section id="publications">
+              <div class="page-header">
+                <h1>Publications</h1>
+              </div>
+              <ul class="icons">
+                <li> <i class="icon-book"></i>
+                <a href="publications/tridentcom.pdf">How to Build Complex, Large-Scale Emulated Networks</a> <em>Hung Nguyen, Matthew Roughan, Simon Knight, Nick Falkner, Olaf Maennel, Randy Bush</em> The 6th International Conference on Testbeds and Research Infrastructures for the Development of Networks and Communities, Berlin, Germany, May 2010;
+                </li>  
+                <li><i class="icon-book"></i>	Simon Knight, Matthew Roughan, Askar Jaboldinov, Olaf Maennel, Iain Phillips,
+                AutoNetkit: Simplifying Large Scale, Open-Source Network Experimentation</a>, <a href="publications/sigcomm12_poster_abstract.pdf">Poster Abstract</a> and <a href="publications/sigcomm12_poster.pdf">Poster</a>,
+                2012 ACM SIGCOMM Conference, Helsinki, Finland (To Appear).</li>
+              </ul>      
+              </p>
+            </ul>
+
+            <section id="installation">
+            <div class="page-header">
+            </div>
+            <h1>Installation</h1>
+            <p>
+            AutoNetkit requires either Python 2.6 or Python 2.7
+            <br>
+            AutoNetkit is available on the <a href="http://pypi.python.org/pypi/AutoNetkit">Python Package Index</a>. You can install it using either the easy_install
+            </p>
+            <pre>
+            easy_install AutoNetkit</pre>
+            <p> or pip Python package management tools</p>
+            <pre>
+            pip install AutoNetkit</pre>
+            <h2>Mac OS X</h2>
+            <p>
+            Note: depending on your system, you may need to use sudo with pip or easy_install.
+            </p>
+            <pre>
+            sudo easy_install AutoNetkit</pre>
+            <p> or </p>
+            <pre>
+            sudo pip install AutoNetkit</pre>
+            <h2>Linux</h2>
+            <p>
+            First install Python, and easy_install or pip using your package manager:
+            <pre>
+            sknight@trc1:~$ sudo apt-get install python-pip
+            sknight@trc1:~$ pip install AutoNetkit</pre>
+            <h2>Windows</h2>
+            <ol>
+              <li>Download Python for Windows from:
+<pre>http://www.python.org/ftp/python/2.7.2/python-2.7.2.msi</pre>
+
+              Install the package
+              </li>
+
+              <li>
+              Download easy_install for Windows:
+
+<pre>http://pypi.python.org/packages/2.7/s/setuptools/setuptools-0.6c11.win32-py2.7.exe#md5=57e1e64f6b7c7f1d2eddfc9746bbaf20</pre>
+              Install the package
+              </li>
+
+              <li>
+              Start a command window (run <tt>cmd.exe</tt>) and cd to directory to which Python was installed (defaults to <tt>C:\Python27</tt>)
+              </li>
+
+              <li>
+              cd into the Scripts directory.
+              </li>
+
+              <li>
+              Install the PIP package management tool by typing:
+
+<pre>easy_install pip</pre>
+              </li>
+
+              <li>
+              Once complete, install AutoNetkit as follows:
+
+<pre>pip.exe install AutoNetkit</pre>
+              AutoNetkit is now installed in the ‘scripts’ directory
+              </li>
+              </ol>
+
+            <section id="opensource">
+            <div class="page-header">
+            <h1>Open-Source</h1>
+            </div>
+            <p>
+            AutoNetkit is available under a <a href="LICENCE.txt">BSD Licence</a>.
+            </p>
+
+            <section id="api">
+            <div class="page-header">
+            <h1>API Documentation</h1>
+            </div>
+            <p>
+            API documentation is available on the Python Package Index page: <a href="http://packages.python.org/AutoNetkit">API Documentation</a>
+            </p>
+
+            <section id="contact">
+            <div class="page-header">
+            <h1>Contact</h1>
+            </div>
+            <p>
+            <i class="icon-envelope"></i> AutoNetkit is on <a href="https://groups.google.com/group/autonetkit">Google Groups</a>. Please use this group for feedback and suggestions.
+            </p>
+
+
+            <section id="contributors">
+            <div class="page-header">
+            <h1>Contributors</h1>
+            </div>
+
+            <div class="row">
+              <div class="span3">
+                <img src="images/UoA_col_horz.png">
+                </div>
+
+                <div class="span3">
+                  <img src="images/lulogo.gif">
+                </div>
+              </div>
+                
+
+            <p>
+            <i class="icon-group"></i> The following people have contributed to AutoNetkit:
+            <ul>
+              <li>Simon Knight</li>
+              <li>Hung Nguyen</li>
+              <li>Nickolas Falkner</li>
+              <li>Olaf Maennel</li>
+              <li>Iain Phillips</li>
+              <li>Askar Jaboldinov</li>
+              <li>Matthew Roughan</li>
+            </ul>
+            Thanks also to bugfixes, improvments, and suggestions from:
+            <ul>
+              <li>Hitesh Mali</li>
+              <li>Ingmar Poese</li>
+              <li>Joel Obstfeld</li>
+              <li>Michael Rumsewicz</li>
+              <li>Randy Bush</li>
+              <li>Stephen Steiner</li>
+            </ul>
+
+            <hr>
+
+            <footer>
+            <p>
+            This project was supported by the Australian Government through an Australian Postgraduate Award, Australian Research Council Discovery Grants DP110103505 and DP0985063, and by the University of Adelaide. 
+            </p>
+            </footer>
+
+          </div> <!-- /container -->
+
+          <!-- Le javascript
+          ================================================== -->
+          <!-- Placed at the end of the document so the pages load faster -->
+          <script src="bootstrap/js/jquery.js"></script>
+          <script src="bootstrap/js/bootstrap-transition.js"></script>
+          <script src="bootstrap/js/bootstrap-alert.js"></script>
+          <script src="bootstrap/js/bootstrap-modal.js"></script>
+          <script src="bootstrap/js/bootstrap-dropdown.js"></script>
+          <script src="bootstrap/js/bootstrap-scrollspy.js"></script>
+          <script src="bootstrap/js/bootstrap-tab.js"></script>
+          <script src="bootstrap/js/bootstrap-tooltip.js"></script>
+          <script src="bootstrap/js/bootstrap-popover.js"></script>
+          <script src="bootstrap/js/bootstrap-button.js"></script>
+          <script src="bootstrap/js/bootstrap-collapse.js"></script>
+          <script src="bootstrap/js/bootstrap-carousel.js"></script>
+          <script src="bootstrap/js/bootstrap-typeahead.js"></script>
+
+        </body>
+      </html>

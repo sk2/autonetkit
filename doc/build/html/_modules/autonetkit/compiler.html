@@ -1,0 +1,573 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>autonetkit.compiler &mdash; AutoNetkit</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/bootstrap.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.6.1dev-20120713',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/bootstrap.js"></script>
+    <link rel="top" title="AutoNetkit" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" />
+<script type="text/javascript">
+(function () {
+  /**
+   * Patch TOC list.
+   *
+   * Will mutate the underlying span to have a correct ul for nav.
+   *
+   * @param $span: Span containing nested UL's to mutate.
+   * @param minLevel: Starting level for nested lists. (1: global, 2: local).
+   */
+  var patchToc = function ($ul, minLevel) {
+    var findA;
+
+    // Find all a "internal" tags, traversing recursively.
+    findA = function ($elem, level) {
+      var level = level || 0,
+        $items = $elem.find("> li > a.internal, > ul, > li > ul");
+
+      // Iterate everything in order.
+      $items.each(function (index, item) {
+        var $item = $(item),
+          tag = item.tagName.toLowerCase(),
+          pad = 15 + ((level - minLevel) * 10);
+
+        if (tag === 'a' && level >= minLevel) {
+          // Add to existing padding.
+          $item.css('padding-left', pad + "px");
+          console.log(level, $item, 'padding-left', pad + "px");
+        } else if (tag === 'ul') {
+          // Recurse.
+          findA($item, level + 1);
+        }
+      });
+    };
+
+    console.log("HERE");
+    findA($ul);
+  };
+
+  $(document).ready(function () {
+    // Add styling, structure to TOC's.
+    $(".dropdown-menu").each(function () {
+      $(this).find("ul").each(function (index, item){
+        var $item = $(item);
+        $item.addClass('unstyled');
+      });
+      $(this).find("li").each(function () {
+        $(this).parent().append(this);
+      });
+    });
+
+    // Patch in level.
+    patchToc($("ul.globaltoc"), 2);
+    patchToc($("ul.localtoc"), 2);
+
+    // Enable dropdown.
+    $('.dropdown-toggle').dropdown();
+  });
+}());
+</script>
+
+  </head>
+  <body>
+  <div id="navbar" class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container-fluid">
+        <a class="brand" href="../../index.html">AutoNetkit</a>
+        <span class="navbar-text pull-left"><b>0.6.1dev-20120713</b></span>
+          <ul class="nav">
+            <li class="divider-vertical"></li>
+            
+              <li class="dropdown">
+  <a href="../../index.html" class="dropdown-toggle" data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"></ul>
+  <!--<span class="localtoc"></span>-->
+</li>
+            
+            
+              
+            
+            
+              
+            
+          </ul>
+          
+            
+<form class="navbar-search pull-right" style="margin-bottom:-3px;" action="../../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<div class="container">
+   
+  <h1>Source code for autonetkit.compiler</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">ank</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">netaddr</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">autonetkit.log</span> <span class="kn">as</span> <span class="nn">log</span>
+
+<span class="c">#TODO: rename compiler to build</span>
+
+<span class="c">#TODO: tidy up the dict to list, and sorting formats</span>
+
+<div class="viewcode-block" id="dict_to_sorted_list"><a class="viewcode-back" href="../../reference/compiler.html#autonetkit.compiler.dict_to_sorted_list">[docs]</a><span class="k">def</span> <span class="nf">dict_to_sorted_list</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">sort_key</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns values in dict, sorted by sort_key&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="n">key</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="n">sort_key</span><span class="p">])</span>
+</div>
+<span class="k">def</span> <span class="nf">sort_attribute</span><span class="p">(</span><span class="n">attribute</span><span class="p">,</span> <span class="n">sort_key</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">attribute</span><span class="p">,</span>  <span class="n">key</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="n">sort_key</span><span class="p">])</span>
+
+<div class="viewcode-block" id="RouterCompiler"><a class="viewcode-back" href="../../reference/compiler.html#autonetkit.compiler.RouterCompiler">[docs]</a><span class="k">class</span> <span class="nc">RouterCompiler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nidb</span><span class="p">,</span> <span class="n">anm</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nidb</span> <span class="o">=</span> <span class="n">nidb</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">anm</span> <span class="o">=</span> <span class="n">anm</span>
+
+    <span class="k">def</span> <span class="nf">compile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="n">ip_node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">ip</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">loopback</span> <span class="o">=</span> <span class="n">ip_node</span><span class="o">.</span><span class="n">loopback</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">interfaces</span> <span class="o">=</span> <span class="n">dict_to_sorted_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">interfaces</span><span class="p">(</span><span class="n">node</span><span class="p">),</span> <span class="s">&#39;id&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">ospf</span><span class="p">:</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">ospf</span><span class="o">.</span><span class="n">ospf_links</span> <span class="o">=</span> <span class="n">dict_to_sorted_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ospf</span><span class="p">(</span><span class="n">node</span><span class="p">),</span> <span class="s">&#39;network&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">bgp</span><span class="p">:</span>
+            <span class="n">bgp_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bgp</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+<span class="c">#TODO: just use lists, sort as needed</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">bgp</span><span class="o">.</span><span class="n">ibgp_rr_clients</span> <span class="o">=</span> <span class="n">dict_to_sorted_list</span><span class="p">(</span><span class="n">bgp_data</span><span class="p">[</span><span class="s">&#39;ibgp_rr_clients&#39;</span><span class="p">],</span> <span class="s">&#39;neighbor&#39;</span><span class="p">)</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">bgp</span><span class="o">.</span><span class="n">ibgp_rr_parents</span> <span class="o">=</span> <span class="n">dict_to_sorted_list</span><span class="p">(</span><span class="n">bgp_data</span><span class="p">[</span><span class="s">&#39;ibgp_rr_parents&#39;</span><span class="p">],</span> <span class="s">&#39;neighbor&#39;</span><span class="p">)</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">bgp</span><span class="o">.</span><span class="n">ibgp_neighbors</span> <span class="o">=</span> <span class="n">dict_to_sorted_list</span><span class="p">(</span><span class="n">bgp_data</span><span class="p">[</span><span class="s">&#39;ibgp_neighbors&#39;</span><span class="p">],</span> <span class="s">&#39;neighbor&#39;</span><span class="p">)</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">bgp</span><span class="o">.</span><span class="n">ebgp_neighbors</span> <span class="o">=</span> <span class="n">dict_to_sorted_list</span><span class="p">(</span><span class="n">bgp_data</span><span class="p">[</span><span class="s">&#39;ebgp_neighbors&#39;</span><span class="p">],</span> <span class="s">&#39;neighbor&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">interfaces</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="n">phy_node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">phy</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="n">G_ip</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">ip</span>
+        <span class="n">interfaces</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">link</span> <span class="ow">in</span> <span class="n">phy_node</span><span class="o">.</span><span class="n">edges</span><span class="p">():</span>
+            <span class="n">ip_link</span> <span class="o">=</span> <span class="n">G_ip</span><span class="o">.</span><span class="n">edge</span><span class="p">(</span><span class="n">link</span><span class="p">)</span>
+            <span class="n">nidb_edge</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nidb</span><span class="o">.</span><span class="n">edge</span><span class="p">(</span><span class="n">link</span><span class="p">)</span>
+            <span class="c">#TODO: what if multiple ospf costs for this link</span>
+            <span class="n">subnet</span> <span class="o">=</span>  <span class="n">ip_link</span><span class="o">.</span><span class="n">dst</span><span class="o">.</span><span class="n">subnet</span> <span class="c"># netmask comes from collision domain on the link</span>
+            <span class="n">interfaces</span><span class="p">[</span><span class="n">link</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s">&#39;id&#39;</span><span class="p">:</span> <span class="n">nidb_edge</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                    <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s"> to </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">link</span><span class="o">.</span><span class="n">src</span><span class="p">,</span> <span class="n">link</span><span class="o">.</span><span class="n">dst</span><span class="p">),</span>
+                    <span class="s">&#39;ip_address&#39;</span><span class="p">:</span> <span class="n">link</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">ip</span><span class="o">.</span><span class="n">ip_address</span><span class="p">,</span>
+                    <span class="s">&#39;subnet&#39;</span><span class="p">:</span> <span class="n">subnet</span><span class="p">,</span>
+                    <span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">interfaces</span>
+
+<div class="viewcode-block" id="RouterCompiler.ospf"><a class="viewcode-back" href="../../reference/compiler.html#autonetkit.compiler.RouterCompiler.ospf">[docs]</a>    <span class="k">def</span> <span class="nf">ospf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns OSPF links</span>
+<span class="sd">        Also sets process_id</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">G_ospf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">ospf</span>
+        <span class="n">phy_node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">phy</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">ospf</span><span class="o">.</span><span class="n">process_id</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">ospf</span><span class="o">.</span><span class="n">lo_interface</span> <span class="o">=</span> <span class="s">&quot;Loopback0&quot;</span>
+        <span class="n">ospf_links</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">link</span> <span class="ow">in</span> <span class="n">G_ospf</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">phy_node</span><span class="p">):</span>
+            <span class="n">ospf_links</span><span class="p">[</span><span class="n">link</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s">&#39;network&#39;</span><span class="p">:</span> <span class="n">link</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">ip</span><span class="o">.</span><span class="n">dst</span><span class="o">.</span><span class="n">subnet</span><span class="p">,</span>
+                <span class="s">&#39;area&#39;</span><span class="p">:</span> <span class="n">link</span><span class="o">.</span><span class="n">area</span><span class="p">,</span>
+                <span class="p">}</span>
+        <span class="k">return</span> <span class="n">ospf_links</span>
+</div>
+    <span class="k">def</span> <span class="nf">bgp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="n">phy_node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">phy</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="n">G_bgp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">bgp</span>
+        <span class="n">G_ip</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">ip</span>
+        <span class="n">asn</span> <span class="o">=</span> <span class="n">phy_node</span><span class="o">.</span><span class="n">asn</span> <span class="c"># easy reference for cleaner code</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">asn</span> <span class="o">=</span> <span class="n">asn</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">bgp</span><span class="o">.</span><span class="n">advertise_subnets</span> <span class="o">=</span> <span class="n">G_ip</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">asn_blocks</span><span class="p">[</span><span class="n">asn</span><span class="p">]</span>
+        
+        <span class="n">ibgp_neighbors</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">ibgp_rr_clients</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">ibgp_rr_parents</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">ebgp_neighbors</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">session</span> <span class="ow">in</span> <span class="n">G_bgp</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">phy_node</span><span class="p">):</span>
+            <span class="n">neigh</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">dst</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">neigh</span><span class="p">)</span> <span class="c"># used to index dict for sorting</span>
+            <span class="n">neigh_ip</span> <span class="o">=</span> <span class="n">G_ip</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">neigh</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">session</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s">&quot;ibgp&quot;</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s">&#39;neighbor&#39;</span><span class="p">:</span> <span class="n">neigh</span><span class="p">,</span>
+                    <span class="s">&#39;loopback&#39;</span><span class="p">:</span> <span class="n">neigh_ip</span><span class="o">.</span><span class="n">loopback</span><span class="p">,</span>
+                    <span class="s">&#39;update_source&#39;</span><span class="p">:</span> <span class="s">&quot;loopback 0&quot;</span><span class="p">,</span>
+                    <span class="p">}</span>
+                <span class="k">if</span> <span class="n">session</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="s">&#39;down&#39;</span><span class="p">:</span>
+                    <span class="n">ibgp_rr_clients</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
+                <span class="k">elif</span> <span class="n">session</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="s">&#39;up&#39;</span><span class="p">:</span>
+                    <span class="n">ibgp_rr_parents</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">ibgp_neighbors</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ebgp_neighbors</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s">&#39;neighbor&#39;</span><span class="p">:</span> <span class="n">neigh</span><span class="p">,</span>
+                    <span class="s">&#39;loopback&#39;</span><span class="p">:</span> <span class="n">neigh_ip</span><span class="o">.</span><span class="n">loopback</span><span class="p">,</span>
+                    <span class="s">&#39;update_source&#39;</span><span class="p">:</span> <span class="s">&quot;loopback 0&quot;</span><span class="p">,</span>
+                <span class="p">}</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+                <span class="s">&#39;ibgp_rr_clients&#39;</span><span class="p">:</span>  <span class="n">ibgp_rr_clients</span><span class="p">,</span>
+                <span class="s">&#39;ibgp_rr_parents&#39;</span><span class="p">:</span> <span class="n">ibgp_rr_parents</span><span class="p">,</span>
+                <span class="s">&#39;ibgp_neighbors&#39;</span><span class="p">:</span> <span class="n">ibgp_neighbors</span><span class="p">,</span>
+                <span class="s">&#39;ebgp_neighbors&#39;</span><span class="p">:</span> <span class="n">ebgp_neighbors</span><span class="p">,</span>
+                <span class="p">}</span>
+
+</div>
+<div class="viewcode-block" id="QuaggaCompiler"><a class="viewcode-back" href="../../reference/compiler.html#autonetkit.compiler.QuaggaCompiler">[docs]</a><span class="k">class</span> <span class="nc">QuaggaCompiler</span><span class="p">(</span><span class="n">RouterCompiler</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">interfaces</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="n">ip_node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">ip</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="n">loopback_subnet</span> <span class="o">=</span> <span class="n">netaddr</span><span class="o">.</span><span class="n">IPNetwork</span><span class="p">(</span><span class="s">&quot;0.0.0.0/32&quot;</span><span class="p">)</span>
+
+        <span class="n">interfaces</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">QuaggaCompiler</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">interfaces</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="c"># OSPF cost</span>
+        <span class="k">for</span> <span class="n">link</span> <span class="ow">in</span> <span class="n">interfaces</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">link</span><span class="p">[</span><span class="s">&#39;ospf&#39;</span><span class="p">]:</span>
+                <span class="n">interfaces</span><span class="p">[</span><span class="n">link</span><span class="p">][</span><span class="s">&#39;ospf_cost&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">link</span><span class="p">[</span><span class="s">&#39;ospf&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">cost</span>
+
+        <span class="k">return</span> <span class="n">interfaces</span>
+</div>
+<div class="viewcode-block" id="IosCompiler"><a class="viewcode-back" href="../../reference/compiler.html#autonetkit.compiler.IosCompiler">[docs]</a><span class="k">class</span> <span class="nc">IosCompiler</span><span class="p">(</span><span class="n">RouterCompiler</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">interfaces</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="n">ip_node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">ip</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="n">loopback_subnet</span> <span class="o">=</span> <span class="n">netaddr</span><span class="o">.</span><span class="n">IPNetwork</span><span class="p">(</span><span class="s">&quot;0.0.0.0/32&quot;</span><span class="p">)</span>
+
+        <span class="n">interfaces</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">IosCompiler</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">interfaces</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="c"># OSPF cost</span>
+        <span class="k">for</span> <span class="n">link</span> <span class="ow">in</span> <span class="n">interfaces</span><span class="p">:</span>
+            <span class="n">interfaces</span><span class="p">[</span><span class="n">link</span><span class="p">][</span><span class="s">&#39;ospf_cost&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">link</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">ospf</span><span class="o">.</span><span class="n">cost</span>
+
+        <span class="n">interfaces</span><span class="p">[</span><span class="s">&#39;lo0&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s">&#39;id&#39;</span><span class="p">:</span> <span class="s">&#39;lo0&#39;</span><span class="p">,</span>
+            <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&quot;Loopback&quot;</span><span class="p">,</span>
+            <span class="s">&#39;ip_address&#39;</span><span class="p">:</span> <span class="n">ip_node</span><span class="o">.</span><span class="n">loopback</span><span class="p">,</span>
+            <span class="s">&#39;subnet&#39;</span><span class="p">:</span> <span class="n">loopback_subnet</span><span class="p">,</span>
+            <span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">interfaces</span>
+</div>
+<span class="k">class</span> <span class="nc">Ios2Compiler</span><span class="p">(</span><span class="n">RouterCompiler</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">compile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="n">ip_node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">ip</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">loopback</span> <span class="o">=</span> <span class="n">ip_node</span><span class="o">.</span><span class="n">loopback</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">interfaces</span> <span class="o">=</span> <span class="n">dict_to_sorted_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">interfaces</span><span class="p">(</span><span class="n">node</span><span class="p">),</span> <span class="s">&#39;id&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">ospf</span><span class="p">:</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">ospf</span><span class="o">.</span><span class="n">ospf_links</span> <span class="o">=</span> <span class="n">dict_to_sorted_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ospf</span><span class="p">(</span><span class="n">node</span><span class="p">),</span> <span class="s">&#39;interface&#39;</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">bgp</span><span class="p">:</span>
+            <span class="n">bgp_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bgp</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">bgp</span><span class="o">.</span><span class="n">ibgp_rr_clients</span> <span class="o">=</span> <span class="n">dict_to_sorted_list</span><span class="p">(</span><span class="n">bgp_data</span><span class="p">[</span><span class="s">&#39;ibgp_rr_clients&#39;</span><span class="p">],</span> <span class="s">&#39;neighbor&#39;</span><span class="p">)</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">bgp</span><span class="o">.</span><span class="n">ibgp_rr_parents</span> <span class="o">=</span> <span class="n">dict_to_sorted_list</span><span class="p">(</span><span class="n">bgp_data</span><span class="p">[</span><span class="s">&#39;ibgp_rr_parents&#39;</span><span class="p">],</span> <span class="s">&#39;neighbor&#39;</span><span class="p">)</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">bgp</span><span class="o">.</span><span class="n">ibgp_neighbors</span> <span class="o">=</span> <span class="n">dict_to_sorted_list</span><span class="p">(</span><span class="n">bgp_data</span><span class="p">[</span><span class="s">&#39;ibgp_neighbors&#39;</span><span class="p">],</span> <span class="s">&#39;neighbor&#39;</span><span class="p">)</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">bgp</span><span class="o">.</span><span class="n">ebgp_neighbors</span> <span class="o">=</span> <span class="n">dict_to_sorted_list</span><span class="p">(</span><span class="n">bgp_data</span><span class="p">[</span><span class="s">&#39;ebgp_neighbors&#39;</span><span class="p">],</span> <span class="s">&#39;neighbor&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">interfaces</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="n">ip_node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">ip</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="n">loopback_subnet</span> <span class="o">=</span> <span class="n">netaddr</span><span class="o">.</span><span class="n">IPNetwork</span><span class="p">(</span><span class="s">&quot;0.0.0.0/32&quot;</span><span class="p">)</span>
+
+        <span class="n">interfaces</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">Ios2Compiler</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">interfaces</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+
+        <span class="n">interfaces</span><span class="p">[</span><span class="s">&#39;lo0&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s">&#39;id&#39;</span><span class="p">:</span> <span class="s">&#39;Loopback0&#39;</span><span class="p">,</span>
+            <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&quot;Loopback&quot;</span><span class="p">,</span>
+            <span class="s">&#39;ip_address&#39;</span><span class="p">:</span> <span class="n">ip_node</span><span class="o">.</span><span class="n">loopback</span><span class="p">,</span>
+            <span class="s">&#39;subnet&#39;</span><span class="p">:</span> <span class="n">loopback_subnet</span><span class="p">,</span>
+            <span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">interfaces</span>
+
+    <span class="k">def</span> <span class="nf">ospf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns OSPF links</span>
+<span class="sd">        Also sets process_id</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ip_node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">ip</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">ospf</span><span class="o">.</span><span class="n">router_id</span> <span class="o">=</span> <span class="n">ip_node</span><span class="o">.</span><span class="n">loopback</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">ospf</span><span class="o">.</span><span class="n">area</span> <span class="o">=</span> <span class="mi">0</span> <span class="c">#TODO: build area dict from node/links</span>
+
+        <span class="n">node</span><span class="o">.</span><span class="n">ospf</span><span class="o">.</span><span class="n">lo_interface</span> <span class="o">=</span> <span class="s">&quot;Loopback0&quot;</span>
+        
+        <span class="n">G_ospf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">ospf</span>
+        <span class="n">phy_node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">phy</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">ospf</span><span class="o">.</span><span class="n">process_id</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">ospf_links</span> <span class="o">=</span> <span class="p">{}</span>
+       
+        <span class="k">for</span> <span class="n">link</span> <span class="ow">in</span> <span class="n">G_ospf</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">phy_node</span><span class="p">):</span>
+            <span class="n">nidb_edge</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nidb</span><span class="o">.</span><span class="n">edge</span><span class="p">(</span><span class="n">link</span><span class="p">)</span>
+            <span class="n">ospf_links</span><span class="p">[</span><span class="n">link</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s">&#39;network&#39;</span><span class="p">:</span> <span class="n">link</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">ip</span><span class="o">.</span><span class="n">dst</span><span class="o">.</span><span class="n">subnet</span><span class="p">,</span>
+                <span class="s">&#39;interface&#39;</span><span class="p">:</span> <span class="n">nidb_edge</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                <span class="s">&#39;cost&#39;</span><span class="p">:</span> <span class="n">link</span><span class="o">.</span><span class="n">cost</span><span class="p">,</span>
+                <span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">ospf_links</span>
+
+<div class="viewcode-block" id="JunosCompiler"><a class="viewcode-back" href="../../reference/compiler.html#autonetkit.compiler.JunosCompiler">[docs]</a><span class="k">class</span> <span class="nc">JunosCompiler</span><span class="p">(</span><span class="n">RouterCompiler</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">compile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">interfaces</span> <span class="o">=</span> <span class="n">dict_to_sorted_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">interfaces</span><span class="p">(</span><span class="n">node</span><span class="p">),</span> <span class="s">&#39;id&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">ospf</span><span class="p">:</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">ospf</span><span class="o">.</span><span class="n">ospf_links</span> <span class="o">=</span> <span class="n">dict_to_sorted_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ospf</span><span class="p">(</span><span class="n">node</span><span class="p">),</span> <span class="s">&#39;network&#39;</span><span class="p">)</span>
+            
+        <span class="k">if</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">bgp</span><span class="p">:</span>
+            <span class="n">bgp_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bgp</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">bgp</span><span class="o">.</span><span class="n">ebgp_neighbors</span> <span class="o">=</span> <span class="n">dict_to_sorted_list</span><span class="p">(</span><span class="n">bgp_data</span><span class="p">[</span><span class="s">&#39;ebgp_neighbors&#39;</span><span class="p">],</span> <span class="s">&#39;neighbor&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">interfaces</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="n">ip_node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">ip</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="n">loopback_subnet</span> <span class="o">=</span> <span class="n">netaddr</span><span class="o">.</span><span class="n">IPNetwork</span><span class="p">(</span><span class="s">&quot;0.0.0.0/32&quot;</span><span class="p">)</span>
+
+        <span class="n">interfaces</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">JunosCompiler</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">interfaces</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">link</span> <span class="ow">in</span> <span class="n">interfaces</span><span class="p">:</span>
+            <span class="n">nidb_link</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">nidb</span><span class="o">.</span><span class="n">edge</span><span class="p">(</span><span class="n">link</span><span class="p">)</span>
+            <span class="n">interfaces</span><span class="p">[</span><span class="n">link</span><span class="p">][</span><span class="s">&#39;unit&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nidb_link</span><span class="o">.</span><span class="n">unit</span>
+
+        <span class="n">interfaces</span><span class="p">[</span><span class="s">&#39;lo0&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s">&#39;id&#39;</span><span class="p">:</span> <span class="s">&#39;lo0&#39;</span><span class="p">,</span>
+            <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&quot;Loopback&quot;</span><span class="p">,</span>
+            <span class="s">&#39;ip_address&#39;</span><span class="p">:</span> <span class="n">ip_node</span><span class="o">.</span><span class="n">loopback</span><span class="p">,</span>
+            <span class="s">&#39;subnet&#39;</span><span class="p">:</span> <span class="n">loopback_subnet</span><span class="p">,</span>
+            <span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">interfaces</span>
+
+<span class="c"># Platform compilers</span></div>
+<div class="viewcode-block" id="PlatformCompiler"><a class="viewcode-back" href="../../reference/compiler.html#autonetkit.compiler.PlatformCompiler">[docs]</a><span class="k">class</span> <span class="nc">PlatformCompiler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="c"># and set properties in nidb._graph.graph</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nidb</span><span class="p">,</span> <span class="n">anm</span><span class="p">,</span> <span class="n">host</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nidb</span> <span class="o">=</span> <span class="n">nidb</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">anm</span> <span class="o">=</span> <span class="n">anm</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">host</span> <span class="o">=</span> <span class="n">host</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">timestamp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">nidb</span><span class="o">.</span><span class="n">timestamp</span>
+
+    <span class="k">def</span> <span class="nf">compile</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c">#TODO: make this abstract</span>
+        <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="JunosphereCompiler"><a class="viewcode-back" href="../../reference/compiler.html#autonetkit.compiler.JunosphereCompiler">[docs]</a><span class="k">class</span> <span class="nc">JunosphereCompiler</span><span class="p">(</span><span class="n">PlatformCompiler</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">interface_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">invalid</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="mi">2</span><span class="p">])</span>
+        <span class="n">valid_ids</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">x</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">invalid</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">valid_ids</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="s">&quot;ge-0/0/</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">x</span>
+
+    <span class="k">def</span> <span class="nf">compile</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Compiling Junosphere for </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">)</span>
+        <span class="n">G_phy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">phy</span>
+        <span class="n">junos_compiler</span> <span class="o">=</span> <span class="n">JunosCompiler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nidb</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">phy_node</span> <span class="ow">in</span> <span class="n">G_phy</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="s">&#39;is_router&#39;</span><span class="p">,</span> <span class="n">host</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="n">syntax</span><span class="o">=</span><span class="s">&#39;junos&#39;</span><span class="p">):</span>
+            <span class="n">nidb_node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nidb</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">phy_node</span><span class="p">)</span>
+            <span class="n">nidb_node</span><span class="o">.</span><span class="n">render</span><span class="o">.</span><span class="n">template</span> <span class="o">=</span> <span class="s">&quot;templates/junos.mako&quot;</span>
+            <span class="n">nidb_node</span><span class="o">.</span><span class="n">render</span><span class="o">.</span><span class="n">dst_folder</span> <span class="o">=</span> <span class="s">&quot;rendered/</span><span class="si">%s</span><span class="s">/</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="s">&quot;junosphere&quot;</span><span class="p">)</span>
+            <span class="n">nidb_node</span><span class="o">.</span><span class="n">render</span><span class="o">.</span><span class="n">dst_file</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">.conf&quot;</span> <span class="o">%</span> <span class="n">ank</span><span class="o">.</span><span class="n">name_folder_safe</span><span class="p">(</span><span class="n">phy_node</span><span class="o">.</span><span class="n">label</span><span class="p">)</span>
+
+            <span class="n">int_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interface_ids</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">nidb</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">nidb_node</span><span class="p">):</span>
+                <span class="n">edge</span><span class="o">.</span><span class="n">unit</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">edge</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">int_ids</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+
+            <span class="n">junos_compiler</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">nidb_node</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="NetkitCompiler"><a class="viewcode-back" href="../../reference/compiler.html#autonetkit.compiler.NetkitCompiler">[docs]</a><span class="k">class</span> <span class="nc">NetkitCompiler</span><span class="p">(</span><span class="n">PlatformCompiler</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">interface_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="mi">0</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="s">&quot;eth</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">x</span>
+
+    <span class="k">def</span> <span class="nf">compile</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Compiling Netkit for </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">)</span>
+        <span class="n">G_phy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">phy</span>
+        <span class="n">quagga_compiler</span> <span class="o">=</span> <span class="n">QuaggaCompiler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nidb</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="p">)</span>
+<span class="c">#TODO: this should be all l3 devices not just routers</span>
+        <span class="k">for</span> <span class="n">phy_node</span> <span class="ow">in</span> <span class="n">G_phy</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="s">&#39;is_router&#39;</span><span class="p">,</span> <span class="n">host</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="n">syntax</span><span class="o">=</span><span class="s">&#39;quagga&#39;</span><span class="p">):</span>
+            <span class="n">nidb_node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nidb</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">phy_node</span><span class="p">)</span>
+            <span class="n">nidb_node</span><span class="o">.</span><span class="n">render</span><span class="o">.</span><span class="n">base</span> <span class="o">=</span> <span class="s">&quot;templates/quagga&quot;</span>
+            <span class="n">nidb_node</span><span class="o">.</span><span class="n">render</span><span class="o">.</span><span class="n">template</span> <span class="o">=</span> <span class="s">&quot;templates/netkit_startup.mako&quot;</span>
+            <span class="n">nidb_node</span><span class="o">.</span><span class="n">render</span><span class="o">.</span><span class="n">dst_folder</span> <span class="o">=</span> <span class="s">&quot;rendered/</span><span class="si">%s</span><span class="s">/</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="s">&quot;netkit&quot;</span><span class="p">)</span>
+            <span class="n">nidb_node</span><span class="o">.</span><span class="n">render</span><span class="o">.</span><span class="n">base_dst_folder</span> <span class="o">=</span> <span class="s">&quot;rendered/</span><span class="si">%s</span><span class="s">/</span><span class="si">%s</span><span class="s">/</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="s">&quot;netkit&quot;</span><span class="p">,</span> <span class="n">phy_node</span><span class="p">)</span>
+            <span class="n">nidb_node</span><span class="o">.</span><span class="n">render</span><span class="o">.</span><span class="n">dst_file</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">.startup&quot;</span> <span class="o">%</span> <span class="n">ank</span><span class="o">.</span><span class="n">name_folder_safe</span><span class="p">(</span><span class="n">phy_node</span><span class="o">.</span><span class="n">label</span><span class="p">)</span>
+
+<span class="c"># allocate zebra information</span>
+            <span class="n">nidb_node</span><span class="o">.</span><span class="n">zebra</span><span class="o">.</span><span class="n">password</span> <span class="o">=</span> <span class="s">&quot;1234&quot;</span>
+            
+            <span class="c"># Allocate edges</span>
+            <span class="c"># assign interfaces</span>
+            <span class="c"># Note this could take external data</span>
+            <span class="n">int_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interface_ids</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">nidb</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">nidb_node</span><span class="p">):</span>
+                <span class="n">edge</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">int_ids</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+
+<span class="c"># and allocate tap interface</span>
+            <span class="n">nidb_node</span><span class="o">.</span><span class="n">tap</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">int_ids</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+
+            <span class="n">quagga_compiler</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">nidb_node</span><span class="p">)</span>
+
+        <span class="c"># and lab.conf</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">allocate_tap_ips</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lab_topology</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">allocate_tap_ips</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c">#TODO: take tap subnet parameter</span>
+        <span class="kn">from</span> <span class="nn">netaddr</span> <span class="kn">import</span> <span class="n">IPNetwork</span>
+        <span class="n">address_block</span> <span class="o">=</span> <span class="n">IPNetwork</span><span class="p">(</span><span class="s">&quot;172.16.0.0/16&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">iter_hosts</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">nidb</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="s">&quot;is_l3device&quot;</span><span class="p">,</span> <span class="n">host</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">):</span>
+            <span class="c">#TODO: check this works for switches</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">tap</span><span class="o">.</span><span class="n">ip</span> <span class="o">=</span> <span class="n">address_block</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+        
+    <span class="k">def</span> <span class="nf">lab_topology</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">host_nodes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nidb</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">host</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">)</span>
+<span class="c">#TODO: replace name/label and use attribute from subgraph</span>
+        <span class="n">lab_topology</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nidb</span><span class="o">.</span><span class="n">topology</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">)</span>
+        <span class="n">lab_topology</span><span class="o">.</span><span class="n">render_template</span> <span class="o">=</span> <span class="s">&quot;templates/netkit_lab_conf.mako&quot;</span>
+        <span class="n">lab_topology</span><span class="o">.</span><span class="n">render_dst_folder</span> <span class="o">=</span> <span class="s">&quot;rendered/</span><span class="si">%s</span><span class="s">/</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="s">&quot;netkit&quot;</span><span class="p">)</span>
+        <span class="n">lab_topology</span><span class="o">.</span><span class="n">render_dst_file</span> <span class="o">=</span> <span class="s">&quot;lab.conf&quot;</span> 
+        <span class="n">subgraph</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nidb</span><span class="o">.</span><span class="n">subgraph</span><span class="p">(</span><span class="n">host_nodes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">)</span>
+        <span class="n">lab_topology</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="s">&quot;AutoNetkit Lab&quot;</span>
+        <span class="n">lab_topology</span><span class="o">.</span><span class="n">author</span> <span class="o">=</span> <span class="s">&quot;AutoNetkit&quot;</span>
+        <span class="n">lab_topology</span><span class="o">.</span><span class="n">web</span> <span class="o">=</span> <span class="s">&quot;www.autonetkit.org&quot;</span>
+
+        <span class="n">G_ip</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="p">[</span><span class="s">&#39;ip&#39;</span><span class="p">]</span>
+        <span class="n">config_items</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">subgraph</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="s">&quot;is_l3device&quot;</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">edges</span><span class="p">():</span>
+                <span class="n">config_items</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                    <span class="s">&#39;device&#39;</span><span class="p">:</span> <span class="n">node</span><span class="p">,</span>
+                    <span class="s">&#39;key&#39;</span><span class="p">:</span> <span class="n">edge</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                    <span class="s">&#39;value&#39;</span><span class="p">:</span>  <span class="n">G_ip</span><span class="o">.</span><span class="n">edge</span><span class="p">(</span><span class="n">edge</span><span class="p">)</span><span class="o">.</span><span class="n">ip_address</span><span class="p">,</span>
+                    <span class="p">})</span>
+
+        <span class="n">tap_ips</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">subgraph</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">tap</span><span class="p">:</span>
+                <span class="n">tap_ips</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                    <span class="s">&#39;device&#39;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">label</span><span class="p">,</span>
+                    <span class="s">&#39;id&#39;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">tap</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                    <span class="s">&#39;ip&#39;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">tap</span><span class="o">.</span><span class="n">ip</span><span class="p">,</span>
+                    <span class="p">})</span>
+
+
+<span class="c">#TODO: include ram, etc from here</span>
+
+        <span class="n">lab_topology</span><span class="o">.</span><span class="n">config_items</span> <span class="o">=</span> <span class="n">config_items</span>
+        <span class="n">lab_topology</span><span class="o">.</span><span class="n">tap_ips</span> <span class="o">=</span> <span class="n">sort_attribute</span><span class="p">(</span><span class="n">tap_ips</span><span class="p">,</span> <span class="s">&quot;device&quot;</span><span class="p">)</span>
+<span class="c"># taps</span>
+</div>
+<div class="viewcode-block" id="CiscoCompiler"><a class="viewcode-back" href="../../reference/compiler.html#autonetkit.compiler.CiscoCompiler">[docs]</a><span class="k">class</span> <span class="nc">CiscoCompiler</span><span class="p">(</span><span class="n">PlatformCompiler</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">interface_ids_ios</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">id_pairs</span> <span class="o">=</span> <span class="p">(</span> <span class="p">(</span><span class="n">slot</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">slot</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">17</span><span class="p">),</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">)))</span> 
+        <span class="k">for</span> <span class="p">(</span><span class="n">slot</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span> <span class="ow">in</span> <span class="n">id_pairs</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="s">&quot;Ethernet</span><span class="si">%s</span><span class="s">/</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">slot</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">interface_ids_ios2</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="mi">0</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="s">&quot;GigabitEthernet0/0/0/</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">x</span>
+
+    <span class="k">def</span> <span class="nf">compile</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Compiling Cisco for </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">)</span>
+        <span class="n">G_phy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">phy</span>
+        <span class="n">ios_compiler</span> <span class="o">=</span> <span class="n">IosCompiler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nidb</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="p">)</span>
+        <span class="n">ios2_compiler</span> <span class="o">=</span> <span class="n">Ios2Compiler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nidb</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">phy_node</span> <span class="ow">in</span> <span class="n">G_phy</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="s">&#39;is_router&#39;</span><span class="p">,</span> <span class="n">host</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="n">syntax</span><span class="o">=</span><span class="s">&#39;ios&#39;</span><span class="p">):</span>
+            <span class="n">nidb_node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nidb</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">phy_node</span><span class="p">)</span>
+            <span class="n">nidb_node</span><span class="o">.</span><span class="n">render</span><span class="o">.</span><span class="n">template</span> <span class="o">=</span> <span class="s">&quot;templates/ios.mako&quot;</span>
+            <span class="n">nidb_node</span><span class="o">.</span><span class="n">render</span><span class="o">.</span><span class="n">dst_folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">timestamp</span><span class="p">)</span>
+            <span class="n">nidb_node</span><span class="o">.</span><span class="n">render</span><span class="o">.</span><span class="n">dst_file</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">.conf&quot;</span> <span class="o">%</span> <span class="n">ank</span><span class="o">.</span><span class="n">name_folder_safe</span><span class="p">(</span><span class="n">phy_node</span><span class="o">.</span><span class="n">label</span><span class="p">)</span>
+
+            <span class="c"># Assign interfaces</span>
+            <span class="n">int_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interface_ids_ios</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">nidb</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">nidb_node</span><span class="p">):</span>
+                <span class="n">edge</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">int_ids</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+
+            <span class="n">ios_compiler</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">nidb_node</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">phy_node</span> <span class="ow">in</span> <span class="n">G_phy</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="s">&#39;is_router&#39;</span><span class="p">,</span> <span class="n">host</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="n">syntax</span><span class="o">=</span><span class="s">&#39;ios2&#39;</span><span class="p">):</span>
+            <span class="n">nidb_node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nidb</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">phy_node</span><span class="p">)</span>
+            <span class="n">nidb_node</span><span class="o">.</span><span class="n">render</span><span class="o">.</span><span class="n">base</span> <span class="o">=</span> <span class="s">&quot;templates/ios2&quot;</span>
+            <span class="n">nidb_node</span><span class="o">.</span><span class="n">render</span><span class="o">.</span><span class="n">dst_folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">timestamp</span><span class="p">)</span>
+            <span class="n">nidb_node</span><span class="o">.</span><span class="n">render</span><span class="o">.</span><span class="n">base_dst_folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">timestamp</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">phy_node</span><span class="p">))</span>
+
+            <span class="c"># Assign interfaces</span>
+            <span class="n">int_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interface_ids_ios2</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">nidb</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">nidb_node</span><span class="p">):</span>
+                <span class="n">edge</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">int_ids</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+
+            <span class="n">ios2_compiler</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">nidb_node</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="DynagenCompiler"><a class="viewcode-back" href="../../reference/compiler.html#autonetkit.compiler.DynagenCompiler">[docs]</a><span class="k">class</span> <span class="nc">DynagenCompiler</span><span class="p">(</span><span class="n">PlatformCompiler</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">interface_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="mi">0</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="s">&quot;gigabitethernet0/0/0/</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">x</span>
+
+    <span class="k">def</span> <span class="nf">compile</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Compiling Dynagen for </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">)</span>
+        <span class="n">G_phy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">phy</span>
+        <span class="n">ios_compiler</span> <span class="o">=</span> <span class="n">IosCompiler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nidb</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">phy_node</span> <span class="ow">in</span> <span class="n">G_phy</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="s">&#39;is_router&#39;</span><span class="p">,</span> <span class="n">host</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="n">syntax</span><span class="o">=</span><span class="s">&#39;ios&#39;</span><span class="p">):</span>
+            <span class="n">nidb_node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nidb</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">phy_node</span><span class="p">)</span>
+            <span class="n">nidb_node</span><span class="o">.</span><span class="n">render</span><span class="o">.</span><span class="n">template</span> <span class="o">=</span> <span class="s">&quot;templates/ios.mako&quot;</span>
+            <span class="n">nidb_node</span><span class="o">.</span><span class="n">render</span><span class="o">.</span><span class="n">dst_folder</span> <span class="o">=</span> <span class="s">&quot;rendered/</span><span class="si">%s</span><span class="s">/</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="s">&quot;dynagen&quot;</span><span class="p">)</span>
+            <span class="n">nidb_node</span><span class="o">.</span><span class="n">render</span><span class="o">.</span><span class="n">dst_file</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">.conf&quot;</span> <span class="o">%</span> <span class="n">ank</span><span class="o">.</span><span class="n">name_folder_safe</span><span class="p">(</span><span class="n">phy_node</span><span class="o">.</span><span class="n">label</span><span class="p">)</span>
+
+            <span class="c"># Allocate edges</span>
+            <span class="c"># assign interfaces</span>
+            <span class="c"># Note this could take external data</span>
+            <span class="n">int_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interface_ids</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">nidb</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">nidb_node</span><span class="p">):</span>
+                <span class="n">edge</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">int_ids</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+
+            <span class="n">ios_compiler</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">nidb_node</span><span class="p">)</span></div>
+</pre></div>
+
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right"><a href="#">Back to top</a></p>
+    <p>
+        &copy; Copyright 2009--2012, Simon Knight, Hung Nguyen, Nick Falkner, Iain Phillips, Olaf Maennel, Askar Jaboldinov, Matthew Roughan.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

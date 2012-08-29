@@ -1,0 +1,239 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>AutoNetkit Functions &mdash; AutoNetkit</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.6.1dev-20120713',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap.js"></script>
+    <link rel="top" title="AutoNetkit" href="../index.html" />
+    <link rel="up" title="API Reference" href="index.html" />
+    <link rel="next" title="AutoNetkit Utils" href="ank_utils.html" />
+    <link rel="prev" title="API Reference" href="index.html" />
+<script type="text/javascript">
+(function () {
+  /**
+   * Patch TOC list.
+   *
+   * Will mutate the underlying span to have a correct ul for nav.
+   *
+   * @param $span: Span containing nested UL's to mutate.
+   * @param minLevel: Starting level for nested lists. (1: global, 2: local).
+   */
+  var patchToc = function ($ul, minLevel) {
+    var findA;
+
+    // Find all a "internal" tags, traversing recursively.
+    findA = function ($elem, level) {
+      var level = level || 0,
+        $items = $elem.find("> li > a.internal, > ul, > li > ul");
+
+      // Iterate everything in order.
+      $items.each(function (index, item) {
+        var $item = $(item),
+          tag = item.tagName.toLowerCase(),
+          pad = 15 + ((level - minLevel) * 10);
+
+        if (tag === 'a' && level >= minLevel) {
+          // Add to existing padding.
+          $item.css('padding-left', pad + "px");
+          console.log(level, $item, 'padding-left', pad + "px");
+        } else if (tag === 'ul') {
+          // Recurse.
+          findA($item, level + 1);
+        }
+      });
+    };
+
+    console.log("HERE");
+    findA($ul);
+  };
+
+  $(document).ready(function () {
+    // Add styling, structure to TOC's.
+    $(".dropdown-menu").each(function () {
+      $(this).find("ul").each(function (index, item){
+        var $item = $(item);
+        $item.addClass('unstyled');
+      });
+      $(this).find("li").each(function () {
+        $(this).parent().append(this);
+      });
+    });
+
+    // Patch in level.
+    patchToc($("ul.globaltoc"), 2);
+    patchToc($("ul.localtoc"), 2);
+
+    // Enable dropdown.
+    $('.dropdown-toggle').dropdown();
+  });
+}());
+</script>
+
+  </head>
+  <body>
+  <div id="navbar" class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container-fluid">
+        <a class="brand" href="../index.html">AutoNetkit</a>
+        <span class="navbar-text pull-left"><b>0.6.1dev-20120713</b></span>
+          <ul class="nav">
+            <li class="divider-vertical"></li>
+            
+              <li class="dropdown">
+  <a href="../index.html" class="dropdown-toggle" data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"><ul>
+<li><a class="reference internal" href="#">AutoNetkit Functions</a></li>
+</ul>
+</ul>
+  <!--<span class="localtoc"><ul>
+<li><a class="reference internal" href="#">AutoNetkit Functions</a></li>
+</ul>
+</span>-->
+</li>
+            
+            
+              
+  <li><a href="index.html"
+         title="previous chapter">&laquo; API Reference</a></li>
+  <li><a href="ank_utils.html"
+         title="next chapter">AutoNetkit Utils &raquo;</a></li>
+            
+            
+              
+            
+          </ul>
+          
+            
+<form class="navbar-search pull-right" style="margin-bottom:-3px;" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<div class="container">
+   
+  <div class="section" id="autonetkit-functions">
+<h1>AutoNetkit Functions<a class="headerlink" href="#autonetkit-functions" title="Permalink to this headline">¶</a></h1>
+<p>Note: these will be split into seperate modules</p>
+<span class="target" id="module-autonetkit.ank"></span><dl class="class">
+<dt id="autonetkit.ank.TreeNode">
+<em class="property">class </em><tt class="descclassname">autonetkit.ank.</tt><tt class="descname">TreeNode</tt><big>(</big><em>left=None</em>, <em>right=None</em>, <em>cd=None</em><big>)</big><a class="reference internal" href="../_modules/autonetkit/ank.html#TreeNode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#autonetkit.ank.TreeNode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adapted from <a class="reference external" href="http://stackoverflow.com/questions/2078669">http://stackoverflow.com/questions/2078669</a></p>
+<dl class="attribute">
+<dt id="autonetkit.ank.TreeNode.leaf">
+<tt class="descname">leaf</tt><a class="reference internal" href="../_modules/autonetkit/ank.html#TreeNode.leaf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#autonetkit.ank.TreeNode.leaf" title="Permalink to this definition">¶</a></dt>
+<dd><p>If this node has any children</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="autonetkit.ank.aggregate_nodes">
+<tt class="descclassname">autonetkit.ank.</tt><tt class="descname">aggregate_nodes</tt><big>(</big><em>overlay_graph</em>, <em>nodes</em>, <em>retain=</em><span class="optional">[</span><span class="optional">]</span><big>)</big><a class="reference internal" href="../_modules/autonetkit/ank.html#aggregate_nodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#autonetkit.ank.aggregate_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Combines connected into a single node</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="autonetkit.ank.explode_nodes">
+<tt class="descclassname">autonetkit.ank.</tt><tt class="descname">explode_nodes</tt><big>(</big><em>overlay_graph</em>, <em>nodes</em>, <em>retain=</em><span class="optional">[</span><span class="optional">]</span><big>)</big><a class="reference internal" href="../_modules/autonetkit/ank.html#explode_nodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#autonetkit.ank.explode_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Explodes all nodes in nodes
+TODO: explain better</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="autonetkit.ank.most_frequent">
+<tt class="descclassname">autonetkit.ank.</tt><tt class="descname">most_frequent</tt><big>(</big><em>iterable</em><big>)</big><a class="reference internal" href="../_modules/autonetkit/ank.html#most_frequent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#autonetkit.ank.most_frequent" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns most frequent item in iterable</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="autonetkit.ank.neigh_attr">
+<tt class="descclassname">autonetkit.ank.</tt><tt class="descname">neigh_attr</tt><big>(</big><em>overlay_graph</em>, <em>node</em>, <em>attribute</em>, <em>attribute_graph=None</em><big>)</big><a class="reference internal" href="../_modules/autonetkit/ank.html#neigh_attr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#autonetkit.ank.neigh_attr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Boolean, True if neighbors in overlay_graph all have same attribute in attribute_graph</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="autonetkit.ank.neigh_average">
+<tt class="descclassname">autonetkit.ank.</tt><tt class="descname">neigh_average</tt><big>(</big><em>overlay_graph</em>, <em>node</em>, <em>attribute</em>, <em>attribute_graph=None</em><big>)</big><a class="reference internal" href="../_modules/autonetkit/ank.html#neigh_average"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#autonetkit.ank.neigh_average" title="Permalink to this definition">¶</a></dt>
+<dd><p>averages out attribute from neighbors in specified overlay_graph
+attribute_graph is the graph to read the attribute from
+if property is numeric, then return mean</p>
+<blockquote>
+<div>else return most frequently occuring value</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="autonetkit.ank.set_node_default">
+<tt class="descclassname">autonetkit.ank.</tt><tt class="descname">set_node_default</tt><big>(</big><em>overlay_graph</em>, <em>nbunch</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/autonetkit/ank.html#set_node_default"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#autonetkit.ank.set_node_default" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets all nodes in nbunch to value if key not already set</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="autonetkit.ank.subnet_size">
+<tt class="descclassname">autonetkit.ank.</tt><tt class="descname">subnet_size</tt><big>(</big><em>host_count</em><big>)</big><a class="reference internal" href="../_modules/autonetkit/ank.html#subnet_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#autonetkit.ank.subnet_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns subnet size</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="autonetkit.ank.wrap_edges">
+<tt class="descclassname">autonetkit.ank.</tt><tt class="descname">wrap_edges</tt><big>(</big><em>overlay_graph</em>, <em>edges</em><big>)</big><a class="reference internal" href="../_modules/autonetkit/ank.html#wrap_edges"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#autonetkit.ank.wrap_edges" title="Permalink to this definition">¶</a></dt>
+<dd><p>wraps node ids into edge overlay</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="autonetkit.ank.wrap_nodes">
+<tt class="descclassname">autonetkit.ank.</tt><tt class="descname">wrap_nodes</tt><big>(</big><em>overlay_graph</em>, <em>nodes</em><big>)</big><a class="reference internal" href="../_modules/autonetkit/ank.html#wrap_nodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#autonetkit.ank.wrap_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>wraps node id into node overlay</p>
+</dd></dl>
+
+</div>
+
+
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right"><a href="#">Back to top</a></p>
+    <p>
+        &copy; Copyright 2009--2012, Simon Knight, Hung Nguyen, Nick Falkner, Iain Phillips, Olaf Maennel, Askar Jaboldinov, Matthew Roughan.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

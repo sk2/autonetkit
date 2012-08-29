@@ -1,0 +1,808 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>autonetkit.ank &mdash; AutoNetkit</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/bootstrap.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.6.1dev-20120713',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/bootstrap.js"></script>
+    <link rel="top" title="AutoNetkit" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" />
+<script type="text/javascript">
+(function () {
+  /**
+   * Patch TOC list.
+   *
+   * Will mutate the underlying span to have a correct ul for nav.
+   *
+   * @param $span: Span containing nested UL's to mutate.
+   * @param minLevel: Starting level for nested lists. (1: global, 2: local).
+   */
+  var patchToc = function ($ul, minLevel) {
+    var findA;
+
+    // Find all a "internal" tags, traversing recursively.
+    findA = function ($elem, level) {
+      var level = level || 0,
+        $items = $elem.find("> li > a.internal, > ul, > li > ul");
+
+      // Iterate everything in order.
+      $items.each(function (index, item) {
+        var $item = $(item),
+          tag = item.tagName.toLowerCase(),
+          pad = 15 + ((level - minLevel) * 10);
+
+        if (tag === 'a' && level >= minLevel) {
+          // Add to existing padding.
+          $item.css('padding-left', pad + "px");
+          console.log(level, $item, 'padding-left', pad + "px");
+        } else if (tag === 'ul') {
+          // Recurse.
+          findA($item, level + 1);
+        }
+      });
+    };
+
+    console.log("HERE");
+    findA($ul);
+  };
+
+  $(document).ready(function () {
+    // Add styling, structure to TOC's.
+    $(".dropdown-menu").each(function () {
+      $(this).find("ul").each(function (index, item){
+        var $item = $(item);
+        $item.addClass('unstyled');
+      });
+      $(this).find("li").each(function () {
+        $(this).parent().append(this);
+      });
+    });
+
+    // Patch in level.
+    patchToc($("ul.globaltoc"), 2);
+    patchToc($("ul.localtoc"), 2);
+
+    // Enable dropdown.
+    $('.dropdown-toggle').dropdown();
+  });
+}());
+</script>
+
+  </head>
+  <body>
+  <div id="navbar" class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container-fluid">
+        <a class="brand" href="../../index.html">AutoNetkit</a>
+        <span class="navbar-text pull-left"><b>0.6.1dev-20120713</b></span>
+          <ul class="nav">
+            <li class="divider-vertical"></li>
+            
+              <li class="dropdown">
+  <a href="../../index.html" class="dropdown-toggle" data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"></ul>
+  <!--<span class="localtoc"></span>-->
+</li>
+            
+            
+              
+            
+            
+              
+            
+          </ul>
+          
+            
+<form class="navbar-search pull-right" style="margin-bottom:-3px;" action="../../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<div class="container">
+   
+  <h1>Source code for autonetkit.ank</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">networkx</span> <span class="kn">as</span> <span class="nn">nx</span>
+<span class="kn">from</span> <span class="nn">anm</span> <span class="kn">import</span> <span class="n">overlay_node</span><span class="p">,</span> <span class="n">overlay_edge</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">pprint</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">autonetkit.log</span> <span class="kn">as</span> <span class="nn">log</span>
+<span class="kn">from</span> <span class="nn">ank_utils</span> <span class="kn">import</span> <span class="n">unwrap_nodes</span><span class="p">,</span> <span class="n">unwrap_graph</span><span class="p">,</span> <span class="n">unwrap_edges</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">cPickle</span> <span class="kn">as</span> <span class="nn">pickle</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">pickle</span>
+
+<span class="k">def</span> <span class="nf">fqdn</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+    <span class="k">return</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">.</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">asn</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">name_folder_safe</span><span class="p">(</span><span class="n">foldername</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">illegal_char</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&quot; &quot;</span><span class="p">,</span> <span class="s">&quot;/&quot;</span><span class="p">,</span> <span class="s">&quot;_&quot;</span><span class="p">,</span> <span class="s">&quot;,&quot;</span><span class="p">,</span> <span class="s">&quot;.&quot;</span><span class="p">,</span> <span class="s">&quot;&amp;amp;&quot;</span><span class="p">,</span> <span class="s">&quot;-&quot;</span><span class="p">,</span> <span class="s">&quot;(&quot;</span><span class="p">,</span> <span class="s">&quot;)&quot;</span><span class="p">]:</span>
+        <span class="n">foldername</span> <span class="o">=</span> <span class="n">foldername</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">illegal_char</span><span class="p">,</span> <span class="s">&quot;_&quot;</span><span class="p">)</span>
+    <span class="c"># Don&#39;t want double _</span>
+    <span class="k">while</span> <span class="s">&quot;__&quot;</span> <span class="ow">in</span> <span class="n">foldername</span><span class="p">:</span>
+        <span class="n">foldername</span> <span class="o">=</span> <span class="n">foldername</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&quot;__&quot;</span><span class="p">,</span> <span class="s">&quot;_&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">foldername</span>
+
+<span class="c">#TODO: have function that goes over a list, edge edges_to_add and sets edge_id if not set</span>
+<span class="c">#this cleans up the manual edge adding process</span>
+
+<div class="viewcode-block" id="set_node_default"><a class="viewcode-back" href="../../reference/ank.html#autonetkit.ank.set_node_default">[docs]</a><span class="k">def</span> <span class="nf">set_node_default</span><span class="p">(</span><span class="n">overlay_graph</span><span class="p">,</span> <span class="n">nbunch</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Sets all nodes in nbunch to value if key not already set&quot;&quot;&quot;</span>
+    <span class="n">graph</span> <span class="o">=</span> <span class="n">unwrap_graph</span><span class="p">(</span><span class="n">overlay_graph</span><span class="p">)</span>
+    <span class="n">nbunch</span> <span class="o">=</span> <span class="n">unwrap_nodes</span><span class="p">(</span><span class="n">nbunch</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nbunch</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">node</span><span class="p">]:</span>
+                <span class="n">graph</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+</div>
+<span class="k">def</span> <span class="nf">load_graphml</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">string</span>
+    <span class="kn">import</span> <span class="nn">os</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    pickle_dir = os.getcwd() + os.sep + &quot;cache&quot;</span>
+<span class="sd">    if not os.path.isdir(pickle_dir):</span>
+<span class="sd">        os.mkdir(pickle_dir)</span>
+
+<span class="sd">    path, file_with_ext = os.path.split(filename)</span>
+<span class="sd">    file_name_only, extension = os.path.splitext(filename)</span>
+
+<span class="sd">    pickle_file = &quot;%s/%s.pickle&quot; % (pickle_dir, file_name_only)</span>
+<span class="sd">    if (os.path.isfile(pickle_file) and</span>
+<span class="sd">        os.stat(filename).st_mtime &lt; os.stat(pickle_file).st_mtime):</span>
+<span class="sd">        # Pickle file exists, and source_file is older</span>
+<span class="sd">        graph = nx.read_gpickle(pickle_file)</span>
+<span class="sd">    else:</span>
+<span class="sd">        # No pickle file, or is outdated</span>
+<span class="sd">        try:</span>
+<span class="sd">            graph = nx.read_graphml(filename)</span>
+<span class="sd">        except IOError:</span>
+<span class="sd">            print &quot;Unable to read GraphML&quot;, filename</span>
+<span class="sd">            return</span>
+<span class="sd">        nx.write_gpickle(graph, pickle_file)</span>
+<span class="sd">#TODO: node labels if not set, need to set from a sequence, ensure unique... etc</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">read_graphml</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;Unable to read GraphML </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="n">graph</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s">&#39;timestamp&#39;</span><span class="p">]</span> <span class="o">=</span>  <span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="o">.</span><span class="n">st_mtime</span>
+
+    <span class="c"># remove selfloops</span>
+    <span class="n">graph</span><span class="o">.</span><span class="n">remove_edges_from</span><span class="p">(</span><span class="n">edge</span> <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">selfloop_edges</span><span class="p">())</span>
+
+    <span class="n">letters_single</span> <span class="o">=</span> <span class="p">(</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">string</span><span class="o">.</span><span class="n">lowercase</span><span class="p">)</span> <span class="c"># a, b, c, ... z</span>
+    <span class="n">letters_double</span> <span class="o">=</span> <span class="p">(</span><span class="s">&quot;</span><span class="si">%s%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">lowercase</span><span class="p">,</span> <span class="n">string</span><span class="o">.</span><span class="n">lowercase</span><span class="p">))</span> <span class="c"># aa, ab, ... zz</span>
+    <span class="n">letters</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span><span class="n">letters_single</span><span class="p">,</span> <span class="n">letters_double</span><span class="p">)</span> <span class="c"># a, b, c, .. z, aa, ab, ac, ... zz</span>
+<span class="c">#TODO: need to get set of current labels, and only return if not in this set</span>
+
+    <span class="c">#TODO: add cloud, host, etc</span>
+    <span class="c"># prefixes for unlabelled devices, ie router -&gt; r_a</span>
+    <span class="n">label_prefixes</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s">&#39;router&#39;</span><span class="p">:</span> <span class="s">&#39;r&#39;</span><span class="p">,</span>
+            <span class="s">&#39;switch&#39;</span><span class="p">:</span> <span class="s">&#39;sw&#39;</span><span class="p">,</span>
+            <span class="s">&#39;server&#39;</span><span class="p">:</span> <span class="s">&#39;se&#39;</span><span class="p">,</span>
+            <span class="p">}</span>
+
+    <span class="n">current_labels</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">node</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;label&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">nodes_iter</span><span class="p">())</span>
+    <span class="n">unique_label</span> <span class="o">=</span> <span class="p">(</span><span class="n">letter</span> <span class="k">for</span> <span class="n">letter</span> <span class="ow">in</span> <span class="n">letters</span> <span class="k">if</span> <span class="n">letter</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">current_labels</span><span class="p">)</span>
+
+<span class="c"># set our own defaults if not set</span>
+<span class="c">#TODO: store these in config file</span>
+    <span class="n">ank_node_defaults</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s">&#39;asn&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s">&#39;device_type&#39;</span><span class="p">:</span> <span class="s">&#39;router&#39;</span>
+            <span class="p">}</span>
+    <span class="n">node_defaults</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s">&#39;node_default&#39;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">ank_node_defaults</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">node_defaults</span> <span class="ow">or</span> <span class="n">node_defaults</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">==</span> <span class="s">&quot;None&quot;</span><span class="p">:</span>
+            <span class="n">node_defaults</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+
+    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">graph</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">node_defaults</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">node</span><span class="p">]:</span>
+                <span class="n">graph</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+
+    <span class="c"># and ensure asn is integer, x and y are floats</span>
+    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">graph</span><span class="p">:</span>
+        <span class="n">graph</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="s">&#39;asn&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="s">&#39;asn&#39;</span><span class="p">])</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="s">&#39;x&#39;</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">graph</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="s">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="s">&#39;y&#39;</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">graph</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="s">&#39;y&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">graph</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="s">&#39;label&#39;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">device_type</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="s">&#39;device_type&#39;</span><span class="p">]</span>
+            <span class="n">graph</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="s">&#39;label&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">_</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">label_prefixes</span><span class="p">[</span><span class="n">device_type</span><span class="p">],</span> <span class="n">unique_label</span><span class="o">.</span><span class="n">next</span><span class="p">())</span>
+
+    <span class="n">ank_edge_defaults</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;physical&#39;</span><span class="p">,</span>
+            <span class="p">}</span>
+    <span class="n">edge_defaults</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="s">&#39;edge_default&#39;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">ank_edge_defaults</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">edge_defaults</span> <span class="ow">or</span> <span class="n">edge_defaults</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">==</span> <span class="s">&quot;None&quot;</span><span class="p">:</span>
+            <span class="n">edge_defaults</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+
+    <span class="k">for</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">edges</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">edge_defaults</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">graph</span><span class="p">[</span><span class="n">src</span><span class="p">][</span><span class="n">dst</span><span class="p">]:</span>
+                <span class="n">graph</span><span class="p">[</span><span class="n">src</span><span class="p">][</span><span class="n">dst</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+
+    <span class="c"># allocate edge_ids</span>
+    <span class="k">for</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">edges</span><span class="p">():</span>
+        <span class="n">graph</span><span class="p">[</span><span class="n">src</span><span class="p">][</span><span class="n">dst</span><span class="p">][</span><span class="s">&#39;edge_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">_</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">src</span><span class="p">][</span><span class="s">&#39;label&#39;</span><span class="p">],</span> <span class="n">graph</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">dst</span><span class="p">][</span><span class="s">&#39;label&#39;</span><span class="p">])</span>
+
+<span class="c"># apply defaults</span>
+<span class="c"># relabel nodes</span>
+<span class="c">#other handling... split this into seperate module!</span>
+<span class="c"># relabel based on label: assume unique by now!</span>
+    <span class="n">mapping</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">d</span><span class="p">[</span><span class="s">&#39;label&#39;</span><span class="p">])</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+    <span class="n">nx</span><span class="o">.</span><span class="n">relabel_nodes</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">mapping</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">graph</span>
+
+
+<span class="k">def</span> <span class="nf">stringify_netaddr</span><span class="p">(</span><span class="n">graph</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">netaddr</span>
+<span class="c"># converts netaddr from iterables to strings so can use with json</span>
+    <span class="n">replace_as_string</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">netaddr</span><span class="o">.</span><span class="n">ip</span><span class="o">.</span><span class="n">IPAddress</span><span class="p">,</span> <span class="n">netaddr</span><span class="o">.</span><span class="n">ip</span><span class="o">.</span><span class="n">IPNetwork</span><span class="p">])</span>
+<span class="c">#TODO: see if should handle dict specially, eg expand to __ ?</span>
+
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="ow">in</span> <span class="n">replace_as_string</span><span class="p">:</span>
+            <span class="n">graph</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">node</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="ow">in</span> <span class="n">replace_as_string</span><span class="p">:</span>
+                <span class="n">graph</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="ow">in</span> <span class="n">replace_as_string</span><span class="p">:</span>
+                <span class="n">graph</span><span class="p">[</span><span class="n">src</span><span class="p">][</span><span class="n">dst</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">graph</span>
+
+<span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="n">overlay_graph</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">netaddr</span>
+    <span class="n">graph</span> <span class="o">=</span> <span class="n">overlay_graph</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="c"># copy as want to annotate</span>
+
+<span class="c"># and put in basic attributes</span>
+    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">overlay_graph</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">data</span><span class="p">[</span><span class="s">&#39;label&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">label</span>
+        <span class="c">#TODO: make these come from G_phy instead</span>
+        <span class="c">#graph.node[node.node_id][&#39;label&#39;] = node.overlay.input.label</span>
+        <span class="c">#graph.node[node.node_id][&#39;device_type&#39;] = node.overlay.input.device_type</span>
+        <span class="n">graph</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">node_id</span><span class="p">][</span><span class="s">&#39;device_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">graphics</span><span class="o">.</span><span class="n">device_type</span>
+        <span class="n">graph</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">node_id</span><span class="p">][</span><span class="s">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">graphics</span><span class="o">.</span><span class="n">x</span>
+        <span class="n">graph</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">node_id</span><span class="p">][</span><span class="s">&#39;y&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">graphics</span><span class="o">.</span><span class="n">y</span>
+
+        <span class="n">graph</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">node_id</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="c">#TODO: tidy this up</span>
+
+    <span class="n">replace_as_string</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="nb">type</span><span class="p">(</span><span class="bp">None</span><span class="p">),</span> <span class="n">netaddr</span><span class="o">.</span><span class="n">ip</span><span class="o">.</span><span class="n">IPAddress</span><span class="p">,</span> <span class="n">netaddr</span><span class="o">.</span><span class="n">ip</span><span class="o">.</span><span class="n">IPNetwork</span><span class="p">,</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">defaultdict</span><span class="p">])</span>
+<span class="c">#TODO: see if should handle dict specially, eg expand to __ ?</span>
+
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="ow">in</span> <span class="n">replace_as_string</span><span class="p">:</span>
+            <span class="n">graph</span><span class="o">.</span><span class="n">graph</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">node</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="ow">in</span> <span class="n">replace_as_string</span><span class="p">:</span>
+                <span class="n">graph</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="ow">in</span> <span class="n">replace_as_string</span><span class="p">:</span>
+                <span class="n">graph</span><span class="p">[</span><span class="n">src</span><span class="p">][</span><span class="n">dst</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+
+    <span class="n">mapping</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span> <span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="p">))</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">overlay_graph</span><span class="p">)</span> 
+    <span class="n">nx</span><span class="o">.</span><span class="n">relabel_nodes</span><span class="p">(</span> <span class="n">graph</span><span class="p">,</span> <span class="n">mapping</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="c">#TODO: See why getting networkx.exception.NetworkXError: GraphML writer does not support &lt;type &#39;NoneType&#39;&gt; as data values.</span>
+<span class="c">#TODO: process writer to allow writing of IPnetwork class values</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">.graphml&quot;</span> <span class="o">%</span> <span class="n">overlay_graph</span><span class="o">.</span><span class="n">name</span>
+    <span class="n">nx</span><span class="o">.</span><span class="n">write_graphml</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+
+<span class="c"># probably want to create a graph from input with switches expanded to direct connections</span>
+
+<span class="c">#TODO: make edges own module</span>
+<div class="viewcode-block" id="wrap_edges"><a class="viewcode-back" href="../../reference/ank.html#autonetkit.ank.wrap_edges">[docs]</a><span class="k">def</span> <span class="nf">wrap_edges</span><span class="p">(</span><span class="n">overlay_graph</span><span class="p">,</span> <span class="n">edges</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; wraps node ids into edge overlay &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span> <span class="n">overlay_edge</span><span class="p">(</span><span class="n">overlay_graph</span><span class="o">.</span><span class="n">_anm</span><span class="p">,</span> <span class="n">overlay_graph</span><span class="o">.</span><span class="n">_overlay_id</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span> <span class="ow">in</span> <span class="n">edges</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="wrap_nodes"><a class="viewcode-back" href="../../reference/ank.html#autonetkit.ank.wrap_nodes">[docs]</a><span class="k">def</span> <span class="nf">wrap_nodes</span><span class="p">(</span><span class="n">overlay_graph</span><span class="p">,</span> <span class="n">nodes</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; wraps node id into node overlay &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span> <span class="n">overlay_node</span><span class="p">(</span><span class="n">overlay_graph</span><span class="o">.</span><span class="n">_anm</span><span class="p">,</span> <span class="n">overlay_graph</span><span class="o">.</span><span class="n">_overlay_id</span><span class="p">,</span> <span class="n">node</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">)</span>
+</div>
+<span class="k">def</span> <span class="nf">in_edges</span><span class="p">(</span><span class="n">overlay_graph</span><span class="p">,</span> <span class="n">nodes</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">graph</span> <span class="o">=</span> <span class="n">unwrap_graph</span><span class="p">(</span><span class="n">overlay_graph</span><span class="p">)</span>
+    <span class="n">edges</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">in_edges</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">wrap_edges</span><span class="p">(</span><span class="n">overlay_graph</span><span class="p">,</span> <span class="n">edges</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">split</span><span class="p">(</span><span class="n">overlay_graph</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">retain</span> <span class="o">=</span> <span class="p">[]):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">retain</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="n">retain</span> <span class="o">=</span> <span class="p">[</span><span class="n">retain</span><span class="p">]</span> <span class="c"># was a string, put into list</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+        <span class="k">pass</span> <span class="c"># already a list</span>
+
+    <span class="n">graph</span> <span class="o">=</span> <span class="n">unwrap_graph</span><span class="p">(</span><span class="n">overlay_graph</span><span class="p">)</span>
+    <span class="n">edges</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">unwrap_edges</span><span class="p">(</span><span class="n">edges</span><span class="p">))</span>
+    <span class="n">edges_to_add</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">added_nodes</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span> <span class="ow">in</span> <span class="n">edges</span><span class="p">:</span>
+        <span class="n">cd_id</span> <span class="o">=</span> <span class="s">&quot;cd_</span><span class="si">%s</span><span class="s">_</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">graph</span><span class="p">[</span><span class="n">src</span><span class="p">][</span><span class="n">dst</span><span class="p">][</span><span class="n">key</span><span class="p">])</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">retain</span><span class="p">)</span>
+        <span class="n">edges_to_add</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">cd_id</span><span class="p">,</span> <span class="n">data</span><span class="p">))</span>
+        <span class="n">edges_to_add</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">(</span><span class="n">dst</span><span class="p">,</span> <span class="n">cd_id</span><span class="p">,</span> <span class="n">data</span><span class="p">))</span>
+        <span class="n">added_nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cd_id</span><span class="p">)</span>
+
+    <span class="n">graph</span><span class="o">.</span><span class="n">remove_edges_from</span><span class="p">(</span><span class="n">edges</span><span class="p">)</span>
+    <span class="n">graph</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">(</span><span class="n">edges_to_add</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">wrap_nodes</span><span class="p">(</span><span class="n">overlay_graph</span><span class="p">,</span> <span class="n">added_nodes</span><span class="p">)</span>
+
+<div class="viewcode-block" id="explode_nodes"><a class="viewcode-back" href="../../reference/ank.html#autonetkit.ank.explode_nodes">[docs]</a><span class="k">def</span> <span class="nf">explode_nodes</span><span class="p">(</span><span class="n">overlay_graph</span><span class="p">,</span> <span class="n">nodes</span><span class="p">,</span> <span class="n">retain</span> <span class="o">=</span> <span class="p">[]):</span>
+    <span class="sd">&quot;&quot;&quot;Explodes all nodes in nodes</span>
+<span class="sd">    TODO: explain better</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">retain</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="n">retain</span> <span class="o">=</span> <span class="p">[</span><span class="n">retain</span><span class="p">]</span> <span class="c"># was a string, put into list</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+        <span class="k">pass</span> <span class="c"># already a list</span>
+
+    <span class="n">graph</span> <span class="o">=</span> <span class="n">unwrap_graph</span><span class="p">(</span><span class="n">overlay_graph</span><span class="p">)</span>
+    <span class="n">nodes</span> <span class="o">=</span> <span class="n">unwrap_nodes</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span>
+    <span class="n">added_edges</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="c">#TODO: need to keep track of edge_ids here also?</span>
+    <span class="n">nodes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">:</span>
+        <span class="n">neighbors</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="n">neigh_edge_pairs</span> <span class="o">=</span> <span class="p">(</span> <span class="p">(</span><span class="n">s</span><span class="p">,</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">neighbors</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">neighbors</span> <span class="k">if</span> <span class="n">s</span> <span class="o">!=</span> <span class="n">t</span><span class="p">)</span>
+        <span class="n">edges_to_add</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span> <span class="ow">in</span> <span class="n">neigh_edge_pairs</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">graph</span><span class="p">[</span><span class="n">src</span><span class="p">][</span><span class="n">dst</span><span class="p">][</span><span class="n">key</span><span class="p">])</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">retain</span><span class="p">)</span>
+            <span class="n">edges_to_add</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">,</span> <span class="n">data</span><span class="p">))</span>
+
+        <span class="n">graph</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">(</span><span class="n">edges_to_add</span><span class="p">)</span>
+        <span class="n">added_edges</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">edges_to_add</span><span class="p">)</span>
+
+        <span class="n">graph</span><span class="o">.</span><span class="n">remove_node</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">wrap_edges</span><span class="p">(</span><span class="n">overlay_graph</span><span class="p">,</span> <span class="n">added_edges</span><span class="p">)</span>
+</div>
+<span class="k">def</span> <span class="nf">label</span><span class="p">(</span><span class="n">overlay_graph</span><span class="p">,</span> <span class="n">nodes</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">overlay_graph</span><span class="o">.</span><span class="n">_anm</span><span class="o">.</span><span class="n">node_label</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">)</span>
+
+<div class="viewcode-block" id="aggregate_nodes"><a class="viewcode-back" href="../../reference/ank.html#autonetkit.ank.aggregate_nodes">[docs]</a><span class="k">def</span> <span class="nf">aggregate_nodes</span><span class="p">(</span><span class="n">overlay_graph</span><span class="p">,</span> <span class="n">nodes</span><span class="p">,</span> <span class="n">retain</span> <span class="o">=</span> <span class="p">[]):</span>
+    <span class="sd">&quot;&quot;&quot;Combines connected into a single node&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">retain</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="n">retain</span> <span class="o">=</span> <span class="p">[</span><span class="n">retain</span><span class="p">]</span> <span class="c"># was a string, put into list</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+        <span class="k">pass</span> <span class="c"># already a list</span>
+
+    <span class="n">nodes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">unwrap_nodes</span><span class="p">(</span><span class="n">nodes</span><span class="p">))</span>
+    <span class="n">graph</span> <span class="o">=</span> <span class="n">unwrap_graph</span><span class="p">(</span><span class="n">overlay_graph</span><span class="p">)</span>
+    <span class="n">subgraph</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">subgraph</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">subgraph</span><span class="o">.</span><span class="n">edges</span><span class="p">()):</span>
+        <span class="c">#print &quot;Nothing to aggregate for %s: no edges in subgraph&quot;</span>
+        <span class="k">pass</span>
+    <span class="n">total_added_edges</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">component_nodes</span> <span class="ow">in</span> <span class="n">nx</span><span class="o">.</span><span class="n">connected_components</span><span class="p">(</span><span class="n">subgraph</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">component_nodes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">base</span> <span class="o">=</span> <span class="n">component_nodes</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span> <span class="c"># choose one base device to retain</span>
+            <span class="n">nodes_to_remove</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">component_nodes</span><span class="p">)</span> <span class="c"># remaining nodes, set for fast membership test</span>
+            <span class="n">external_edges</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">edge_boundary</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">component_nodes</span><span class="p">)</span>
+            <span class="n">edges_to_add</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span> <span class="ow">in</span> <span class="n">external_edges</span><span class="p">:</span>
+                <span class="c"># src is the internal node to remove</span>
+                <span class="k">if</span> <span class="n">src</span> <span class="o">==</span> <span class="n">base</span> <span class="ow">or</span> <span class="n">dst</span> <span class="o">==</span> <span class="n">base</span><span class="p">:</span>
+                    <span class="k">continue</span> <span class="c"># don&#39;t alter edges from base</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">src</span> <span class="ow">in</span> <span class="n">nodes_to_remove</span><span class="p">:</span>
+                        <span class="c"># edge from component to outside</span>
+                        <span class="n">data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">graph</span><span class="p">[</span><span class="n">src</span><span class="p">][</span><span class="n">dst</span><span class="p">][</span><span class="n">key</span><span class="p">])</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">retain</span><span class="p">)</span>
+                        <span class="n">edges_to_add</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">base</span><span class="p">,</span> <span class="n">dst</span><span class="p">,</span> <span class="n">data</span><span class="p">))</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="c"># edge from outside into component</span>
+                        <span class="n">data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">graph</span><span class="p">[</span><span class="n">dst</span><span class="p">][</span><span class="n">src</span><span class="p">][</span><span class="n">key</span><span class="p">])</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">retain</span><span class="p">)</span>
+                        <span class="n">edges_to_add</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">base</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">data</span><span class="p">))</span>
+            <span class="n">graph</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">(</span><span class="n">edges_to_add</span><span class="p">)</span>
+            <span class="n">total_added_edges</span> <span class="o">+=</span> <span class="n">edges_to_add</span>
+            <span class="n">graph</span><span class="o">.</span><span class="n">remove_nodes_from</span><span class="p">(</span><span class="n">nodes_to_remove</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">wrap_edges</span><span class="p">(</span><span class="n">overlay_graph</span><span class="p">,</span> <span class="n">total_added_edges</span><span class="p">)</span>
+
+<span class="c"># chain of two or more nodes</span>
+</div>
+<div class="viewcode-block" id="most_frequent"><a class="viewcode-back" href="../../reference/ank.html#autonetkit.ank.most_frequent">[docs]</a><span class="k">def</span> <span class="nf">most_frequent</span><span class="p">(</span><span class="n">iterable</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;returns most frequent item in iterable&quot;&quot;&quot;</span>
+    <span class="n">unique</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">iterable</span><span class="p">)</span>
+    <span class="n">sorted_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">val</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">unique</span><span class="p">,</span> <span class="n">key</span> <span class="o">=</span> <span class="n">iterable</span><span class="o">.</span><span class="n">count</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="n">sorted_values</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span> <span class="c"># most frequent is at end of sorted list</span>
+</div>
+<div class="viewcode-block" id="neigh_average"><a class="viewcode-back" href="../../reference/ank.html#autonetkit.ank.neigh_average">[docs]</a><span class="k">def</span> <span class="nf">neigh_average</span><span class="p">(</span><span class="n">overlay_graph</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">attribute</span><span class="p">,</span> <span class="n">attribute_graph</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; averages out attribute from neighbors in specified overlay_graph</span>
+<span class="sd">    attribute_graph is the graph to read the attribute from</span>
+<span class="sd">    if property is numeric, then return mean</span>
+<span class="sd">        else return most frequently occuring value</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">graph</span> <span class="o">=</span> <span class="n">unwrap_graph</span><span class="p">(</span><span class="n">overlay_graph</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">attribute_graph</span><span class="p">:</span>
+        <span class="n">attribute_graph</span> <span class="o">=</span> <span class="n">unwrap_graph</span><span class="p">(</span><span class="n">attribute_graph</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">attribute_graph</span> <span class="o">=</span> <span class="n">graph</span> <span class="c"># use input graph</span>
+    <span class="n">node</span> <span class="o">=</span> <span class="n">unwrap_nodes</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="p">[</span><span class="n">attribute_graph</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">n</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attribute</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">node</span><span class="p">)]</span>
+<span class="c">#TODO: use neigh_attr</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">values</span><span class="p">]</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">values</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">most_frequent</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="neigh_attr"><a class="viewcode-back" href="../../reference/ank.html#autonetkit.ank.neigh_attr">[docs]</a><span class="k">def</span> <span class="nf">neigh_attr</span><span class="p">(</span><span class="n">overlay_graph</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">attribute</span><span class="p">,</span> <span class="n">attribute_graph</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+    <span class="c">#TODO: tidy up parameters to take attribute_graph first, and then evaluate if attribute_graph set, if not then use attribute_graph as attribute</span>
+<span class="c">#TODO: explain how overlay_graph and attribute_graph work, eg for G_ip and G_phy</span>
+    <span class="sd">&quot;&quot;&quot;Boolean, True if neighbors in overlay_graph all have same attribute in attribute_graph&quot;&quot;&quot;</span>
+    <span class="n">graph</span> <span class="o">=</span> <span class="n">unwrap_graph</span><span class="p">(</span><span class="n">overlay_graph</span><span class="p">)</span>
+    <span class="n">node</span> <span class="o">=</span> <span class="n">unwrap_nodes</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">attribute_graph</span><span class="p">:</span>
+        <span class="n">attribute_graph</span> <span class="o">=</span> <span class="n">unwrap_graph</span><span class="p">(</span><span class="n">attribute_graph</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">attribute_graph</span> <span class="o">=</span> <span class="n">graph</span> <span class="c"># use input graph</span>
+
+    <span class="c">#Only look at nodes which exist in attribute_graph</span>
+    <span class="n">neighs</span> <span class="o">=</span> <span class="p">(</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">node</span><span class="p">))</span>
+    <span class="n">valid_nodes</span> <span class="o">=</span> <span class="p">(</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">neighs</span> <span class="k">if</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">attribute_graph</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">attribute_graph</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">node</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attribute</span><span class="p">)</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">valid_nodes</span><span class="p">)</span>
+</div>
+<span class="k">def</span> <span class="nf">neigh_equal</span><span class="p">(</span><span class="n">overlay_graph</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">attribute</span><span class="p">,</span> <span class="n">attribute_graph</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+    <span class="n">neigh_attrs</span> <span class="o">=</span> <span class="n">neigh_attr</span><span class="p">(</span><span class="n">overlay_graph</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">attribute</span><span class="p">,</span> <span class="n">attribute_graph</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">neigh_attrs</span><span class="p">))</span> <span class="o">==</span> <span class="mi">1</span>
+
+<span class="k">def</span> <span class="nf">unique_attr</span><span class="p">(</span><span class="n">overlay_graph</span><span class="p">,</span> <span class="n">attribute</span><span class="p">):</span>
+    <span class="n">graph</span> <span class="o">=</span> <span class="n">unwrap_graph</span><span class="p">(</span><span class="n">overlay_graph</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">set</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">node</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attribute</span><span class="p">)</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">graph</span><span class="p">)</span>
+
+
+<span class="c">#TODO: move subnet to another module</span>
+
+<div class="viewcode-block" id="subnet_size"><a class="viewcode-back" href="../../reference/ank.html#autonetkit.ank.subnet_size">[docs]</a><span class="k">def</span> <span class="nf">subnet_size</span><span class="p">(</span><span class="n">host_count</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns subnet size&quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">math</span>
+    <span class="n">host_count</span> <span class="o">+=</span> <span class="mi">2</span> <span class="c"># network and broadcast</span>
+    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">host_count</span><span class="p">,</span> <span class="mi">2</span><span class="p">)))</span>
+</div>
+<span class="k">class</span> <span class="nc">Tree</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root_node</span><span class="p">,</span> <span class="n">asn</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">=</span>  <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&quot;%Y%m</span><span class="si">%d</span><span class="s">_%H%M%S&quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">localtime</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">root_node</span> <span class="o">=</span> <span class="n">root_node</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">asn</span> <span class="o">=</span> <span class="n">asn</span>
+
+    <span class="k">def</span> <span class="nf">__getstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;For pickling&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">timestamp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">root_node</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">asn</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__setstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;For pickling&quot;&quot;&quot;</span>
+        <span class="p">(</span><span class="n">timestamp</span><span class="p">,</span> <span class="n">root_node</span><span class="p">,</span> <span class="n">asn</span><span class="p">)</span> <span class="o">=</span> <span class="n">state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">=</span> <span class="n">timestamp</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">root_node</span> <span class="o">=</span> <span class="n">root_node</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">asn</span> <span class="o">=</span> <span class="n">asn</span>
+
+
+    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="c">#TODO: try cPickle</span>
+        <span class="n">pickle_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s">&quot;versions&quot;</span><span class="p">,</span> <span class="s">&quot;ip&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">pickle_dir</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">pickle_dir</span><span class="p">)</span>
+
+        <span class="n">pickle_file</span> <span class="o">=</span> <span class="s">&quot;ip_as</span><span class="si">%s</span><span class="s">_</span><span class="si">%s</span><span class="s">.pickle.tar.gz&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">asn</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">timestamp</span><span class="p">)</span>
+        <span class="n">pickle_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pickle_dir</span><span class="p">,</span> <span class="n">pickle_file</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">pickle_path</span><span class="p">,</span> <span class="s">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">pickle_fh</span><span class="p">:</span>
+            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pickle_fh</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">print</span> <span class="bp">self</span><span class="o">.</span><span class="n">walk_tree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root_node</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">print</span> <span class="bp">self</span><span class="o">.</span><span class="n">walk_tree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root_node</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">json</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_json_element</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root_node</span><span class="p">),</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_json_element</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="c">#TODO: need to case IP addresses to string for JSON</span>
+        <span class="n">nodes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">left</span><span class="p">:</span>
+            <span class="n">nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_json_element</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">left</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">right</span><span class="p">:</span>
+            <span class="n">nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_json_element</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">right</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">nodes</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span>
+                    <span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">node</span><span class="p">),</span>
+                    <span class="s">&quot;children&quot;</span><span class="p">:</span> <span class="n">nodes</span><span class="p">,</span>
+                <span class="p">}</span>
+
+        <span class="k">return</span> <span class="p">{</span><span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">node</span><span class="p">)}</span>
+
+
+    <span class="k">def</span> <span class="nf">walk_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="c">#TODO: combine this with JSON and printing</span>
+        <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">left</span><span class="p">:</span>
+            <span class="n">walk_tree</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">left</span><span class="p">)</span>
+        <span class="k">print</span> <span class="n">node</span>
+        <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">right</span><span class="p">:</span>
+            <span class="n">walk_tree</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">right</span><span class="p">)</span>
+
+<div class="viewcode-block" id="TreeNode"><a class="viewcode-back" href="../../reference/ank.html#autonetkit.ank.TreeNode">[docs]</a><span class="k">class</span> <span class="nc">TreeNode</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Adapted from http://stackoverflow.com/questions/2078669&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">left</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">right</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">cd</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">left</span><span class="o">=</span><span class="n">left</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">right</span><span class="o">=</span><span class="n">right</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subnet</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cd</span> <span class="o">=</span> <span class="n">cd</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="TreeNode.leaf"><a class="viewcode-back" href="../../reference/ank.html#autonetkit.ank.TreeNode.leaf">[docs]</a>    <span class="k">def</span> <span class="nf">leaf</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;If this node has any children&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">left</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">right</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">return</span> <span class="bp">False</span>
+</div>
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s">&#39;(</span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">subnet</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subnet</span><span class="p">)</span>
+</div>
+<span class="k">def</span> <span class="nf">allocate_to_tree_node</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+    <span class="n">node_subnet</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">subnet</span>
+    <span class="c">#print &quot;node&quot;, node, &quot;has subnet&quot;, node_subnet</span>
+<span class="c"># divide into two</span>
+    <span class="n">child_subnets</span> <span class="o">=</span> <span class="n">node_subnet</span><span class="o">.</span><span class="n">subnet</span><span class="p">(</span><span class="n">node_subnet</span><span class="o">.</span><span class="n">prefixlen</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">left</span><span class="p">:</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">left</span><span class="o">.</span><span class="n">subnet</span> <span class="o">=</span> <span class="n">child_subnets</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+        <span class="n">allocate_to_tree_node</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">left</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">right</span><span class="p">:</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">right</span><span class="o">.</span><span class="n">subnet</span> <span class="o">=</span> <span class="n">child_subnets</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+        <span class="n">allocate_to_tree_node</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">right</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">walk_tree</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">left</span><span class="p">:</span>
+        <span class="n">walk_tree</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">left</span><span class="p">)</span>
+    <span class="k">print</span> <span class="n">node</span>
+    <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">right</span><span class="p">:</span>
+        <span class="n">walk_tree</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">right</span><span class="p">)</span>
+
+<span class="c"># need to be able to save and restore tree</span>
+
+<span class="k">def</span> <span class="nf">allocate_ips_to_cds</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">left</span><span class="p">:</span>
+        <span class="n">allocate_ips_to_cds</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">left</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">right</span><span class="p">:</span>
+        <span class="n">allocate_ips_to_cds</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">right</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">cd</span><span class="p">:</span>
+        <span class="c">#print &quot;node&quot;, node, &quot;has cd&quot;, node.cd</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">cd</span><span class="o">.</span><span class="n">subnet</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">subnet</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">cd</span> <span class="o">==</span> <span class="s">&quot;loopback&quot;</span><span class="p">:</span>
+                <span class="k">pass</span> <span class="c"># expected, this is the loopback placeholder, handled seperately</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="c"># something else went wrong</span>
+
+    
+<span class="k">def</span> <span class="nf">allocate_ips</span><span class="p">(</span><span class="n">G_ip</span><span class="p">):</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Allocating IP addresses&quot;</span><span class="p">)</span>
+    <span class="kn">from</span> <span class="nn">netaddr</span> <span class="kn">import</span> <span class="n">IPNetwork</span>
+    <span class="n">address_block</span> <span class="o">=</span> <span class="n">IPNetwork</span><span class="p">(</span><span class="s">&quot;10.0.0.0/8&quot;</span><span class="p">)</span>
+    <span class="n">subnet_address_blocks</span> <span class="o">=</span> <span class="n">address_block</span><span class="o">.</span><span class="n">subnet</span><span class="p">(</span><span class="mi">16</span><span class="p">)</span>
+<span class="c">#TODO: need to divide this up per AS</span>
+
+    <span class="n">G_ip</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">asn_blocks</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+    <span class="c">#print G_ip._graph</span>
+    
+    <span class="n">G_phy</span> <span class="o">=</span> <span class="n">G_ip</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">phy</span>
+    <span class="n">collision_domains</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">G_ip</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="s">&quot;collision_domain&quot;</span><span class="p">))</span>
+
+    <span class="n">routers_by_asn</span> <span class="o">=</span> <span class="n">G_phy</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s">&quot;asn&quot;</span><span class="p">,</span> <span class="n">G_phy</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">device_type</span><span class="o">=</span><span class="s">&quot;router&quot;</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">collision_domain</span> <span class="ow">in</span> <span class="n">collision_domains</span><span class="p">:</span>
+        <span class="n">neigh_asn</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">neigh_attr</span><span class="p">(</span><span class="n">G_ip</span><span class="p">,</span> <span class="n">collision_domain</span><span class="p">,</span> <span class="s">&quot;asn&quot;</span><span class="p">,</span> <span class="n">G_phy</span><span class="p">))</span> <span class="c">#asn of neighbors</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">neigh_asn</span><span class="p">))</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">asn</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">neigh_asn</span><span class="p">)</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span> <span class="c"># asn of any neigh, as all same</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">asn</span> <span class="o">=</span> <span class="n">most_frequent</span><span class="p">(</span><span class="n">neigh_asn</span><span class="p">)</span> <span class="c"># allocate cd to asn with most neighbors in it</span>
+        <span class="n">collision_domain</span><span class="o">.</span><span class="n">asn</span> <span class="o">=</span> <span class="n">asn</span>
+
+    <span class="n">cds_by_asn</span> <span class="o">=</span> <span class="n">G_ip</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s">&quot;asn&quot;</span><span class="p">,</span> <span class="n">G_ip</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="s">&quot;collision_domain&quot;</span><span class="p">))</span>
+
+<span class="c"># if node or subnet has IP already allocated, then skip from this tree</span>
+
+    <span class="k">for</span> <span class="n">asn</span> <span class="ow">in</span> <span class="n">routers_by_asn</span><span class="p">:</span>
+<span class="c"># Need to iterate by asn with routers, as single router AS may not have a cd</span>
+        <span class="n">asn_cds</span> <span class="o">=</span> <span class="n">cds_by_asn</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">asn</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[]</span>
+        <span class="n">asn_cds</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">asn_cds</span><span class="p">)</span>
+<span class="c">#tree by ASN</span>
+<span class="c">#TODO: Add in loopbacks as a subnet also</span>
+        <span class="n">asn_address_block</span> <span class="o">=</span> <span class="n">subnet_address_blocks</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+        <span class="c">#print &quot;ips for asn&quot;, asn</span>
+        <span class="n">G_ip</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">asn_blocks</span><span class="p">[</span><span class="n">asn</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">asn_address_block</span><span class="p">)</span>
+<span class="c">#TODO: record this in G_ip graph data not node/edge data</span>
+
+        <span class="c"># Build list of collision domains sorted by size</span>
+        <span class="n">size_list</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">cd</span> <span class="ow">in</span> <span class="n">asn_cds</span><span class="p">:</span>
+            <span class="n">sn_size</span> <span class="o">=</span> <span class="n">subnet_size</span><span class="p">(</span><span class="n">cd</span><span class="o">.</span><span class="n">degree</span><span class="p">())</span> <span class="c"># Size of this collision domain</span>
+            <span class="n">size_list</span><span class="p">[</span><span class="n">sn_size</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cd</span><span class="p">)</span>
+
+        <span class="n">loopback_size</span> <span class="o">=</span> <span class="n">subnet_size</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">routers_by_asn</span><span class="p">[</span><span class="n">asn</span><span class="p">]))</span> <span class="c"># calculate from number of routers in asn</span>
+
+        <span class="n">ip_tree</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span> <span class="c"># index by level to simplify creation of tree</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">current_level</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">size_list</span><span class="p">)</span> <span class="c"># start at base</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">current_level</span> <span class="o">=</span> <span class="n">loopback_size</span> <span class="c"># no cds, start at loopback</span>
+        
+        <span class="n">asn_loopback_tree_node</span> <span class="o">=</span> <span class="bp">None</span> <span class="c">#keep track of to allocate loopbacks at end</span>
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="n">cds</span> <span class="o">=</span> <span class="n">size_list</span><span class="p">[</span><span class="n">current_level</span><span class="p">]</span>
+            <span class="n">cds</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">cds</span><span class="p">,</span> <span class="n">key</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">node_id</span><span class="p">)</span>
+<span class="c"># initialse with leaves</span>
+<span class="c">#TODO: see if can get loopback on leftmost of tree -&gt; then can have allocated with .1 .2 etc rather than .19 .20 etc</span>
+            <span class="n">ip_tree</span><span class="p">[</span><span class="n">current_level</span><span class="p">]</span> <span class="o">+=</span> <span class="nb">list</span><span class="p">(</span><span class="n">TreeNode</span><span class="p">(</span><span class="n">cd</span><span class="o">=</span><span class="n">cd</span><span class="p">)</span> <span class="k">for</span> <span class="n">cd</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">cds</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">current_level</span> <span class="o">==</span> <span class="n">loopback_size</span><span class="p">:</span>
+                <span class="n">asn_loopback_tree_node</span> <span class="o">=</span> <span class="n">TreeNode</span><span class="p">(</span><span class="n">cd</span> <span class="o">=</span> <span class="s">&quot;loopback&quot;</span><span class="p">)</span>
+                <span class="n">ip_tree</span><span class="p">[</span><span class="n">current_level</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">asn_loopback_tree_node</span><span class="p">)</span>
+
+            <span class="c"># now connect up at parent level</span>
+            <span class="n">tree_nodes</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">ip_tree</span><span class="p">[</span><span class="n">current_level</span><span class="p">])</span> <span class="c"># both leaves and parents of lower level</span>
+            <span class="n">pairs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">izip</span><span class="p">(</span><span class="n">tree_nodes</span><span class="p">[::</span><span class="mi">2</span><span class="p">],</span> <span class="n">tree_nodes</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]))</span>
+            <span class="k">for</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">:</span>
+                <span class="n">ip_tree</span><span class="p">[</span><span class="n">current_level</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">TreeNode</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">))</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tree_nodes</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+<span class="c"># odd number of tree nodes, add </span>
+                <span class="n">final_tree_node</span> <span class="o">=</span> <span class="n">tree_nodes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">ip_tree</span><span class="p">[</span><span class="n">current_level</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">TreeNode</span><span class="p">(</span><span class="n">final_tree_node</span><span class="p">,</span> <span class="bp">None</span><span class="p">))</span>
+
+            <span class="n">current_level</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">asn_loopback_tree_node</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">ip_tree</span><span class="p">[</span><span class="n">current_level</span><span class="p">])</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="c"># loopback has been allocated, and reached top of tree</span>
+                <span class="k">break</span>
+
+            <span class="c">#if leaf, assign back to collision domain</span>
+
+        <span class="c"># allocate to tree</span>
+        <span class="n">subnet_bits</span> <span class="o">=</span> <span class="mi">32</span> <span class="o">-</span> <span class="nb">max</span><span class="p">(</span><span class="n">ip_tree</span><span class="p">)</span>
+        <span class="n">tree_subnet</span> <span class="o">=</span> <span class="n">asn_address_block</span><span class="o">.</span><span class="n">subnet</span><span class="p">(</span><span class="n">subnet_bits</span><span class="p">)</span>
+        <span class="n">tree_root</span> <span class="o">=</span> <span class="n">ip_tree</span><span class="p">[</span><span class="nb">max</span><span class="p">(</span><span class="n">ip_tree</span><span class="p">)]</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span> <span class="c"># only one node at highest level (root)</span>
+        <span class="n">tree_root</span><span class="o">.</span><span class="n">subnet</span> <span class="o">=</span> <span class="n">tree_subnet</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+        <span class="n">allocate_to_tree_node</span><span class="p">(</span><span class="n">tree_root</span><span class="p">)</span>
+        <span class="c">#walk_tree(tree_root)</span>
+        <span class="n">allocate_ips_to_cds</span><span class="p">(</span><span class="n">tree_root</span><span class="p">)</span>
+
+        <span class="n">my_tree</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="n">tree_root</span><span class="p">,</span> <span class="n">asn</span><span class="p">)</span>
+        <span class="n">my_tree</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+
+        <span class="c"># Get loopback from loopback tree node</span>
+        <span class="n">loopback_hosts</span> <span class="o">=</span> <span class="n">asn_loopback_tree_node</span><span class="o">.</span><span class="n">subnet</span><span class="o">.</span><span class="n">iter_hosts</span><span class="p">()</span>
+        <span class="c">#router.loopback = loopback_hosts.next()</span>
+        <span class="k">for</span> <span class="n">router</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">routers_by_asn</span><span class="p">[</span><span class="n">asn</span><span class="p">],</span> <span class="n">key</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">label</span><span class="p">):</span>
+            <span class="n">router</span><span class="o">.</span><span class="n">overlay</span><span class="o">.</span><span class="n">ip</span><span class="o">.</span><span class="n">loopback</span> <span class="o">=</span> <span class="n">loopback_hosts</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+
+        <span class="c"># now allocate to the links of each cd</span>
+        <span class="k">for</span> <span class="n">cd</span> <span class="ow">in</span> <span class="n">asn_cds</span><span class="p">:</span>
+            <span class="n">hosts</span> <span class="o">=</span> <span class="n">cd</span><span class="o">.</span><span class="n">subnet</span><span class="o">.</span><span class="n">iter_hosts</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">cd</span><span class="o">.</span><span class="n">edges</span><span class="p">()):</span>
+                <span class="n">edge</span><span class="o">.</span><span class="n">ip_address</span> <span class="o">=</span> <span class="n">hosts</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+
+        <span class="c">#TODO: Also want to store this ordering of what is assigned to which node, not just the tree...</span>
+
+        <span class="c"># traverse tree, allocate back to loopbacks, and to nodes</span>
+        <span class="c"># TODO: should loopbacks be a sentinel type node for faster traversal rather than checking each time?</span>
+
+<span class="k">def</span> <span class="nf">allocate_route_reflectors</span><span class="p">(</span><span class="n">G_phy</span><span class="p">,</span> <span class="n">G_bgp</span><span class="p">):</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Allocating route reflectors&quot;</span><span class="p">)</span>
+    <span class="n">graph_phy</span> <span class="o">=</span> <span class="n">G_phy</span><span class="o">.</span><span class="n">_graph</span>
+    <span class="k">for</span> <span class="n">asn</span><span class="p">,</span> <span class="n">devices</span> <span class="ow">in</span> <span class="n">G_phy</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s">&quot;asn&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">routers</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">devices</span> <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">is_router</span><span class="p">]</span>
+        <span class="n">router_ids</span> <span class="o">=</span> <span class="n">unwrap_nodes</span><span class="p">(</span><span class="n">routers</span><span class="p">)</span>
+
+        <span class="n">subgraph_phy</span> <span class="o">=</span> <span class="n">graph_phy</span><span class="o">.</span><span class="n">subgraph</span><span class="p">(</span><span class="n">router_ids</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">subgraph_phy</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>  
+                <span class="k">continue</span> <span class="c"># single node in graph, no ibgp</span>
+
+        <span class="n">betw_cen</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">degree_centrality</span><span class="p">(</span><span class="n">subgraph_phy</span><span class="p">)</span>
+
+        <span class="n">ordered</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">subgraph_phy</span><span class="o">.</span><span class="n">nodes</span><span class="p">(),</span> <span class="n">key</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">betw_cen</span><span class="p">[</span><span class="n">x</span><span class="p">],</span> <span class="n">reverse</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+
+        <span class="n">rr_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">subgraph_phy</span><span class="p">)</span><span class="o">/</span><span class="mi">5</span> <span class="c"># Take top 20% to be route reflectors</span>
+        <span class="n">route_reflectors</span> <span class="o">=</span> <span class="n">ordered</span><span class="p">[:</span><span class="n">rr_count</span><span class="p">]</span> <span class="c"># most connected 20%</span>
+        <span class="n">rr_clients</span> <span class="o">=</span> <span class="n">ordered</span><span class="p">[</span><span class="n">rr_count</span><span class="p">:]</span> <span class="c"># the other routers</span>
+        <span class="n">route_reflectors</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">wrap_nodes</span><span class="p">(</span><span class="n">G_bgp</span><span class="p">,</span> <span class="n">route_reflectors</span><span class="p">))</span>
+        <span class="n">rr_clients</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">wrap_nodes</span><span class="p">(</span><span class="n">G_bgp</span><span class="p">,</span> <span class="n">rr_clients</span><span class="p">))</span>
+
+        <span class="n">G_bgp</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">route_reflectors</span><span class="p">,</span> <span class="n">route_reflector</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span> <span class="c"># mark as route reflector</span>
+        <span class="c"># rr &lt;-&gt; rr</span>
+        <span class="n">over_links</span> <span class="o">=</span> <span class="p">[(</span><span class="n">rr1</span><span class="p">,</span> <span class="n">rr2</span><span class="p">)</span> <span class="k">for</span> <span class="n">rr1</span> <span class="ow">in</span> <span class="n">route_reflectors</span> <span class="k">for</span> <span class="n">rr2</span> <span class="ow">in</span> <span class="n">route_reflectors</span> <span class="k">if</span> <span class="n">rr1</span> <span class="o">!=</span> <span class="n">rr2</span><span class="p">]</span> 
+        <span class="n">G_bgp</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">(</span><span class="n">over_links</span><span class="p">,</span> <span class="nb">type</span> <span class="o">=</span> <span class="s">&#39;ibgp&#39;</span><span class="p">,</span> <span class="n">direction</span> <span class="o">=</span> <span class="s">&#39;over&#39;</span><span class="p">)</span>
+        <span class="c"># client -&gt; rr</span>
+        <span class="n">up_links</span> <span class="o">=</span> <span class="p">[(</span><span class="n">client</span><span class="p">,</span> <span class="n">rr</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">rr</span><span class="p">)</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">rr_clients</span><span class="p">,</span> <span class="n">route_reflectors</span><span class="p">)]</span>
+        <span class="n">G_bgp</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">(</span><span class="n">up_links</span><span class="p">,</span> <span class="nb">type</span> <span class="o">=</span> <span class="s">&#39;ibgp&#39;</span><span class="p">,</span> <span class="n">direction</span> <span class="o">=</span> <span class="s">&#39;up&#39;</span><span class="p">)</span>
+        <span class="c"># rr -&gt; client</span>
+        <span class="n">down_links</span> <span class="o">=</span> <span class="p">[(</span><span class="n">rr</span><span class="p">,</span> <span class="n">client</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">rr</span><span class="p">)</span> <span class="ow">in</span> <span class="n">up_links</span><span class="p">]</span> <span class="c"># opposite of up</span>
+        <span class="n">G_bgp</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">(</span><span class="n">down_links</span><span class="p">,</span> <span class="nb">type</span> <span class="o">=</span> <span class="s">&#39;ibgp&#39;</span><span class="p">,</span> <span class="n">direction</span> <span class="o">=</span> <span class="s">&#39;down&#39;</span><span class="p">)</span>
+
+    <span class="k">print</span> <span class="s">&quot;ibgp done&quot;</span>
+</pre></div>
+
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right"><a href="#">Back to top</a></p>
+    <p>
+        &copy; Copyright 2009--2012, Simon Knight, Hung Nguyen, Nick Falkner, Iain Phillips, Olaf Maennel, Askar Jaboldinov, Matthew Roughan.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>
