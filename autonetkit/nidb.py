@@ -192,7 +192,6 @@ class nidb_node_category(object):
         object.__setattr__(self, 'category_id', category_id)
 
     def __getstate__(self):
-        print "state has cat id", self.category_id
         return (self.nidb, self.node_id, self.category_id)
 
     def __getnewargs__(self):
@@ -217,7 +216,8 @@ class nidb_node_category(object):
         but can later do r1.bgp.attr = value
         """
         if self.category_id in self._node_data:
-            return True
+            if self._node_data[self.category_id]:
+                return True
         return False
 
     @property
@@ -235,7 +235,10 @@ class nidb_node_category(object):
     def __getattr__(self, key):
         """Returns edge property"""
 #TODO: allow appending if non existent: so can do node.bgp.session.append(data)
-        data = self._category_data.get(key)
+        try:
+            data = self._category_data.get(key)
+        except AttributeError:
+            return None # key doesn't exist
         try:
             [item.keys() for item in data]
 #TODO: replace this with an OrderedDict
@@ -288,6 +291,8 @@ class nidb_node(object):
     def dump(self):
         return str(self._node_data)
 
+    def __nonzero__(self):
+        return self.node_id in self.nidb._graph
 
     @property
     def is_router(self):
