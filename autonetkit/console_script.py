@@ -40,7 +40,7 @@ def main():
     anm.save()
     nidb = compile_network(anm)
     render.render(nidb)
-    #deploy_network()
+    deploy_network()
 
     if options.monitor:
         try:
@@ -223,12 +223,18 @@ def compile_network(anm):
 
 def deploy_network():
     log.info("Deploying network")
-    tar_file = deploy.package("rendered/nectar1/netkit/", "netkit")
+    tar_file = deploy.package("rendered/nectar1/nklab/", "nklab")
     server = "trc1.trc.adelaide.edu.au"
-    deploy.transfer(server, "sknight", tar_file, tar_file)
+    username = "sknight"
+
+    server = "115.146.93.255"
+    username = "ubuntu"
+    key_filename = "/Users/sk2/.ssh/sk.pem"
+    
+    #deploy.transfer(server, username, tar_file, tar_file, key_filename)
     print "server", server
-    cd_dir = "rendered/nectar1/netkit/"
-    deploy.extract(server, tar_file, cd_dir)
+    cd_dir = "rendered/nectar1/nklab/"
+    deploy.extract(server, username, tar_file, cd_dir, key_filename)
 
 if __name__ == "__main__":
     try:
