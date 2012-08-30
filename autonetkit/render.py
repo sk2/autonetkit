@@ -135,7 +135,7 @@ def render(nidb):
 #TODO: turn back on multithreaded rendering?
 
 def render_single(nidb):
-    for node in nidb:
+    for node in sorted(nidb):
         render_node(node)
 
 def render_multi(nidb):
