@@ -36,10 +36,10 @@ def main():
         logger.setLevel(logging.DEBUG)
     
 
-    anm = build_network(input_filename)
-    anm.save()
-    nidb = compile_network(anm)
-    render.render(nidb)
+    #anm = build_network(input_filename)
+    #anm.save()
+    #nidb = compile_network(anm)
+    #render.render(nidb)
     deploy_network()
 
     if options.monitor:
@@ -223,7 +223,8 @@ def compile_network(anm):
 
 def deploy_network():
     log.info("Deploying network")
-    tar_file = deploy.package("rendered/nectar1/nklab/", "nklab")
+    #tar_file = deploy.package("rendered/nectar1/nklab/", "nklab")
+    tar_file = "nklab.tar.gz"
     server = "trc1.trc.adelaide.edu.au"
     username = "sknight"
 
@@ -232,9 +233,8 @@ def deploy_network():
     key_filename = "/Users/sk2/.ssh/sk.pem"
     
     #deploy.transfer(server, username, tar_file, tar_file, key_filename)
-    print "server", server
     cd_dir = "rendered/nectar1/nklab/"
-    deploy.extract(server, username, tar_file, cd_dir, key_filename)
+    deploy.extract(server, username, tar_file, cd_dir, timeout = 60, key_filename= key_filename)
 
 if __name__ == "__main__":
     try:

@@ -27,7 +27,7 @@ def transfer(host, username, local, remote, key_filename = None):
     ftp.put(local, remote)
     ftp.close()
 
-def extract(host, username, tar_file, cd_dir, key_filename = None):
+def extract(host, username, tar_file, cd_dir, timeout = 30, key_filename = None):
     from Exscript import Account
     from Exscript.util.start import start
     from Exscript.util.match import first_match
@@ -35,16 +35,17 @@ def extract(host, username, tar_file, cd_dir, key_filename = None):
     from Exscript.protocols.Exception import InvalidCommandException
 
     def starting_host(protocol, index, data):
-        print data.group(index)
+        print "Starting", data.group(index)
 
     def lab_started(protocol, index, data):
         print "Lab started"
 
     def do_something(thread, host, conn):
+        conn.set_timeout(timeout)
         conn.add_monitor(r'Starting (\S+)', starting_host)
         conn.add_monitor(r'The lab has been started', lab_started)
         #conn.data_received_event.connect(data_received)
-        conn.execute('tar -xzf %s' % tar_file)
+        #conn.execute('tar -xzf %s' % tar_file)
         conn.execute('cd %s' % cd_dir)
         conn.execute('vlist')
         conn.execute("lclean")
