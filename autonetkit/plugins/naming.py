@@ -1,0 +1,10 @@
+import autonetkit.ank as ank
+
+def network_hostname(node):
+    network = node.Network
+    if network:
+        print "network is", network, network == None, type(network), network is None
+        return "%s_%s" % (ank.name_folder_safe(network), 
+                ank.name_folder_safe(node))
+    else:
+        return ank.name_folder_safe(node.label) 
