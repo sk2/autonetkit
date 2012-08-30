@@ -229,7 +229,7 @@ def allocate_ips(G_ip):
         allocate_ips_to_cds(tree_root)
 
         my_tree = Tree(tree_root, asn)
-        my_tree.save()
+        #my_tree.save()
 
         # Get loopback from loopback tree node
         loopback_hosts = asn_loopback_tree_node.subnet.iter_hosts()
