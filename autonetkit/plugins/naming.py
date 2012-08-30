@@ -1,3 +1,6 @@
+import autonetkit.ank as ank
+
 def network_hostname(node):
-    print "%s_%s" % (node.Network, node.label)
-    return "%s_%s" % (node.Network, node.label)
+    network = node.Network or ""
+    return "%s_%s" % (ank.name_folder_safe(network), 
+            ank.name_folder_safe(node.label))
