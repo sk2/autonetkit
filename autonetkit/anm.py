@@ -332,6 +332,9 @@ class overlay_graph_data(object):
     def __repr__(self):
         return "Data for (%s, %s)" % (self.anm, self.overlay_id)
 
+    def dump(self):
+        print str(self._graph.graph) 
+
     @property
     def _graph(self):
         #access underlying graph for this overlay_node
