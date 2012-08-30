@@ -192,7 +192,7 @@ def compile_network(anm):
     G_ip = anm.overlay.ip
     G_graphics = anm.overlay.graphics
 #TODO: build this on a platform by platform basis
-    nidb.add_nodes_from(G_phy, retain=['label', 'host', 'platform'])
+    nidb.add_nodes_from(G_phy, retain=['label', 'host', 'platform', 'Network'])
 
     nidb.add_nodes_from(G_ip.nodes("collision_domain"), retain=['label', 'host'], collision_domain = True)
 # add edges to switches
