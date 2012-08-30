@@ -3,6 +3,7 @@ import itertools
 import netaddr
 import os
 import autonetkit.log as log
+import autonetkit.plugins.naming as naming
 
 #TODO: rename compiler to build
 
@@ -247,7 +248,7 @@ class NetkitCompiler(PlatformCompiler):
         quagga_compiler = QuaggaCompiler(self.nidb, self.anm)
 #TODO: this should be all l3 devices not just routers
         for phy_node in G_phy.nodes('is_router', host = self.host, syntax='quagga'):
-            folder_name = ank.name_folder_safe(phy_node.label)
+            folder_name = naming.network_hostname(phy_node)
             nidb_node = self.nidb.node(phy_node)
             nidb_node.render.base = "templates/quagga"
             nidb_node.render.template = "templates/netkit_startup.mako"
@@ -304,7 +305,7 @@ class NetkitCompiler(PlatformCompiler):
                         G_ip.edge(edge).dst.subnet.prefixlen)
                 numeric_id = edge.id.replace("eth", "") # netkit lab.conf uses 1 instead of eth1
                 config_items.append({
-                    'device': ank.name_folder_safe(node.label),
+                    'device': naming.network_hostname(node),
                     'key': numeric_id,
                     'value':  collision_domain,
                     })
@@ -313,7 +314,7 @@ class NetkitCompiler(PlatformCompiler):
         for node in subgraph:
             if node.tap:
                 tap_ips.append({
-                    'device': ank.name_folder_safe(node.label),
+                    'device': naming.network_hostname(node),
                     'id': node.tap.id,
                     'ip': node.tap.ip,
                     })
@@ -338,7 +339,7 @@ class CiscoCompiler(PlatformCompiler):
             nidb_node = self.nidb.node(phy_node)
             nidb_node.render.template = "templates/ios.mako"
             nidb_node.render.dst_folder = os.path.join(self.host, self.timestamp)
-            nidb_node.render.dst_file = "%s.conf" % ank.name_folder_safe(phy_node.label)
+            nidb_node.render.dst_file = "%s.conf" % naming.network_hostname(phy_node)
 
             # Assign interfaces
             int_ids = self.interface_ids_ios()
