@@ -34,6 +34,14 @@ def set_node_default(overlay_graph, nbunch, **kwargs):
             if key not in graph.node[node]:
                 graph.node[node][key] = val
 
+
+def copy_attr_from(overlay_src, overlay_dst, attr):
+    graph_src = unwrap_graph(overlay_src)
+    graph_dst = unwrap_graph(overlay_dst)
+    for n in graph_src:
+        graph_dst.node[n][attr] = graph_src.node[n][attr]
+
+
 def load_graphml(filename):
     import string
     import os
