@@ -10,3 +10,4 @@ versions/*
 
 doc/build
 doc/
+*.graphml
