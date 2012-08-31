@@ -1,0 +1,3 @@
+ssh root@172.16.0.5
+vtysh
+sh ip route {extract /^(.*)$/ into data}

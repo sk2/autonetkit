@@ -90,9 +90,19 @@ def run_command(host, username, remote_hosts, command, timeout = 30, key_filenam
     from Exscript.util.start import start
     from Exscript.util.match import first_match, any_match
     from Exscript import PrivateKey
+    from Exscript.util.template import eval_file
     from Exscript.protocols.Exception import InvalidCommandException
 
+    results = []
+
     def do_something(thread, host, conn):
+        res = eval_file(conn, "autonetkit/exscript/test.template")
+        import pprint
+        #pprint.pprint(res)
+        #print res.get("data")
+        for entry in res["data"]:
+            print entry
+        return
         for remote_host in remote_hosts:
             #TODO: multiplex this better
 #TODO: this needs tap IPs....
@@ -100,6 +110,7 @@ def run_command(host, username, remote_hosts, command, timeout = 30, key_filenam
             conn.execute("vtysh")
             conn.execute(command)
             #print "The response was", repr(conn.response)
+            #results.append(conn.response)
             conn.execute("exit")
             conn.execute("logout")
         
@@ -111,4 +122,7 @@ def run_command(host, username, remote_hosts, command, timeout = 30, key_filenam
 
     hosts = ['ssh://%s' % host]
 #TODO: open multiple ssh sessions
-    start(accounts, hosts, do_something, verbose = 0)
+    start(accounts, hosts, do_something, verbose = 1)
+
+
+    print "results", results
