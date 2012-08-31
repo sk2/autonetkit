@@ -26,6 +26,15 @@ import autonetkit.log as log
         #relative
     #)
 
+def remove_dirs(dirs):
+    for directory in dirs:
+        log.debug("Removing directory %s" % directory)
+        print directory
+        try:
+            shutil.rmtree(directory)
+        except OSError, e:
+            log.warn("Unable to remove %s, %s" % (directory, e))
+
 def resource_path(relative):
     """Makes relative to package"""
     return pkg_resources.resource_filename(__name__, relative)
