@@ -6,7 +6,10 @@ banner motd file /etc/quagga/motd.txt
 !
 % if node.bgp: 
   router bgp ${node.asn}   
+  bgp router-id ${node.loopback}
   no synchronization
+  redistribute kernel
+  redistribute connected  
 % for subnet in node.bgp.advertise_subnets:
 	network ${subnet.network} mask ${subnet.netmask}                                                          
 % endfor 
@@ -42,9 +45,9 @@ banner motd file /etc/quagga/motd.txt
 ! ebgp
 % for neigh in node.bgp.ebgp_neighbors:      
 	! ${neigh.neighbor} 
-    neighbor ${neigh.loopback} remote-as ${neigh.neighbor.asn}
-	neighbor ${neigh.loopback} update-source ${neigh.loopback}                                                     
-    neighbor ${neigh.loopback} send-community
+    neighbor ${neigh.ip} remote-as ${neigh.neighbor.asn}
+	neighbor ${neigh.ip} update-source ${neigh.loopback}                                                     
+    neighbor ${neigh.ip} send-community
 % endfor    
 % endif 
 
