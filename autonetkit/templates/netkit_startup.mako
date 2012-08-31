@@ -6,3 +6,9 @@ route del default
 /etc/init.d/ssh start
 /etc/init.d/hostname.sh 
 /etc/init.d/zebra start
+% if node.ssh.use_key:
+chown -R root:root /root     
+chmod 755 /root
+chmod 755 /root/.ssh
+chmod 644 /root/.ssh/authorized_keys
+% endif     

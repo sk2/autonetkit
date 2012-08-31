@@ -28,6 +28,8 @@ class RouterCompiler(object):
     def compile(self, node):
         ip_node = self.anm.overlay.ip.node(node)
         node.loopback = ip_node.loopback
+        node.loopback_subnet = netaddr.IPNetwork(node.loopback)
+        node.loopback_subnet.prefixlen = 32
         node.interfaces = dict_to_sorted_list(self.interfaces(node), 'id')
         if node in self.anm.overlay.ospf:
             node.ospf.ospf_links = dict_to_sorted_list(self.ospf(node), 'network')
@@ -82,6 +84,8 @@ class RouterCompiler(object):
                 'network': ip_link.dst.subnet,
                 'area': link.area,
                 }
+
+
         return ospf_links
 
     def bgp(self, node):
@@ -135,13 +139,21 @@ class QuaggaCompiler(RouterCompiler):
     """Base Router compiler"""
     def interfaces(self, node):
         ip_node = self.anm.overlay.ip.node(node)
-        loopback_subnet = netaddr.IPNetwork("0.0.0.0/32")
+        phy_node = self.anm.overlay.phy.node(node)
 
         interfaces = super(QuaggaCompiler, self).interfaces(node)
         # OSPF cost
         for link in interfaces:
             if link['ospf']:
                 interfaces[link]['ospf_cost'] = link['ospf'].cost
+
+        if phy_node.is_router:
+            interfaces["lo:1"] = {
+                    'id': "lo:1",
+                    'description': "%s to %s" % (link.src, link.dst),
+                    'ip_address': ip_node.loopback,
+                    'subnet': node.loopback_subnet,
+                    }
 
         return interfaces
 
@@ -262,6 +274,8 @@ class NetkitCompiler(PlatformCompiler):
 # allocate zebra information
             nidb_node.zebra.password = "1234"
             nidb_node.zebra.hostname = folder_name # can't have . in quagga hostnames
+            nidb_node.ssh.use_key = True #TODO: make this set based on presence of key
+
             
             # Note this could take external data
             int_ids = self.interface_ids()
@@ -304,8 +318,7 @@ class NetkitCompiler(PlatformCompiler):
         config_items = []
         for node in subgraph.nodes("is_l3device"):
             for edge in node.edges():
-                collision_domain = "%s.%s" % (G_ip.edge(edge).ip_address, 
-                        G_ip.edge(edge).dst.subnet.prefixlen)
+                collision_domain = str(G_ip.edge(edge).dst.subnet).replace("/", ".")
                 numeric_id = edge.id.replace("eth", "") # netkit lab.conf uses 1 instead of eth1
                 config_items.append({
                     'device': naming.network_hostname(node),
