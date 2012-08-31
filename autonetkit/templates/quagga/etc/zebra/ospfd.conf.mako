@@ -1,12 +1,14 @@
-hostname ${node}
+hostname ${node.zebra.hostname}
 password ${node.zebra.password}   
 banner motd file /etc/quagga/motd.txt
 !
 % for interface in node.interfaces:  
+  %if interface.ospf_cost:
   interface ${interface.id}
   #Link to ${interface.description}
   ip ospf cost ${interface.ospf_cost}
   !
+  %endif
 %endfor
 !
 % if node.ospf: 

@@ -31,14 +31,12 @@ def main():
     if options.debug:
         #TODO: fix this
         import logging
-        print "HERE"
         logger = logging.getLogger("ANK")
         logger.setLevel(logging.DEBUG)
 
     anm = build_network(input_filename)
     anm.save()
     nidb = compile_network(anm)
-    raise SystemExit
     render.remove_dirs(["rendered/nectar1/nklab/"])
     render.render(nidb)
     deploy_network()

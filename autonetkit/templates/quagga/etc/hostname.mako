@@ -1,1 +1,1 @@
-router ${node}    
+${node.zebra.hostname}

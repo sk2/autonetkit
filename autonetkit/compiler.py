@@ -258,9 +258,8 @@ class NetkitCompiler(PlatformCompiler):
 
 # allocate zebra information
             nidb_node.zebra.password = "1234"
+            nidb_node.zebra.hostname = folder_name # can't have . in quagga hostnames
             
-            # Allocate edges
-            # assign interfaces
             # Note this could take external data
             int_ids = self.interface_ids()
             for edge in self.nidb.edges(nidb_node):
@@ -281,7 +280,8 @@ class NetkitCompiler(PlatformCompiler):
         address_block = IPNetwork("172.16.0.0/16").iter_hosts()
         lab_topology.tap_host = address_block.next()
         lab_topology.tap_vm = address_block.next() # for tunnel host
-        for node in self.nidb.nodes("is_l3device", host = self.host):
+        for node in sorted(self.nidb.nodes("is_l3device", host = self.host)):
+            #TODO: fix sorting order
             #TODO: check this works for switches
             node.tap.ip = address_block.next()
         
