@@ -12,6 +12,7 @@ import math
 import autonetkit.log as log
 import autonetkit.plugins.ip as ip
 import autonetkit.plugins.route_reflectors as route_reflectors
+import autonetkit.plugins.process_data as process_data
 
 def main():
     ank_version = pkg_resources.get_distribution("AutoNetkit").version
@@ -236,7 +237,8 @@ def deploy_network(nidb):
     #deploy.extract(server, username, tar_file, cd_dir, timeout = 60, key_filename= key_filename)
     remote_hosts = [node.tap.ip for node in nidb.nodes("is_router")]
     print remote_hosts
-    deploy.run_command(server, username, remote_hosts, "sh ip route", key_filename= key_filename)
+    #deploy.run_command(server, username, remote_hosts, "sh ip route", key_filename= key_filename)
+    process_data.sh_ip_route("")
 
 if __name__ == "__main__":
     try:

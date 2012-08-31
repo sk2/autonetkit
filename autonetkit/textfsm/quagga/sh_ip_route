@@ -1,0 +1,15 @@
+Value Subnet (\d+(\.\d+){3}/\d{2})
+Value Via (\d+(\.\d+){3})
+Value Protocol (\w)
+Value Selected (>)
+Value FIB (\*)
+Value Cost (\[\d+\/\d+\])
+Value Interface (\w+)
+
+Start
+  ^${Protocol}{$Selected}${FIB}\s+${Subnet} is directory connected, ${Interface} -> Record
+  ^${Protocol}\s+${Subnet} is directory connected, ${Interface} -> Record
+  ^${Protocol}${Selected}${FIB}\s+${Subnet} ${Cost} via ${Via}, ${Interface} -> Record
+  ^${Protocol}\s+${Subnet} ${Cost} via ${Via}, ${Interface} -> Record
+
+EOF
