@@ -496,10 +496,11 @@ class OverlayBase(object):
         if dst_nbunch:
             try:
                 dst_nbunch = dst_nbunch.node_id
+                dst_nbunch = set([dst_nbunch]) # faster membership test than other sequences
             except AttributeError:
                 dst_nbunch = (n.node_id for n in dst_nbunch) # only store the id in overlay_edge
+                dst_nbunch = set(dst_nbunch) # faster membership test than other sequences
 
-            dst_nbunch = set(dst_nbunch) # faster membership test than other sequences
             valid_edges  = ((src, dst) for (src, dst) in valid_edges
                     if dst in dst_nbunch)
 
