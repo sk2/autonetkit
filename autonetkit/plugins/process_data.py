@@ -25,15 +25,8 @@ C>* 172.16.0.0/16 is directly connected, eth3
     template = open("autonetkit/textfsm/quagga/sh_ip_route")
     re_table = textfsm.TextFSM(template)
     routes = re_table.ParseText(data)
-    print re_table.header
+    print "\t".join(re_table.header)
     for route in routes:
-        print route
+        print "\t".join(route)
     return
 
-    print "results", data
-    for host, res in data.items():
-        print host
-        for line in res.split("\r\n"):
-            print line
-
-        print "---"
