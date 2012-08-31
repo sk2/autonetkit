@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script type="text/javascript" src="d3.v2.min.js"></script>
+    <script type="text/javascript" src="colorbrewer.js"></script>
+    <script type="text/javascript" src="jquery-1.7.2.min.js"></script>
+
+    <style type="text/css">
+      circle {
+        fill: steelblue;
+      }
+
+      .chart div {
+        font: 10px sans-serif;
+        background-color: steelblue;
+        text-align: right;
+        padding: 3px;
+        margin: 1px;
+        color: white;
+      }
+    </style>
+
+  </head>
+  <body>
+
+    <div>Select overlay: <select id = "interpolate"></select></div>
+
+    <div>
+      <script type="text/javascript">
+
+        var jsondata;
+
+        var overlay_id = "phy"
+
+        function doPoll(){
+          $.get('json/overlay/' + overlay_id, function(data) {
+              jsondata = data;
+              redraw();
+              setTimeout(doPoll, 1000);
+              });
+        }
+
+doPoll(); //start the polling 
+
+
+</script>
+
+<script type="text/javascript">
+
+  var chart = d3.select("body").append("svg")
+  .attr("class", "chart")
+  .attr("width", 800)
+  .attr("height", 600);
+
+  var nodes = d3.map;
+
+var icon_ordinal = d3.scale.ordinal()
+  .domain(["router", "switch", "collision_domain", "server"])
+  .range(["router.svg", "switch.svg", "switch.svg", "server.svg"]);
+
+  var icon = function(d) {
+    return icon_ordinal(d.device_type);
+  }
+
+var source_x = function(d) {
+  return nodes[d.source].x + 32;
+}
+var source_y = function(d) {
+  return nodes[d.source].y + 32;
+}
+
+var target_x = function(d) {
+  return nodes[d.target].x + 32;
+}
+var target_y = function(d) {
+  return nodes[d.target].y + 32;
+}
+
+var label = function(d) {
+  return d.id;
+}
+
+var asn = function(d) {
+  return d.asn;
+}
+
+var edge_id = function(d) {
+  return d.edge_id;
+}
+
+d3.select("select").on("change", function() {
+    alert();
+    console.log(this.value);
+    });
+
+var dropdown = d3.select("#interpolate")
+.on("change", function() {
+    overlay_id = this.value;
+    //console.log(this.value);
+    redraw();
+    })
+
+
+d3.json("json/overlay", function(json) {
+    dropdown
+    .selectAll("option")
+    .data(json)
+    .enter().append("option")
+    .attr("value", String)
+    .text(String);
+    });
+
+
+// based on http://bl.ocks.org/2920551
+var fill = d3.scale.category10();
+var groupFill = function(d, i) { return fill(i); };
+var groupPath = function(d) {
+  return "M" + 
+    d3.geom.hull(d.values.map(function(i) { return [i.x + 32, i.y + 32]; }))
+    .join("L")
+    + "Z";
+}
+
+
+var path_x = function(d) {
+  return nodes[d].x + 32;
+}
+
+var path_y = function(d) {
+  return nodes[d].y+ 32;
+}
+
+
+
+
+
+//d3.json(
+//'json/overlay/ip',
+//function (jsondata) {
+function redraw() {
+
+  // create the chart here with
+  // the returned data
+
+  nodes = jsondata.nodes;
+
+  var groups = d3.nest().key(asn).entries(nodes);
+
+  chart.selectAll("path")
+    .data(groups)
+      .attr("d", groupPath)
+    .enter().insert("path", "circle")
+      .style("fill", groupFill)
+      .style("stroke", groupFill)
+      .style("stroke-width", 80)
+      .style("stroke-linejoin", "round")
+      .style("opacity", 0.1)
+      .attr("d", groupPath);
+
+  //TODO: filter the json data x and y ranges: store in nodes, and use this for the image plotting
+
+  var line = chart.selectAll("line")
+    //.data(jsondata.links, edge_id)
+    .data(jsondata.links)
+
+    //TODO: see why edge_id changes sometimes even though appears the same
+
+    line.enter().append("line")
+    .style("stroke", "rgb(6,120,155)");
+
+  line 
+    .attr("x1", source_x)
+    .attr("y1", source_y)
+    .attr("x2", target_x)
+    .attr("y2", target_y)
+
+    line.exit().transition()
+    .duration(1000)
+    .style("opacity",0)
+    .remove();
+
+  var node_id = function(d) {
+    return d.label + d.network;
+  }
+
+  var image = chart.selectAll("image")
+    .data(nodes, node_id);
+
+  image.enter().append("image")
+    .attr("x", function(d) { return d.x; })
+    .attr("y", function(d) { return d.y; })
+    .attr("width", 64)
+    .attr("height", 64)
+    .attr("xlink:href", icon)
+    ;
+
+  image
+    .attr("x", function(d) { return d.x; })
+    .attr("y", function(d) { return d.y; })
+
+    image.exit().transition()
+    .duration(1000)
+    .style("opacity",0)
+    .remove();
+
+  text = chart.selectAll("text")
+    .data(jsondata.nodes)
+
+    text.enter().append("text")
+    .attr("text-anchor", "middle") 
+    .attr("font-family", "helvetica") 
+    .attr("font-size", "small") 
+
+    text 
+    .attr("x", function(d) { return d.x; })
+    .attr("y", function(d) { return d.y; } )
+    .attr("dx", 32) // padding-right
+    .attr("dy", 65) // vertical-align: middle
+    .text(function (d) { return d.id; } );
+
+  text.exit().transition()
+    .duration(1000)
+    .style("opacity",0)
+    .remove();
+  //});
+
+    //var pathinfo = [1, 6, 4, 2];
+
+  //var line = d3.svg.line()
+  //.x(path_x)
+//.y(path_y)
+  //.interpolate("cardinal")
+  //.tension(0.9);
+//
+  //chart.append("svg:path")
+  //.attr("d", line(pathinfo))
+  //.style("stroke-width", 3)
+  //.style("stroke", "red")
+  //.style("fill", "none");
+
+
+  }
+
+
+function drawEdges() {
+
+}
+
+//TODO: set hover to display properties
+
+</script>
+
+    </div>
+  </body>
+</html>

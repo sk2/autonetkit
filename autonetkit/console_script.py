@@ -34,12 +34,13 @@ def main():
         print "HERE"
         logger = logging.getLogger("ANK")
         logger.setLevel(logging.DEBUG)
-    
 
-    #anm = build_network(input_filename)
-    #anm.save()
-    #nidb = compile_network(anm)
-    #render.render(nidb)
+    anm = build_network(input_filename)
+    anm.save()
+    nidb = compile_network(anm)
+    raise SystemExit
+    render.remove_dirs(["rendered/nectar1/nklab/"])
+    render.render(nidb)
     deploy_network()
 
     if options.monitor:
@@ -223,16 +224,16 @@ def compile_network(anm):
 
 def deploy_network():
     log.info("Deploying network")
-    #tar_file = deploy.package("rendered/nectar1/nklab/", "nklab")
-    tar_file = "nklab.tar.gz"
+    tar_file = deploy.package("rendered/nectar1/nklab/", "nklab")
     server = "trc1.trc.adelaide.edu.au"
     username = "sknight"
 
-    server = "115.146.93.255"
+    server = "115.146.93.255" # 16 core
+    server = "115.146.94.68" # 8 core
     username = "ubuntu"
     key_filename = "/Users/sk2/.ssh/sk.pem"
     
-    #deploy.transfer(server, username, tar_file, tar_file, key_filename)
+    deploy.transfer(server, username, tar_file, tar_file, key_filename)
     cd_dir = "rendered/nectar1/nklab/"
     deploy.extract(server, username, tar_file, cd_dir, timeout = 60, key_filename= key_filename)
 
