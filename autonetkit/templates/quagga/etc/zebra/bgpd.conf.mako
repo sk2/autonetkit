@@ -20,7 +20,7 @@ banner motd file /etc/quagga/motd.txt
 % endif    
 	! ${client.neighbor}
     neighbor ${client.loopback} remote-as ${client.neighbor.asn}
-	neighbor ${client.loopback} update-source ${client.loopback} 
+    neighbor ${client.loopback} update-source ${node.loopback} 
 	neighbor ${client.loopback} route-reflector-client                                                   
     neighbor ${client.loopback} send-community      
 % endfor            
@@ -30,7 +30,7 @@ banner motd file /etc/quagga/motd.txt
 % endif    
 	! ${parent.neighbor}
     neighbor ${parent.loopback} remote-as ${parent.neighbor.asn}
-	neighbor ${parent.loopback} update-source ${parent.loopback} 
+    neighbor ${parent.loopback} update-source ${node.loopback} 
     neighbor ${parent.loopback} send-community      
 % endfor
 % for neigh in node.bgp.ibgp_neighbors:      
@@ -39,14 +39,14 @@ banner motd file /etc/quagga/motd.txt
 % endif 
 	! ${neigh.neighbor}
     neighbor ${neigh.loopback} remote-as ${neigh.neighbor.asn}
-	neighbor ${neigh.loopback} update-source ${neigh.loopback}                                                     
+    neighbor ${neigh.loopback} update-source ${node.loopback}                                                     
     neighbor ${neigh.loopback} send-community      
 % endfor
 ! ebgp
 % for neigh in node.bgp.ebgp_neighbors:      
 	! ${neigh.neighbor} 
     neighbor ${neigh.ip} remote-as ${neigh.neighbor.asn}
-	neighbor ${neigh.ip} update-source ${neigh.loopback}                                                     
+    neighbor ${neigh.ip} update-source ${node.loopback}                                                     
     neighbor ${neigh.ip} send-community
 % endfor    
 % endif 
