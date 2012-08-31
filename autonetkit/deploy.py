@@ -84,19 +84,24 @@ def extract(host, username, tar_file, cd_dir, timeout = 30, key_filename = None)
     hosts = ['ssh://%s' % host]
     start(accounts, hosts, do_something, verbose = 0)
 
-def run_command(host, username, command, timeout = 30, key_filename = None):
+def run_command(host, username, remote_hosts, command, timeout = 30, key_filename = None):
     """Execute command on remote host"""
     from Exscript import Account
     from Exscript.util.start import start
-    from Exscript.util.match import first_match
+    from Exscript.util.match import first_match, any_match
     from Exscript import PrivateKey
     from Exscript.protocols.Exception import InvalidCommandException
 
     def do_something(thread, host, conn):
-        conn.set_timeout(timeout)
+        for remote_host in remote_hosts:
+            #TODO: multiplex this better
 #TODO: this needs tap IPs....
-        telnet_port, command_string = command.split(":")
-        conn.execute(command)
+            conn.execute("ssh root@%s" % remote_host)
+            conn.execute("vtysh")
+            conn.execute(command)
+            #print "The response was", repr(conn.response)
+            conn.execute("exit")
+            conn.execute("logout")
         
     if key_filename:
         key = PrivateKey.from_file(key_filename)
@@ -105,4 +110,5 @@ def run_command(host, username, command, timeout = 30, key_filename = None):
         accounts = [Account(username)] 
 
     hosts = ['ssh://%s' % host]
+#TODO: open multiple ssh sessions
     start(accounts, hosts, do_something, verbose = 0)

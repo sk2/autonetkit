@@ -35,11 +35,11 @@ def main():
         logger.setLevel(logging.DEBUG)
 
     anm = build_network(input_filename)
-    anm.save()
+    #anm.save()
     nidb = compile_network(anm)
-    render.remove_dirs(["rendered/nectar1/nklab/"])
-    render.render(nidb)
-    deploy_network()
+    #render.remove_dirs(["rendered/nectar1/nklab/"])
+    #render.render(nidb)
+    deploy_network(nidb)
 
     if options.monitor:
         try:
@@ -220,9 +220,9 @@ def compile_network(anm):
 
     return nidb
 
-def deploy_network():
+def deploy_network(nidb):
     log.info("Deploying network")
-    tar_file = deploy.package("rendered/nectar1/nklab/", "nklab")
+    #tar_file = deploy.package("rendered/nectar1/nklab/", "nklab")
     server = "trc1.trc.adelaide.edu.au"
     username = "sknight"
 
@@ -231,10 +231,12 @@ def deploy_network():
     username = "ubuntu"
     key_filename = "/Users/sk2/.ssh/sk.pem"
     
-    deploy.transfer(server, username, tar_file, tar_file, key_filename)
-    cd_dir = "rendered/nectar1/nklab/"
-    deploy.extract(server, username, tar_file, cd_dir, timeout = 60, key_filename= key_filename)
-    #deploy.run_command(server, username, "zebra: sh ip route", key_filename= key_filename)
+    #deploy.transfer(server, username, tar_file, tar_file, key_filename)
+    #cd_dir = "rendered/nectar1/nklab/"
+    #deploy.extract(server, username, tar_file, cd_dir, timeout = 60, key_filename= key_filename)
+    remote_hosts = [node.tap.ip for node in nidb.nodes("is_router")]
+    print remote_hosts
+    deploy.run_command(server, username, remote_hosts, "sh ip route", key_filename= key_filename)
 
 if __name__ == "__main__":
     try:
