@@ -29,6 +29,7 @@ def transfer(host, username, local, remote, key_filename = None):
     ftp.close()
 
 def extract(host, username, tar_file, cd_dir, timeout = 30, key_filename = None):
+    """Extract and start lab"""
     from Exscript import Account
     from Exscript.util.start import start
     from Exscript.util.match import first_match
@@ -49,7 +50,7 @@ def extract(host, username, tar_file, cd_dir, timeout = 30, key_filename = None)
         conn.add_monitor(r'The lab has been started', lab_started)
         #conn.data_received_event.connect(data_received)
         conn.execute('cd %s' % cd_dir)
-        conn.execute('lcrash')
+        conn.execute('lcrash -k')
         conn.execute("lclean")
         conn.execute('cd') # back to home directory tar file copied to
         conn.execute('tar -xzf %s' % tar_file)
@@ -72,7 +73,6 @@ def extract(host, username, tar_file, cd_dir, timeout = 30, key_filename = None)
                 conn.execute(start_command)
         first_match(conn, r'^The lab has been started')
         conn.send("exit")
-
 #TODO: need to capture and handle tap startup
 
     if key_filename:
@@ -81,7 +81,28 @@ def extract(host, username, tar_file, cd_dir, timeout = 30, key_filename = None)
     else:
         accounts = [Account(username)] 
 
+    hosts = ['ssh://%s' % host]
+    start(accounts, hosts, do_something, verbose = 0)
+
+def run_command(host, username, command, timeout = 30, key_filename = None):
+    """Execute command on remote host"""
+    from Exscript import Account
+    from Exscript.util.start import start
+    from Exscript.util.match import first_match
+    from Exscript import PrivateKey
+    from Exscript.protocols.Exception import InvalidCommandException
+
+    def do_something(thread, host, conn):
+        conn.set_timeout(timeout)
+#TODO: this needs tap IPs....
+        telnet_port, command_string = command.split(":")
+        conn.execute(command)
+        
+    if key_filename:
+        key = PrivateKey.from_file(key_filename)
+        accounts = [Account(username, key = key)] 
+    else:
+        accounts = [Account(username)] 
 
     hosts = ['ssh://%s' % host]
-    start(accounts, hosts, do_something, verbose = 2)
-
+    start(accounts, hosts, do_something, verbose = 0)

@@ -234,6 +234,7 @@ def deploy_network():
     deploy.transfer(server, username, tar_file, tar_file, key_filename)
     cd_dir = "rendered/nectar1/nklab/"
     deploy.extract(server, username, tar_file, cd_dir, timeout = 60, key_filename= key_filename)
+    #deploy.run_command(server, username, "zebra: sh ip route", key_filename= key_filename)
 
 if __name__ == "__main__":
     try:
