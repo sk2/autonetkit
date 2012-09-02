@@ -244,6 +244,8 @@ def measure_network(nidb):
     #process_data.sh_ip_route("")
     command = 'vtysh -c "show ip route"'
     measure.send("nectar1", command, remote_hosts)
+    command = 'vtysh -c "show ip bgp summary"'
+    measure.send("nectar1", command, remote_hosts)
 
 if __name__ == "__main__":
     try:

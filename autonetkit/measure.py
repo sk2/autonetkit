@@ -9,7 +9,6 @@ import autonetkit.plugins.process_data as process_data
 def send(server, command, hosts, threads = 5):
 # netaddr IP addresses not JSON serializable
     hosts = [str(h) for h in hosts]
-    hosts = hosts[:2]
     connection = pika.BlockingConnection(pika.ConnectionParameters(
         host='115.146.94.68'))
     channel = connection.channel()
@@ -31,6 +30,11 @@ def send(server, command, hosts, threads = 5):
 
     hosts_received = set(hosts)
 
+    # parsing function mappings
+    parsing = {
+            'vtysh -c "show ip route"': process_data.sh_ip_route,
+            }
+    
     def callback(ch, method, properties, body):
         #TODO: send update to tornado web queue...
         data = json.loads(body)
@@ -38,13 +42,19 @@ def send(server, command, hosts, threads = 5):
             for command, command_result in host_data.items():
                 print host, command
                 command_result = command_result.replace("\\r\\n", "\n")
-                process_data.sh_ip_route(command_result)
+                if command in parsing:
+                    parse_command = parsing[command]
+                    parse_command(command_result)
+                else:
+                    print "No parser defined for command %s" % command
+                    print "Raw output:"
+                    print command_result
 
             if host in hosts_received:
                 hosts_received.remove(host) # remove from list of waiting hosts
 
             if not len(hosts_received):
-                raise SystemExit #TODO: stop consuming
+                channel.stop_consuming()
 
             print
 
