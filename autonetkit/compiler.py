@@ -260,6 +260,8 @@ class NetkitCompiler(PlatformCompiler):
     def compile(self):
         log.info("Compiling Netkit for %s" % self.host)
         G_phy = self.anm.overlay.phy
+        G_bgp = self.anm['bgp']
+        G_ip = self.anm['ip']
         quagga_compiler = QuaggaCompiler(self.nidb, self.anm)
 #TODO: this should be all l3 devices not just routers
         for phy_node in G_phy.nodes('is_router', host = self.host, syntax='quagga'):
@@ -275,7 +277,7 @@ class NetkitCompiler(PlatformCompiler):
             nidb_node.zebra.password = "1234"
             nidb_node.zebra.hostname = folder_name # can't have . in quagga hostnames
             nidb_node.ssh.use_key = True #TODO: make this set based on presence of key
-            nidb_node.bgp.debug = True
+
             
             # Note this could take external data
             int_ids = self.interface_ids()
@@ -285,6 +287,22 @@ class NetkitCompiler(PlatformCompiler):
             nidb_node.tap.id = int_ids.next()
 
             quagga_compiler.compile(nidb_node)
+
+            #TODO: move these into inherited BGP config
+            nidb_node.bgp.debug = True
+            static_routes = []
+            for session in G_bgp.edges(phy_node):
+                if session.type == "ebgp":
+                    neigh = session.dst
+                    nidb_neigh = self.nidb.node(neigh)
+                    ip_link = G_ip.edge(session)
+                    dst_int_ip = G_ip.edges(ip_link.dst, neigh).next().ip_address #TODO: split this to a helper function
+                    static_routes.append( {
+                        "description": neigh,
+                        "loopback": nidb_neigh.loopback_subnet,
+                        "next_hop": dst_int_ip,
+                        })
+            nidb_node.zebra.static_routes = static_routes
 
         # and lab.conf
         self.allocate_tap_ips()

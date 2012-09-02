@@ -40,7 +40,7 @@ def main():
     anm = build_network(input_filename)
     #anm.save()
     nidb = compile_network(anm)
-    #render.remove_dirs(["rendered/nectar1/nklab/"])
+    render.remove_dirs(["rendered/nectar1/nklab/"])
     render.render(nidb)
     deploy_network(nidb)
     measure_network(nidb)
@@ -240,7 +240,8 @@ def deploy_network(nidb):
     deploy.extract(server, username, tar_file, cd_dir, timeout = 60, key_filename= key_filename)
 
 def measure_network(nidb):
-    remote_hosts = [node.tap.ip for node in nidb.nodes("is_router")]
+    log.info("Measuring network")
+    remote_hosts = [node.tap.ip for node in nidb.nodes("is_router") if node.bgp.ebgp_neighbors]
     #deploy.run_command(server, username, remote_hosts, "sh ip route", key_filename= key_filename)
 
     #process_data.sh_ip_route("")
@@ -250,10 +251,13 @@ def measure_network(nidb):
 
     #command = "traceroute -n %s" % dest_ip
     command = 'vtysh -c "show ip route"'
-    command = "more /var/log/zebra/bgpd.log"
     #measure.send("nectar1", command, remote_hosts)
-    #command = 'vtysh -c "show ip bgp summary"'
+    command = "cat /var/log/zebra/bgpd.log"
     measure.send("nectar1", command, remote_hosts)
+    #command = 'vtysh -c "show ip bgp summary"'
+    #measure.send("nectar1", command, remote_hosts)
+    command = 'vtysh -c "show ip bgp summary"'
+    #measure.send("nectar1", command, remote_hosts)
 
 if __name__ == "__main__":
     try:
