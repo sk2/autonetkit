@@ -58,5 +58,5 @@ debug bgp filters
 debug bgp fsm
 debug bgp keepalives
 debug bgp updates 
-  log file /var/log/zebra/bgpd.log
+log file /var/log/zebra/bgpd.log
 % endif
