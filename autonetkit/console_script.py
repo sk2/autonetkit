@@ -42,6 +42,7 @@ def main():
     #render.remove_dirs(["rendered/nectar1/nklab/"])
     #render.render(nidb)
     deploy_network(nidb)
+    measure_network(nidb)
 
     if options.monitor:
         try:
@@ -236,10 +237,13 @@ def deploy_network(nidb):
     #deploy.transfer(server, username, tar_file, tar_file, key_filename)
     #cd_dir = "rendered/nectar1/nklab/"
     #deploy.extract(server, username, tar_file, cd_dir, timeout = 60, key_filename= key_filename)
+
+def measure_network(nidb):
     remote_hosts = [node.tap.ip for node in nidb.nodes("is_router")]
     #deploy.run_command(server, username, remote_hosts, "sh ip route", key_filename= key_filename)
     #process_data.sh_ip_route("")
-    measure.send("show ip route", remote_hosts)
+    command = 'vtysh -c "show ip route"'
+    measure.send("nectar1", command, remote_hosts)
 
 if __name__ == "__main__":
     try:

@@ -1,29 +1,36 @@
 import pika
 import json
 import pprint
+import sys
 
 def main():
+    server = sys.argv[1]
     connection = pika.BlockingConnection(pika.ConnectionParameters(
             host='115.146.94.68'))
     channel = connection.channel()
 
+    channel.exchange_declare(exchange='measure',
+            type='direct')
 
-    channel.queue_declare(queue='measure')
+    result = channel.queue_declare(exclusive=True)
+    queue_name = result.method.queue
+
+    channel.queue_bind(exchange='measure',
+                       queue=queue_name,
+                       routing_key = server)
 
     print ' [*] Waiting for messages. To exit press CTRL+C'
 
     def callback(ch, method, properties, body):
         data = json.loads(body)
-        pprint.pprint(data)
         command = data['command']
         hosts = data['hosts']
         threads = data['threads']
         run_command(channel, command, hosts,  threads)
-        #print " [x] Received %r" % (body,)
 
     channel.basic_consume(callback,
-                        queue='measure',
-                        no_ack=True)
+                      queue=queue_name,
+                      no_ack=True)
 
     channel.start_consuming()
 
@@ -39,32 +46,21 @@ def run_command(rmq_channel, command, hosts,  threads):
     results = {}
 
     def do_something(thread, host, conn):
-        #res = eval_file(conn, "autonetkit/exscript/test.template")
-        #import pprint
-        #pprint.pprint(res)
-        #print res.get("data")
-        #for entry in res["data"]:
-            #print entry
-        #return
-            conn.execute("vtysh")
-            conn.execute(command)
-            #print "The response was", repr(conn.response)
-            result = conn.response
-            body = {
-                    (command, host): result,
-                    }
-            rmq_channel.basic_publish(exchange='',
-                    routing_key='measure',
-                    body= body)
-
-            conn.execute("exit")
-            conn.execute("logout")
+        #conn.execute('vtysh -c "%s"' % command)
+        conn.execute(command)
+        result = repr(conn.response)
+        data = { host.address: {command: result}, }
+        body = json.dumps(data)
+        rmq_channel.basic_publish(exchange='measure',
+                routing_key = "result",
+                body= body)
+        #conn.execute("exit")
         
     accounts = [Account("root")] 
 
     hosts = [Host(h, default_protocol = "ssh") for h in hosts]
 #TODO: open multiple ssh sessions
-    start(accounts, hosts, do_something, verbose = 2)
+    start(accounts, hosts, do_something, max_threads = threads)
     return results
 
 if __name__ == "__main__":

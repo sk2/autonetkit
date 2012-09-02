@@ -1,7 +1,7 @@
 import textfsm
 
 def sh_ip_route(data):
-    data = """
+    sample_data = """
     Codes: K - kernel route, C - connected, S - static, R - RIP, O - OSPF,
        I - ISIS, B - BGP, > - selected route, * - FIB route
 
