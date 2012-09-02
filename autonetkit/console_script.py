@@ -239,7 +239,7 @@ def deploy_network(nidb):
     remote_hosts = [node.tap.ip for node in nidb.nodes("is_router")]
     #deploy.run_command(server, username, remote_hosts, "sh ip route", key_filename= key_filename)
     #process_data.sh_ip_route("")
-    measure.send()
+    measure.send("show ip route", remote_hosts)
 
 if __name__ == "__main__":
     try:
