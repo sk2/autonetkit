@@ -8,6 +8,7 @@ import compiler
 import pkg_resources
 import change_monitor
 import deploy
+import measure
 import math
 import autonetkit.log as log
 import autonetkit.plugins.ip as ip
@@ -236,9 +237,9 @@ def deploy_network(nidb):
     #cd_dir = "rendered/nectar1/nklab/"
     #deploy.extract(server, username, tar_file, cd_dir, timeout = 60, key_filename= key_filename)
     remote_hosts = [node.tap.ip for node in nidb.nodes("is_router")]
-    print remote_hosts
     #deploy.run_command(server, username, remote_hosts, "sh ip route", key_filename= key_filename)
-    process_data.sh_ip_route("")
+    #process_data.sh_ip_route("")
+    measure.send()
 
 if __name__ == "__main__":
     try:
