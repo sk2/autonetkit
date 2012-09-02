@@ -11,7 +11,7 @@ banner motd file /etc/quagga/motd.txt
   redistribute kernel
   redistribute connected  
 % for subnet in node.bgp.advertise_subnets:
-	network ${subnet.network} mask ${subnet.netmask}                                                          
+  network ${subnet.cidr}
 % endfor 
 ! ibgp
 % for client in node.bgp.ibgp_rr_clients:   

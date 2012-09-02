@@ -41,8 +41,8 @@ def main():
     #anm.save()
     nidb = compile_network(anm)
     #render.remove_dirs(["rendered/nectar1/nklab/"])
-    #render.render(nidb)
-    #deploy_network(nidb)
+    render.render(nidb)
+    deploy_network(nidb)
     measure_network(nidb)
 
     if options.monitor:
@@ -250,6 +250,7 @@ def measure_network(nidb):
 
     #command = "traceroute -n %s" % dest_ip
     command = 'vtysh -c "show ip route"'
+    command = "more /var/log/zebra/bgpd.log"
     #measure.send("nectar1", command, remote_hosts)
     #command = 'vtysh -c "show ip bgp summary"'
     measure.send("nectar1", command, remote_hosts)
