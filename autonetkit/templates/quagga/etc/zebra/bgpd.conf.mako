@@ -45,9 +45,9 @@ banner motd file /etc/quagga/motd.txt
 ! ebgp
 % for neigh in node.bgp.ebgp_neighbors:      
 	! ${neigh.neighbor} 
-    neighbor ${neigh.ip} remote-as ${neigh.neighbor.asn}
-    neighbor ${neigh.ip} update-source ${node.loopback}                                                     
-    neighbor ${neigh.ip} send-community
+    neighbor ${neigh.loopback} remote-as ${neigh.neighbor.asn}
+    neighbor ${neigh.loopback} update-source ${node.loopback}                                                     
+    neighbor ${neigh.loopback} send-community
 % endfor    
 % endif 
 

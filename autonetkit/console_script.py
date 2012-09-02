@@ -40,9 +40,9 @@ def main():
     anm = build_network(input_filename)
     #anm.save()
     nidb = compile_network(anm)
-    render.remove_dirs(["rendered/nectar1/nklab/"])
-    render.render(nidb)
-    deploy_network(nidb)
+    #render.remove_dirs(["rendered/nectar1/nklab/"])
+    #render.render(nidb)
+    #deploy_network(nidb)
     measure_network(nidb)
 
     if options.monitor:
@@ -249,14 +249,14 @@ def measure_network(nidb):
 # choose random interface on this node
     dest_ip = dest_node.interfaces[0].ip_address
 
-    #command = "traceroute -n %s" % dest_ip
-    command = 'vtysh -c "show ip route"'
-    #measure.send("nectar1", command, remote_hosts)
-    command = "cat /var/log/zebra/bgpd.log"
+    command = "traceroute -n %s" % dest_ip
+    #command = 'vtysh -c "show ip route"'
     measure.send("nectar1", command, remote_hosts)
+    #command = "cat /var/log/zebra/bgpd.log"
+    #measure.send("nectar1", command, remote_hosts)
     #command = 'vtysh -c "show ip bgp summary"'
     #measure.send("nectar1", command, remote_hosts)
-    command = 'vtysh -c "show ip bgp summary"'
+    #command = 'vtysh -c "show ip bgp summary"'
     #measure.send("nectar1", command, remote_hosts)
 
 if __name__ == "__main__":
