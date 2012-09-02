@@ -66,6 +66,9 @@ class overlay_data_list_of_dicts(object):
         #TODO: want to introduce some sorting here.... how?
         return iter(overlay_data_dict(item) for item in self.data)
 
+    def __getitem__(self, key):
+        return overlay_data_dict(self.data[key])
+
 class overlay_edge_accessor(object):
 #TODO: do we even need this?
     """API to access overlay nodes in ANM"""

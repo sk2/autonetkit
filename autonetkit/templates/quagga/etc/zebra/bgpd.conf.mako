@@ -51,4 +51,12 @@ banner motd file /etc/quagga/motd.txt
 % endfor    
 % endif 
 
-log file /var/log/zebra/bgpd.log
+% if node.bgp.debug:
+debug bgp
+debug bgp events
+debug bgp filters
+debug bgp fsm
+debug bgp keepalives
+debug bgp updates 
+  log file /var/log/zebra/bgpd.log
+% endif

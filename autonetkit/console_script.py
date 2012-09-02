@@ -3,6 +3,7 @@ import ank
 import itertools
 from nidb import NIDB
 import render
+import pprint
 import time
 import compiler
 import pkg_resources
@@ -41,7 +42,7 @@ def main():
     nidb = compile_network(anm)
     #render.remove_dirs(["rendered/nectar1/nklab/"])
     #render.render(nidb)
-    deploy_network(nidb)
+    #deploy_network(nidb)
     measure_network(nidb)
 
     if options.monitor:
@@ -225,7 +226,7 @@ def compile_network(anm):
 
 def deploy_network(nidb):
     log.info("Deploying network")
-    #tar_file = deploy.package("rendered/nectar1/nklab/", "nklab")
+    tar_file = deploy.package("rendered/nectar1/nklab/", "nklab")
     server = "trc1.trc.adelaide.edu.au"
     username = "sknight"
 
@@ -234,17 +235,23 @@ def deploy_network(nidb):
     username = "ubuntu"
     key_filename = "/Users/sk2/.ssh/sk.pem"
     
-    #deploy.transfer(server, username, tar_file, tar_file, key_filename)
-    #cd_dir = "rendered/nectar1/nklab/"
-    #deploy.extract(server, username, tar_file, cd_dir, timeout = 60, key_filename= key_filename)
+    deploy.transfer(server, username, tar_file, tar_file, key_filename)
+    cd_dir = "rendered/nectar1/nklab/"
+    deploy.extract(server, username, tar_file, cd_dir, timeout = 60, key_filename= key_filename)
 
 def measure_network(nidb):
     remote_hosts = [node.tap.ip for node in nidb.nodes("is_router")]
     #deploy.run_command(server, username, remote_hosts, "sh ip route", key_filename= key_filename)
+
     #process_data.sh_ip_route("")
+    dest_node = nidb.node("r1.as1") #TODO: make this selectable from web interface
+# choose random interface on this node
+    dest_ip = dest_node.interfaces[0].ip_address
+
+    #command = "traceroute -n %s" % dest_ip
     command = 'vtysh -c "show ip route"'
-    measure.send("nectar1", command, remote_hosts)
-    command = 'vtysh -c "show ip bgp summary"'
+    #measure.send("nectar1", command, remote_hosts)
+    #command = 'vtysh -c "show ip bgp summary"'
     measure.send("nectar1", command, remote_hosts)
 
 if __name__ == "__main__":

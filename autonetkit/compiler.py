@@ -275,7 +275,7 @@ class NetkitCompiler(PlatformCompiler):
             nidb_node.zebra.password = "1234"
             nidb_node.zebra.hostname = folder_name # can't have . in quagga hostnames
             nidb_node.ssh.use_key = True #TODO: make this set based on presence of key
-
+            nidb_node.bgp.debug = True
             
             # Note this could take external data
             int_ids = self.interface_ids()
