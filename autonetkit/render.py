@@ -33,7 +33,7 @@ def remove_dirs(dirs):
         try:
             shutil.rmtree(directory)
         except OSError, e:
-            log.warn("Unable to remove %s, %s" % (directory, e))
+            log.warning("Unable to remove %s, %s" % (directory, e))
 
 def resource_path(relative):
     """Makes relative to package"""
@@ -76,7 +76,7 @@ def render_node(node):
             try:
                 render_template = lookup.get_template(render_template_file)
             except SyntaxException, error:
-                log.warn( "Unable to render %s: Syntax error in template: %s" % (node, error))
+                log.warning( "Unable to render %s: Syntax error in template: %s" % (node, error))
                 return
             dst_file = os.path.join(render_output_dir, node.render.dst_file)
 
@@ -92,11 +92,11 @@ def render_node(node):
                         date = date,
                         ))
                 except KeyError, error:
-                    log.warn( "Unable to render %s: %s not set" % (node, error))
+                    log.warning( "Unable to render %s: %s not set" % (node, error))
                 except AttributeError, error:
-                    log.warn( "Unable to render %s: %s " % (node, error))
+                    log.warning( "Unable to render %s: %s " % (node, error))
                 except NameError, error:
-                    log.warn( "Unable to render %s: %s. Check all variables used are defined" % (node, error))
+                    log.warning( "Unable to render %s: %s. Check all variables used are defined" % (node, error))
 
         if render_base:
             render_base = resource_path(render_base)
@@ -199,7 +199,7 @@ def render_topology(topology):
     try:
         render_template = lookup.get_template(render_template_file)
     except SyntaxException, error:
-        log.warn("Unable to render %s: Syntax error in template: %s" % (topology, error))
+        log.warning("Unable to render %s: Syntax error in template: %s" % (topology, error))
         return
     dst_file = os.path.join(render_output_dir, topology.render_dst_file)
 
@@ -215,10 +215,10 @@ def render_topology(topology):
                 date = date,
                 ))
         except KeyError, error:
-            log.warn( "Unable to render %s: %s not set" % (topology, error))
+            log.warning( "Unable to render %s: %s not set" % (topology, error))
         except AttributeError, error:
-            log.warn( "Unable to render %s: %s " % (topology, error))
+            log.warning( "Unable to render %s: %s " % (topology, error))
         except NameError, error:
-            log.warn( "Unable to render %s: %s. Check all variables used are defined" % (topology, error))
+            log.warning( "Unable to render %s: %s. Check all variables used are defined" % (topology, error))
 
 
