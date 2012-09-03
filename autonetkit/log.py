@@ -54,6 +54,20 @@ class ColoredLogger(logging.Logger):
         self.addHandler(console)
         return
 
+
+import logging.handlers
+LOG_FILENAME =  "autonetkit.log"
+LOG_SIZE = 2097152 # 2 MB
+fh = logging.handlers.RotatingFileHandler(
+            LOG_FILENAME, maxBytes=LOG_SIZE, backupCount=5)
+fh.setLevel(logging.DEBUG)
+formatter = logging.Formatter("%(asctime)s %(levelname)s "
+                            "%(funcName)s %(message)s")
+fh.setFormatter(formatter)
+
+logging.getLogger('').addHandler(fh)
+
+
 logging.setLoggerClass(ColoredLogger)
 logger = logging.getLogger("ANK")
 logger.setLevel(logging.INFO)

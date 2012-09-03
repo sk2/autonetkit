@@ -17,3 +17,5 @@ doc/
 *.graphml2
 
 *.gz
+
+*.log
