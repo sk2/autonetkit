@@ -6,9 +6,10 @@ import json
 import pprint
 import autonetkit.plugins.process_data as process_data
 
-def send(server, command, hosts, threads = 5):
+def send(nidb, server, command, hosts, threads = 5):
 # netaddr IP addresses not JSON serializable
     hosts = [str(h) for h in hosts]
+
     connection = pika.BlockingConnection(pika.ConnectionParameters(
         host='115.146.94.68'))
     channel = connection.channel()
@@ -33,6 +34,7 @@ def send(server, command, hosts, threads = 5):
     # parsing function mappings
     parsing = {
             'vtysh -c "show ip route"': process_data.sh_ip_route,
+            "traceroute": process_data.traceroute,
             }
     
     def callback(ch, method, properties, body):
@@ -40,11 +42,21 @@ def send(server, command, hosts, threads = 5):
         data = json.loads(body)
         for host, host_data in data.items():
             for command, command_result in host_data.items():
-                print host, command
                 command_result = command_result.replace("\\r\\n", "\n")
                 if command in parsing:
+                    print host, command
                     parse_command = parsing[command]
-                    parse_command(command_result)
+                    parse_command(nidb, command_result)
+                elif "traceroute" in command:
+                    _, _, dst = command.split()
+                    src_host = process_data.reverse_tap_lookup(nidb, host)
+                    dst_host = process_data.reverse_lookup(nidb, dst)
+                    print "Trace from %s to %s" % (src_host, dst_host)
+                    parse_command = parsing["traceroute"]
+                    trace_result = parse_command(nidb, command_result)
+                    print trace_result
+                    trace_result.insert(0, src_host) 
+                    print trace_result
                 else:
                     print "No parser defined for command %s" % command
                     print "Raw output:"

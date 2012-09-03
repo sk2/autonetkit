@@ -1,6 +1,7 @@
 import textfsm
+import pika
 
-def sh_ip_route(data):
+def sh_ip_route(nidb, data):
     sample_data = """
     Codes: K - kernel route, C - connected, S - static, R - RIP, O - OSPF,
        I - ISIS, B - BGP, > - selected route, * - FIB route
@@ -30,3 +31,31 @@ C>* 172.16.0.0/16 is directly connected, eth3
         print "\t".join(route)
     return
 
+def traceroute(nidb, data):
+    template = open("autonetkit/textfsm/linux/traceroute")
+    re_table = textfsm.TextFSM(template)
+    routes = re_table.ParseText(data)
+    #print "\t".join(re_table.header)
+    for route in routes:
+        #print "\t".join(route)
+        route = route[0] # first element of table: todo make this programatic from table.header
+        #print reverse_lookup(nidb, route)
+
+    return [reverse_lookup(nidb, route[0])[1] for route in routes]
+
+
+def reverse_lookup(nidb, address):
+    for node in nidb.nodes("is_l3device"):
+        if str(node.loopback) == address:
+            return ("loopback", node)
+
+        for interface in node.interfaces:
+            if str(interface.ip_address) == address:
+                return (interface.id, node)
+            
+    return "IP not found"
+
+def reverse_tap_lookup(nidb, address):
+    for node in nidb.nodes("is_l3device"):
+        if str(node.tap.ip) == address:
+            return node

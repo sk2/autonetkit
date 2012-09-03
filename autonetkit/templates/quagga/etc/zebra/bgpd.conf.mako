@@ -39,6 +39,7 @@ banner motd file /etc/quagga/motd.txt
     neighbor ${neigh.loopback} remote-as ${neigh.neighbor.asn}
     neighbor ${neigh.loopback} update-source ${node.loopback}                                                     
     neighbor ${neigh.loopback} send-community      
+    neighbor ${neigh.loopback} next-hop-self
 % endfor
 ! ebgp
 % for neigh in node.bgp.ebgp_neighbors:      

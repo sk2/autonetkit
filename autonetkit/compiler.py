@@ -295,6 +295,7 @@ class NetkitCompiler(PlatformCompiler):
             #TODO: move these into inherited BGP config
             nidb_node.bgp.debug = True
             static_routes = []
+            """
             for session in G_bgp.edges(phy_node):
                 if session.type == "ebgp":
                     neigh = session.dst
@@ -306,6 +307,7 @@ class NetkitCompiler(PlatformCompiler):
                         "loopback": nidb_neigh.loopback_subnet,
                         "next_hop": dst_int_ip,
                         })
+            """
             nidb_node.zebra.static_routes = static_routes
 
         # and lab.conf
