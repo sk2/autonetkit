@@ -29,7 +29,6 @@ import autonetkit.log as log
 def remove_dirs(dirs):
     for directory in dirs:
         log.debug("Removing directory %s" % directory)
-        print directory
         try:
             shutil.rmtree(directory)
         except OSError, e:
@@ -70,7 +69,14 @@ def render_node(node):
 #TODO: make sure is an abspath here so don't wipe user directory!!!
         
         if not os.path.isdir(render_output_dir):
-            os.makedirs(render_output_dir)
+            try:
+                os.makedirs(render_output_dir)
+            except OSError, e:
+                if e.strerror == "File exists":
+                    pass # created by another process, safe to ignore
+                else:
+                    raise e
+                
 
         if render_template_file:
             try:
