@@ -35,7 +35,7 @@
           $.get('json/overlay/' + overlay_id, function(data) {
               jsondata = data;
               redraw();
-              setTimeout(doPoll, 50000);
+              setTimeout(doPoll, 1000);
               });
         }
 
@@ -43,9 +43,11 @@ doPoll(); //start the polling
 
 
 //todo: replace poll with full websocket
+  var nodes_by_id = {};
 
+  var pathinfo = [];
 
-var ws = new WebSocket("ws://129.127.12.122:8888/ws");
+var ws = new WebSocket("ws://127.0.0.1:8888/ws");
 ws.onopen = function() {
   ws.send("Hello, world");
 };
@@ -53,7 +55,11 @@ ws.onopen = function() {
 ws.onmessage = function (evt) {
   //console.log(evt.data);
   var data = jQuery.parseJSON(evt.data);
+  //console.log(data);
+  //TODO: parse to see if valid traceroute path or other data
+  pathinfo.push(data);
   console.log(data);
+  redraw_paths();
 }
 </script>
 
@@ -138,12 +144,15 @@ var groupPath = function(d) {
 
 
 var path_x = function(d) {
-  console.log(d);
-  return nodes[d].x + 32;
+  node = nodes_by_id[d];
+  //return nodes[index].x + 32;
+  return node.x+ 32;
 }
 
 var path_y = function(d) {
-  return nodes[d].y+ 32;
+  node = nodes_by_id[d];
+  //return nodes[index].y+ 32;
+  return node.y+ 32;
 }
 
 
@@ -155,7 +164,6 @@ function redraw() {
   // the returned data
 
   nodes = jsondata.nodes;
-  var nodes_by_id = {};
   nodes.forEach(function(node) {
       //todo: should this just be the index mapping?
       nodes_by_id[node.id] = node;
@@ -241,12 +249,17 @@ function redraw() {
     .remove();
   //});
 
-    var pathinfo = [
-    [1, 6, 4, 2],
-    [1,2,3]];
+    }
+
+function redraw_paths() {
+
+    //var pathinfo = [
+    //[1, 6, 4, 2],
+    //[1, 3, 4, 2],
+    //[1,2,3]];
 
 
-    var pathinfo = [1, 6, 4, 2];
+    //var pathinfo = [1, 6, 4, 2];
 
     var traceroute_line = d3.svg.line()
       .x(path_x)
@@ -257,12 +270,13 @@ function redraw() {
     chart.selectAll("path2")
       .data(pathinfo)
       .enter().append("path")
-      .attr("d", traceroute_line(pathinfo))
+      .attr("d", traceroute_line)
       .style("stroke-width", 1)
       .style("stroke", "red")
       .style("fill", "none")
+      .on("mouseover", function(){d3.select(this).style("stroke", "blue");})
+      .on("mouseout", function(){d3.select(this).style("stroke", "red");})
     ;
-
 
   }
 
