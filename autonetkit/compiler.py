@@ -118,9 +118,13 @@ class RouterCompiler(object):
                 else:
                     ibgp_neighbors[key] = data
             else:
+                #TODO: fix this: this is a workaround for Quagga next-hop denied for loopback (even with static route)
+                ip_link = G_ip.edge(session)
+                
                 ebgp_neighbors[key] = {
                     'neighbor': neigh,
                     'loopback': neigh_ip.loopback,
+                    'int_ip': ip_link.ip_address,
                     'update_source': "loopback 0",
                 }
 
