@@ -101,7 +101,7 @@ class PikaClient(object):
 
     def send_message(self, body):
         self.channel.basic_publish(exchange='www',
-                      routing_key='client',
+                      routing_key='server',
                       body=body)
  
     def notify_listeners(self, body):
@@ -133,6 +133,8 @@ def main():
     application.pc.connect()
     application.listen(8888)
     io_loop.start()
+
+    #TODO: run main web server here too for HTTP
 
 if __name__ == '__main__':
     main()

@@ -35,7 +35,7 @@
           $.get('json/overlay/' + overlay_id, function(data) {
               jsondata = data;
               redraw();
-              setTimeout(doPoll, 1000);
+              setTimeout(doPoll, 50000);
               });
         }
 
@@ -45,12 +45,13 @@ doPoll(); //start the polling
 //todo: replace poll with full websocket
 
 
-      var ws = new WebSocket("ws://129.127.12.122:8888/ws");
-      ws.onopen = function() {
-        ws.send("Hello, world");
-      };
+var ws = new WebSocket("ws://129.127.12.122:8888/ws");
+ws.onopen = function() {
+  ws.send("Hello, world");
+};
+
 ws.onmessage = function (evt) {
-  console.log(evt.data);
+  //console.log(evt.data);
   var data = jQuery.parseJSON(evt.data);
   console.log(data);
 }
@@ -62,6 +63,9 @@ ws.onmessage = function (evt) {
   .attr("class", "chart")
   .attr("width", 800)
   .attr("height", 600);
+
+  var trace_paths = chart.append("svg:g")
+  .attr("id", "path");
 
   var nodes = d3.map;
 
@@ -134,6 +138,7 @@ var groupPath = function(d) {
 
 
 var path_x = function(d) {
+  console.log(d);
   return nodes[d].x + 32;
 }
 
@@ -236,19 +241,27 @@ function redraw() {
     .remove();
   //});
 
-    //var pathinfo = [1, 6, 4, 2];
+    var pathinfo = [
+    [1, 6, 4, 2],
+    [1,2,3]];
 
-  //var line = d3.svg.line()
-  //.x(path_x)
-//.y(path_y)
-  //.interpolate("cardinal")
-  //.tension(0.9);
-//
-  //chart.append("svg:path")
-  //.attr("d", line(pathinfo))
-  //.style("stroke-width", 3)
-  //.style("stroke", "red")
-  //.style("fill", "none");
+
+    var pathinfo = [1, 6, 4, 2];
+
+    var traceroute_line = d3.svg.line()
+      .x(path_x)
+      .y(path_y)
+      .interpolate("cardinal")
+      .tension(1);
+
+    chart.selectAll("path2")
+      .data(pathinfo)
+      .enter().append("path")
+      .attr("d", traceroute_line(pathinfo))
+      .style("stroke-width", 1)
+      .style("stroke", "red")
+      .style("fill", "none")
+    ;
 
 
   }
