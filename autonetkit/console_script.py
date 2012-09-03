@@ -14,7 +14,6 @@ import math
 import autonetkit.log as log
 import autonetkit.plugins.ip as ip
 import autonetkit.plugins.route_reflectors as route_reflectors
-import autonetkit.plugins.process_data as process_data
 
 def main():
     ank_version = pkg_resources.get_distribution("AutoNetkit").version
@@ -25,6 +24,9 @@ def main():
     opt.add_option('--file', '-f', default= None, help="Load topology from FILE")        
     opt.add_option('--monitor', '-m',  action="store_true", default= False, help="Monitor input file for changes")        
     opt.add_option('--debug',  action="store_true", default= False, help="Debug mode")        
+    opt.add_option('--compile',  action="store_true", default= False, help="Compile")        
+    opt.add_option('--deploy',  action="store_true", default= False, help="Deploy")        
+    opt.add_option('--measure',  action="store_true", default= False, help="Measure")        
     options, arguments = opt.parse_args()
 
     input_filename = options.file
@@ -38,12 +40,15 @@ def main():
         logger.setLevel(logging.DEBUG)
 
     anm = build_network(input_filename)
-    #anm.save()
+    anm.save()
     nidb = compile_network(anm)
-    #render.remove_dirs(["rendered/nectar1/nklab/"])
-    #render.render(nidb)
-    #deploy_network(nidb)
-    measure_network(nidb)
+    if options.compile:
+        render.remove_dirs(["rendered/nectar1/nklab/"])
+        render.render(nidb)
+    if options.deploy:
+        deploy_network(nidb)
+    if options.measure:
+        measure_network(nidb)
 
     if options.monitor:
         try:
@@ -53,10 +58,14 @@ def main():
                 if change_monitor.check_for_change(input_filename, anm):
                     try:
                         log.info("Input graph updated, recompiling network")
-                        anm = build_network(input_filename)
-                        anm.save()
-                        nidb = compile_network(anm)
-                        render.render(nidb)
+                        if options.compile:
+                            nidb = compile_network(anm)
+                            render.remove_dirs(["rendered/nectar1/nklab/"])
+                            render.render(nidb)
+                        if options.deploy:
+                            deploy_network(nidb)
+                        if options.measure:
+                            measure_network(nidb)
                         log.info("Monitoring for updates...")
                     except:
                         # TODO: remove this, add proper warning
@@ -241,7 +250,7 @@ def deploy_network(nidb):
 
 def measure_network(nidb):
     log.info("Measuring network")
-    remote_hosts = [node.tap.ip for node in nidb.nodes("is_router") if node.bgp.ebgp_neighbors]
+    remote_hosts = [node.tap.ip for node in nidb.nodes("is_router") ]
     #deploy.run_command(server, username, remote_hosts, "sh ip route", key_filename= key_filename)
 
     #process_data.sh_ip_route("")
@@ -249,11 +258,12 @@ def measure_network(nidb):
 # choose random interface on this node
     dest_ip = dest_node.interfaces[0].ip_address
 
-    command = "traceroute -n %s" % dest_ip
-    #command = 'vtysh -c "show ip route"'
+    #command = "traceroute -n %s" % dest_ip
+    command = 'vtysh -c "show ip route"'
     measure.send("nectar1", command, remote_hosts)
-    #command = "cat /var/log/zebra/bgpd.log"
-    #measure.send("nectar1", command, remote_hosts)
+    remote_hosts = [node.tap.ip for node in nidb.nodes("is_router") if node.bgp.ebgp_neighbors]
+    command = "cat /var/log/zebra/bgpd.log"
+    measure.send("nectar1", command, remote_hosts)
     #command = 'vtysh -c "show ip bgp summary"'
     #measure.send("nectar1", command, remote_hosts)
     #command = 'vtysh -c "show ip bgp summary"'
