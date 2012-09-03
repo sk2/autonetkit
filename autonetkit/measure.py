@@ -10,6 +10,16 @@ def send(nidb, server, command, hosts, threads = 5):
 # netaddr IP addresses not JSON serializable
     hosts = [str(h) for h in hosts]
 
+
+    www_connection = pika.BlockingConnection(pika.ConnectionParameters(
+            host='115.146.94.68'))
+    www_channel = www_connection.channel()
+
+    www_channel.exchange_declare(exchange='www',
+            type='direct')
+
+
+
     connection = pika.BlockingConnection(pika.ConnectionParameters(
         host='115.146.94.68'))
     channel = connection.channel()
@@ -57,6 +67,11 @@ def send(nidb, server, command, hosts, threads = 5):
                     print trace_result
                     trace_result.insert(0, src_host) 
                     print trace_result
+                    trace_result = [str(t.id) for t in trace_result] # make serializable
+                    body = json.dumps(trace_result)
+                    www_channel.basic_publish(exchange='www',
+                            routing_key = "client",
+                            body= body)
                 else:
                     print "No parser defined for command %s" % command
                     print "Raw output:"

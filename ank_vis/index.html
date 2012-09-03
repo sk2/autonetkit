@@ -51,8 +51,8 @@ doPoll(); //start the polling
       };
 ws.onmessage = function (evt) {
   console.log(evt.data);
-  console.log(nodes);
-  console.log(d3.entries(nodes));
+  var data = jQuery.parseJSON(evt.data);
+  console.log(data);
 }
 </script>
 
@@ -64,12 +64,6 @@ ws.onmessage = function (evt) {
   .attr("height", 600);
 
   var nodes = d3.map;
-
-  var node_to_map_index = function(d) {
-    //todo: replace with proper data structure
-
-
-  }
 
 var icon_ordinal = d3.scale.ordinal()
   .domain(["router", "switch", "collision_domain", "server"])
@@ -148,18 +142,19 @@ var path_y = function(d) {
 }
 
 
-
-
-
 //d3.json(
 //'json/overlay/ip',
 //function (jsondata) {
 function redraw() {
-
   // create the chart here with
   // the returned data
 
   nodes = jsondata.nodes;
+  var nodes_by_id = {};
+  nodes.forEach(function(node) {
+      //todo: should this just be the index mapping?
+      nodes_by_id[node.id] = node;
+      });
 
   var groups = d3.nest().key(asn).entries(nodes);
 
