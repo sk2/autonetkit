@@ -39,6 +39,7 @@ def extract(host, username, tar_file, cd_dir, timeout = 30, key_filename = None)
 
     def starting_host(protocol, index, data):
         #print "Starting", data.group(index)
+        log.info(data.group(index))
         pass
 #TODO: send to rabbitmq
 
