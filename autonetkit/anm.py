@@ -666,7 +666,7 @@ class AbstractNetworkModel(object):
 
         pickle_file = "anm_%s.pickle.tar.gz" % self.timestamp
         pickle_path = os.path.join(pickle_dir, pickle_file)
-        log.info("Saving to %s" % pickle_path)
+        log.debug("Saving to %s" % pickle_path)
         with open(pickle_path, "wb") as pickle_fh:
             pickle.dump(self, pickle_fh, -1)
 
@@ -684,7 +684,7 @@ class AbstractNetworkModel(object):
         self.restore(latest_anm_file)
 
     def restore(self, pickle_file):
-        log.info("Restoring %s" % pickle_file)
+        log.debug("Restoring %s" % pickle_file)
         with open(pickle_file, "r") as fh:
             loaded = pickle.load(fh)
 # based on http://stackoverflow.com/questions/6596800
