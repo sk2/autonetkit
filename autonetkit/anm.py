@@ -687,6 +687,7 @@ class AbstractNetworkModel(object):
         log.info("Restoring %s" % pickle_file)
         with open(pickle_file, "r") as fh:
             loaded = pickle.load(fh)
+# based on http://stackoverflow.com/questions/6596800
             self.__dict__.update(loaded.__dict__)
 
 

@@ -2,6 +2,11 @@ import networkx as nx
 import pprint
 import collections
 import time
+import autonetkit.log as log
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
 
 class overlay_data_dict(collections.MutableMapping):
     """A dictionary which allows access as dict.key as well as dict['key']
@@ -459,7 +464,29 @@ class NIDB_base(object):
 
         pickle_file = "nidb_%s.pickle.tar.gz" % self.timestamp
         pickle_path = os.path.join(pickle_dir, pickle_file)
-        nx.write_gpickle(self._graph, pickle_path)
+        log.info("Saving to %s" % pickle_path)
+        with open(pickle_path, "wb") as pickle_fh:
+            pickle.dump(self, pickle_fh, -1)
+
+    def restore_latest(self, directory = None):
+        import os
+        import glob
+        if not directory:
+        #TODO: make directory loaded from config
+            directory = os.path.join("versions", "nidb")
+
+        glob_dir = os.path.join(directory, "*.pickle.tar.gz")
+        pickle_files = glob.glob(glob_dir)
+        pickle_files = sorted(pickle_files)
+        latest_anm_file = pickle_files[-1]
+        self.restore(latest_anm_file)
+
+    def restore(self, pickle_file):
+        log.info("Restoring %s" % pickle_file)
+        with open(pickle_file, "r") as fh:
+            loaded = pickle.load(fh)
+            self.__dict__.update(loaded.__dict__)
+
 
     @property
     def name(self):
