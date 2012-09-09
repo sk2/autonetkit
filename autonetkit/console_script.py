@@ -26,7 +26,7 @@ def main():
     opt.add_option('--debug',  action="store_true", default= False, help="Debug mode")        
     opt.add_option('--compile',  action="store_true", default= False, help="Compile")        
     opt.add_option('--deploy',  action="store_true", default= False, help="Deploy")        
-    opt.add_option('--measure',  action="store_true", default= True, help="Measure")        
+    opt.add_option('--measure',  action="store_true", default= False, help="Measure")        
     options, arguments = opt.parse_args()
 
     input_filename = options.file
@@ -39,12 +39,19 @@ def main():
         logger = logging.getLogger("ANK")
         logger.setLevel(logging.DEBUG)
 
-    anm = build_network(input_filename)
-    anm.save()
-    nidb = compile_network(anm)
     if options.compile:
+        anm = build_network(input_filename)
+        anm.save()
+        nidb = compile_network(anm)
+        nidb.save()
         render.remove_dirs(["rendered/nectar1/nklab/"])
         render.render(nidb)
+    else:
+        anm = AbstractNetworkModel()
+        anm.restore_latest()
+        nidb = NIDB()
+        nidb.restore_latest()
+
     if options.deploy:
         deploy_network(nidb)
     if options.measure:
@@ -251,7 +258,7 @@ def deploy_network(nidb):
 def measure_network(nidb):
     log.info("Measuring network")
     remote_hosts = [node.tap.ip for node in nidb.nodes("is_router") ]
-    dest_node = nidb.node("r1.as1") #TODO: make this selectable from web interface
+    dest_node = nidb.node("r6.as2") #TODO: make this selectable from web interface
 # choose random interface on this node
     dest_ip = dest_node.interfaces[0].ip_address
 
