@@ -64,7 +64,6 @@ def send(nidb, server, command, hosts, threads = 5):
                     print "Trace from %s to %s" % (src_host, dst_host)
                     parse_command = parsing["traceroute"]
                     trace_result = parse_command(nidb, command_result)
-                    print trace_result
                     trace_result.insert(0, src_host) 
                     print trace_result
                     trace_result = [str(t.id) for t in trace_result] # make serializable
