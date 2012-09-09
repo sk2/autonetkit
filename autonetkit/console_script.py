@@ -26,7 +26,7 @@ def main():
     opt.add_option('--debug',  action="store_true", default= False, help="Debug mode")        
     opt.add_option('--compile',  action="store_true", default= False, help="Compile")        
     opt.add_option('--deploy',  action="store_true", default= False, help="Deploy")        
-    opt.add_option('--measure',  action="store_true", default= False, help="Measure")        
+    opt.add_option('--measure',  action="store_true", default= True, help="Measure")        
     options, arguments = opt.parse_args()
 
     input_filename = options.file
@@ -262,7 +262,8 @@ def measure_network(nidb):
 # choose random interface on this node
     dest_ip = dest_node.interfaces[0].ip_address
 
-    command = "traceroute -n %s" % dest_ip
+    command = "traceroute -n -a -U -w 0.2 %s" % dest_ip 
+    # abort after 10 fails, proceed on any success, 0.1 second timeout (quite aggressive)
     #command = 'vtysh -c "show ip route"'
     measure.send(nidb, "nectar1", command, remote_hosts)
     remote_hosts = [node.tap.ip for node in nidb.nodes("is_router") if node.bgp.ebgp_neighbors]

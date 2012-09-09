@@ -37,9 +37,24 @@ def extract(host, username, tar_file, cd_dir, timeout = 30, key_filename = None)
     from Exscript import PrivateKey
     from Exscript.protocols.Exception import InvalidCommandException
 
+
+    import pika
+    import json
+    www_connection = pika.BlockingConnection(pika.ConnectionParameters(
+            host='115.146.94.68'))
+    www_channel = www_connection.channel()
+
+    www_channel.exchange_declare(exchange='www',
+            type='direct')
+
+
     def starting_host(protocol, index, data):
         #print "Starting", data.group(index)
         log.info(data.group(index))
+        body = {"starting": data.group(index)}
+        www_channel.basic_publish(exchange='www',
+                routing_key = "client",
+                body= json.dumps(body))
         pass
 #TODO: send to rabbitmq
 

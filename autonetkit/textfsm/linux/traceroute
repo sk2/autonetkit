@@ -2,3 +2,5 @@ Value IP (\d+(\.\d+){3})
 
 Start
   ^\s\d+\s+${IP}\s+\d+ ms\s+\d+ ms\s+\d+ ms -> Record
+  ^\s\d+\s+${IP}\s+\d+ ms -> Record
+  ^\s\d+\s+${IP}\s+\d+ ms\s+\d+ ms -> Record

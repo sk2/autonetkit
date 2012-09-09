@@ -35,7 +35,7 @@
           $.get('json/overlay/' + overlay_id, function(data) {
               jsondata = data;
               redraw();
-              setTimeout(doPoll, 1000);
+              setTimeout(doPoll, 3000);
               });
         }
 
@@ -47,10 +47,10 @@ doPoll(); //start the polling
 
   var pathinfo = [];
 
-var ws = new WebSocket("ws://127.0.0.1:8888/ws");
-ws.onopen = function() {
-  ws.send("Hello, world");
-};
+  var ws = new WebSocket("ws://129.127.12.122:8888/ws");
+  ws.onopen = function() {
+    ws.send("Hello, world");
+  };
 
 ws.onmessage = function (evt) {
   //console.log(evt.data);
@@ -59,6 +59,7 @@ ws.onmessage = function (evt) {
   //TODO: parse to see if valid traceroute path or other data
   pathinfo.push(data);
   console.log(data);
+  status_label.text(data);
   redraw_paths();
 }
 </script>
@@ -67,8 +68,21 @@ ws.onmessage = function (evt) {
 
   var chart = d3.select("body").append("svg")
   .attr("class", "chart")
-  .attr("width", 800)
+  .attr("width", 1024)
   .attr("height", 600);
+
+  var status_label = chart.append("text")
+    .attr("class", "status label")
+    .attr("y", 500)
+    .attr("x", 0)
+    .attr("font-family", "helvetica") 
+    .attr("font-size", "14") 
+    .text("")
+    ;
+
+var clear_label = function() {
+  status_label.text("");
+}
 
   var trace_paths = chart.append("svg:g")
   .attr("id", "path");
@@ -265,20 +279,36 @@ function redraw_paths() {
       .x(path_x)
       .y(path_y)
       .interpolate("cardinal")
-      .tension(1);
+      .tension(0.8)
+      ;
 
-    chart.selectAll("path2")
+    path2 = chart.selectAll("path2")
       .data(pathinfo)
-      .enter().append("path")
-      .attr("d", traceroute_line)
-      .style("stroke-width", 1)
-      .style("stroke", "red")
-      .style("fill", "none")
-      .on("mouseover", function(){d3.select(this).style("stroke", "blue");})
-      .on("mouseout", function(){d3.select(this).style("stroke", "red");})
-    ;
 
-  }
+      path2.enter().append("path")
+      .attr("d", traceroute_line)
+      .style("stroke-width", 6)
+      .style("stroke", "green")
+      .style("fill", "none")
+      .on("mouseover", function(d){
+          d3.select(this).style("stroke", "red");
+          d3.select(this).style("stroke-width", "5");
+//TODO: fix status label being selected with device labels
+          //status_label.text(d);
+          })
+    .on("mouseout", function(){
+        d3.select(this).style("stroke-width", "1");
+        d3.select(this).style("stroke", "green");
+        clear_label();
+        })
+    .transition()
+      .duration(2000)
+      .style("stroke-width", 1)
+      .style("opacity",10)
+      ;
+
+
+}
 
 
 function drawEdges() {

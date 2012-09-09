@@ -18,8 +18,6 @@ def send(nidb, server, command, hosts, threads = 5):
     www_channel.exchange_declare(exchange='www',
             type='direct')
 
-
-
     connection = pika.BlockingConnection(pika.ConnectionParameters(
         host='115.146.94.68'))
     channel = connection.channel()
@@ -58,14 +56,15 @@ def send(nidb, server, command, hosts, threads = 5):
                     parse_command = parsing[command]
                     parse_command(nidb, command_result)
                 elif "traceroute" in command:
-                    _, _, dst = command.split()
+                    dst = command.split()[-1]   # last argument is the dst ip
                     src_host = process_data.reverse_tap_lookup(nidb, host)
                     dst_host = process_data.reverse_lookup(nidb, dst)
                     print "Trace from %s to %s" % (src_host, dst_host)
                     parse_command = parsing["traceroute"]
+                    print command_result
                     trace_result = parse_command(nidb, command_result)
                     trace_result.insert(0, src_host) 
-                    print trace_result
+                    log.debug(trace_result)
                     trace_result = [str(t.id) for t in trace_result] # make serializable
                     body = json.dumps(trace_result)
                     www_channel.basic_publish(exchange='www',
