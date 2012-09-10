@@ -89,16 +89,15 @@ var trace_paths = chart.append("svg:g")
 
 var nodes = d3.map;
 
-  var icon = function(d) {
-    console.log(d.device_type);
-    var filename = "icons/" + d.device_type;
-    if (d.device_subtype != null) {
-      filename += "_" + d.device_subtype;
+var icon = function(d) {
+  var filename = "icons/" + d.device_type;
+  if (d.device_subtype != null) {
+    filename += "_" + d.device_subtype;
 
-    }
-    filename += ".svg";
-    return filename;
   }
+  filename += ".svg";
+  return filename;
+}
 
 var source_x = function(d) {
   return nodes[d.source].x + 32;
@@ -151,7 +150,7 @@ d3.json("json/overlay", function(json) {
 
 // based on http://bl.ocks.org/2920551
 var fill = d3.scale.category10();
-var groupFill = function(d, i) { console.log("trying", i); console.log("group fill with", groups); return fill(i); };
+var groupFill = function(d, i) { return fill(i); };
 var groupPath = function(d) {
   return "M" + 
     d3.geom.hull(d.values.map(function(i) { console.log(i, i.x, i.y); return [i.x + 32, i.y + 32]; }))
@@ -187,9 +186,7 @@ function redraw() {
       nodes_by_id[node.id] = node;
       });
 
-  console.log("nodes", nodes);
   groups = d3.nest().key(asn).entries(nodes);
-  console.log("groups", groups);
 
 //TODO: make group path change/exit with node data
   chart.selectAll("path")
@@ -201,7 +198,6 @@ function redraw() {
     .style("stroke-width", 80)
     .style("stroke-linejoin", "round")
     .style("opacity", 0.1);
-  console.log("groups", groups);
 
   //TODO: filter the json data x and y ranges: store in nodes, and use this for the image plotting
 
@@ -212,7 +208,18 @@ function redraw() {
     //TODO: see why edge_id changes sometimes even though appears the same
 
     line.enter().append("line")
-    .style("stroke", "rgb(6,120,155)");
+    .style("stroke", "rgb(6,120,155)")
+        .on("mouseover", function(d){
+        d3.select(this).style("stroke", "orange");
+        d3.select(this).style("stroke-width", "4");
+        //TODO: fix status label being selected with device labels
+        //status_label.text(d);
+        })
+  .on("mouseout", function(){
+      d3.select(this).style("stroke-width", "1");
+      d3.select(this).style("stroke", "rgb(6,120,155)");
+      //clear_label();
+      });
 
   line 
     .attr("x1", source_x)
