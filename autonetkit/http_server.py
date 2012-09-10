@@ -90,6 +90,7 @@ class MyHandler(BaseHTTPRequestHandler):
                         return
 
                     overlay_graph = self.server.get_overlay(overlay_id)._graph.copy()
+                    print overlay_graph.edges(data=True)
                     graphics_graph = self.server.get_overlay("graphics")._graph.copy()
                     overlay_graph = ank.stringify_netaddr(overlay_graph)
 # JSON writer doesn't handle 'id' already present in nodes
@@ -120,7 +121,7 @@ class MyHandler(BaseHTTPRequestHandler):
                     overlay_graph.graph = {}
 
                     data = json_graph.dumps(overlay_graph, indent=4)
-                    print data
+                    #print data
                     self.send_response(200)
                     self.send_header('Content-type',    'text/json')
                     self.end_headers()

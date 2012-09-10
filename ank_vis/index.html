@@ -151,10 +151,10 @@ d3.json("json/overlay", function(json) {
 
 // based on http://bl.ocks.org/2920551
 var fill = d3.scale.category10();
-var groupFill = function(d, i) { return fill(i); };
+var groupFill = function(d, i) { console.log("trying", i); console.log("group fill with", groups); return fill(i); };
 var groupPath = function(d) {
   return "M" + 
-    d3.geom.hull(d.values.map(function(i) { return [i.x + 32, i.y + 32]; }))
+    d3.geom.hull(d.values.map(function(i) { console.log(i, i.x, i.y); return [i.x + 32, i.y + 32]; }))
     .join("L")
     + "Z";
 }
@@ -172,6 +172,7 @@ var path_y = function(d) {
   return node.y+ 32;
 }
 
+var groups;
 
 //d3.json(
 //'json/overlay/ip',
@@ -186,18 +187,21 @@ function redraw() {
       nodes_by_id[node.id] = node;
       });
 
-  var groups = d3.nest().key(asn).entries(nodes);
+  console.log("nodes", nodes);
+  groups = d3.nest().key(asn).entries(nodes);
+  console.log("groups", groups);
 
+//TODO: make group path change/exit with node data
   chart.selectAll("path")
     .data(groups)
+    .enter().insert("path")
     .attr("d", groupPath)
-    .enter().insert("path", "circle")
     .style("fill", groupFill)
     .style("stroke", groupFill)
     .style("stroke-width", 80)
     .style("stroke-linejoin", "round")
-    .style("opacity", 0.1)
-    .attr("d", groupPath);
+    .style("opacity", 0.1);
+  console.log("groups", groups);
 
   //TODO: filter the json data x and y ranges: store in nodes, and use this for the image plotting
 
@@ -246,7 +250,7 @@ function redraw() {
     .remove();
 
   text = chart.selectAll("text")
-    .data(jsondata.nodes)
+    .data(nodes)
 
     text.enter().append("text")
     .attr("text-anchor", "middle") 
