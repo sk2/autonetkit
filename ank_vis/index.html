@@ -91,7 +91,7 @@ var nodes = d3.map;
 
 var icon = function(d) {
   var filename = "icons/" + d.device_type;
-  if (d.device_subtype != null) {
+  if (d.device_subtype != null && d.device_subtype != "None") {
     filename += "_" + d.device_subtype;
 
   }
@@ -153,7 +153,7 @@ var fill = d3.scale.category10();
 var groupFill = function(d, i) { return fill(i); };
 var groupPath = function(d) {
   return "M" + 
-    d3.geom.hull(d.values.map(function(i) { console.log(i, i.x, i.y); return [i.x + 32, i.y + 32]; }))
+    d3.geom.hull(d.values.map(function(i) { return [i.x + 32, i.y + 32]; }))
     .join("L")
     + "Z";
 }
