@@ -22,8 +22,6 @@ def expand(G_in):
         pop_graph = ank.load_graphml(template_filename) #TODO: pass in properties eg edge type = physical
         #nx.relabel_nodes(pop_graph, dict((n, data.get('label')) for n, data in pop_graph.nodes(data=True)), copy = False)
         templates[template] = pop_graph
-        pprint.pprint(pop_graph.nodes(data=True))
-
 
     # construct new graph
     G_out = nx.Graph() #TODO: what about bidirectional graphs?
@@ -55,6 +53,9 @@ def expand(G_in):
         G_out.node[node] = u_properties
 
     nx.relabel_nodes(G_out, dict( ((u, v), "%s_%s" % (v, u)) for (u, v) in G_out), copy = False)
+#TODO: set edge_ids
+    for s, t in G_out.edges():
+        G_out[s][t]['edge_id'] = "%s_%s" % (s, t)
 
     G_in._replace_graph(G_out)
 
@@ -93,14 +94,9 @@ def inter_pop_links(G, templates, default_operator='cartesian'):
         if not len(N1):
             N1 = [n for n in H1] # no nodes marked interpop
 
-        pprint.pprint(H1.nodes(data=True))
-        pprint.pprint(H2.nodes(data=True))
         N2 = [n for n, d in H2.nodes(data=True) if 'interpop' in d and d['interpop']]
         if not len(N2):
             N2 = [n for n in H2] # no nodes marked interpop
-
-        print "nodes N1", N1
-        print "nodes N2", N2
 
         log.debug("Adding edges for (%s,%s) with operator %s" % (u1, u2, operator))
 
