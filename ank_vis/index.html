@@ -43,14 +43,14 @@ doPoll(); //start the polling
 
 
 //todo: replace poll with full websocket
-  var nodes_by_id = {};
+var nodes_by_id = {};
 
-  var pathinfo = [];
+var pathinfo = [];
 
-  var ws = new WebSocket("ws://129.127.12.122:8888/ws");
-  ws.onopen = function() {
-    ws.send("Hello, world");
-  };
+var ws = new WebSocket("ws://129.127.12.122:8888/ws");
+ws.onopen = function() {
+  ws.send("Hello, world");
+};
 
 ws.onmessage = function (evt) {
   //console.log(evt.data);
@@ -72,29 +72,32 @@ ws.onmessage = function (evt) {
   .attr("height", 600);
 
   var status_label = chart.append("text")
-    .attr("class", "status label")
-    .attr("y", 500)
-    .attr("x", 0)
-    .attr("font-family", "helvetica") 
-    .attr("font-size", "14") 
-    .text("")
-    ;
+  .attr("class", "status label")
+  .attr("y", 500)
+  .attr("x", 0)
+  .attr("font-family", "helvetica") 
+  .attr("font-size", "14") 
+  .text("")
+  ;
 
-var clear_label = function() {
-  status_label.text("");
-}
+  var clear_label = function() {
+    status_label.text("");
+  }
 
-  var trace_paths = chart.append("svg:g")
-  .attr("id", "path");
+var trace_paths = chart.append("svg:g")
+.attr("id", "path");
 
-  var nodes = d3.map;
-
-var icon_ordinal = d3.scale.ordinal()
-  .domain(["router", "switch", "collision_domain", "server"])
-  .range(["router.svg", "switch.svg", "switch.svg", "server.svg"]);
+var nodes = d3.map;
 
   var icon = function(d) {
-    return icon_ordinal(d.device_type);
+    console.log(d.device_type);
+    var filename = "icons/" + d.device_type;
+    if (d.device_subtype != null) {
+      filename += "_" + d.device_subtype;
+
+    }
+    filename += ".svg";
+    return filename;
   }
 
 var source_x = function(d) {
@@ -187,14 +190,14 @@ function redraw() {
 
   chart.selectAll("path")
     .data(groups)
-      .attr("d", groupPath)
+    .attr("d", groupPath)
     .enter().insert("path", "circle")
-      .style("fill", groupFill)
-      .style("stroke", groupFill)
-      .style("stroke-width", 80)
-      .style("stroke-linejoin", "round")
-      .style("opacity", 0.1)
-      .attr("d", groupPath);
+    .style("fill", groupFill)
+    .style("stroke", groupFill)
+    .style("stroke-width", 80)
+    .style("stroke-linejoin", "round")
+    .style("opacity", 0.1)
+    .attr("d", groupPath);
 
   //TODO: filter the json data x and y ranges: store in nodes, and use this for the image plotting
 
@@ -267,38 +270,38 @@ function redraw() {
 
 function redraw_paths() {
 
-    var traceroute_line = d3.svg.line()
-      .x(path_x)
-      .y(path_y)
-      .interpolate("cardinal")
-      .tension(0.8)
-      ;
+  var traceroute_line = d3.svg.line()
+    .x(path_x)
+    .y(path_y)
+    .interpolate("cardinal")
+    .tension(0.8)
+    ;
 
-    path2 = chart.selectAll("path")
-      .data(pathinfo)
+  path2 = chart.selectAll("path")
+    .data(pathinfo)
 
-      path2.enter().append("path")
-      .attr("d", traceroute_line)
-      .style("stroke-width", 6)
-      .style("stroke", "orange")
-      .style("fill", "none")
-      .on("mouseover", function(d){
-          d3.select(this).style("stroke", "orange");
-          d3.select(this).style("stroke-width", "5");
-//TODO: fix status label being selected with device labels
-          //status_label.text(d);
-          })
-    .on("mouseout", function(){
-        d3.select(this).style("stroke-width", "1");
-        d3.select(this).style("stroke", "green");
-        //clear_label();
+    path2.enter().append("path")
+    .attr("d", traceroute_line)
+    .style("stroke-width", 6)
+    .style("stroke", "orange")
+    .style("fill", "none")
+    .on("mouseover", function(d){
+        d3.select(this).style("stroke", "orange");
+        d3.select(this).style("stroke-width", "5");
+        //TODO: fix status label being selected with device labels
+        //status_label.text(d);
         })
-    .transition()
-      .duration(2000)
-      .style("stroke-width", 2)
-      .style("stroke", "green")
-      .style("opacity",100)
-      ;
+  .on("mouseout", function(){
+      d3.select(this).style("stroke-width", "1");
+      d3.select(this).style("stroke", "green");
+      //clear_label();
+      })
+  .transition()
+    .duration(2000)
+    .style("stroke-width", 2)
+    .style("stroke", "green")
+    .style("opacity",100)
+    ;
 
 
 }
