@@ -18,9 +18,8 @@ def expand(G_in):
     templates = {}
     for template in template_names:
         template_filename = os.path.join("pop_templates", "%s.graphml" % template)
-        #pop_graph = nx.read_graphml(template_filename).to_undirected()
         pop_graph = ank.load_graphml(template_filename) #TODO: pass in properties eg edge type = physical
-        #nx.relabel_nodes(pop_graph, dict((n, data.get('label')) for n, data in pop_graph.nodes(data=True)), copy = False)
+        pop_graph = pop_graph.to_undirected() # Undirected for now TODO: document this
         templates[template] = pop_graph
 
     # construct new graph
