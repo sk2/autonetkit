@@ -87,6 +87,7 @@ class MyHandler(BaseHTTPRequestHandler):
                         self.send_header('Content-type', 'text/json')
                         self.end_headers()
                         self.wfile.write(data)
+                        return
 
                     overlay_graph = self.server.get_overlay(overlay_id)._graph.copy()
                     graphics_graph = self.server.get_overlay("graphics")._graph.copy()
@@ -102,6 +103,7 @@ class MyHandler(BaseHTTPRequestHandler):
                             'y': graphics_graph.node[n]['y'],
                             'asn': graphics_graph.node[n]['asn'],
                             'device_type': graphics_graph.node[n]['device_type'],
+                            'device_subtype': graphics_graph.node[n]['device_subtype'],
                             })
 
 
