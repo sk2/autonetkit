@@ -59,9 +59,9 @@ def send(nidb, server, command, hosts, threads = 5):
                     dst = command.split()[-1]   # last argument is the dst ip
                     src_host = process_data.reverse_tap_lookup(nidb, host)
                     dst_host = process_data.reverse_lookup(nidb, dst)
-                    print "Trace from %s to %s" % (src_host, dst_host)
+                    log.debug("Trace from %s to %s" % (src_host, dst_host))
                     parse_command = parsing["traceroute"]
-                    print command_result
+                    log.debug(command_result)
                     trace_result = parse_command(nidb, command_result)
                     trace_result.insert(0, src_host) 
                     log.debug(trace_result)

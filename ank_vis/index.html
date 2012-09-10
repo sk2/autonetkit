@@ -59,7 +59,7 @@ ws.onmessage = function (evt) {
   //TODO: parse to see if valid traceroute path or other data
   pathinfo.push(data);
   console.log(data);
-  status_label.text(data);
+  //status_label.text(data);
   redraw_paths();
 }
 </script>
@@ -267,14 +267,6 @@ function redraw() {
 
 function redraw_paths() {
 
-    //var pathinfo = [
-    //[1, 6, 4, 2],
-    //[1, 3, 4, 2],
-    //[1,2,3]];
-
-
-    //var pathinfo = [1, 6, 4, 2];
-
     var traceroute_line = d3.svg.line()
       .x(path_x)
       .y(path_y)
@@ -282,7 +274,7 @@ function redraw_paths() {
       .tension(0.8)
       ;
 
-    path2 = chart.selectAll("path2")
+    path2 = chart.selectAll("path")
       .data(pathinfo)
 
       path2.enter().append("path")
@@ -299,12 +291,12 @@ function redraw_paths() {
     .on("mouseout", function(){
         d3.select(this).style("stroke-width", "1");
         d3.select(this).style("stroke", "green");
-        clear_label();
+        //clear_label();
         })
     .transition()
       .duration(2000)
-      .style("stroke-width", 1)
-      .style("opacity",10)
+      .style("stroke-width", 2)
+      .style("opacity",100)
       ;
 
 
