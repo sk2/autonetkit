@@ -262,7 +262,7 @@ def measure_network(nidb):
 # choose random interface on this node
     dest_ip = dest_node.interfaces[0].ip_address
 
-    command = "traceroute -n -a -U -w 0.2 %s" % dest_ip 
+    command = "traceroute -n -a -U -w 0.5 %s" % dest_ip 
     # abort after 10 fails, proceed on any success, 0.1 second timeout (quite aggressive)
     #command = 'vtysh -c "show ip route"'
     measure.send(nidb, "nectar1", command, remote_hosts)

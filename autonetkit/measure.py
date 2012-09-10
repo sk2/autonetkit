@@ -52,7 +52,7 @@ def send(nidb, server, command, hosts, threads = 5):
             for command, command_result in host_data.items():
                 command_result = command_result.replace("\\r\\n", "\n")
                 if command in parsing:
-                    print host, command
+                    log.info( "%s %s" % (host, command))
                     parse_command = parsing[command]
                     parse_command(nidb, command_result)
                 elif "traceroute" in command:
