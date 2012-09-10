@@ -113,13 +113,10 @@ def load_graphml(filename):
         if key not in node_defaults or node_defaults[key] == "None":
             node_defaults[key] = val
 
-    print node_defaults.items()
-
     for node in graph:
         for key, val in node_defaults.items():
             if key not in graph.node[node]:
                 graph.node[node][key] = val
-    print [graph.node[n].get('interpop') for n in graph]
 
     # and ensure asn is integer, x and y are floats
     for node in graph:
