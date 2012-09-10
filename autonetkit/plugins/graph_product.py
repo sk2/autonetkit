@@ -11,12 +11,16 @@ def expand(G_in):
     graph_unwrapped = ank_utils.unwrap_graph(G_in)
     G = graph_unwrapped.copy()
     
-    ank.set_node_default(G_in, G_in, pop_template = "default")
+    ank.set_node_default(G_in, G_in)
     
     template_names = set(node.pop_template for node in G_in)
+    template_names.remove(None)
+    if not len(template_names):
+        return # no templates set
 # Load these templates
     templates = {}
     for template in template_names:
+        print "TEMplate is", template
         template_filename = os.path.join("pop_templates", "%s.graphml" % template)
         pop_graph = ank.load_graphml(template_filename) #TODO: pass in properties eg edge type = physical
         pop_graph = pop_graph.to_undirected() # Undirected for now TODO: document this
