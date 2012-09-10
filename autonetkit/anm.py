@@ -160,6 +160,7 @@ class overlay_node(object):
 
 #TODO: Add other base device_types
 
+#TODO: check asn handling if devices added directly eg in graph products
     @property
     def asn(self):
         try:
@@ -532,6 +533,9 @@ class overlay_graph(OverlayBase):
     def _graph(self):
         #access underlying graph for this overlay_node
         return self._anm._overlays[self._overlay_id]
+
+    def _replace_graph(self, graph):
+        self._anm._overlays[self._overlay_id] = graph
 
     # these work similar to their nx counterparts: just need to strip the node_id
     def add_nodes_from(self, nbunch, retain=[], **kwargs):
