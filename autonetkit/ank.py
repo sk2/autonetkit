@@ -43,6 +43,7 @@ def copy_attr_from(overlay_src, overlay_dst, attr):
 
 
 def load_graphml(filename):
+    #TODO: allow default properties to be passed in as dicts
     import string
     import os
 
@@ -95,6 +96,8 @@ def load_graphml(filename):
     current_labels = set(graph.node[node].get("label") for node in graph.nodes_iter())
     unique_label = (letter for letter in letters if letter not in current_labels)
 
+#TODO: make sure device label set
+
 # set our own defaults if not set
 #TODO: store these in config file
     ank_node_defaults = {
@@ -102,14 +105,21 @@ def load_graphml(filename):
             'device_type': 'router'
             }
     node_defaults = graph.graph['node_default']
+    for key, val in node_defaults.items():
+        if val == "False":
+            node_defaults[key] = False
+
     for key, val in ank_node_defaults.items():
         if key not in node_defaults or node_defaults[key] == "None":
             node_defaults[key] = val
+
+    print node_defaults.items()
 
     for node in graph:
         for key, val in node_defaults.items():
             if key not in graph.node[node]:
                 graph.node[node][key] = val
+    print [graph.node[n].get('interpop') for n in graph]
 
     # and ensure asn is integer, x and y are floats
     for node in graph:

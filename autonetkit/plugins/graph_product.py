@@ -18,38 +18,39 @@ def expand(G_in):
     templates = {}
     for template in template_names:
         template_filename = os.path.join("pop_templates", "%s.graphml" % template)
-        pop_graph = nx.read_graphml(template_filename).to_undirected()
-        nx.relabel_nodes(pop_graph, dict((n, data.get('label')) for n, data in pop_graph.nodes(data=True)), copy = False)
+        #pop_graph = nx.read_graphml(template_filename).to_undirected()
+        pop_graph = ank.load_graphml(template_filename) #TODO: pass in properties eg edge type = physical
+        #nx.relabel_nodes(pop_graph, dict((n, data.get('label')) for n, data in pop_graph.nodes(data=True)), copy = False)
         templates[template] = pop_graph
+        pprint.pprint(pop_graph.nodes(data=True))
+
 
     # construct new graph
     G_out = nx.Graph() #TODO: what about bidirectional graphs?
     G_out.add_nodes_from(expand_nodes(G, templates))
-    print intra_pop_links(G, templates)
+
     G_out.add_edges_from(intra_pop_links(G, templates))
     G_out.add_edges_from(inter_pop_links(G, templates))
-    print G_out.edges()
 
     for s, t in G_out.edges():
         G_out[s][t]['type'] = 'physical' # ensure copied across
-    
-    import itertools
-    gen = itertools.count(10, 80)
     
     # Update properties based on co-ordinates
     for node in G_out:
         u, v = node
         template = G.node[u]['pop_template']
-        u_properties = G.node[u].copy()
+        u_properties = dict(G.node[u])
         v_properties = dict(templates[template].node[v]) # create copy to append with
         x = float(u_properties.get('x')) + float(v_properties.get('x'))
         y = float(u_properties.get('y')) + float(v_properties.get('y'))
+        asn = u_properties['asn']
         u_properties.update(v_properties)
         u_properties['x'] = x
         u_properties['y'] = y
         u_properties['label'] = "%s_%s" % (v, u)
         u_properties['id'] = "%s_%s" % (v, u)
         u_properties['pop'] = u
+        u_properties['asn'] = asn # restore, don't inherit from pop
         del u_properties['pop_template']
         G_out.node[node] = u_properties
 
@@ -91,10 +92,16 @@ def inter_pop_links(G, templates, default_operator='cartesian'):
         N1 = [n for n, d in H1.nodes(data=True) if 'interpop' in d and d['interpop']]
         if not len(N1):
             N1 = [n for n in H1] # no nodes marked interpop
-        N2 = [n for n, d in H1.nodes(data=True) if 'interpop' in d and d['interpop']]
+
+        pprint.pprint(H1.nodes(data=True))
+        pprint.pprint(H2.nodes(data=True))
+        N2 = [n for n, d in H2.nodes(data=True) if 'interpop' in d and d['interpop']]
         if not len(N2):
             N2 = [n for n in H2] # no nodes marked interpop
-        
+
+        print "nodes N1", N1
+        print "nodes N2", N2
+
         log.debug("Adding edges for (%s,%s) with operator %s" % (u1, u2, operator))
 
         log.debug("H nodes for u1 %s: %s" % ( G.node[u1]['pop_template'], ", ".join(str(N1))))
