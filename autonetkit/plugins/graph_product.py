@@ -34,10 +34,16 @@ def expand(G_phy):
     G_out.add_nodes_from(node_list(G, templates))
     print G_out.nodes()
 # drop in replacement graph
+    remove_nodes = G_out.nodes()[3:]
+    print "remove_nodes", remove_nodes
+    G_out.remove_nodes_from(remove_nodes)
+    print G_out.nodes()
+    import itertools
+    gen = itertools.count(10, 50)
     for node in G_out:
         G_out.node[node].update( {
-            'x': 100,
-            'y': 100,
+            'x': gen.next(),
+            'y': gen.next() + 20,
             'asn': 1,
             'pop': "POP",
             'label': "%s_%s" % (node[1], node[0]),
@@ -48,7 +54,7 @@ def expand(G_phy):
     pprint.pprint( graph_unwrapped.nodes(data=True))
     print "out"
     pprint.pprint( G_out.nodes(data=True))
-    G_out.add_edge("r1_Melbourne", "r1_Sydney", edge_id = "a_b")
+    #G_out.add_edge("r1_Melbourne", "r1_Sydney", edge_id = "a_b")
     print G_out.edges()
     graph_unwrapped.clear()
     G_phy._replace_graph(G_out)

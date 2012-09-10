@@ -120,6 +120,7 @@ class MyHandler(BaseHTTPRequestHandler):
                     overlay_graph.graph = {}
 
                     data = json_graph.dumps(overlay_graph, indent=4)
+                    print data
                     self.send_response(200)
                     self.send_header('Content-type',    'text/json')
                     self.end_headers()
