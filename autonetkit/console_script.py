@@ -13,6 +13,7 @@ import measure
 import math
 import autonetkit.log as log
 import autonetkit.plugins.ip as ip
+import autonetkit.plugins.graph_product as graph_product
 import autonetkit.plugins.route_reflectors as route_reflectors
 
 def main():
@@ -24,9 +25,9 @@ def main():
     opt.add_option('--file', '-f', default= None, help="Load topology from FILE")        
     opt.add_option('--monitor', '-m',  action="store_true", default= False, help="Monitor input file for changes")        
     opt.add_option('--debug',  action="store_true", default= False, help="Debug mode")        
-    opt.add_option('--compile',  action="store_true", default= False, help="Compile")        
+    opt.add_option('--compile',  action="store_true", default= True, help="Compile")        
     opt.add_option('--deploy',  action="store_true", default= False, help="Deploy")        
-    opt.add_option('--measure',  action="store_true", default= True, help="Measure")        
+    opt.add_option('--measure',  action="store_true", default= False, help="Measure")        
     options, arguments = opt.parse_args()
 
     input_filename = options.file
@@ -44,8 +45,8 @@ def main():
         anm.save()
         nidb = compile_network(anm)
         nidb.save()
-        render.remove_dirs(["rendered/nectar1/nklab/"])
-        render.render(nidb)
+        #render.remove_dirs(["rendered/nectar1/nklab/"])
+        #render.render(nidb)
     else:
         anm = AbstractNetworkModel()
         anm.restore_latest()
@@ -155,7 +156,7 @@ def build_ip(anm):
 def build_phy(anm):
     G_in = anm['input']
     G_phy = anm['phy']
-    G_phy.add_nodes_from(G_in, retain=['label', 'device_type', 'asn', 'platform', 'host', 'syntax'])
+    G_phy.add_nodes_from(G_in, retain=['label', 'device_type', 'device_subtype', 'asn', 'platform', 'host', 'syntax'])
     if G_in.data.Creator == "Topology Zoo Toolset":
         ank.copy_attr_from(G_in, G_phy, "Network") # Copy Network from Zoo
 # build physical graph
@@ -184,10 +185,12 @@ def build_network(input_filename):
     G_in = anm.add_overlay("input", input_graph)
     ank.set_node_default(G_in, G_in, platform="netkit")
     ank.set_node_default(G_in, G_in, host="nectar1")
+
+    graph_product.expand(G_in)
     
     if len(ank.unique_attr(G_in, "asn")) > 1:
         # Multiple ASNs set, use label format device.asn 
-        anm.set_node_label(".as",  ['label', 'asn'])
+        anm.set_node_label(".as",  ['label', 'pop', 'asn'])
 
 # set syntax for routers according to platform
     G_in.update(G_in.nodes("is_router", platform = "junosphere"), syntax="junos")
@@ -195,7 +198,7 @@ def build_network(input_filename):
     G_in.update(G_in.nodes("is_router", platform = "netkit"), syntax="quagga")
 
     G_graphics = anm.add_overlay("graphics") # plotting data
-    G_graphics.add_nodes_from(G_in, retain=['x', 'y', 'device_type', 'asn'])
+    G_graphics.add_nodes_from(G_in, retain=['x', 'y', 'device_type', 'device_subtype', 'asn'])
 
     build_phy(anm)
     build_ip(anm)
@@ -225,7 +228,9 @@ def compile_network(anm):
         node.graphics.x = graphics_node.x
         node.graphics.y = graphics_node.y
         node.graphics.device_type = graphics_node.device_type
+        node.graphics.device_subtype = graphics_node.device_subtype
         node.device_type = graphics_node.device_type
+        node.device_subtype = graphics_node.device_subtype
 
     host = "nectar1"
     #junosphere_compiler = compiler.JunosphereCompiler(nidb, anm, host)
