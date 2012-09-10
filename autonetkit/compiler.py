@@ -154,7 +154,7 @@ class QuaggaCompiler(RouterCompiler):
         if phy_node.is_router:
             interfaces["lo:1"] = {
                     'id': "lo:1",
-                    'description': "%s to %s" % (link.src, link.dst),
+                    'description': "Loopback for BGP",
                     'ip_address': ip_node.loopback,
                     'subnet': node.loopback_subnet,
                     }
