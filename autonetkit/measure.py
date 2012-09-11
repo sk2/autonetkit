@@ -61,11 +61,12 @@ def send(nidb, server, command, hosts, threads = 5):
                     dst_host = process_data.reverse_lookup(nidb, dst)
                     log.debug("Trace from %s to %s" % (src_host, dst_host))
                     parse_command = parsing["traceroute"]
-                    log.debug(command_result)
+                    log.info(command_result)
                     trace_result = parse_command(nidb, command_result)
                     trace_result.insert(0, src_host) 
                     log.debug(trace_result)
-                    trace_result = [str(t.id) for t in trace_result] # make serializable
+                    print "trace result", trace_result
+                    trace_result = [str(t.id) for t in trace_result if t] # make serializable
                     body = json.dumps(trace_result)
                     www_channel.basic_publish(exchange='www',
                             routing_key = "client",
