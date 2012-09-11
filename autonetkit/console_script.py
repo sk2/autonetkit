@@ -3,6 +3,7 @@ import ank
 import itertools
 from nidb import NIDB
 import render
+import random
 import pprint
 import time
 import compiler
@@ -190,7 +191,7 @@ def build_network(input_filename):
     
     if len(ank.unique_attr(G_in, "asn")) > 1:
         # Multiple ASNs set, use label format device.asn 
-        anm.set_node_label(".as",  ['label', 'pop', 'asn'])
+        anm.set_node_label(".",  ['label', 'pop', 'asn'])
 
 # set syntax for routers according to platform
     G_in.update(G_in.nodes("is_router", platform = "junosphere"), syntax="junos")
@@ -263,7 +264,7 @@ def deploy_network(nidb):
 def measure_network(nidb):
     log.info("Measuring network")
     remote_hosts = [node.tap.ip for node in nidb.nodes("is_router") ]
-    dest_node = nidb.node("r6.as2") #TODO: make this selectable from web interface
+    dest_node = random.choice([n for n in nidb.nodes("is_l3device")])
 # choose random interface on this node
     dest_ip = dest_node.interfaces[0].ip_address
 
