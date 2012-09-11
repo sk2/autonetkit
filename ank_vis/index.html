@@ -31,22 +31,25 @@
 
         var overlay_id = "phy"
 
+        //TODO: strip out the polling, use websocket to push out changes
+
         function doPoll(){
-          console.log('/overlay?id=' + overlay_id);
           $.get('/overlay?id=' + overlay_id, function(data) {
+              var data = jQuery.parseJSON(data);
               jsondata = data;
               redraw();
-              setTimeout(doPoll, 3000);
+              setTimeout(doPoll, 1000);
               });
         }
 
 doPoll(); //start the polling 
 
-
-//todo: replace poll with full websocket
 var nodes_by_id = {};
 
 var pathinfo = [];
+
+console.log("ws://" + location.host + "/ws");
+console.log("ws://129.127.12.122:8888/ws");
 
 var ws = new WebSocket("ws://129.127.12.122:8888/ws");
 ws.onopen = function() {
@@ -134,7 +137,7 @@ d3.select("select").on("change", function() {
 var dropdown = d3.select("#interpolate")
 .on("change", function() {
     overlay_id = this.value;
-    //console.log(this.value);
+    console.log(this.value);
     redraw();
     })
 
