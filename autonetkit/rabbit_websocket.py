@@ -24,43 +24,42 @@ class OverlayHandler(tornado.web.RequestHandler):
             self.write(json.dumps(self.anm.get_anm().overlays()))
             return
         else:
-            print "getting", overlay_id
-            overlay_graph = self.server.get_overlay(overlay_id)._graph.copy()
-            print "a"
-            graphics_graph = self.server.get_overlay("graphics")._graph.copy()
-            overlay_graph = ank.stringify_netaddr(overlay_graph)
-            print overlay_graph
+            print "Returning overlay", overlay_id
+            try:
+                overlay_graph = self.anm.get_overlay(overlay_id)._graph.copy()
+                graphics_graph = self.anm.get_overlay("graphics")._graph.copy()
+                overlay_graph = ank.stringify_netaddr(overlay_graph)
 # JSON writer doesn't handle 'id' already present in nodes
-            #for n in graph:
-                        #del graph.node[n]['id']
+                #for n in graph:
+                            #del graph.node[n]['id']
 
 #TODO: only update, don't over write if already set
-            for n in overlay_graph:
-                overlay_graph.node[n].update( {
-                    'x': graphics_graph.node[n]['x'],
-                    'y': graphics_graph.node[n]['y'],
-                    'asn': graphics_graph.node[n]['asn'],
-                    'device_type': graphics_graph.node[n]['device_type'],
-                    'device_subtype': graphics_graph.node[n]['device_subtype'],
-                    })
-            print "here"
+                for n in overlay_graph:
+                    overlay_graph.node[n].update( {
+                        'x': graphics_graph.node[n]['x'],
+                        'y': graphics_graph.node[n]['y'],
+                        'asn': graphics_graph.node[n]['asn'],
+                        'device_type': graphics_graph.node[n]['device_type'],
+                        'device_subtype': graphics_graph.node[n].get('device_subtype'),
+                        })
 
-            # remove leading space
-            x = (overlay_graph.node[n]['x'] for n in overlay_graph)
-            y = (overlay_graph.node[n]['y'] for n in overlay_graph)
-            x_min = min(x)
-            y_min = min(y)
-            for n in overlay_graph:
-                overlay_graph.node[n]['x'] += - x_min
-                overlay_graph.node[n]['y'] += - y_min
+                # remove leading space
+                x = (overlay_graph.node[n]['x'] for n in overlay_graph)
+                y = (overlay_graph.node[n]['y'] for n in overlay_graph)
+                x_min = min(x)
+                y_min = min(y)
+                for n in overlay_graph:
+                    overlay_graph.node[n]['x'] += - x_min
+                    overlay_graph.node[n]['y'] += - y_min
 
 # strip out graph data
-            overlay_graph.graph = {}
-            data = json_graph.dumps(overlay_graph, indent=4)
-            print data
+                overlay_graph.graph = {}
+                data = json_graph.dumps(overlay_graph, indent=4)
+                self.write(data)
+            except Exception, e:
+                print e
 
 
-            self.write(json.dumps("you requested overlay %s" % id))
         
 class AnmAccess(object):
     def get_anm(self):
@@ -78,7 +77,7 @@ class AnmAccess(object):
             self.latest_anm_file = None
 
         if self.latest_anm_file != latest_anm_file:
-            print "new file"
+            print "Loading ANM from new file"
 # new latest file
             self.latest_anm_file = latest_anm_file
             with open(latest_anm_file, "r") as latest_fh:
@@ -234,11 +233,10 @@ class PikaClient(object):
 
 settings = {
     "static_path": os.path.join("ank_vis"),
-    'debug': True,
+    'debug': False,
 }
-print settings
 
-anm_accessor = AnmAccess()
+anm_accessor = AnmAccess() # used to access overlays
 
 application = tornado.web.Application([
     (r'/ws', MyWebSocketHandler),
