@@ -32,7 +32,8 @@
         var overlay_id = "phy"
 
         function doPoll(){
-          $.get('json/overlay/' + overlay_id, function(data) {
+          console.log('/overlay?id=' + overlay_id);
+          $.get('/overlay?id=' + overlay_id, function(data) {
               jsondata = data;
               redraw();
               setTimeout(doPoll, 3000);
@@ -138,7 +139,7 @@ var dropdown = d3.select("#interpolate")
     })
 
 
-d3.json("json/overlay", function(json) {
+d3.json("/overlay?id=*", function(json) {
     dropdown
     .selectAll("option")
     .data(json)

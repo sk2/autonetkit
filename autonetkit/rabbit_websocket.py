@@ -4,6 +4,118 @@ import tornado
 import tornado.websocket as websocket
 from pika.adapters.tornado_connection import TornadoConnection
 import os
+import json
+import glob
+import pickle #TODO: use cpickle
+from networkx.readwrite import json_graph
+import ank
+
+class MyWebHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.write("Hello, world")
+
+class OverlayHandler(tornado.web.RequestHandler):
+    def initialize(self, anm):
+        self.anm = anm
+
+    def get(self):
+        overlay_id = self.get_argument("id")
+        if overlay_id == "*":
+            self.write(json.dumps(self.anm.get_anm().overlays()))
+            return
+        else:
+            print "getting", overlay_id
+            overlay_graph = self.server.get_overlay(overlay_id)._graph.copy()
+            print "a"
+            graphics_graph = self.server.get_overlay("graphics")._graph.copy()
+            overlay_graph = ank.stringify_netaddr(overlay_graph)
+            print overlay_graph
+# JSON writer doesn't handle 'id' already present in nodes
+            #for n in graph:
+                        #del graph.node[n]['id']
+
+#TODO: only update, don't over write if already set
+            for n in overlay_graph:
+                overlay_graph.node[n].update( {
+                    'x': graphics_graph.node[n]['x'],
+                    'y': graphics_graph.node[n]['y'],
+                    'asn': graphics_graph.node[n]['asn'],
+                    'device_type': graphics_graph.node[n]['device_type'],
+                    'device_subtype': graphics_graph.node[n]['device_subtype'],
+                    })
+            print "here"
+
+            # remove leading space
+            x = (overlay_graph.node[n]['x'] for n in overlay_graph)
+            y = (overlay_graph.node[n]['y'] for n in overlay_graph)
+            x_min = min(x)
+            y_min = min(y)
+            for n in overlay_graph:
+                overlay_graph.node[n]['x'] += - x_min
+                overlay_graph.node[n]['y'] += - y_min
+
+# strip out graph data
+            overlay_graph.graph = {}
+            data = json_graph.dumps(overlay_graph, indent=4)
+            print data
+
+
+            self.write(json.dumps("you requested overlay %s" % id))
+        
+class AnmAccess(object):
+    def get_anm(self):
+        #TODO: Store directory from __init__ argument rather than hard-coded
+        directory = os.path.join("versions", "anm")
+        glob_dir = os.path.join(directory, "*.pickle.tar.gz")
+        pickle_files = glob.glob(glob_dir)
+        pickle_files = sorted(pickle_files)
+# check if most recent outdates current most recent
+        latest_anm_file = pickle_files[-1]
+#TODO: put this in __init__
+        try:
+            self.latest_anm_file
+        except AttributeError:
+            self.latest_anm_file = None
+
+        if self.latest_anm_file != latest_anm_file:
+            print "new file"
+# new latest file
+            self.latest_anm_file = latest_anm_file
+            with open(latest_anm_file, "r") as latest_fh:
+                anm = pickle.load(latest_fh)
+                self.anm = anm
+        return self.anm
+
+    def get_overlay(self, overlay):
+        self.anm = self.get_anm() #TODO: update this to be clearer for refresh/cache or even @property
+        return self.anm[overlay]
+
+    def get_ip(self):
+        try:
+            self.latest_ip_file
+        except AttributeError:
+            self.latest_ip_file = None
+
+        #TODO: Store directory from __init__ argument rather than hard-coded
+        directory = os.path.join("versions", "ip")
+        glob_dir = os.path.join(directory, "*.pickle.tar.gz")
+        pickle_files = glob.glob(glob_dir)
+        pickle_files = sorted(pickle_files)
+# check if most recent outdates current most recent
+        latest_ip_file = pickle_files[-1]
+#TODO: put this in __init__
+        try:
+            self.latest_ip_file
+        except AttributeError:
+            self.latest_ip_file = None
+        if self.latest_ip_file != latest_ip_file:
+# new latest file
+            self.latest_ip_file = latest_ip_file
+            with open(latest_ip_file, "r") as latest_fh:
+                ip = pickle.load(latest_fh)
+                self.ip = ip
+        return self.ip
+
 
 class MyWebSocketHandler(websocket.WebSocketHandler):
     def allow_draft76(self):
@@ -120,9 +232,18 @@ class PikaClient(object):
         except KeyError:
             pass
 
+settings = {
+    "static_path": os.path.join("ank_vis"),
+    'debug': True,
+}
+print settings
+
+anm_accessor = AnmAccess()
+
 application = tornado.web.Application([
     (r'/ws', MyWebSocketHandler),
-])
+    (r'/overlay', OverlayHandler, {'anm': anm_accessor}),
+], **settings)
  
 def main():
     pika.log.setup(color=True)
