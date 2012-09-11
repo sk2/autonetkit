@@ -265,6 +265,7 @@ def measure_network(nidb):
     log.info("Measuring network")
     remote_hosts = [node.tap.ip for node in nidb.nodes("is_router") ]
     dest_node = random.choice([n for n in nidb.nodes("is_l3device")])
+    log.info("Tracing to randomly selected node: %s" % dest_node)
 # choose random interface on this node
     dest_ip = dest_node.interfaces[0].ip_address
 
