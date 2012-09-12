@@ -24,7 +24,10 @@ except ImportError:
     import pickle
 
 def main():
-    ank_version = pkg_resources.get_distribution("AutoNetkit").version
+    try:
+        ank_version = pkg_resources.get_distribution("AutoNetkit").version
+    except pkg_resources.DistributionNotFound:
+        ank_version = "0.1"
     log.info("AutoNetkit %s" % ank_version)
 
     import optparse
