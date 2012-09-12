@@ -66,15 +66,12 @@ def jsonify_overlay(anm, overlay_id):
     data = json_graph.dumps(overlay_graph, indent=4)
     return data
 
-
-
 class MyWebSocketHandler(websocket.WebSocketHandler):
     def initialize(self, anm, overlay_id):
         """ Store the overlay_id this listener is currently viewing.
         Used when updating."""
         self.anm = anm
         self.overlay_id = overlay_id
-        self.update_overlay() # send out first overlay
 
     def allow_draft76(self):
         # for iOS 5.0 Safari
@@ -89,21 +86,21 @@ class MyWebSocketHandler(websocket.WebSocketHandler):
         self.application.pc.remove_event_listener(self)
 
     def on_message(self, message):
+        print "received message", message
         #TODO: look if can map request type here... - or even from the application ws/ mapping
-        self.application.pc.send_message(message)
+        #self.application.pc.send_message(message) # TODO: do we need to pass it on to rmq?
         if "overlay_id" in message:
             _, overlay_id = message.split("=") #TODO: form JSON on client side, use loads here
             self.overlay_id = overlay_id
             self.update_overlay()
         elif "overlay_list" in message:
-            print "get list"
             body = json.dumps({'overlay_list': self.anm.overlays()})
-            print body
             self.write_message(body)
 
     def update_overlay(self):
+        print "here"
         body = jsonify_overlay(self.anm, self.overlay_id)
-        print "sending overlay", body
+        print "sending overlay", self.overlay_id
         self.write_message(body)
         
 
@@ -210,6 +207,7 @@ class PikaClient(object):
     def update_listeners(self):
         for listener in self.event_listeners:
             print "need to send", listener.overlay_id, "to", listener
+            listener.update_overlay()
             #listener.write_message(body)
 
     def add_event_listener(self, listener):

@@ -55,11 +55,11 @@ def main():
         www_channel.exchange_declare(exchange='www',
                 type='direct')
         anm = build_network(input_filename)
-        anm.save()
         body = json.dumps({"anm": pickle.dumps(anm)})
         www_channel.basic_publish(exchange='www',
                 routing_key = "server", # update the websever who will in turn update web clients
                 body= body)
+        anm.save()
         nidb = compile_network(anm)
         nidb.save()
         render.remove_dirs(["rendered/nectar1/nklab/"])
@@ -90,13 +90,13 @@ def main():
                             anm = build_network(input_filename)
                             anm.save()
                             nidb = compile_network(anm)
-                            nidb.save()
-                            render.remove_dirs(["rendered/nectar1/nklab/"])
-                            render.render(nidb)
                             body = json.dumps({"anm": pickle.dumps(anm)})
                             www_channel.basic_publish(exchange='www',
                                     routing_key = "client",
                                     body= body)
+                            nidb.save()
+                            render.remove_dirs(["rendered/nectar1/nklab/"])
+                            render.render(nidb)
 
                         else:
                             anm = AbstractNetworkModel()

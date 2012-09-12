@@ -31,15 +31,18 @@
 
         var overlay_id = "phy"
 
-
         var socket_url = "ws://" + location.host + "/ws";
         var ws = new WebSocket(socket_url);
         ws.onopen = function() {
           ws.send("overlay_list");
+          ws.send("overlay_id=phy");
           status_label.text("WebSocket connected");
         };
 
 //TODO: strip out the polling, use websocket to push out changes
+
+
+//TODO: make "phy" default selected
 
 function doPoll(){
   $.get('/overlay?id=' + overlay_id, function(data) {
@@ -63,10 +66,12 @@ var dropdown = d3.select("#interpolate")
     ws.send("overlay_id=" + overlay_id);
     })
 
+
 ws.onmessage = function (evt) {
   //console.log(evt.data);
   console.log('ws', evt.data);
   var data = jQuery.parseJSON(evt.data);
+  console.log("got data", data);
   //console.log(data);
   //TODO: parse to see if valid traceroute path or other data
   if ("graph" in data) {
@@ -167,7 +172,8 @@ var edge_id = function(d) {
 }
 
 d3.select("select").on("change", function() {
-    console.log(this.value);
+    overlay_id = this.value;
+    ws.send("overlay_id=" + overlay_id);
     });
 
 
@@ -209,7 +215,14 @@ var path_y = function(d) {
 }
 
 var node_info = function(d) {
-  status_label.text("Node: " + d.label);
+  text = d.label;
+  if (d.device_type != null && d.device_type != "None") {
+    text += " " + d.device_type;
+  }
+  if (d.device_subtype != null && d.device_subtype != "None") {
+    text += " " + d.device_subtype;
+  }
+  status_label.text("Node: " + text);
 }
 
 var group_info = function(d) {
@@ -228,7 +241,7 @@ var status_label = chart.append("text")
     .attr("x", 0)
     //.attr("font-family", "helvetica") 
     .attr("font-size", "16") 
-    .text("test")
+    .text("...")
     ;
 
 var node_attr_groups;
