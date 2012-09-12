@@ -52,6 +52,7 @@ var socket_url = "ws://" + location.host + "/ws";
 var ws = new WebSocket(socket_url);
 ws.onopen = function() {
   ws.send("Hello, world");
+  status_label.text("WebSocket connected");
 };
 
 ws.onmessage = function (evt) {
@@ -102,17 +103,17 @@ var icon = function(d) {
 }
 
 var source_x = function(d) {
-  return nodes[d.source].x + 32;
+  return nodes[d.source].x + x_offset + 32;
 }
 var source_y = function(d) {
-  return nodes[d.source].y + 32;
+  return nodes[d.source].y  + y_offset+ 32;
 }
 
 var target_x = function(d) {
-  return nodes[d.target].x + 32;
+  return nodes[d.target].x + x_offset + 32;
 }
 var target_y = function(d) {
-  return nodes[d.target].y + 32;
+  return nodes[d.target].y  + y_offset+ 32;
 }
 
 var label = function(d) {
@@ -123,20 +124,26 @@ var asn = function(d) {
   return d.asn;
 }
 
+var link_type = function(d) {
+  return d.type;
+}
+
 var edge_id = function(d) {
   return d.edge_id;
 }
 
 d3.select("select").on("change", function() {
-    alert();
     console.log(this.value);
     });
 
 var dropdown = d3.select("#interpolate")
 .on("change", function() {
     overlay_id = this.value;
-    console.log(this.value);
-    redraw();
+    jQuery.get('/overlay?id=' + overlay_id, function(data) {
+      var data = jQuery.parseJSON(data);
+      jsondata = data;
+      redraw();
+      });
     })
 
 
@@ -154,27 +161,52 @@ d3.json("/overlay?id=*", function(json) {
 var fill = d3.scale.category10();
 var groupFill = function(d, i) { return fill(i); };
 var groupPath = function(d) {
-  console.log("here");
   return "M" + 
-    d3.geom.hull(d.values.map(function(i) { return [i.x + 32, i.y + 32]; }))
+    d3.geom.hull(d.values.map(function(i) { return [i.x + x_offset + 32, i.y + y_offset + 32]; }))
     .join("L")
     + "Z";
 }
 
+var x_offset = 10;
+var y_offset = 30;
 
 var path_x = function(d) {
   node = nodes_by_id[d];
   //return nodes[index].x + 32;
-  return node.x+ 32;
+  return node.x+ 32 + x_offset;
 }
 
 var path_y = function(d) {
   node = nodes_by_id[d];
   //return nodes[index].y+ 32;
-  return node.y+ 32;
+  return node.y+ 32 + y_offset;
 }
 
-var attr_groups;
+var node_info = function(d) {
+  status_label.text("Node: " + d.label);
+}
+
+var group_info = function(d) {
+  status_label.text("Group: " + d.key);
+}
+
+var link_info = function(d) {
+  source = nodes[d.source];
+  target = nodes[d.target];
+  status_label.text("Link: " + source.label + " - " + target.label);
+}
+
+var status_label = chart.append("text")
+    .attr("class", "status label")
+    .attr("y", 15)
+    .attr("x", 0)
+    //.attr("font-family", "helvetica") 
+    .attr("font-size", "16") 
+    .text("test")
+    ;
+
+var node_attr_groups;
+var edge_attr_groups;
 
 //d3.json(
 //'json/overlay/ip',
@@ -190,14 +222,13 @@ function redraw() {
       nodes_by_id[node.id] = node;
       });
 
-  attr_groups = d3.nest().key(asn).entries(nodes);
+  node_attr_groups = d3.nest().key(asn).entries(nodes);
+  edge_attr_groups = d3.nest().key(function(d) { return d.type; }).entries(jsondata.links);
 
 //TODO: make group path change/exit with node data
   groupings = chart.selectAll("path")
-    .data(attr_groups)
+    .data(node_attr_groups)
     .attr("d", groupPath);
-
-  console.log(attr_groups);
 
     groupings.enter().insert("path")
     .attr("d", groupPath)
@@ -205,7 +236,19 @@ function redraw() {
     .style("stroke", groupFill)
     .style("stroke-width", 80)
     .style("stroke-linejoin", "round")
-    .style("opacity", 0.1);
+    .style("opacity", 0.1)
+      .on("mouseover", function(d){
+          group_info(d);
+        })
+      .on("mouseout", function(){
+      clear_label();
+      });
+    ;
+
+    groupings.exit().transition()
+    .duration(1000)
+    .style("opacity",0)
+    .remove();
 
   //TODO: filter the json data x and y ranges: store in nodes, and use this for the image plotting
 
@@ -217,16 +260,15 @@ function redraw() {
 
     line.enter().append("line")
     .style("stroke", "rgb(6,120,155)")
-        .on("mouseover", function(d){
+    .on("mouseover", function(d){
         d3.select(this).style("stroke", "orange");
         d3.select(this).style("stroke-width", "4");
-        //TODO: fix status label being selected with device labels
-        //status_label.text(d);
+        link_info(d);
         })
   .on("mouseout", function(){
       d3.select(this).style("stroke-width", "1");
       d3.select(this).style("stroke", "rgb(6,120,155)");
-      //clear_label();
+      clear_label();
       });
 
   line 
@@ -248,38 +290,46 @@ function redraw() {
     .data(nodes, node_id);
 
   image.enter().append("image")
-    .attr("x", function(d) { return d.x; })
-    .attr("y", function(d) { return d.y; })
+    .attr("x", function(d) { return d.x + x_offset; })
+    .attr("y", function(d) { return d.y + y_offset; })
     .attr("width", 64)
     .attr("height", 64)
     .attr("xlink:href", icon)
     ;
 
   image
-    .attr("x", function(d) { return d.x; })
-    .attr("y", function(d) { return d.y; })
+    .attr("x", function(d) { return d.x + x_offset; })
+    .attr("y", function(d) { return d.y + y_offset; })
+    .on("mouseover", function(d){
+        node_info(d);
+        })
+  .on("mouseout", function(){
+      clear_label();
+      });
 
-    image.exit().transition()
+  image.exit().transition()
     .duration(1000)
     .style("opacity",0)
     .remove();
 
-  text = chart.selectAll("text")
+  device_labels = chart.selectAll(".device_label")
     .data(nodes)
 
-    text.enter().append("text")
+    device_labels.enter().append("text")
+    .attr("class", "device_label")
     .attr("text-anchor", "middle") 
     .attr("font-family", "helvetica") 
     .attr("font-size", "small") 
 
-    text 
-    .attr("x", function(d) { return d.x; })
-    .attr("y", function(d) { return d.y; } )
+    //TODO: use a general accessor for x/y of nodes
+    device_labels 
+    .attr("x", function(d) { return d.x + x_offset; })
+    .attr("y", function(d) { return d.y + y_offset; } )
     .attr("dx", 32) // padding-right
     .attr("dy", 65) // vertical-align: middle
     .text(function (d) { return d.id; } );
 
-  text.exit().transition()
+  device_labels.exit().transition()
     .duration(1000)
     .style("opacity",0)
     .remove();
@@ -313,7 +363,7 @@ function redraw_paths() {
   .on("mouseout", function(){
       d3.select(this).style("stroke-width", "1");
       d3.select(this).style("stroke", "green");
-      //clear_label();
+      clear_label();
       })
   .transition()
     .duration(2000)
