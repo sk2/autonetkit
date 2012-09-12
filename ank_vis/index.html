@@ -77,8 +77,8 @@ ws.onmessage = function (evt) {
     redraw();
   }
   else if("path" in data) {
-    pathinfo.push(data);
-    status_label.text("Path: " + data);
+    pathinfo.push(data['path']);
+    status_label.text("Path: " + data['path']);
     redraw_paths();
   }
   else if("overlay_list" in data) {
@@ -91,7 +91,7 @@ ws.onmessage = function (evt) {
 }
 
 var propagate_overlay_dropdown = function(d) {
-    dropdown
+  dropdown
     .selectAll("option")
     .data(d)
     .enter().append("option")
@@ -175,13 +175,13 @@ d3.select("select").on("change", function() {
 
 
 //d3.json("/overlay?id=*", function(json) {
-    //dropdown
-    //.selectAll("option")
-    //.data(json)
-    //.enter().append("option")
-    //.attr("value", String)
-    //.text(String);
-    //});
+//dropdown
+//.selectAll("option")
+//.data(json)
+//.enter().append("option")
+//.attr("value", String)
+//.text(String);
+//});
 
 
 // based on http://bl.ocks.org/2920551
@@ -220,16 +220,20 @@ var node_info = function(d) {
 }
 
 var group_info = function(d) {
+  console.log(d);
   status_label.text("Group: " + d.key);
+}
+
+var path_info = function(d) {
+  status_label.text("Path: " + d);
 }
 
 var link_info = function(d) {
   source = nodes[d.source];
   target = nodes[d.target];
-  console.log(source);
   text = source.id + " - " + target.id; //TODO: make sure all have labels from graphics appended overlay
 
-    for (attr in d) {
+  for (attr in d) {
     if (d[attr] != null && d[attr] != "None" && attr != "source" & attr != "target" && attr != "edge_id") {
       text += ", " + attr + ": " + d[attr];
     }
@@ -238,13 +242,13 @@ var link_info = function(d) {
 }
 
 var status_label = chart.append("text")
-    .attr("class", "status label")
-    .attr("y", 15)
-    .attr("x", 0)
-    .attr("font-family", "helvetica") 
-    .attr("font-size", "14") 
-    .text("...")
-    ;
+.attr("class", "status label")
+.attr("y", 15)
+.attr("x", 0)
+.attr("font-family", "helvetica") 
+.attr("font-size", "14") 
+.text("...")
+;
 
 var node_attr_groups;
 var edge_attr_groups;
@@ -266,27 +270,27 @@ function redraw() {
   node_attr_groups = d3.nest().key(asn).entries(nodes);
   edge_attr_groups = d3.nest().key(function(d) { return d.type; }).entries(jsondata.links);
 
-//TODO: make group path change/exit with node data
+  //TODO: make group path change/exit with node data
   groupings = chart.selectAll("path")
     .data(node_attr_groups)
     .attr("d", groupPath);
 
-    groupings.enter().insert("path")
+  groupings.enter().insert("path")
     .attr("d", groupPath)
     .style("fill", groupFill)
     .style("stroke", groupFill)
     .style("stroke-width", 80)
     .style("stroke-linejoin", "round")
     .style("opacity", 0.1)
-      .on("mouseover", function(d){
-          group_info(d);
+    .on("mouseover", function(d){
+        group_info(d);
         })
-      .on("mouseout", function(){
+  .on("mouseout", function(){
       clear_label();
       });
-    ;
+  ;
 
-    groupings.exit().transition()
+  groupings.exit().transition()
     .duration(1000)
     .style("opacity",0)
     .remove();
@@ -398,6 +402,7 @@ function redraw_paths() {
     .on("mouseover", function(d){
         d3.select(this).style("stroke", "orange");
         d3.select(this).style("stroke-width", "5");
+        path_info(d);
         //TODO: fix status label being selected with device labels
         //status_label.text(d);
         })
