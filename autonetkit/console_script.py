@@ -59,15 +59,10 @@ def main():
         www_channel = www_connection.channel()
         www_channel.exchange_declare(exchange='www',
                 type='direct')
-        print www_channel
         www_channel.basic_publish(exchange='www',
                 routing_key = "server", # update the websever who will in turn update web clients
                 body= body)
 
-        www_channel.basic_publish(exchange='www',
-                routing_key = "server", # update the websever who will in turn update web clients
-                body= "AAAAAA")
-        print "sending"
         anm.save()
         nidb = compile_network(anm)
         nidb.save()

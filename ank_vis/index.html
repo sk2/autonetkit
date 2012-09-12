@@ -3,6 +3,7 @@
   <head>
     <script type="text/javascript" src="d3.v2.min.js"></script>
     <script type="text/javascript" src="jquery-1.7.2.min.js"></script>
+    <title>AutoNetkit</title>
 
     <style type="text/css">
       circle {
@@ -345,12 +346,12 @@ function redraw() {
     .attr("y", function(d) { return d.y + y_offset; })
     .attr("width", 64)
     .attr("height", 64)
-    .attr("xlink:href", icon)
     ;
 
   image
     .attr("x", function(d) { return d.x + x_offset; })
     .attr("y", function(d) { return d.y + y_offset; })
+    .attr("xlink:href", icon)
     .on("mouseover", function(d){
         node_info(d);
         })
@@ -421,7 +422,7 @@ function redraw_paths() {
     .duration(2000)
     .style("stroke-width", 2)
     .style("stroke", "gray")
-    .style("opacity",100)
+    .style("opacity", 50)
     ;
 
 
