@@ -21,102 +21,61 @@ class OverlayHandler(tornado.web.RequestHandler):
     def get(self):
         overlay_id = self.get_argument("id")
         if overlay_id == "*":
-            self.write(json.dumps(self.anm.get_anm().overlays()))
+            self.write(json.dumps(self.anm.overlays()))
             return
         else:
             print "Returning overlay", overlay_id
             try:
-                overlay_graph = self.anm.get_overlay(overlay_id)._graph.copy()
-                graphics_graph = self.anm.get_overlay("graphics")._graph.copy()
-                overlay_graph = ank.stringify_netaddr(overlay_graph)
-# JSON writer doesn't handle 'id' already present in nodes
-                #for n in graph:
-                            #del graph.node[n]['id']
-
-#TODO: only update, don't over write if already set
-                for n in overlay_graph:
-                    overlay_graph.node[n].update( {
-                        'x': graphics_graph.node[n]['x'],
-                        'y': graphics_graph.node[n]['y'],
-                        'asn': graphics_graph.node[n]['asn'],
-                        'device_type': graphics_graph.node[n]['device_type'],
-                        'device_subtype': graphics_graph.node[n].get('device_subtype'),
-                        })
-
-                # remove leading space
-                x = (overlay_graph.node[n]['x'] for n in overlay_graph)
-                y = (overlay_graph.node[n]['y'] for n in overlay_graph)
-                x_min = min(x)
-                y_min = min(y)
-                for n in overlay_graph:
-                    overlay_graph.node[n]['x'] += - x_min
-                    overlay_graph.node[n]['y'] += - y_min
-
-# strip out graph data
-                overlay_graph.graph = {}
-                data = json_graph.dumps(overlay_graph, indent=4)
+                data = jsonify_overlay(self.anm, overlay_id)
                 self.write(data)
             except Exception, e:
                 print e
 
 
-        
-class AnmAccess(object):
-    def get_anm(self):
-        #TODO: Store directory from __init__ argument rather than hard-coded
-        directory = os.path.join("versions", "anm")
-        glob_dir = os.path.join(directory, "*.pickle.tar.gz")
-        pickle_files = glob.glob(glob_dir)
-        pickle_files = sorted(pickle_files)
-# check if most recent outdates current most recent
-        latest_anm_file = pickle_files[-1]
-#TODO: put this in __init__
-        try:
-            self.latest_anm_file
-        except AttributeError:
-            self.latest_anm_file = None
+def jsonify_overlay(anm, overlay_id):
+    """processing to make web friendly.
+    Handling netaddr which won't JSON serialize, and appending graphics data to overlay"""
+    overlay_graph = anm[overlay_id]._graph.copy()
+    graphics_graph = anm["graphics"]._graph.copy()
+    overlay_graph = ank.stringify_netaddr(overlay_graph)
+# JSON writer doesn't handle 'id' already present in nodes
+                #for n in graph:
+                            #del graph.node[n]['id']
 
-        if self.latest_anm_file != latest_anm_file:
-            print "Loading ANM from new file"
-# new latest file
-            self.latest_anm_file = latest_anm_file
-            with open(latest_anm_file, "r") as latest_fh:
-                anm = pickle.load(latest_fh)
-                self.anm = anm
-        return self.anm
+#TODO: only update, don't over write if already set
+    for n in overlay_graph:
+        overlay_graph.node[n].update( {
+            'x': graphics_graph.node[n]['x'],
+            'y': graphics_graph.node[n]['y'],
+            'asn': graphics_graph.node[n]['asn'],
+            'device_type': graphics_graph.node[n]['device_type'],
+            'device_subtype': graphics_graph.node[n].get('device_subtype'),
+            })
 
-    def get_overlay(self, overlay):
-        self.anm = self.get_anm() #TODO: update this to be clearer for refresh/cache or even @property
-        return self.anm[overlay]
+                # remove leading space
+    x = (overlay_graph.node[n]['x'] for n in overlay_graph)
+    y = (overlay_graph.node[n]['y'] for n in overlay_graph)
+    x_min = min(x)
+    y_min = min(y)
+    for n in overlay_graph:
+        overlay_graph.node[n]['x'] += - x_min
+        overlay_graph.node[n]['y'] += - y_min
 
-    def get_ip(self):
-        try:
-            self.latest_ip_file
-        except AttributeError:
-            self.latest_ip_file = None
+# strip out graph data
+    overlay_graph.graph = {}
+    data = json_graph.dumps(overlay_graph, indent=4)
+    return data
 
-        #TODO: Store directory from __init__ argument rather than hard-coded
-        directory = os.path.join("versions", "ip")
-        glob_dir = os.path.join(directory, "*.pickle.tar.gz")
-        pickle_files = glob.glob(glob_dir)
-        pickle_files = sorted(pickle_files)
-# check if most recent outdates current most recent
-        latest_ip_file = pickle_files[-1]
-#TODO: put this in __init__
-        try:
-            self.latest_ip_file
-        except AttributeError:
-            self.latest_ip_file = None
-        if self.latest_ip_file != latest_ip_file:
-# new latest file
-            self.latest_ip_file = latest_ip_file
-            with open(latest_ip_file, "r") as latest_fh:
-                ip = pickle.load(latest_fh)
-                self.ip = ip
-        return self.ip
 
 
 class MyWebSocketHandler(websocket.WebSocketHandler):
+    def initialize(self, anm, overlay_id):
+        """ Store the overlay_id this listener is currently viewing.
+        Used when updating."""
+        self.anm = anm
+        self.overlay_id = overlay_id
+        self.update_overlay() # send out first overlay
+
     def allow_draft76(self):
         # for iOS 5.0 Safari
         return True
@@ -130,10 +89,26 @@ class MyWebSocketHandler(websocket.WebSocketHandler):
         self.application.pc.remove_event_listener(self)
 
     def on_message(self, message):
+        #TODO: look if can map request type here... - or even from the application ws/ mapping
         self.application.pc.send_message(message)
+        if "overlay_id" in message:
+            _, overlay_id = message.split("=") #TODO: form JSON on client side, use loads here
+            self.overlay_id = overlay_id
+            self.update_overlay()
+        elif "overlay_list" in message:
+            print "get list"
+            body = json.dumps({'overlay_list': self.anm.overlays()})
+            print body
+            self.write_message(body)
+
+    def update_overlay(self):
+        body = jsonify_overlay(self.anm, self.overlay_id)
+        print "sending overlay", body
+        self.write_message(body)
+        
 
 class PikaClient(object):
-    def __init__(self, io_loop):
+    def __init__(self, io_loop, anm):
         pika.log.info('PikaClient: __init__')
         self.io_loop = io_loop
         self.connected = False
@@ -142,7 +117,7 @@ class PikaClient(object):
         self.channel = None
         self.event_listeners = set([])
         self.queue_name = 'tornado-test-%i' % os.getpid()
-        
+        self.anm = anm
  
     def connect(self):
         if self.connecting:
@@ -208,7 +183,19 @@ class PikaClient(object):
  
     def on_message(self, channel, method, header, body):
         pika.log.info('PikaClient: message received: %s' % body)
-        self.notify_listeners(body)
+        body_parsed = json.loads(body)
+        if "anm" in body_parsed:
+            try:
+                new_anm = pickle.loads(body_parsed['anm'])
+                #TODO: could process diff and only update client if data has changed -> more efficient client side
+                self.anm.__dict__.update(new_anm.__dict__) 
+                self.update_listeners()
+                # TODO: find better way to replace object not just local reference, as need to replace for RequestHandler too
+            except Exception, e:
+                print e
+        else:
+            print "notidyinf luisteners of", body
+            self.notify_listeners(body)
 
     def send_message(self, body):
         self.channel.basic_publish(exchange='www',
@@ -219,9 +206,15 @@ class PikaClient(object):
         for listener in self.event_listeners:
             listener.write_message(body)
             pika.log.info('PikaClient: notified %s' % repr(listener))
- 
+
+    def update_listeners(self):
+        for listener in self.event_listeners:
+            print "need to send", listener.overlay_id, "to", listener
+            #listener.write_message(body)
+
     def add_event_listener(self, listener):
         self.event_listeners.add(listener)
+        print "added listener", listener
         pika.log.info('PikaClient: listener %s added' % repr(listener))
  
     def remove_event_listener(self, listener):
@@ -231,23 +224,33 @@ class PikaClient(object):
         except KeyError:
             pass
 
-settings = {
-    "static_path": os.path.join("ank_vis"),
-    'debug': False,
-}
 
-anm_accessor = AnmAccess() # used to access overlays
-
-application = tornado.web.Application([
-    (r'/ws', MyWebSocketHandler),
-    (r'/overlay', OverlayHandler, {'anm': anm_accessor}),
-], **settings)
  
 def main():
-    pika.log.setup(color=True)
+    # bootstrap: load anm from file
+    directory = os.path.join("versions", "anm")
+    glob_dir = os.path.join(directory, "*.pickle.tar.gz")
+    pickle_files = glob.glob(glob_dir)
+    pickle_files = sorted(pickle_files)
+# check if most recent outdates current most recent
+    latest_anm_file = pickle_files[-1]
+#TODO: put this in __init__
+    with open(latest_anm_file, "r") as latest_fh:
+        anm = pickle.load(latest_fh)
+
+    settings = {
+            "static_path": os.path.join("ank_vis"),
+            'debug': False,
+            }
+
+    application = tornado.web.Application([
+        (r'/ws', MyWebSocketHandler, {"anm": anm, "overlay_id": "phy"}),
+        (r'/overlay', OverlayHandler, {'anm': anm}),
+        ], **settings)
+    pika.log.setup(pika.log.DEBUG, color=True)
     io_loop = tornado.ioloop.IOLoop.instance()
     # PikaClient is our rabbitmq consumer
-    pc = PikaClient(io_loop)
+    pc = PikaClient(io_loop, anm)
     application.pc = pc
     application.pc.connect()
     application.listen(8888)
