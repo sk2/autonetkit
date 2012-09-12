@@ -210,7 +210,7 @@ class PikaClient(object):
             except Exception, e:
                 print e
         elif "path" in body_parsed:
-            self.notify_listeners(body)
+            self.notify_listeners(body) # could do extra processing here
         else:
             self.notify_listeners(body)
 
