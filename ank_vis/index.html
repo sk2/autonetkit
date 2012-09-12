@@ -47,7 +47,6 @@
 function doPoll(){
   $.get('/overlay?id=' + overlay_id, function(data) {
       var data = jQuery.parseJSON(data);
-      console.log("poll", data);
       jsondata = data;
       redraw();
       setTimeout(doPoll, 150000);
@@ -71,17 +70,14 @@ ws.onmessage = function (evt) {
   //console.log(evt.data);
   console.log('ws', evt.data);
   var data = jQuery.parseJSON(evt.data);
-  console.log("got data", data);
   //console.log(data);
   //TODO: parse to see if valid traceroute path or other data
   if ("graph" in data) {
-    console.log("got new graph");
     jsondata = data;
     redraw();
   }
   else if("path" in data) {
     pathinfo.push(data);
-    console.log(data);
     status_label.text("Path: " + data);
     redraw_paths();
   }
@@ -95,7 +91,6 @@ ws.onmessage = function (evt) {
 }
 
 var propagate_overlay_dropdown = function(d) {
-  console.log("here", d);
     dropdown
     .selectAll("option")
     .data(d)
@@ -215,12 +210,11 @@ var path_y = function(d) {
 }
 
 var node_info = function(d) {
-  text = d.label;
-  if (d.device_type != null && d.device_type != "None") {
-    text += " " + d.device_type;
-  }
-  if (d.device_subtype != null && d.device_subtype != "None") {
-    text += " " + d.device_subtype;
+  text = d.id;
+  for (attr in d) {
+    if (d[attr] != null && d[attr] != "None" && attr != "x" & attr != "y" && attr != "label") {
+      text += ", " + attr + ": " + d[attr];
+    }
   }
   status_label.text("Node: " + text);
 }
@@ -232,7 +226,15 @@ var group_info = function(d) {
 var link_info = function(d) {
   source = nodes[d.source];
   target = nodes[d.target];
-  status_label.text("Link: " + source.label + " - " + target.label);
+  console.log(source);
+  text = source.id + " - " + target.id; //TODO: make sure all have labels from graphics appended overlay
+
+    for (attr in d) {
+    if (d[attr] != null && d[attr] != "None" && attr != "source" & attr != "target" && attr != "edge_id") {
+      text += ", " + attr + ": " + d[attr];
+    }
+  }
+  status_label.text("Link: " + text);
 }
 
 var status_label = chart.append("text")
