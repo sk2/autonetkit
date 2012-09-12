@@ -212,7 +212,7 @@ var path_y = function(d) {
 var node_info = function(d) {
   text = d.id;
   for (attr in d) {
-    if (d[attr] != null && d[attr] != "None" && attr != "x" & attr != "y" && attr != "label") {
+    if (d[attr] != null && d[attr] != "None" && attr != "x" & attr != "y" && attr != "label" && attr != "id") {
       text += ", " + attr + ": " + d[attr];
     }
   }
@@ -241,8 +241,8 @@ var status_label = chart.append("text")
     .attr("class", "status label")
     .attr("y", 15)
     .attr("x", 0)
-    //.attr("font-family", "helvetica") 
-    .attr("font-size", "16") 
+    .attr("font-family", "helvetica") 
+    .attr("font-size", "14") 
     .text("...")
     ;
 
