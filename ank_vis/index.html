@@ -38,7 +38,7 @@
               var data = jQuery.parseJSON(data);
               jsondata = data;
               redraw();
-              setTimeout(doPoll, 1000);
+              setTimeout(doPoll, 5000);
               });
         }
 
@@ -71,7 +71,7 @@ ws.onmessage = function (evt) {
   var chart = d3.select("body").append("svg")
   .attr("class", "chart")
   .attr("width", 1024)
-  .attr("height", 600);
+  .attr("height", 800);
 
   var status_label = chart.append("text")
   .attr("class", "status label")
@@ -154,6 +154,7 @@ d3.json("/overlay?id=*", function(json) {
 var fill = d3.scale.category10();
 var groupFill = function(d, i) { return fill(i); };
 var groupPath = function(d) {
+  console.log("here");
   return "M" + 
     d3.geom.hull(d.values.map(function(i) { return [i.x + 32, i.y + 32]; }))
     .join("L")
@@ -173,7 +174,7 @@ var path_y = function(d) {
   return node.y+ 32;
 }
 
-var groups;
+var attr_groups;
 
 //d3.json(
 //'json/overlay/ip',
@@ -183,17 +184,22 @@ function redraw() {
   // the returned data
 
   nodes = jsondata.nodes;
+  //TODO: only update if changed
   nodes.forEach(function(node) {
       //todo: should this just be the index mapping?
       nodes_by_id[node.id] = node;
       });
 
-  groups = d3.nest().key(asn).entries(nodes);
+  attr_groups = d3.nest().key(asn).entries(nodes);
 
 //TODO: make group path change/exit with node data
-  chart.selectAll("path")
-    .data(groups)
-    .enter().insert("path")
+  groupings = chart.selectAll("path")
+    .data(attr_groups)
+    .attr("d", groupPath);
+
+  console.log(attr_groups);
+
+    groupings.enter().insert("path")
     .attr("d", groupPath)
     .style("fill", groupFill)
     .style("stroke", groupFill)
