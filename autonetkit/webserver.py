@@ -8,7 +8,7 @@ import json
 import glob
 import pickle #TODO: use cpickle
 from networkx.readwrite import json_graph
-import ank
+import sys
 
 class MyWebHandler(tornado.web.RequestHandler):
     def get(self):
@@ -24,7 +24,6 @@ class OverlayHandler(tornado.web.RequestHandler):
             self.write(json.dumps(self.anm.overlays()))
             return
         else:
-            print "Returning overlay", overlay_id
             try:
                 data = jsonify_overlay(self.anm, overlay_id)
                 self.write(data)
@@ -32,12 +31,34 @@ class OverlayHandler(tornado.web.RequestHandler):
                 print e
 
 
+def stringify_netaddr(graph):
+    import netaddr
+# converts netaddr from iterables to strings so can use with json
+    replace_as_string = set([netaddr.ip.IPAddress, netaddr.ip.IPNetwork])
+#TODO: see if should handle dict specially, eg expand to __ ?
+
+    for key, val in graph.graph.items():
+        if type(val) in replace_as_string:
+            graph.graph[key] = str(val)
+
+    for node, data in graph.nodes(data=True):
+        for key, val in data.items():
+            if type(val) in replace_as_string:
+                graph.node[node][key] = str(val)
+
+    for src, dst, data in graph.edges(data=True):
+        for key, val in data.items():
+            if type(val) in replace_as_string:
+                graph[src][dst][key] = str(val)
+
+    return graph
+
 def jsonify_overlay(anm, overlay_id):
     """processing to make web friendly.
     Handling netaddr which won't JSON serialize, and appending graphics data to overlay"""
     overlay_graph = anm[overlay_id]._graph.copy()
     graphics_graph = anm["graphics"]._graph.copy()
-    overlay_graph = ank.stringify_netaddr(overlay_graph)
+    overlay_graph = stringify_netaddr(overlay_graph)
 # JSON writer doesn't handle 'id' already present in nodes
                 #for n in graph:
                             #del graph.node[n]['id']
@@ -86,7 +107,6 @@ class MyWebSocketHandler(websocket.WebSocketHandler):
         self.application.pc.remove_event_listener(self)
 
     def on_message(self, message):
-        print "received message", message
         #TODO: look if can map request type here... - or even from the application ws/ mapping
         #self.application.pc.send_message(message) # TODO: do we need to pass it on to rmq?
         if "overlay_id" in message:
@@ -98,9 +118,7 @@ class MyWebSocketHandler(websocket.WebSocketHandler):
             self.write_message(body)
 
     def update_overlay(self):
-        print "here"
         body = jsonify_overlay(self.anm, self.overlay_id)
-        print "sending overlay", self.overlay_id
         self.write_message(body)
         
 
@@ -191,7 +209,6 @@ class PikaClient(object):
             except Exception, e:
                 print e
         else:
-            print "notidyinf luisteners of", body
             self.notify_listeners(body)
 
     def send_message(self, body):
@@ -206,13 +223,11 @@ class PikaClient(object):
 
     def update_listeners(self):
         for listener in self.event_listeners:
-            print "need to send", listener.overlay_id, "to", listener
             listener.update_overlay()
             #listener.write_message(body)
 
     def add_event_listener(self, listener):
         self.event_listeners.add(listener)
-        print "added listener", listener
         pika.log.info('PikaClient: listener %s added' % repr(listener))
  
     def remove_event_listener(self, listener):
@@ -231,19 +246,25 @@ def main():
     pickle_files = glob.glob(glob_dir)
     pickle_files = sorted(pickle_files)
 # check if most recent outdates current most recent
-    latest_anm_file = pickle_files[-1]
+    if not len(pickle_files):
+        print "No previous ANM found, waiting for input from compiler"
+        anm = None
+    else:
+        latest_anm_file = pickle_files[-1]
 #TODO: put this in __init__
-    with open(latest_anm_file, "r") as latest_fh:
-        anm = pickle.load(latest_fh)
+        with open(latest_anm_file, "r") as latest_fh:
+            anm = pickle.load(latest_fh)
 
+    static_path = os.path.join("ank_vis")
     settings = {
-            "static_path": os.path.join("ank_vis"),
+            "static_path": static_path,
             'debug': False,
             }
 
     application = tornado.web.Application([
         (r'/ws', MyWebSocketHandler, {"anm": anm, "overlay_id": "phy"}),
         (r'/overlay', OverlayHandler, {'anm': anm}),
+        ("/(.*)", tornado.web.StaticFileHandler, {"path":settings['static_path'], "default_filename":"index.html"} )
         ], **settings)
     pika.log.setup(pika.log.DEBUG, color=True)
     io_loop = tornado.ioloop.IOLoop.instance()
@@ -251,7 +272,11 @@ def main():
     pc = PikaClient(io_loop, anm)
     application.pc = pc
     application.pc.connect()
-    application.listen(8888)
+    try:
+        port = sys.argv[1]
+    except IndexError:
+        port = 8000
+    application.listen(port)
     io_loop.start()
 
     #TODO: run main web server here too for HTTP
