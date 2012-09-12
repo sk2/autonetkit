@@ -84,6 +84,12 @@ ws.onmessage = function (evt) {
   else if("overlay_list" in data) {
     propagate_overlay_dropdown(data['overlay_list']);
   }
+  else if("starting" in data) {
+    status_label.text("Starting: " + data['starting']);
+  }
+  else if("lab started" in data) {
+    status_label.text("Lab started on: " + data['lab started']);
+  }
   else {
     console.log("got data", data);
   }
@@ -407,14 +413,14 @@ function redraw_paths() {
         //status_label.text(d);
         })
   .on("mouseout", function(){
-      d3.select(this).style("stroke-width", "1");
-      d3.select(this).style("stroke", "green");
+      d3.select(this).style("stroke-width", "3");
+      d3.select(this).style("stroke", "gray");
       clear_label();
       })
   .transition()
     .duration(2000)
-    .style("stroke-width", 2)
-    .style("stroke", "green")
+    .style("stroke-width", 3)
+    .style("stroke", "gray")
     .style("opacity",100)
     ;
 
