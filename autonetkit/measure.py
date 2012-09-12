@@ -67,7 +67,7 @@ def send(nidb, server, command, hosts, threads = 5):
                     log.debug(trace_result)
                     print "trace result", trace_result
                     trace_result = [str(t.id) for t in trace_result if t] # make serializable
-                    body = json.dumps(trace_result)
+                    body = json.dumps({"path": trace_result})
                     www_channel.basic_publish(exchange='www',
                             routing_key = "client",
                             body= body)
