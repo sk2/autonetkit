@@ -139,6 +139,7 @@ class PikaClient(object):
         if self.connecting:
             pika.log.info('PikaClient: Already connecting to RabbitMQ')
             return
+
  
         pika.log.info('PikaClient: Connecting to RabbitMQ')
         self.connecting = True
@@ -200,7 +201,9 @@ class PikaClient(object):
     def on_message(self, channel, method, header, body):
         pika.log.info('PikaClient: message received: %s' % body)
         body_parsed = json.loads(body)
+        print body_parsed
         if "anm" in body_parsed:
+            print "received new anm"
             try:
                 new_anm = pickle.loads(body_parsed['anm'])
                 #TODO: could process diff and only update client if data has changed -> more efficient client side

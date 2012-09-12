@@ -49,16 +49,22 @@ def main():
         logger.setLevel(logging.DEBUG)
 
     if options.compile:
+        anm = build_network(input_filename)
+        body = json.dumps({"anm": pickle.dumps(anm)})
         www_connection = pika.BlockingConnection(pika.ConnectionParameters(
             host='115.146.94.68'))
         www_channel = www_connection.channel()
         www_channel.exchange_declare(exchange='www',
                 type='direct')
-        anm = build_network(input_filename)
-        body = json.dumps({"anm": pickle.dumps(anm)})
+        print www_channel
         www_channel.basic_publish(exchange='www',
                 routing_key = "server", # update the websever who will in turn update web clients
                 body= body)
+
+        www_channel.basic_publish(exchange='www',
+                routing_key = "server", # update the websever who will in turn update web clients
+                body= "AAAAAA")
+        print "sending"
         anm.save()
         nidb = compile_network(anm)
         nidb.save()

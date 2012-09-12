@@ -413,13 +413,13 @@ function redraw_paths() {
         //status_label.text(d);
         })
   .on("mouseout", function(){
-      d3.select(this).style("stroke-width", "3");
+      d3.select(this).style("stroke-width", "2");
       d3.select(this).style("stroke", "gray");
       clear_label();
       })
   .transition()
     .duration(2000)
-    .style("stroke-width", 3)
+    .style("stroke-width", 2)
     .style("stroke", "gray")
     .style("opacity",100)
     ;
