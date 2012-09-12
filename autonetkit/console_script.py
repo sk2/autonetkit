@@ -36,6 +36,7 @@ def main():
     opt.add_option('--compile',  action="store_true", default= True, help="Compile")        
     opt.add_option('--deploy',  action="store_true", default= False, help="Deploy")        
     opt.add_option('--measure',  action="store_true", default= False, help="Measure")        
+    opt.add_option('--webserver',  action="store_true", default= False, help="Webserver")        
     options, arguments = opt.parse_args()
 
     input_filename = options.file
@@ -74,6 +75,14 @@ def main():
         deploy_network(nidb)
     if options.measure:
         measure_network(nidb)
+
+
+    if options.webserver:
+        log.info("Webserver not yet supported, run as seperate module")
+#TODO: run as seperate thread
+        #import autonetkit.webserver
+        #autonetkit.webserver.main()
+        #log.info("Started webserver")
 
     if options.monitor:
         try:
