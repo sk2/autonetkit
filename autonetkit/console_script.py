@@ -5,6 +5,7 @@ from nidb import NIDB
 import render
 import random
 import pprint
+import os
 import time
 import compiler
 import pkg_resources
@@ -16,6 +17,12 @@ import autonetkit.log as log
 import autonetkit.plugins.ip as ip
 import autonetkit.plugins.graph_product as graph_product
 import autonetkit.plugins.route_reflectors as route_reflectors
+import pika
+import json
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
 
 def main():
     ank_version = pkg_resources.get_distribution("AutoNetkit").version
@@ -42,8 +49,17 @@ def main():
         logger.setLevel(logging.DEBUG)
 
     if options.compile:
+        www_connection = pika.BlockingConnection(pika.ConnectionParameters(
+            host='115.146.94.68'))
+        www_channel = www_connection.channel()
+        www_channel.exchange_declare(exchange='www',
+                type='direct')
         anm = build_network(input_filename)
         anm.save()
+        body = json.dumps({"anm": pickle.dumps(anm)})
+        www_channel.basic_publish(exchange='www',
+                routing_key = "server", # update the websever who will in turn update web clients
+                body= body)
         nidb = compile_network(anm)
         nidb.save()
         render.remove_dirs(["rendered/nectar1/nklab/"])
@@ -62,9 +78,12 @@ def main():
     if options.monitor:
         try:
             log.info("Monitoring for updates...")
+            prev_timestamp = 0
             while True:
                 time.sleep(0.2)
-                if change_monitor.check_for_change(input_filename, anm):
+                latest_timestamp = os.stat(input_filename).st_mtime
+                if latest_timestamp > prev_timestamp:
+                    prev_timestamp = latest_timestamp
                     try:
                         log.info("Input graph updated, recompiling network")
                         if options.compile:
@@ -74,6 +93,11 @@ def main():
                             nidb.save()
                             render.remove_dirs(["rendered/nectar1/nklab/"])
                             render.render(nidb)
+                            body = json.dumps({"anm": pickle.dumps(anm)})
+                            www_channel.basic_publish(exchange='www',
+                                    routing_key = "client",
+                                    body= body)
+
                         else:
                             anm = AbstractNetworkModel()
                             anm.restore_latest()
@@ -84,10 +108,12 @@ def main():
                             deploy_network(nidb)
                         if options.measure:
                             measure_network(nidb)
+
+
                         log.info("Monitoring for updates...")
                     except:
                         # TODO: remove this, add proper warning
-                        log.warn("Unable to build network")
+                        log.warning("Unable to build network")
                         pass
         except KeyboardInterrupt:
             log.info("Exiting")
