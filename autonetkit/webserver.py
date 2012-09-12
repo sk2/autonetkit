@@ -201,7 +201,6 @@ class PikaClient(object):
     def on_message(self, channel, method, header, body):
         pika.log.info('PikaClient: message received: %s' % body)
         body_parsed = json.loads(body)
-        print body_parsed
         if "anm" in body_parsed:
             print "received new anm"
             try:

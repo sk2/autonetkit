@@ -352,6 +352,8 @@ function redraw() {
     .attr("x", function(d) { return d.x + x_offset; })
     .attr("y", function(d) { return d.y + y_offset; })
     .attr("xlink:href", icon)
+    .attr("width", 64)
+    .attr("height", 64)
     .on("mouseover", function(d){
         node_info(d);
         })
