@@ -82,6 +82,7 @@ def jsonify_overlay(anm, overlay_id):
         overlay_graph.node[n]['x'] += - x_min
         overlay_graph.node[n]['y'] += - y_min
 
+
 # strip out graph data
     overlay_graph.graph = {}
     data = json_graph.dumps(overlay_graph, indent=4)
@@ -208,6 +209,8 @@ class PikaClient(object):
                 # TODO: find better way to replace object not just local reference, as need to replace for RequestHandler too
             except Exception, e:
                 print e
+        elif "path" in body_parsed:
+            self.notify_listeners(body)
         else:
             self.notify_listeners(body)
 
