@@ -1,6 +1,6 @@
 import autonetkit.log as log
 import time
-import textfsm
+import re
 
 def package(src_dir, target):
     log.info("Packaging %s" % src_dir)
@@ -37,7 +37,6 @@ def extract(host, username, tar_file, cd_dir, timeout = 30, key_filename = None)
     from Exscript import PrivateKey
     from Exscript.protocols.Exception import InvalidCommandException
 
-
     import pika
     import json
     www_connection = pika.BlockingConnection(pika.ConnectionParameters(
@@ -50,16 +49,22 @@ def extract(host, username, tar_file, cd_dir, timeout = 30, key_filename = None)
 
     def starting_host(protocol, index, data):
         #print "Starting", data.group(index)
-        log.info(data.group(index))
-        body = {"starting": data.group(index)}
-        www_channel.basic_publish(exchange='www',
-                routing_key = "client",
-                body= json.dumps(body))
-        pass
-#TODO: send to rabbitmq
+        m = re.search('\\"(\S+)\\"', data.group(index))
+#TODO: reverse lookup from foldername to the canonical id of device
+        if m:
+            hostname = m.group(1)
+            log.info(data.group(index)) #TODO: use regex to strip out just the machine name
+            body = {"starting": hostname}
+            www_channel.basic_publish(exchange='www',
+                    routing_key = "client",
+                    body= json.dumps(body))
 
     def lab_started(protocol, index, data):
         print "Lab started"
+        body = {"lab started": host}
+        www_channel.basic_publish(exchange='www',
+                routing_key = "client",
+                body= json.dumps(body))
 
     def do_something(thread, host, conn):
         conn.set_timeout(timeout)
