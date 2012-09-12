@@ -718,6 +718,7 @@ class AbstractNetworkModel(object):
     def overlay(self):
         return overlay_accessor(self)
 
+#TODO: make this a property
     def overlays(self):
         return self._overlays.keys()
 
