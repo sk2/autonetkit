@@ -14,12 +14,12 @@ def expand(G_in):
     ank.set_node_default(G_in, G_in)
     
     template_names = set(node.pop_template for node in G_in)
-    try:
-        template_names.remove("None")
-    except KeyError:
-        pass # all were set
+    template_names.discard("None")
+    template_names.discard(None)
     if not len(template_names):
+        log.debug("No PoP templates set")
         return # no templates set
+
 # Load these templates
     templates = {}
     for template in template_names:
