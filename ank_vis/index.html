@@ -39,6 +39,9 @@
           ws.send("overlay_id=phy");
           status_label.text("WebSocket connected");
         };
+ws.onclose = function () {
+          status_label.text("Warning: WebSocket disconnected");
+};
 
 //TODO: strip out the polling, use websocket to push out changes
 
@@ -69,7 +72,7 @@ var dropdown = d3.select("#interpolate")
 
 ws.onmessage = function (evt) {
   //console.log(evt.data);
-  console.log('ws', evt.data);
+  //console.log('ws', evt.data);
   var data = jQuery.parseJSON(evt.data);
   //console.log(data);
   //TODO: parse to see if valid traceroute path or other data
@@ -227,7 +230,6 @@ var node_info = function(d) {
 }
 
 var group_info = function(d) {
-  console.log(d);
   status_label.text("Group: " + d.key);
 }
 
@@ -274,13 +276,13 @@ function redraw() {
       nodes_by_id[node.id] = node;
       });
 
-  node_attr_groups = d3.nest().key(asn).entries(nodes);
+  var group_attr =  "asn" //TODO: make this selectable by dropdown
+  node_attr_groups = d3.nest().key(function(d) { return d[group_attr]; }).entries(nodes);
   edge_attr_groups = d3.nest().key(function(d) { return d.type; }).entries(jsondata.links);
 
   //TODO: make group path change/exit with node data
   groupings = chart.selectAll("path")
     .data(node_attr_groups)
-    .attr("d", groupPath);
 
   groupings.enter().insert("path")
     .attr("d", groupPath)
@@ -297,6 +299,10 @@ function redraw() {
       });
   ;
 
+  groupings.transition()
+    .duration(500)
+    .attr("d", groupPath)
+
   groupings.exit().transition()
     .duration(1000)
     .style("opacity",0)
@@ -305,12 +311,16 @@ function redraw() {
   //TODO: filter the json data x and y ranges: store in nodes, and use this for the image plotting
 
   var line = chart.selectAll("line")
-    //.data(jsondata.links, edge_id)
-    .data(jsondata.links)
+    .data(jsondata.links, edge_id)
+   // .data(jsondata.links)
 
     //TODO: see why edge_id changes sometimes even though appears the same
 
     line.enter().append("line")
+    .attr("x1", source_x)
+    .attr("y1", source_y)
+    .attr("x2", target_x)
+    .attr("y2", target_y)
     .style("stroke", "rgb(6,120,155)")
     .on("mouseover", function(d){
         d3.select(this).style("stroke", "orange");
@@ -323,11 +333,13 @@ function redraw() {
       clear_label();
       });
 
-  line 
+  line.transition()
+    .duration(500)
     .attr("x1", source_x)
     .attr("y1", source_y)
     .attr("x2", target_x)
     .attr("y2", target_y)
+
 
     line.exit().transition()
     .duration(1000)
@@ -346,20 +358,23 @@ function redraw() {
     .attr("y", function(d) { return d.y + y_offset; })
     .attr("width", 64)
     .attr("height", 64)
-    ;
-
-  image
-    .attr("x", function(d) { return d.x + x_offset; })
-    .attr("y", function(d) { return d.y + y_offset; })
-    .attr("xlink:href", icon)
-    .attr("width", 64)
-    .attr("height", 64)
     .on("mouseover", function(d){
         node_info(d);
         })
   .on("mouseout", function(){
       clear_label();
       });
+  ;
+
+  image
+    .attr("xlink:href", icon)
+    .attr("width", 64)
+    .attr("height", 64)
+    .transition()
+      .attr("x", function(d) { return d.x + x_offset; })
+      .attr("y", function(d) { return d.y + y_offset; })
+      .duration(500)
+
 
   image.exit().transition()
     .duration(1000)
@@ -367,9 +382,11 @@ function redraw() {
     .remove();
 
   device_labels = chart.selectAll(".device_label")
-    .data(nodes)
+    .data(nodes, node_id)
 
     device_labels.enter().append("text")
+        .attr("x", function(d) { return d.x + x_offset; })
+    .attr("y", function(d) { return d.y + y_offset; } )
     .attr("class", "device_label")
     .attr("text-anchor", "middle") 
     .attr("font-family", "helvetica") 
@@ -377,11 +394,14 @@ function redraw() {
 
     //TODO: use a general accessor for x/y of nodes
     device_labels 
-    .attr("x", function(d) { return d.x + x_offset; })
-    .attr("y", function(d) { return d.y + y_offset; } )
     .attr("dx", 32) // padding-right
     .attr("dy", 65) // vertical-align: middle
     .text(function (d) { return d.id; } );
+
+  device_labels.transition()
+    .attr("x", function(d) { return d.x + x_offset; })
+      .attr("y", function(d) { return d.y + y_offset; })
+      .duration(500)
 
   device_labels.exit().transition()
     .duration(1000)
@@ -399,6 +419,8 @@ function redraw_paths() {
     .interpolate("cardinal")
     .tension(0.8)
     ;
+
+  //TODO: paths need to be updated when graph changes... or perhaps fade out as no longer relevant if topology changes?
 
   path2 = chart.selectAll("path")
     .data(pathinfo)
