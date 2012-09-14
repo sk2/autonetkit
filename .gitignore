@@ -19,3 +19,5 @@ doc/
 *.gz
 
 *.log
+
+autonetkit.log.*
