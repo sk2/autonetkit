@@ -35,7 +35,7 @@ def main():
     opt.add_option('--file', '-f', default= None, help="Load topology from FILE")        
     opt.add_option('--monitor', '-m',  action="store_true", default= False, help="Monitor input file for changes")        
     opt.add_option('--debug',  action="store_true", default= False, help="Debug mode")        
-    opt.add_option('--compile',  action="store_true", default= False, help="Compile")        
+    opt.add_option('--compile',  action="store_true", default= True, help="Compile")        
     opt.add_option('--deploy',  action="store_true", default= False, help="Deploy")        
     opt.add_option('--measure',  action="store_true", default= False, help="Measure")        
     opt.add_option('--webserver',  action="store_true", default= False, help="Webserver")        
@@ -53,15 +53,17 @@ def main():
 
     if options.compile:
         anm = build_network(input_filename)
-        body = json.dumps({"anm": pickle.dumps(anm)})
         www_connection = pika.BlockingConnection(pika.ConnectionParameters(
             host='115.146.94.68'))
         www_channel = www_connection.channel()
         www_channel.exchange_declare(exchange='www',
                 type='direct')
+        body = json.dumps({"anm": pickle.dumps(anm)})
         www_channel.basic_publish(exchange='www',
-                routing_key = "server", # update the websever who will in turn update web clients
+                routing_key = "client",
                 body= body)
+
+        log.debug("Sent ANM to web server")
 
         anm.save()
         nidb = compile_network(anm)
@@ -78,7 +80,6 @@ def main():
         deploy_network(nidb)
     if options.measure:
         measure_network(nidb)
-
 
     if options.webserver:
         log.info("Webserver not yet supported, run as seperate module")
@@ -220,13 +221,14 @@ def build_ospf(anm):
     ank.aggregate_nodes(G_ospf, G_ospf.nodes("is_switch"), retain = "edge_id")
     ank.explode_nodes(G_ospf, G_ospf.nodes("is_switch"))
     for link in G_ospf.edges():
-           link.cost = 1
+           link.cost = 8
            link.area = 0
 
     non_same_asn_edges = [link for link in G_ospf.edges() if link.src.asn != link.dst.asn]
     G_ospf.remove_edges_from(non_same_asn_edges)
 
 def build_network(input_filename):
+    #TODO: move this out of main console wrapper
     anm = AbstractNetworkModel()
     input_graph = ank.load_graphml(input_filename)
 
@@ -234,7 +236,7 @@ def build_network(input_filename):
     ank.set_node_default(G_in, G_in, platform="netkit")
     ank.set_node_default(G_in, G_in, host="nectar1")
 
-    graph_product.expand(G_in)
+    graph_product.expand(G_in) # apply graph products if relevant
     
     if len(ank.unique_attr(G_in, "asn")) > 1:
         # Multiple ASNs set, use label format device.asn 
@@ -246,7 +248,7 @@ def build_network(input_filename):
     G_in.update(G_in.nodes("is_router", platform = "netkit"), syntax="quagga")
 
     G_graphics = anm.add_overlay("graphics") # plotting data
-    G_graphics.add_nodes_from(G_in, retain=['x', 'y', 'device_type', 'device_subtype', 'asn'])
+    G_graphics.add_nodes_from(G_in, retain=['x', 'y', 'device_type', 'device_subtype', 'pop', 'asn'])
 
     build_phy(anm)
     build_ip(anm)
@@ -254,7 +256,6 @@ def build_network(input_filename):
     build_bgp(anm)
 
     return anm
-
 
 def compile_network(anm):
     nidb = NIDB() 

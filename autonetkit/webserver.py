@@ -71,6 +71,7 @@ def jsonify_overlay(anm, overlay_id):
             'asn': graphics_graph.node[n]['asn'],
             'device_type': graphics_graph.node[n]['device_type'],
             'device_subtype': graphics_graph.node[n].get('device_subtype'),
+            'pop': graphics_graph.node[n].get('pop'),
             })
 
                 # remove leading space
