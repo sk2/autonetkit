@@ -159,7 +159,8 @@ def load_graphml(filename):
 #other handling... split this into seperate module!
 # relabel based on label: assume unique by now!
     mapping = dict( (n, d['label']) for n, d in graph.nodes(data=True))
-    nx.relabel_nodes(graph, mapping, copy=False)
+    if not all( key == val for key, val in mapping.items()):
+        nx.relabel_nodes(graph, mapping, copy=False) # Networkx wipes data if remap with same labels
     return graph
 
 
