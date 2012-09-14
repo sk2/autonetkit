@@ -143,6 +143,7 @@ var icon = function(d) {
 
   }
   filename += ".svg";
+  console.log(filename);
   return filename;
 }
 
@@ -360,17 +361,18 @@ function redraw() {
     .attr("height", 64)
     .on("mouseover", function(d){
         node_info(d);
+      d3.select(this).attr("xlink:href", icon);
+        
         })
   .on("mouseout", function(){
       clear_label();
       });
-  ;
 
   image
-    .attr("xlink:href", icon)
     .attr("width", 64)
     .attr("height", 64)
     .transition()
+    .attr("xlink:href", icon)
       .attr("x", function(d) { return d.x + x_offset; })
       .attr("y", function(d) { return d.y + y_offset; })
       .duration(500)
@@ -400,8 +402,8 @@ function redraw() {
 
   device_labels.transition()
     .attr("x", function(d) { return d.x + x_offset; })
-      .attr("y", function(d) { return d.y + y_offset; })
-      .duration(500)
+    .attr("y", function(d) { return d.y + y_offset; })
+    .duration(500)
 
   device_labels.exit().transition()
     .duration(1000)
@@ -434,8 +436,6 @@ function redraw_paths() {
         d3.select(this).style("stroke", "orange");
         d3.select(this).style("stroke-width", "5");
         path_info(d);
-        //TODO: fix status label being selected with device labels
-        //status_label.text(d);
         })
   .on("mouseout", function(){
       d3.select(this).style("stroke-width", "2");
