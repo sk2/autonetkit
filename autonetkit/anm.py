@@ -166,6 +166,7 @@ class overlay_node(object):
         try:
             return self._graph.node[self.node_id]['asn'] # not in this graph
         except KeyError:
+            #TODO: catch case of phy graph not existing yet, eg making G_graphics
             return self.anm._overlays['phy'].node[self.node_id]['asn'] #try from phy
 
     @property
