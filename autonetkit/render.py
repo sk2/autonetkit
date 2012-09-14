@@ -207,6 +207,16 @@ def render_topology(topology):
     except SyntaxException, error:
         log.warning("Unable to render %s: Syntax error in template: %s" % (topology, error))
         return
+
+            
+    if not os.path.isdir(render_output_dir):
+        try:
+            os.makedirs(render_output_dir)
+        except OSError, e:
+            if e.strerror == "File exists":
+                pass # created by another process, safe to ignore
+            else:
+                raise e
     dst_file = os.path.join(render_output_dir, topology.render_dst_file)
 
 #TODO: may need to iterate if multiple parts of the directory need to be created
