@@ -6,8 +6,6 @@ from pika.adapters.tornado_connection import TornadoConnection
 import os
 import json
 import glob
-import pickle #TODO: use cpickle
-from networkx.readwrite import json_graph
 import sys
 
 class MyWebHandler(tornado.web.RequestHandler):
@@ -25,69 +23,11 @@ class OverlayHandler(tornado.web.RequestHandler):
             return
         else:
             try:
-                data = jsonify_overlay(self.anm, overlay_id)
+                data = self.anm[overlay_id]
                 self.write(data)
             except Exception, e:
                 print e
 
-
-def stringify_netaddr(graph):
-    import netaddr
-# converts netaddr from iterables to strings so can use with json
-    replace_as_string = set([netaddr.ip.IPAddress, netaddr.ip.IPNetwork])
-#TODO: see if should handle dict specially, eg expand to __ ?
-
-    for key, val in graph.graph.items():
-        if type(val) in replace_as_string:
-            graph.graph[key] = str(val)
-
-    for node, data in graph.nodes(data=True):
-        for key, val in data.items():
-            if type(val) in replace_as_string:
-                graph.node[node][key] = str(val)
-
-    for src, dst, data in graph.edges(data=True):
-        for key, val in data.items():
-            if type(val) in replace_as_string:
-                graph[src][dst][key] = str(val)
-
-    return graph
-
-def jsonify_overlay(anm, overlay_id):
-    """processing to make web friendly.
-    Handling netaddr which won't JSON serialize, and appending graphics data to overlay"""
-    overlay_graph = anm[overlay_id]._graph.copy()
-    graphics_graph = anm["graphics"]._graph.copy()
-    overlay_graph = stringify_netaddr(overlay_graph)
-# JSON writer doesn't handle 'id' already present in nodes
-                #for n in graph:
-                            #del graph.node[n]['id']
-
-#TODO: only update, don't over write if already set
-    for n in overlay_graph:
-        overlay_graph.node[n].update( {
-            'x': graphics_graph.node[n]['x'],
-            'y': graphics_graph.node[n]['y'],
-            'asn': graphics_graph.node[n]['asn'],
-            'device_type': graphics_graph.node[n]['device_type'],
-            'device_subtype': graphics_graph.node[n].get('device_subtype'),
-            'pop': graphics_graph.node[n].get('pop'),
-            })
-
-                # remove leading space
-    x = (overlay_graph.node[n]['x'] for n in overlay_graph)
-    y = (overlay_graph.node[n]['y'] for n in overlay_graph)
-    x_min = min(x)
-    y_min = min(y)
-    for n in overlay_graph:
-        overlay_graph.node[n]['x'] += - x_min
-        overlay_graph.node[n]['y'] += - y_min
-
-
-# strip out graph data
-    overlay_graph.graph = {}
-    data = json_graph.dumps(overlay_graph, indent=4)
-    return data
 
 class MyWebSocketHandler(websocket.WebSocketHandler):
     def initialize(self, anm, overlay_id):
@@ -120,7 +60,7 @@ class MyWebSocketHandler(websocket.WebSocketHandler):
             self.write_message(body)
 
     def update_overlay(self):
-        body = jsonify_overlay(self.anm, self.overlay_id)
+        body = self.anm[self.overlay_id]
         self.write_message(body)
         
 
@@ -205,9 +145,8 @@ class PikaClient(object):
         if "anm" in body_parsed:
             print "received new anm"
             try:
-                new_anm = pickle.loads(body_parsed['anm'])
+                self.anm.anm = body_parsed['anm']
                 #TODO: could process diff and only update client if data has changed -> more efficient client side
-                self.anm.__dict__.update(new_anm.__dict__) 
                 self.update_listeners()
                 # TODO: find better way to replace object not just local reference, as need to replace for RequestHandler too
             except Exception, e:
@@ -244,6 +183,20 @@ class PikaClient(object):
             pass
 
 
+class AnmAccessor():
+    def __init__(self):
+        self.anm = {}
+
+    def overlays(self):
+        if not len(self.anm):
+            return ["No ANM loaded"]
+        return self.anm.keys()
+
+    def __getitem__(self, key):
+        try:
+            return self.anm[key]
+        except KeyError:
+            return json.dumps(["No ANM loaded"])
  
 def main():
     # bootstrap: load anm from file
@@ -251,15 +204,8 @@ def main():
     glob_dir = os.path.join(directory, "*.pickle.tar.gz")
     pickle_files = glob.glob(glob_dir)
     pickle_files = sorted(pickle_files)
+    anm = AnmAccessor()
 # check if most recent outdates current most recent
-    if not len(pickle_files):
-        print "No previous ANM found, waiting for input from compiler"
-        anm = None
-    else:
-        latest_anm_file = pickle_files[-1]
-#TODO: put this in __init__
-        with open(latest_anm_file, "r") as latest_fh:
-            anm = pickle.load(latest_fh)
 
     static_path = os.path.join("ank_vis")
     settings = {

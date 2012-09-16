@@ -107,7 +107,6 @@ def jsonify_nidb(nidb):
         overlay_graph.node[n]['x'] += - x_min
         overlay_graph.node[n]['y'] += - y_min
 
-
 # strip out graph data
     overlay_graph.graph = {}
     data = json_graph.dumps(overlay_graph, indent=4)
@@ -116,5 +115,6 @@ def dumps(anm, nidb = None):
     data = jsonify_anm(anm)
     if nidb:
         data['nidb'] = jsonify_nidb(nidb)
-    json_data = json.dumps(data)
+#TODO: need to update messaging format when have nidb also (as 'anm': won't be correct)
+    json_data = json.dumps({'anm': data})
     return json_data

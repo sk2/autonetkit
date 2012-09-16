@@ -54,22 +54,22 @@ def main():
 
     if options.compile:
         anm = build_network(input_filename)
-        #www_connection = pika.BlockingConnection(pika.ConnectionParameters(
-            #host='115.146.94.68'))
-        #www_channel = www_connection.channel()
-        #www_channel.exchange_declare(exchange='www',
-                #type='direct')
-        #body = json.dumps({"anm": pickle.dumps(anm)})
-        #www_channel.basic_publish(exchange='www',
-                #routing_key = "client",
-                #body= body)
+        www_connection = pika.BlockingConnection(pika.ConnectionParameters(
+            host='115.146.94.68'))
+        www_channel = www_connection.channel()
+        www_channel.exchange_declare(exchange='www',
+                type='direct')
+        body = json.dumps({"anm": pickle.dumps(anm)})
+        body = autonetkit.ank_json.dumps(anm)
+        www_channel.basic_publish(exchange='www',
+                routing_key = "client",
+                body= body)
 
         log.debug("Sent ANM to web server")
 
         anm.save()
         nidb = compile_network(anm)
         nidb.save()
-        autonetkit.ank_json.dumps(anm, nidb)
         render.remove_dirs(["rendered/nectar1/nklab/"])
         render.render(nidb)
     else:
