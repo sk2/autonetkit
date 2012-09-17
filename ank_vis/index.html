@@ -62,7 +62,6 @@ ws.onmessage = function (evt) {
   //console.log(evt.data);
   //console.log('ws', evt.data);
   var data = jQuery.parseJSON(evt.data);
-  //console.log(data);
   //TODO: parse to see if valid traceroute path or other data
   if ("graph" in data) {
     jsondata = data;
@@ -181,17 +180,6 @@ d3.select("select").on("change", function() {
     });
 
 
-
-
-//d3.json("/overlay?id=*", function(json) {
-//dropdown
-//.selectAll("option")
-//.data(json)
-//.enter().append("option")
-//.attr("value", String)
-//.text(String);
-//});
-
 //TODO: replace all 32 magic numbers with icon_offset
 var icon_offset = 32;
 
@@ -202,6 +190,7 @@ var y_offset = 30;
 var fill = d3.scale.category10();
 var groupFill = function(d, i) { return fill(i); };
 var groupPath = function(d) {
+  console.log("path for", d);
   if (d.values.length  == 1) {
     node = d.values[0];
     offset = 10;
@@ -223,20 +212,33 @@ var groupPath = function(d) {
     upper_y = Math.max(node1.y, node2.y);
     lower_x = Math.min(node1.x, node2.x);
     lower_y = Math.min(node1.y, node2.y);
+    upper_node = node1;
+    lower_node = node2;
+    if (node2.x < node1.x) {
+      upper_node = node2;
+      lower_node = node1;
+    }
+    //TODO: adjust offsets depending if nodes aligned / or \
+    upper_x = upper_node.x;
+    upper_y = upper_node.y;
+    lower_x = lower_node.x;
+    lower_y = lower_node.y;
     offset = 20;
     //TODO: tidy offsets
     retval =  "M" ;
-    retval += (lower_x - offset  + icon_offset + x_offset) + "," + (upper_y - offset + icon_offset + y_offset) + "L";
-    retval += (lower_x - offset  + icon_offset + x_offset) + "," + (upper_y - offset + icon_offset + y_offset) + "L";
-    retval += (upper_x + offset + icon_offset + x_offset) + "," + (lower_y + offset + icon_offset + y_offset) + "L";
-    retval += (upper_x + offset + icon_offset + x_offset) + "," + (lower_y + offset + icon_offset + y_offset);
+    retval += (upper_x - offset  + icon_offset + x_offset) + "," + (upper_y - offset + icon_offset + y_offset) + "L";
+    retval += (upper_x + offset + icon_offset + x_offset) + "," + (upper_y - offset + icon_offset + y_offset) + "L";
+    retval += (lower_x + offset + icon_offset + x_offset) + "," + (lower_y + offset + icon_offset + y_offset) + "L";
+    retval += (lower_x - offset + icon_offset + x_offset) + "," + (lower_y + offset + icon_offset + y_offset) ;
     retval += "Z";
     return retval;
   }
-  return "M" + 
-    d3.geom.hull(d.values.map(function(i) { return [i.x + x_offset + 32, i.y + y_offset + 32]; }))
+  retval = "M" + 
+    d3.geom.hull(d.values.map(function(i) { console.log("node", i); return [i.x + x_offset + 32, i.y + y_offset + 32]; }))
     .join("L")
     + "Z";
+  console.log(retval);
+  return retval;
 }
 
 
@@ -321,6 +323,8 @@ function redraw() {
 
   node_attr_groups = d3.nest().key(function(d) { return d[group_attr]; }).entries(nodes);
   edge_attr_groups = d3.nest().key(function(d) { return d.type; }).entries(jsondata.links);
+
+  console.log(node_attr_groups);
 
   //TODO: make group path change/exit with node data
   groupings = chart.selectAll("path")
