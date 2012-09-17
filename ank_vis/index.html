@@ -237,8 +237,6 @@ var groupPath = function(d) {
   return retval;
 }
 
-
-
 var path_x = function(d) {
   node = nodes_by_id[d];
   //return nodes[index].x + 32;
@@ -325,27 +323,81 @@ function redraw() {
   groupings = chart.selectAll("path")
     .data(node_attr_groups)
 
-  groupings.enter().insert("path")
-    .attr("d", groupPath)
-    .style("fill", groupFill)
-    .style("stroke", groupFill)
-    .style("stroke-width", 80)
-    .style("stroke-linejoin", "round")
-    .style("opacity", 0.1)
-    .on("mouseover", function(d){
-        group_info(d);
-        })
-  .on("mouseout", function(){
-      clear_label();
-      });
-  ;
+    var test = 0;
 
-  groupings.transition()
-    .duration(500)
-    .attr("d", groupPath)
+  var cloud_x = function(data) {
+    var mean =  d3.mean(data.values, function(d) { return d.x; });
+    mean = mean - cloud_width(data)/4;
+    return mean;
+  }
+
+  var cloud_y = function(data) {
+    var mean =  d3.mean(data.values, function(d) { return d.y; });
+    //mean = mean + cloud_height(data)/2;
+    return mean;
+  }
+
+  var cloud_width = function(data) {
+    var max =  d3.max(data.values, function(d) { return d.x; });
+    var min =  d3.min(data.values, function(d) { return d.x; });
+    console.log(data.key, max-min);
+    return 2*(max - min);
+  }
+
+  var cloud_height = function(data) {
+    var max =  d3.max(data.values, function(d) { return d.y; });
+    var min =  d3.min(data.values, function(d) { return d.y; });
+    console.log(data.key, max-min);
+    return 2*(max - min);
+  }
+
+  if (test == 0) {
+    groupings.enter().insert("path")
+      .attr("d", groupPath)
+      .style("fill", groupFill)
+      .style("stroke", groupFill)
+      .style("stroke-width", 80)
+      .style("stroke-linejoin", "round")
+      .style("opacity", 0.1)
+      .on("mouseover", function(d){
+          group_info(d);
+          })
+    .on("mouseout", function(){
+        clear_label();
+        });
+    ;
+    groupings.transition()
+      .duration(500)
+      .attr("d", groupPath)
+  } 
+  else {
+    //TODO: use following instead of d groupPath
+    //.data(nodes, node_id);
+    
+    groupings.enter().append("image")
+      .attr("d", groupPath)
+      .attr("xlink:href", "icons/cloud.svg")
+      .attr("x", cloud_x)
+      .attr("y", cloud_y)
+      .attr("width", cloud_width)
+      .attr("height", cloud_height)
+      .on("mouseover", function(d){
+          group_info(d);
+          })
+    .on("mouseout", function(){
+        clear_label();
+        });
+    ;
+
+    groupings.transition()
+      //TODO: put x,y etc here
+
+      .duration(500)
+
+  }
 
   groupings.exit().transition()
-    .duration(1000)
+    .duration(5000)
     .style("opacity",0)
     .remove();
 
@@ -391,10 +443,11 @@ function redraw() {
     return d.label + d.network;
   }
 
-  var image = chart.selectAll("image")
+  var image = chart.selectAll(".device_icon")
     .data(nodes, node_id);
 
   image.enter().append("image")
+      .attr("class", "device_icon")
     .attr("x", function(d) { return d.x + x_offset; })
     .attr("y", function(d) { return d.y + y_offset; })
     .attr("width", 64)
