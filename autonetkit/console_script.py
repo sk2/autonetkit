@@ -24,6 +24,9 @@ try:
 except ImportError:
     import pickle
 
+#import pika.log
+#pika.log.setup(pika.log.DEBUG, color=True)
+
 def main():
     try:
         ank_version = pkg_resources.get_distribution("AutoNetkit").version
@@ -59,15 +62,15 @@ def main():
         www_channel = www_connection.channel()
         www_channel.exchange_declare(exchange='www',
                 type='direct')
-
-        log.debug("Sent ANM to web server")
-
         anm.save()
         nidb = compile_network(anm)
         body = autonetkit.ank_json.dumps(anm, nidb)
+        import zlib
+        body = zlib.compress(body, 9)
         www_channel.basic_publish(exchange='www',
                 routing_key = "client",
                 body= body)
+        log.debug("Sent ANM to web server")
         nidb.save()
         render.remove_dirs(["rendered/nectar1/nklab/"])
         render.render(nidb)
@@ -105,6 +108,8 @@ def main():
                             anm.save()
                             nidb = compile_network(anm)
                             body = autonetkit.ank_json.dumps(anm)
+                            import zlib
+                            body = zlib.compress(body, 9)
                             www_channel.basic_publish(exchange='www',
                                     routing_key = "client",
                                     body= body)
