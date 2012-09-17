@@ -23,47 +23,34 @@
   </head>
   <body>
 
-    <div>Select overlay: <select id = "interpolate"></select></div>
+    <div>Select overlay: <select id = "overlay_select"></select></div>
 
     <div>
-      <script type="text/javascript">
+    <script type="text/javascript">
 
-        var jsondata;
+      var jsondata;
 
-        var overlay_id = "phy"
+      var overlay_id = "phy"
 
-        var socket_url = "ws://" + location.host + "/ws";
-        var ws = new WebSocket(socket_url);
-        ws.onopen = function() {
-          ws.send("overlay_list");
-          ws.send("overlay_id=phy");
-          status_label.text("WebSocket connected");
-        };
+      var socket_url = "ws://" + location.host + "/ws";
+      var ws = new WebSocket(socket_url);
+      ws.onopen = function() {
+        ws.send("overlay_list");
+        ws.send("overlay_id=phy");
+        status_label.text("WebSocket connected");
+      };
 ws.onclose = function () {
-          status_label.text("Warning: WebSocket disconnected");
+  status_label.text("Warning: WebSocket disconnected");
 };
-
-//TODO: strip out the polling, use websocket to push out changes
 
 
 //TODO: make "phy" default selected
-
-function doPoll(){
-  $.get('/overlay?id=' + overlay_id, function(data) {
-      var data = jQuery.parseJSON(data);
-      jsondata = data;
-      redraw();
-      setTimeout(doPoll, 150000);
-      });
-}
-
-//doPoll(); //start the polling 
 
 var nodes_by_id = {};
 
 var pathinfo = [];
 
-var dropdown = d3.select("#interpolate")
+var dropdown = d3.select("#overlay_select")
 .on("change", function() {
     overlay_id = this.value;
     ws.send("overlay_id=" + overlay_id);
@@ -108,6 +95,10 @@ var propagate_overlay_dropdown = function(d) {
     .attr("value", String)
     .text(String);
 }
+
+
+
+dropdown.select("option")
 
 </script>
 
