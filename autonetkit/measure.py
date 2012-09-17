@@ -59,18 +59,21 @@ def send(nidb, server, command, hosts, threads = 5):
                     dst = command.split()[-1]   # last argument is the dst ip
                     src_host = process_data.reverse_tap_lookup(nidb, host)
                     dst_host = process_data.reverse_lookup(nidb, dst)
-                    log.debug("Trace from %s to %s" % (src_host, dst_host))
+                    log.info("Trace from %s to %s" % (src_host, dst_host[1]))
                     parse_command = parsing["traceroute"]
-                    log.info(command_result)
+                    log.debug(command_result)
                     trace_result = parse_command(nidb, command_result)
                     trace_result.insert(0, src_host) 
                     log.debug(trace_result)
-                    print "trace result", trace_result
-                    trace_result = [str(t.id) for t in trace_result if t] # make serializable
-                    body = json.dumps({"path": trace_result})
-                    www_channel.basic_publish(exchange='www',
-                            routing_key = "client",
-                            body= body)
+                    if str(trace_result[-1]) == str(dst_host[1]): #TODO: fix so direct comparison, not string, either here or in anm object comparison: eg compare on label?
+#TODO: make this use custom ANK serializer function
+                        trace_result = [str(t.id) for t in trace_result if t] # make serializable
+                        body = json.dumps({"path": trace_result})
+                        www_channel.basic_publish(exchange='www',
+                                routing_key = "client",
+                                body= body)
+                    else:
+                        log.info("Partial trace, not sending to webserver: %s", trace_result)
                 else:
                     print "No parser defined for command %s" % command
                     print "Raw output:"
@@ -82,7 +85,6 @@ def send(nidb, server, command, hosts, threads = 5):
             if not len(hosts_received):
                 channel.stop_consuming()
 
-            print
 
     # wait for responses
     result = channel.queue_declare(exclusive=True)
