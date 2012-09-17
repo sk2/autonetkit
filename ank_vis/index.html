@@ -340,14 +340,12 @@ function redraw() {
   var cloud_width = function(data) {
     var max =  d3.max(data.values, function(d) { return d.x; });
     var min =  d3.min(data.values, function(d) { return d.x; });
-    console.log(data.key, max-min);
     return 2*(max - min);
   }
 
   var cloud_height = function(data) {
     var max =  d3.max(data.values, function(d) { return d.y; });
     var min =  d3.min(data.values, function(d) { return d.y; });
-    console.log(data.key, max-min);
     return 2*(max - min);
   }
 
@@ -512,16 +510,17 @@ function redraw_paths() {
     .x(path_x)
     .y(path_y)
     .interpolate("cardinal")
-    .tension(0.8)
+    .tension(0.7)
     ;
 
   //TODO: paths need to be updated when graph changes... or perhaps fade out as no longer relevant if topology changes?
 
-  path2 = chart.selectAll("path")
+  path2 = chart.selectAll(".trace_path")
     .data(pathinfo)
 
     path2.enter().append("path")
     .attr("d", traceroute_line)
+    .attr("class", "trace_path")
     .style("stroke-width", 6)
     .style("stroke", "orange")
     .style("fill", "none")
