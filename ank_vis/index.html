@@ -172,9 +172,7 @@ d3.select("select").on("change", function() {
     overlay_id = this.value;
     ws.send("overlay_id=" + overlay_id);
     if (overlay_id == "nidb") {
-    console.log("here for nidb");
     group_attr = "host";
-    console.log(group_attr);
     redraw(); //TODO: see if can cut this and make group auto update
     }
     else {
@@ -204,21 +202,35 @@ var y_offset = 30;
 var fill = d3.scale.category10();
 var groupFill = function(d, i) { return fill(i); };
 var groupPath = function(d) {
-  if (d.values.length < 3) {
+  if (d.values.length  == 1) {
+    node = d.values[0];
+    offset = 10;
+    retval =  "M" ;
+    retval += (node.x - offset  + icon_offset + x_offset) + "," + (node.y - offset + icon_offset + y_offset) + "L";
+    retval += (node.x + offset  + icon_offset + x_offset) + "," + (node.y - offset + icon_offset + y_offset) + "L";
+    retval += (node.x - offset  + icon_offset + x_offset) + "," + (node.y + offset + icon_offset + y_offset) + "L";
+    retval += (node.x + offset + icon_offset + x_offset) + "," + (node.y + offset + icon_offset + y_offset);
+    retval += "Z";
+    return retval
+  }
+  else if (d.values.length  == 2) {
     //TODO: here we should return a path enclosing either the one or both nodes
     //TODO: need to make sure that node1 comes before node2?
     node1 = d.values[1];
     node2 = d.values[0];
-    console.log(node1, node2);
+    //Note: upper_x goes with lower_y due to y ascending down, x ascending right
+    upper_x = Math.max(node1.x, node2.x);
+    upper_y = Math.max(node1.y, node2.y);
+    lower_x = Math.min(node1.x, node2.x);
+    lower_y = Math.min(node1.y, node2.y);
     offset = 20;
     //TODO: tidy offsets
     retval =  "M" ;
-    retval += (node1.x - offset  + icon_offset + x_offset) + "," + (node1.y - offset + icon_offset + y_offset) + "L";
-    retval += (node1.x + offset  + icon_offset + x_offset) + "," + (node1.y - offset + icon_offset + y_offset) + "L";
-    retval += (node2.x + offset + icon_offset + x_offset) + "," + (node2.y + offset + icon_offset + y_offset) + "L";
-    retval += (node2.x - offset + icon_offset + x_offset) + "," + (node2.y + offset + icon_offset + y_offset);
+    retval += (lower_x - offset  + icon_offset + x_offset) + "," + (upper_y - offset + icon_offset + y_offset) + "L";
+    retval += (lower_x - offset  + icon_offset + x_offset) + "," + (upper_y - offset + icon_offset + y_offset) + "L";
+    retval += (upper_x + offset + icon_offset + x_offset) + "," + (lower_y + offset + icon_offset + y_offset) + "L";
+    retval += (upper_x + offset + icon_offset + x_offset) + "," + (lower_y + offset + icon_offset + y_offset);
     retval += "Z";
-    console.log(retval);
     return retval;
   }
   return "M" + 
@@ -247,7 +259,7 @@ var node_info = function(d) {
     if (typeof d[attr] == 'object' && d[attr] != null) {
       text += ", " + attr + ": (";
       for (subattr in d[attr]) {
-      text += ", " + subattr + ": (";
+      text += ", " + subattr + ": " + d[attr][subattr];
       }
         text += ") ";
     }
