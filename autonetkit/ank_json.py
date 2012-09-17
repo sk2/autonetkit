@@ -47,9 +47,7 @@ def ank_json_dumps(graph, indent = 4):
 
 def ank_json_loads(data):
     data = json.loads(data)
-    print data
     data = data['anm']['ip']
-    print "data is", data
     def dict_to_object(d):
         inst = d
         for key, val in d.items():
@@ -73,7 +71,6 @@ def ank_json_loads(data):
         return inst
 
     d = json.loads(data, object_hook=dict_to_object)
-    print d
     return json_graph.node_link_graph(d)
 
 
@@ -120,17 +117,12 @@ def jsonify_anm(anm):
     return anm_json
 
 def jsonify_nidb(nidb):
-    print "NIDB"
     graph = nidb._graph
     for node in graph:
         graph.node[node]['x'] = graph.node[node]['graphics']['x']
         graph.node[node]['y'] = graph.node[node]['graphics']['y']
         graph.node[node]['device_type'] = graph.node[node]['graphics']['device_type']
         graph.node[node]['device_subtype'] = graph.node[node]['graphics']['device_subtype']
-        try:
-            print graph.node[node]['asn']
-        except KeyError:
-            print "no asn for", node
 
     x = (graph.node[n]['x'] for n in graph)
     y = (graph.node[n]['y'] for n in graph)
@@ -141,7 +133,6 @@ def jsonify_nidb(nidb):
         graph.node[n]['y'] += - y_min
 
     data = ank_json_dumps(graph)
-    print data
     return data
 
 def dumps(anm, nidb = None):

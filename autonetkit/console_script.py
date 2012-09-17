@@ -69,7 +69,6 @@ def main():
                 routing_key = "client",
                 body= body)
         nidb.save()
-        raise SystemExit
         render.remove_dirs(["rendered/nectar1/nklab/"])
         render.render(nidb)
     else:
@@ -95,7 +94,7 @@ def main():
             log.info("Monitoring for updates...")
             prev_timestamp = 0
             while True:
-                time.sleep(0.2)
+                time.sleep(0.1)
                 latest_timestamp = os.stat(input_filename).st_mtime
                 if latest_timestamp > prev_timestamp:
                     prev_timestamp = latest_timestamp
