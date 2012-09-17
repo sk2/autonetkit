@@ -59,8 +59,6 @@ var dropdown = d3.select("#overlay_select")
 
 
 ws.onmessage = function (evt) {
-  //console.log(evt.data);
-  //console.log('ws', evt.data);
   var data = jQuery.parseJSON(evt.data);
   //TODO: parse to see if valid traceroute path or other data
   if ("graph" in data) {
@@ -190,7 +188,6 @@ var y_offset = 30;
 var fill = d3.scale.category10();
 var groupFill = function(d, i) { return fill(i); };
 var groupPath = function(d) {
-  console.log("path for", d);
   if (d.values.length  == 1) {
     node = d.values[0];
     offset = 10;
@@ -234,10 +231,9 @@ var groupPath = function(d) {
     return retval;
   }
   retval = "M" + 
-    d3.geom.hull(d.values.map(function(i) { console.log("node", i); return [i.x + x_offset + 32, i.y + y_offset + 32]; }))
+    d3.geom.hull(d.values.map(function(i) { return [i.x + x_offset + 32, i.y + y_offset + 32]; }))
     .join("L")
     + "Z";
-  console.log(retval);
   return retval;
 }
 
@@ -324,7 +320,6 @@ function redraw() {
   node_attr_groups = d3.nest().key(function(d) { return d[group_attr]; }).entries(nodes);
   edge_attr_groups = d3.nest().key(function(d) { return d.type; }).entries(jsondata.links);
 
-  console.log(node_attr_groups);
 
   //TODO: make group path change/exit with node data
   groupings = chart.selectAll("path")
