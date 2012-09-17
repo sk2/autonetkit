@@ -65,6 +65,9 @@ def main():
         anm.save()
         nidb = compile_network(anm)
         body = autonetkit.ank_json.dumps(anm, nidb)
+        #fh = open("ank_vis/default.json", "w")
+        #fh.write(body)
+        #fh.close()
         import zlib
         body = zlib.compress(body, 9)
         www_channel.basic_publish(exchange='www',
