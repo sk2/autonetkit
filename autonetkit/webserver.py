@@ -19,7 +19,8 @@ class OverlayHandler(tornado.web.RequestHandler):
     def get(self):
         overlay_id = self.get_argument("id")
         if overlay_id == "*":
-            self.write(json.dumps(self.anm.overlays()))
+            overlay_list = sorted(self.anm.overlays())
+            self.write(json.dumps({'overlay_list': overlay_list}))
             return
         else:
             try:
@@ -27,7 +28,6 @@ class OverlayHandler(tornado.web.RequestHandler):
                 self.write(data)
             except Exception, e:
                 print e
-
 
 class MyWebSocketHandler(websocket.WebSocketHandler):
     def initialize(self, anm, overlay_id):
@@ -61,6 +61,9 @@ class MyWebSocketHandler(websocket.WebSocketHandler):
 
     def update_overlay(self):
         body = self.anm[self.overlay_id]
+        self.write_message(body)
+# and update overlay dropdown
+        body = json.dumps({'overlay_list': self.anm.overlays()})
         self.write_message(body)
         
 
@@ -142,7 +145,7 @@ class PikaClient(object):
     def on_message(self, channel, method, header, body):
         pika.log.info('PikaClient: message received: %s' % body)
         body_parsed = json.loads(body)
-        if "anm" in body_parsed:
+        if body_parsed.has_key("anm"):
             print "received new anm"
             try:
                 self.anm.anm = body_parsed['anm']
@@ -150,7 +153,7 @@ class PikaClient(object):
                 self.update_listeners()
                 # TODO: find better way to replace object not just local reference, as need to replace for RequestHandler too
             except Exception, e:
-                print e
+                print "Exception is", e
         elif "path" in body_parsed:
             self.notify_listeners(body) # could do extra processing here
         else:
@@ -186,11 +189,19 @@ class PikaClient(object):
 class AnmAccessor():
     def __init__(self):
         self.anm = {}
+# try loading from vis directory
+        try:
+            fh = open("ank_vis/example.json", "r")
+            loaded = json.load(fh)
+            data = json.loads(loaded)
+            self.anm = data.get("anm")
+        except IOError:
+            pass # use default blank anm
 
     def overlays(self):
         if not len(self.anm):
-            return ["No ANM loaded"]
-        return self.anm.keys()
+            return [""]
+        return sorted(self.anm.keys())
 
     def __getitem__(self, key):
         try:
