@@ -59,7 +59,6 @@ def main():
         www_channel = www_connection.channel()
         www_channel.exchange_declare(exchange='www',
                 type='direct')
-        body = json.dumps({"anm": pickle.dumps(anm)})
         body = autonetkit.ank_json.dumps(anm)
         www_channel.basic_publish(exchange='www',
                 routing_key = "client",
@@ -105,7 +104,7 @@ def main():
                             anm = build_network(input_filename)
                             anm.save()
                             nidb = compile_network(anm)
-                            body = json.dumps({"anm": pickle.dumps(anm)})
+                            body = autonetkit.ank_json.dumps(anm)
                             www_channel.basic_publish(exchange='www',
                                     routing_key = "client",
                                     body= body)
