@@ -196,11 +196,12 @@ class AnmAccessor():
         self.anm = {}
 # try loading from vis directory
         try:
-            fh = open("ank_vis/example.json", "r")
-            loaded = json.load(fh)
-            data = json.loads(loaded)
+            fh = open("ank_vis/default.json", "r")
+            data = json.load(fh)
+            #data = json.loads(loaded)
             self.anm = data.get("anm")
-        except IOError:
+        except IOError, e:
+            print e
             pass # use default blank anm
 
     def overlays(self):
