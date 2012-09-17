@@ -526,18 +526,18 @@ function redraw_paths() {
     .style("fill", "none")
     .on("mouseover", function(d){
         d3.select(this).style("stroke", "orange");
-        d3.select(this).style("stroke-width", "5");
+        d3.select(this).style("stroke-width", "6");
         path_info(d);
         })
   .on("mouseout", function(){
-      d3.select(this).style("stroke-width", "2");
-      d3.select(this).style("stroke", "gray");
+      d3.select(this).style("stroke-width", "3");
+      d3.select(this).style("stroke", "rgb(6,120,155)");
       clear_label();
       })
   .transition()
     .duration(2000)
-    .style("stroke-width", 2)
-    .style("stroke", "gray")
+    .style("stroke-width", 3)
+    .style("stroke", "rgb(6,120,155)")
     .style("opacity", 50)
     ;
 
