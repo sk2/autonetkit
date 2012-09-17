@@ -51,6 +51,7 @@ var nodes_by_id = {};
 var pathinfo = [];
 
 var dropdown = d3.select("#overlay_select")
+//TOD: see if still need this
 .on("change", function() {
     overlay_id = this.value;
     ws.send("overlay_id=" + overlay_id);
@@ -170,6 +171,15 @@ var edge_id = function(d) {
 d3.select("select").on("change", function() {
     overlay_id = this.value;
     ws.send("overlay_id=" + overlay_id);
+    if (overlay_id == "nidb") {
+    console.log("here for nidb");
+    group_attr = "host";
+    console.log(group_attr);
+    redraw(); //TODO: see if can cut this and make group auto update
+    }
+    else {
+    group_attr = "asn";
+    }
     });
 
 
@@ -184,19 +194,40 @@ d3.select("select").on("change", function() {
 //.text(String);
 //});
 
+//TODO: replace all 32 magic numbers with icon_offset
+var icon_offset = 32;
+
+var x_offset = 10;
+var y_offset = 30;
 
 // based on http://bl.ocks.org/2920551
 var fill = d3.scale.category10();
 var groupFill = function(d, i) { return fill(i); };
 var groupPath = function(d) {
+  if (d.values.length < 3) {
+    //TODO: here we should return a path enclosing either the one or both nodes
+    //TODO: need to make sure that node1 comes before node2?
+    node1 = d.values[1];
+    node2 = d.values[0];
+    console.log(node1, node2);
+    offset = 20;
+    //TODO: tidy offsets
+    retval =  "M" ;
+    retval += (node1.x - offset  + icon_offset + x_offset) + "," + (node1.y - offset + icon_offset + y_offset) + "L";
+    retval += (node1.x + offset  + icon_offset + x_offset) + "," + (node1.y - offset + icon_offset + y_offset) + "L";
+    retval += (node2.x + offset + icon_offset + x_offset) + "," + (node2.y + offset + icon_offset + y_offset) + "L";
+    retval += (node2.x - offset + icon_offset + x_offset) + "," + (node2.y + offset + icon_offset + y_offset);
+    retval += "Z";
+    console.log(retval);
+    return retval;
+  }
   return "M" + 
     d3.geom.hull(d.values.map(function(i) { return [i.x + x_offset + 32, i.y + y_offset + 32]; }))
     .join("L")
     + "Z";
 }
 
-var x_offset = 10;
-var y_offset = 30;
+
 
 var path_x = function(d) {
   node = nodes_by_id[d];
@@ -213,15 +244,24 @@ var path_y = function(d) {
 var node_info = function(d) {
   text = d.id;
   for (attr in d) {
-    if (d[attr] != null && d[attr] != "None" && attr != "x" & attr != "y" && attr != "label" && attr != "id") {
+    if (typeof d[attr] == 'object' && d[attr] != null) {
+      text += ", " + attr + ": (";
+      for (subattr in d[attr]) {
+      text += ", " + subattr + ": (";
+      }
+        text += ") ";
+    }
+    else if (d[attr] != null && d[attr] != "None" && attr != "" & attr != "" && attr != "label" && attr != "id") {
       text += ", " + attr + ": " + d[attr];
     }
   }
   status_label.text("Node: " + text);
 }
 
+var group_attr = "asn";
+
 var group_info = function(d) {
-  status_label.text("Group: " + d.key);
+  status_label.text("Group: " + group_attr + " " + d.key);
 }
 
 var path_info = function(d) {
@@ -247,7 +287,7 @@ var status_label = chart.append("text")
 .attr("x", 0)
 .attr("font-family", "helvetica") 
 .attr("font-size", "14") 
-.text("...")
+.text("")
 ;
 
 var node_attr_groups;
@@ -267,7 +307,6 @@ function redraw() {
       nodes_by_id[node.id] = node;
       });
 
-  var group_attr =  "asn" //TODO: make this selectable by dropdown
   node_attr_groups = d3.nest().key(function(d) { return d[group_attr]; }).entries(nodes);
   edge_attr_groups = d3.nest().key(function(d) { return d.type; }).entries(jsondata.links);
 
