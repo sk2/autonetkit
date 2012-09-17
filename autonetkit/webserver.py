@@ -144,6 +144,11 @@ class PikaClient(object):
  
     def on_message(self, channel, method, header, body):
         pika.log.info('PikaClient: message received: %s' % body)
+        import zlib
+        try:
+            body = zlib.decompress(body)
+        except zlib.error:
+            pass # likely not compressed body
         body_parsed = json.loads(body)
         if body_parsed.has_key("anm"):
             print "received new anm"
