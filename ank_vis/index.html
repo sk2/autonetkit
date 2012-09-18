@@ -10,6 +10,15 @@
         fill: steelblue;
       }
 
+      path.link_edge {
+        fill: none;
+      }
+
+      marker {
+        stroke: rgb(6,120,155);
+        fill: rgb(6,120,155);
+      }
+
       .chart div {
         font: 10px sans-serif;
         background-color: steelblue;
@@ -36,7 +45,7 @@
       var ws = new WebSocket(socket_url);
       ws.onopen = function() {
         ws.send("overlay_list");
-        ws.send("overlay_id=phy");
+        ws.send("overlay_id=" + overlay_id);
         status_label.text("WebSocket connected");
       };
 ws.onclose = function () {
@@ -298,6 +307,46 @@ var status_label = chart.append("text")
 .text("")
 ;
 
+//Markers from http://bl.ocks.org/1153292
+// Per-type markers, as they don't inherit styles.
+chart.append("svg:defs").selectAll("marker")
+    .data(["link_edge"])
+  .enter().append("svg:marker")
+    .attr("id", String)
+    .attr("viewBox", "0 -5 10 10")
+    .attr("refX", 40)
+    .attr("refY", -5)
+    .attr("markerWidth", 10)
+    .attr("markerHeight", 10)
+    .attr("orient", "auto")
+  .append("svg:path")
+    .attr("d", "M0,-5L10,0L0,5");
+
+
+    var marker_end  = function(d) {
+      if (jsondata.directed) {
+        return "url(#link_edge)";
+      }
+      return "";
+    }
+
+    var graph_edge = function(d) {
+       var source_x = nodes[d.source].x + x_offset + 32;
+       source_y =  nodes[d.source].y + y_offset + 32;
+       target_x =  nodes[d.target].x + x_offset + 32;
+       target_y =  nodes[d.target].y + y_offset + 32;
+
+      if (jsondata.directed) {
+        var dx = target_x - source_x,
+            dy = target_y - source_y,
+            dr = Math.sqrt(dx * dx + dy * dy);
+        return "M" + source_x + "," + source_y + "A" + dr + "," + dr + " 0 0,1 " + target_x + "," + target_y;
+      } else {
+        //TODO: look at join for here
+        return  "M" + source_x + "," + source_y + "L" + target_x + "," + target_y;
+      }
+    }
+
 var node_attr_groups;
 var edge_attr_groups;
 
@@ -315,12 +364,14 @@ function redraw() {
       nodes_by_id[node.id] = node;
       });
 
+
+
   node_attr_groups = d3.nest().key(function(d) { return d[group_attr]; }).entries(nodes);
   edge_attr_groups = d3.nest().key(function(d) { return d.type; }).entries(jsondata.links);
 
 
   //TODO: make group path change/exit with node data
-  groupings = chart.selectAll("path")
+  groupings = chart.selectAll(".attr_group")
     .data(node_attr_groups)
 
     var test = 0;
@@ -351,6 +402,7 @@ function redraw() {
 
   if (test == 0) {
     groupings.enter().insert("path")
+      .attr("class", "attr_group")
       .attr("d", groupPath)
       .style("fill", groupFill)
       .style("stroke", groupFill)
@@ -389,50 +441,54 @@ function redraw() {
 
     groupings.transition()
       //TODO: put x,y etc here
-
       .duration(500)
 
   }
 
   groupings.exit().transition()
-    .duration(5000)
+    .duration(1000)
     .style("opacity",0)
     .remove();
 
   //TODO: filter the json data x and y ranges: store in nodes, and use this for the image plotting
 
-  var line = chart.selectAll("line")
+  var line = chart.selectAll(".link_edge")
     .data(jsondata.links, edge_id)
    // .data(jsondata.links)
 
     //TODO: see why edge_id changes sometimes even though appears the same
 
-    line.enter().append("line")
-    .attr("x1", source_x)
-    .attr("y1", source_y)
-    .attr("x2", target_x)
-    .attr("y2", target_y)
+    //line.enter().append("line")
+    line.enter().append("svg:path")
+    .attr("class", "link_edge")
+    .attr("d", graph_edge)
+    //.attr("marker-end", marker_end)
+    //.attr("x1", source_x)
+    //.attr("y1", source_y)
+    //.attr("x2", target_x)
+    //.attr("y2", target_y)
     .style("stroke", "rgb(6,120,155)")
     .on("mouseover", function(d){
         d3.select(this).style("stroke", "orange");
         d3.select(this).style("stroke-width", "4");
+        d3.select(this).attr("marker-end", "");
         link_info(d);
         })
   .on("mouseout", function(){
       d3.select(this).style("stroke-width", "1");
       d3.select(this).style("stroke", "rgb(6,120,155)");
+      //d3.select(this).attr("marker-end", marker_end);
       clear_label();
       });
-
   line.transition()
     .duration(500)
-    .attr("x1", source_x)
-    .attr("y1", source_y)
-    .attr("x2", target_x)
-    .attr("y2", target_y)
+    .attr("d", graph_edge)
+    //.attr("x1", source_x)
+    //.attr("y1", source_y)
+    //.attr("x2", target_x)
+    //.attr("y2", target_y)
 
-
-    line.exit().transition()
+      line.exit().transition()
     .duration(1000)
     .style("opacity",0)
     .remove();
@@ -514,16 +570,21 @@ function redraw_paths() {
     ;
 
   //TODO: paths need to be updated when graph changes... or perhaps fade out as no longer relevant if topology changes?
+  //TODO: set paths using css and transition style rather than all the attributes hard coded
 
   path2 = chart.selectAll(".trace_path")
     .data(pathinfo)
 
-    path2.enter().append("path")
+
+    path2.enter().append("svg:path")
     .attr("d", traceroute_line)
     .attr("class", "trace_path")
     .style("stroke-width", 6)
     .style("stroke", "orange")
     .style("fill", "none")
+    //TODO: can use following to map to marker type
+    //.attr("marker-end", function(d) { return "url(#" + d.type + ")"; });
+    //.attr("marker-end", "url(#trace)")
     .on("mouseover", function(d){
         d3.select(this).style("stroke", "orange");
         d3.select(this).style("stroke-width", "6");
@@ -535,9 +596,9 @@ function redraw_paths() {
       clear_label();
       })
   .transition()
-    .duration(2000)
+    .duration(1000)
     .style("stroke-width", 3)
-    .style("stroke", "rgb(6,120,155)")
+    .style("stroke", "rgb(0,154,138)")
     .style("opacity", 50)
     ;
 
