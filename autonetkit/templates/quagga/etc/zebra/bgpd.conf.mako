@@ -17,7 +17,7 @@ banner motd file /etc/quagga/motd.txt
 	! ibgp clients
 % endif    
 	! ${client.neighbor}
-    neighbor ${client.loopback} remote-as ${client.neighbor.asn}
+    neighbor ${client.loopback} remote-as ${client.asn}
     neighbor ${client.loopback} update-source ${node.loopback} 
 	neighbor ${client.loopback} route-reflector-client                                                   
     neighbor ${client.loopback} send-community      
@@ -36,7 +36,7 @@ banner motd file /etc/quagga/motd.txt
 	! ibgp peers
 % endif 
 	! ${neigh.neighbor}
-    neighbor ${neigh.loopback} remote-as ${neigh.neighbor.asn}
+    neighbor ${neigh.loopback} remote-as ${neigh.asn}
     neighbor ${neigh.loopback} update-source ${node.loopback}                                                     
     neighbor ${neigh.loopback} send-community      
     neighbor ${neigh.loopback} next-hop-self
@@ -44,7 +44,7 @@ banner motd file /etc/quagga/motd.txt
 ! ebgp
 % for neigh in node.bgp.ebgp_neighbors:      
 	! ${neigh.neighbor} 
-    neighbor ${neigh.dst_int_ip} remote-as ${neigh.neighbor.asn}
+    neighbor ${neigh.dst_int_ip} remote-as ${neigh.asn}
     neighbor ${neigh.dst_int_ip} update-source ${node.local_int_ip}                                                     
     neighbor ${neigh.dst_int_ip} send-community
 % endfor    
