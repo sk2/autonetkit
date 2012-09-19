@@ -1,0 +1,10 @@
+body {
+  background-color: blue;
+}
+.navbar {
+  background-color: red;
+  display: none;
+}
+
+#BrowserPrintDefaults{display:none} 
+
