@@ -8,7 +8,6 @@ import os.path
 #TODO: check this works on Windows
 ank_user_dir = os.path.join(os.path.expanduser("~"),  ".autonetkit")
 
-
 def load_config():
     settings = ConfigParser.RawConfigParser()
     spec_file = pkg_resources.resource_filename(__name__,"/config/configspec.cfg")
@@ -32,3 +31,5 @@ def load_config():
                 pass
     return settings
 
+#NOTE: this only gets loaded once package-wide if imported as import autonetkit.config
+settings = load_config()

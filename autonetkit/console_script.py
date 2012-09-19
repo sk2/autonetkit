@@ -12,11 +12,11 @@ import build_network
 import autonetkit.log as log
 import pika
 import autonetkit.ank_pika
-import config
+import autonetkit.config
 
 def main():
     import autonetkit
-    settings = config.load_config()
+    settings = autonetkit.config.settings
     try:
         ank_version = pkg_resources.get_distribution("AutoNetkit").version
     except pkg_resources.DistributionNotFound:
