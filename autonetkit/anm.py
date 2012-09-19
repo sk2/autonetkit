@@ -664,16 +664,20 @@ class AbstractNetworkModel(object):
         self._build_node_label()
 
     def save(self):
+        import ank_json
         import os
-        pickle_dir = os.path.join("versions", "anm")
-        if not os.path.isdir(pickle_dir):
-            os.makedirs(pickle_dir)
+        import gzip
+        archive_dir = os.path.join("versions", "anm")
+        if not os.path.isdir(archive_dir):
+            os.makedirs(archive_dir)
 
-        pickle_file = "anm_%s.pickle.tar.gz" % self.timestamp
-        pickle_path = os.path.join(pickle_dir, pickle_file)
-        log.debug("Saving to %s" % pickle_path)
-        with open(pickle_path, "wb") as pickle_fh:
-            pickle.dump(self, pickle_fh, -1)
+        data = ank_json.jsonify_anm(self)
+#TODO: should this use the ank_json.jsonify_nidb() ?
+        json_file = "anm_%s.json.gz" % self.timestamp
+        json_path = os.path.join(archive_dir, json_file)
+        log.debug("Saving to %s" % json_path)
+        with gzip.open(json_path, "wb") as json_fh:
+            json_fh.write(data)
 
     def restore_latest(self, directory = None):
         import os
@@ -682,19 +686,28 @@ class AbstractNetworkModel(object):
         #TODO: make directory loaded from config
             directory = os.path.join("versions", "anm")
 
-        glob_dir = os.path.join(directory, "*.pickle.tar.gz")
+        glob_dir = os.path.join(directory, "*.json.gz")
         pickle_files = glob.glob(glob_dir)
         pickle_files = sorted(pickle_files)
-        latest_anm_file = pickle_files[-1]
-        self.restore(latest_anm_file)
+        try:
+            latest_file = pickle_files[-1]
+        except IndexError:
+# No files loaded
+            log.warning("No previous ANM saved. Please compile new ANM")
+            return
+        self.restore(latest_file)
 
     def restore(self, pickle_file):
+        import json
+        import gzip
+        import ank_json
+        print "here"
         log.debug("Restoring %s" % pickle_file)
-        with open(pickle_file, "r") as fh:
-            loaded = pickle.load(fh)
-# based on http://stackoverflow.com/questions/6596800
-            self.__dict__.update(loaded.__dict__)
-
+        log.info("Restoring %s" % pickle_file)
+        with gzip.open(pickle_file, "r") as fh:
+            data = json.load(fh) 
+            for overlay_id, graph_data in data.items():
+                self._overlays[overlay_id] = ank_json.ank_json_loads(graph_data)
 
     @property
     def _phy(self):
