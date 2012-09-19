@@ -37,7 +37,7 @@
   </head>
   <body>
 
-    <div class="navbar">Select overlay: <select id = "overlay_select"></select></div>
+    <div class="navbar">Select overlay: <select id = "overlay_select"></select> Revision: <select id = "revision_select"></select></div>
 
     <div>
       <script type="text/javascript">
@@ -45,12 +45,22 @@
 
         var overlay_id = "bgp";
 
+
+        //TODO: rename this to be overlay_dropdown
         var dropdown = d3.select("#overlay_select")
         .on("change", function() {
             overlay_id = this.value;
             ws.send("overlay_id=" + overlay_id);
             })
 
+
+var revision_dropdown = d3.select("#revision_select")
+.on("change", function() {
+    revision_id = this.value;
+    jsondata = graph_history[revision_id];
+    redraw(); //TODO: remove this once using websocket callback for next line
+    //ws.send("overlay_id=" + overlay_id); //TODO: call server for history
+    })
 
 var chart = d3.select("body").append("svg")
 .attr("class", "chart")
@@ -66,7 +76,8 @@ var status_label = d3.select("navbar").append("text")
 .text("")
 ;
 
-
+//TODO: set title with AutoNetkit overlay_id revision
+//so then can print directly from chrome in kiosk mode to pdf with this filename
 
 //TODO: set hover to display properties
 

@@ -17,11 +17,15 @@ var nodes_by_id = {};
 
 var pathinfo = [];
 
+var graph_history = [];
+
 ws.onmessage = function (evt) {
   var data = jQuery.parseJSON(evt.data);
   //TODO: parse to see if valid traceroute path or other data
   if ("graph" in data) {
     jsondata = data;
+    graph_history.push(data);
+    propagate_revision_dropdown(graph_history); //TODO: update this with revision from webserver
     redraw();
   }
   else if("path" in data) {
@@ -51,10 +55,27 @@ var propagate_overlay_dropdown = function(d) {
     .enter().append("option")
     .attr("value", String)
     .text(String);
+
+//TODO only set the first time around?
+    $("#overlay_select option[value=" + overlay_id + "]").attr("selected", "selected")
+  
 }
 
-dropdown.select("option")
+var propagate_revision_dropdown = function(d) {
+  revisions = d3.range(graph_history.length);
+  console.log(revisions);
+  revision_dropdown
+    .selectAll("option")
+    .data(revisions)
+    .enter().append("option")
+    .attr("value", String)
+    .text(String);
 
+  var selected_item = graph_history.length - 1;
+  $("#revision_select option[value=" + selected_item + "]").attr("selected", "selected")
+}
+
+//dropdown.select("phy").text("selected");
 
   var clear_label = function() {
     status_label.text("");
@@ -106,16 +127,27 @@ var edge_id = function(d) {
 }
 
 d3.select("select").on("change", function() {
-    overlay_id = this.value;
-    ws.send("overlay_id=" + overlay_id);
-    if (overlay_id == "nidb") {
+  overlay_id = this.value;
+  ws.send("overlay_id=" + overlay_id);
+  update_title();
+  clear_graph_history();
+  if (overlay_id == "nidb") {
     group_attr = "host";
     redraw(); //TODO: see if can cut this and make group auto update
-    }
-    else {
+  }
+  else {
     group_attr = "asn";
-    }
-    });
+  }
+});
+
+var update_title = function() {
+  document.title = "AutoNetkit - " + overlay_id;
+}
+
+var clear_graph_history = function() {
+  graph_history = [];
+  propagate_revision_dropdown(graph_history); //TODO: update this with revision from webserver
+}
 
 
 //TODO: replace all 32 magic numbers with icon_offset
@@ -232,6 +264,7 @@ var link_info = function(d) {
 
 
 //Markers from http://bl.ocks.org/1153292
+// Used for arrow-heads
 // Per-type markers, as they don't inherit styles.
 chart.append("svg:defs").selectAll("marker")
 .data(["link_edge"])
