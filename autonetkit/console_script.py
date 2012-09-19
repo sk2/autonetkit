@@ -45,6 +45,10 @@ def main():
     opt.add_option('--webserver',  action="store_true", default= False, help="Webserver")        
     options, arguments = opt.parse_args()
 
+    import diff
+    #pprint.pprint(diff.nidb_diff("versions/nidb"))
+
+
     input_filename = options.file
     if not options.file:
         input_filename = "ank.graphml"
@@ -54,6 +58,8 @@ def main():
         import logging
         logger = logging.getLogger("ANK")
         logger.setLevel(logging.DEBUG)
+
+#TODO: put compile logic into a function that both compile and monitor call rather than duplicated code
 
     if options.compile:
         anm = build_network(input_filename)
@@ -75,13 +81,14 @@ def main():
                 body= body)
         log.debug("Sent ANM to web server")
         nidb.save()
-        render.remove_dirs(["rendered/nectar1/nklab/"])
-        render.render(nidb)
     else:
         anm = AbstractNetworkModel()
         anm.restore_latest()
         nidb = NIDB()
         nidb.restore_latest()
+        print nidb.dump()
+        render.remove_dirs(["rendered/nectar1/nklab/"])
+        render.render(nidb)
 
     if options.deploy:
         deploy_network(nidb)
@@ -131,12 +138,12 @@ def main():
                         if options.measure:
                             measure_network(nidb)
 
-
                         log.info("Monitoring for updates...")
-                    except:
+                    except Exception, e:
                         # TODO: remove this, add proper warning
-                        log.warning("Unable to build network")
+                        log.warning("Unable to build network: %s" % e)
                         pass
+
         except KeyboardInterrupt:
             log.info("Exiting")
 
