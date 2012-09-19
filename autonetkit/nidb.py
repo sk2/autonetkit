@@ -494,7 +494,6 @@ class NIDB_base(object):
     def restore(self, pickle_file):
         import gzip
         log.debug("Restoring %s" % pickle_file)
-        log.info("Restoring %s" % pickle_file)
         with gzip.open(pickle_file, "r") as fh:
             #data = json.load(fh)
             data = fh.read()
@@ -505,6 +504,17 @@ class NIDB_base(object):
     @property
     def name(self):
         return self.__repr__()
+
+    def copy_graphics(self, G_graphics):
+        """Transfers graphics data from anm to nidb"""
+        for node in self:
+            graphics_node = G_graphics.node(node)
+            node.graphics.x = graphics_node.x
+            node.graphics.y = graphics_node.y
+            node.graphics.device_type = graphics_node.device_type
+            node.graphics.device_subtype = graphics_node.device_subtype
+            node.device_type = graphics_node.device_type
+            node.device_subtype = graphics_node.device_subtype
 
     def __len__(self):
         return len(self._graph)
