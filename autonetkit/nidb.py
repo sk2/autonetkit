@@ -3,6 +3,9 @@ import pprint
 import collections
 import time
 import autonetkit.log as log
+import ank_json
+
+
 try:
     import cPickle as pickle
 except ImportError:
@@ -435,6 +438,8 @@ class NIDB_base(object):
     def __init__(self):
         pass
 
+#TODO: make optional argument to take serialized file on init, and restore from this
+
     def __getstate__(self):
         return self._graph
 
@@ -454,19 +459,19 @@ class NIDB_base(object):
                 pprint.pformat(self._graph.edges(data=True))
                 )
 
-    #TODO: add restore function
-
     def save(self):
         import os
-        pickle_dir = os.path.join("versions", "nidb")
-        if not os.path.isdir(pickle_dir):
-            os.makedirs(pickle_dir)
+        import gzip
+        archive_dir = os.path.join("versions", "nidb")
+        if not os.path.isdir(archive_dir):
+            os.makedirs(archive_dir)
 
-        pickle_file = "nidb_%s.pickle.tar.gz" % self.timestamp
-        pickle_path = os.path.join(pickle_dir, pickle_file)
-        log.debug("Saving to %s" % pickle_path)
-        with open(pickle_path, "wb") as pickle_fh:
-            pickle.dump(self, pickle_fh, -1)
+        data = ank_json.ank_json_dumps(self._graph)
+        json_file = "nidb_%s.json" % self.timestamp
+        json_path = os.path.join(archive_dir, json_file)
+        log.debug("Saving to %s" % json_path)
+        with open(json_path, "wb") as json_fh:
+            json_fh.write(data)
 
     def restore_latest(self, directory = None):
         import os
@@ -475,17 +480,26 @@ class NIDB_base(object):
         #TODO: make directory loaded from config
             directory = os.path.join("versions", "nidb")
 
-        glob_dir = os.path.join(directory, "*.pickle.tar.gz")
+        glob_dir = os.path.join(directory, "*.json")
         pickle_files = glob.glob(glob_dir)
         pickle_files = sorted(pickle_files)
-        latest_anm_file = pickle_files[-1]
-        self.restore(latest_anm_file)
+        try:
+            latest_file = pickle_files[-1]
+        except IndexError:
+# No files loaded
+            log.warning("No previous NIDB saved. Please compile new NIDB")
+            return
+        self.restore(latest_file)
 
     def restore(self, pickle_file):
+        import gzip
         log.debug("Restoring %s" % pickle_file)
+        log.info("Restoring %s" % pickle_file)
         with open(pickle_file, "r") as fh:
-            loaded = pickle.load(fh)
-            self.__dict__.update(loaded.__dict__)
+            #data = json.load(fh)
+            data = fh.read()
+            graph = ank_json.ank_json_loads(data)
+            self._graph = graph
 
 
     @property
@@ -653,12 +667,15 @@ class lab_topology_accessor(object):
         self.topologies[key] = {}
         return lab_topology(self.nidb, key)
 
-
 class NIDB(NIDB_base):
     def __init__(self):
         self._graph = nx.Graph() # only for connectivity, any other information stored on node
         self._graph.graph['topologies'] = collections.defaultdict(dict)
-        self.timestamp =  time.strftime("%Y%m%d_%H%M%S", time.localtime())
+        self._graph.graph['timestamp'] = time.strftime("%Y%m%d_%H%M%S", time.localtime())
+
+    @property
+    def timestamp(self):
+        return self._graph.graph['timestamp']
 
     @property
     def topology(self):
