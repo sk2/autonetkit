@@ -4,6 +4,7 @@ from networkx.readwrite import json_graph
 import netaddr
 import string
 import autonetkit.anm
+import autonetkit.log as log
 
 def stringify_netaddr(graph):
     import netaddr
@@ -35,7 +36,9 @@ class AnkEncoder(json.JSONEncoder):
         if isinstance(obj, netaddr.IPNetwork):
             return str(obj)
         if isinstance(obj, autonetkit.anm.overlay_node):
-            return str(obj) #TODO: need to deserialize nodes back to anm?
+            #TODO: add documentation about serializing anm nodes
+            log.warning("%s is anm overlay_node. Use attribute rather than object in compiler." % obj)
+            return str(obj)
 
         return json.JSONEncoder.default(self, obj)
 
@@ -45,28 +48,49 @@ def ank_json_dumps(graph, indent = 4):
     data = json.dumps(data, cls=AnkEncoder, indent = indent)
     return data
 
+def string_to_netaddr(val):
+    retval = None
+    dot_count = string.count(val, ".")
+    if dot_count:
+# could be an IP or network address
+        if "/" in val:
+            try:
+                retval = netaddr.IPNetwork(val)
+            except netaddr.core.AddrFormatError:
+                return # unable to convert, leave as string
+        else:
+            try:
+                retval = netaddr.IPAddress(val)
+            except netaddr.core.AddrFormatError:
+                return # unable to convert, leave as string
+
+    return retval
+
 def ank_json_loads(data):
-    data = json.loads(data)
-    data = data['anm']['ip']
+    #data = json.loads(data) # this is needed if dicts contain anm overlays, nidb, etc
     def dict_to_object(d):
         inst = d
         for key, val in d.items():
             try:
-                dot_count = string.count(val, ".")
-                if dot_count:
-# could be an IP or network address
-                    if "/" in val:
-                        try:
-                            inst[key] = netaddr.IPNetwork(val)
-                        except netaddr.core.AddrFormatError:
-                            pass # unable to convert, leave as string
-                    else:
-                        try:
-                            inst[key] = netaddr.IPAddress(val)
-                        except netaddr.core.AddrFormatError:
-                            pass # unable to convert, leave as string
+                newval = string_to_netaddr(val)
+                if newval:
+                    inst[key] = newval
             except AttributeError:
                 pass # not a string
+# handle lists of IP addresses
+            
+            if isinstance(val, list):
+                if any(isinstance(elem, basestring) for elem in val):
+                    # list contains a string
+                    for index, elem in enumerate(val):
+                        try:
+                            new_elem = string_to_netaddr(elem)
+                            if new_elem:
+                                val[index] = new_elem # in-place replacement
+                        except AttributeError:
+                            pass # not a string
+
+                inst[key] = val
 
         return inst
 
