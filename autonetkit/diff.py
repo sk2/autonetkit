@@ -3,8 +3,11 @@ import glob
 import os
 import pprint
 from collections import defaultdict
+import nidb
 
-def diff_history(directory, length = 1):
+#TODO: make this generalise to two graphs, rather than NIDB specifically
+
+def nidb_diff(directory, length = 1):
     glob_dir = os.path.join(directory, "*.pickle.tar.gz")
     pickle_files = glob.glob(glob_dir)
     pickle_files = sorted(pickle_files)
@@ -12,13 +15,20 @@ def diff_history(directory, length = 1):
     pairs = pairs[-1*length:]
     diffs = []
     for fileA, fileB in pairs:
-        graphA = nx.read_gpickle(fileA)
-        graphB = nx.read_gpickle(fileB)
+        print fileA, fileB
+        nidb_a = nidb.NIDB()
+        nidb_a.restore(fileA)
+        graphA = nidb_a._graph
+        nidb_b = nidb.NIDB()
+        nidb_b.restore(fileB)
+        graphB = nidb_b._graph
         diff = compare(graphA, graphB)
         # remove render folder which is timestamps
         diffs.append(diff)
 
     return diffs
+
+#TODO: tidy the recursive algorithm for list/dict diffing: see stackoverflow
 
 def element_diff(elemA, elemB):
     try: # split out if single element lists
