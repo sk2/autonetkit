@@ -75,6 +75,12 @@ var propagate_revision_dropdown = function(d) {
   $("#revision_select option[value=" + selected_item + "]").attr("selected", "selected")
 }
 
+var load_revision = function() {
+    jsondata = graph_history[revision_id];
+    var selected_item = graph_history.length - 1;
+    $("#revision_select option[value=" + selected_item + "]").attr("selected", "selected")
+}
+
 //dropdown.select("phy").text("selected");
 
   var clear_label = function() {
@@ -306,6 +312,38 @@ var graph_edge = function(d) {
 
 var node_attr_groups;
 var edge_attr_groups;
+var revision_id = 0;
+
+var status_label = d3.select(".infobar").append("text")
+.attr("class", "status label")
+.attr("y", 15)
+.attr("x", 0)
+.attr("font-family", "helvetica") 
+.attr("font-size", "14") 
+.text("aaa")
+;
+
+
+var history_back = function() {
+  console.log("back")
+  if (revision_id - 1 >= 0) {
+    revision_id--;
+    load_revision()
+  } else {
+    status_label.text("Already at first revision");
+  }
+}
+
+//TODO: check difference between var a = function(), and function a()... is former d3?
+var history_forward = function() {
+  console.log("forward")
+  if (revision_id + 1 < graph_history.length) {
+    revision_id++;
+    load_revision()
+  } else {
+    status_label.text("Already at latest revision");
+  }
+}
 
 //d3.json(
 //'json/overlay/ip',
@@ -321,11 +359,8 @@ function redraw() {
       nodes_by_id[node.id] = node;
       });
 
-
-
   node_attr_groups = d3.nest().key(function(d) { return d[group_attr]; }).entries(nodes);
   edge_attr_groups = d3.nest().key(function(d) { return d.type; }).entries(jsondata.links);
-
 
   //TODO: make group path change/exit with node data
   groupings = chart.selectAll(".attr_group")

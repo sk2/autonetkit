@@ -28,6 +28,12 @@
         margin: 1px;
         color: white;
       }
+      .infobar {
+        position:absolute;
+        right:0px;
+        width:300px;
+        top: 10px;
+      }
     </style>
 
 
@@ -37,14 +43,19 @@
   </head>
   <body>
 
-    <div class="navbar">Select overlay: <select id = "overlay_select"></select> Revision: <select id = "revision_select"></select></div>
+    <div class="navbar">Select overlay: <select id = "overlay_select"></select>
+      Revision: <select id = "revision_select"></select>
+      <button onclick="history_back();"><</button>
+      <button onclick="history_forward();">></button>
+    </div>
+
+    <div class="infobar"></div>
 
     <div>
       <script type="text/javascript">
 
 
         var overlay_id = "bgp";
-
 
         //TODO: rename this to be overlay_dropdown
         var dropdown = d3.select("#overlay_select")
@@ -53,11 +64,10 @@
             ws.send("overlay_id=" + overlay_id);
             })
 
-
 var revision_dropdown = d3.select("#revision_select")
 .on("change", function() {
     revision_id = this.value;
-    jsondata = graph_history[revision_id];
+    load_revision();
     redraw(); //TODO: remove this once using websocket callback for next line
     //ws.send("overlay_id=" + overlay_id); //TODO: call server for history
     })
