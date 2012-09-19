@@ -349,7 +349,7 @@ var history_back = function() {
 //TODO: check difference between var a = function(), and function a()... is former d3?
 var history_forward = function() {
   console.log("forward")
-  if (revision_id + 1 < graph_history.length) {
+  if ((revision_id + 1) < graph_history.length) {
     revision_id++;
     load_revision();
     redraw(); 
