@@ -12,11 +12,11 @@ import build_network
 import autonetkit.log as log
 import pika
 import autonetkit.ank_pika
-
-
+import config
 
 def main():
     import autonetkit
+    settings = config.load_config()
     try:
         ank_version = pkg_resources.get_distribution("AutoNetkit").version
     except pkg_resources.DistributionNotFound:
@@ -29,6 +29,7 @@ def main():
     opt.add_option('--monitor', '-m',  action="store_true", default= False, help="Monitor input file for changes")        
     opt.add_option('--debug',  action="store_true", default= False, help="Debug mode")        
     opt.add_option('--compile',  action="store_true", default= False, help="Compile")        
+    opt.add_option('--render',  action="store_true", default= False, help="Compile")        
     opt.add_option('--deploy',  action="store_true", default= False, help="Deploy")        
     opt.add_option('--measure',  action="store_true", default= False, help="Measure")        
     opt.add_option('--webserver',  action="store_true", default= False, help="Webserver")        
@@ -49,9 +50,10 @@ def main():
 
 #TODO: put compile logic into a function that both compile and monitor call rather than duplicated code
 
-    if options.compile:
+    if options.compile or settings['General']['compile']:
         anm = build_network.build(input_filename)
-        pika_channel = autonetkit.ank_pika.AnkPika('115.146.94.68')
+        rabbitmq_server = settings['Rabbitmq']['server']
+        pika_channel = autonetkit.ank_pika.AnkPika(rabbitmq_server)
 
         anm.save()
         nidb = compile_network(anm)
@@ -67,15 +69,15 @@ def main():
         nidb = NIDB()
         nidb.restore_latest()
 
-    if options.deploy:
+    if options.deploy or settings['General']['deploy']:
         deploy_network(nidb)
-    if options.measure:
+    if options.measure or settings['General']['measure']:
         measure_network(nidb)
 
     if options.webserver:
         log.info("Webserver not yet supported, run as seperate module")
 
-    if options.monitor:
+    if options.monitor or settings['General']['monitor']:
         try:
             log.info("Monitoring for updates...")
             prev_timestamp = 0
