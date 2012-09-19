@@ -93,18 +93,10 @@ def main():
                             anm.save()
                             nidb = compile_network(anm)
                             body = autonetkit.ank_json.dumps(anm)
-                            www_channel.basic_publish(exchange='www',
-                                    routing_key = "client",
-                                    body= body)
+                            pika_channel.publish_compressed("www", "client", body)
                             nidb.save()
                             render.remove_dirs(["rendered/nectar1/nklab/"])
                             render.render(nidb)
-
-                        else:
-                            anm = AbstractNetworkModel()
-                            anm.restore_latest()
-                            nidb = NIDB()
-                            nidb.restore_latest()
 
                         if options.deploy:
                             deploy_network(nidb)
