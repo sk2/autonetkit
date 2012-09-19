@@ -107,7 +107,8 @@ class RouterCompiler(object):
             neigh_ip = G_ip.node(neigh)
             if session.type == "ibgp":
                 data = {
-                    'neighbor': neigh,
+                    'neighbor': neigh.label,
+                    'asn': neigh.asn,
                     'loopback': neigh_ip.loopback,
                     'update_source': "loopback 0",
                     }
@@ -124,7 +125,8 @@ class RouterCompiler(object):
                 dst_int_ip = G_ip.edges(ip_link.dst, neigh).next().ip_address #TODO: split this to a helper function
                 
                 ebgp_neighbors[key] = {
-                    'neighbor': neigh,
+                    'neighbor': neigh.label,
+                    'asn': neigh.asn,
                     'loopback': neigh_ip.loopback,
                     'local_int_ip': ip_link.ip_address,
                     'dst_int_ip': dst_int_ip,
