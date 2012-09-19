@@ -2,6 +2,13 @@ import autonetkit.anm
 import autonetkit.ank as ank
 import math
 import itertools
+import autonetkit.ank_pika
+import autonetkit.config
+settings = autonetkit.config.settings
+import autonetkit.log as log
+
+rabbitmq_server = settings['Rabbitmq']['server']
+pika_channel = autonetkit.ank_pika.AnkPika(rabbitmq_server)
 
 def build(input_filename):
     #TODO: move this out of main console wrapper
@@ -120,15 +127,27 @@ def build_ospf(anm):
     G_in = anm['input']
     G_ospf = anm.add_overlay("ospf")
     G_ospf.add_nodes_from(G_in.nodes("is_router"), retain=['asn'])
+    update_pika(anm)
     G_ospf.add_nodes_from(G_in.nodes("is_switch"), retain=['asn'])
+    update_pika(anm)
     G_ospf.add_edges_from(G_in.edges(), retain = ['edge_id', 'ospf_cost'])
+    update_pika(anm)
 #TODO: trim out non same asn edges
     ank.aggregate_nodes(G_ospf, G_ospf.nodes("is_switch"), retain = "edge_id")
+    update_pika(anm)
     ank.explode_nodes(G_ospf, G_ospf.nodes("is_switch"))
+    update_pika(anm)
     for link in G_ospf.edges():
            link.cost = 1
            link.area = 0
 
+    update_pika(anm)
     non_same_asn_edges = [link for link in G_ospf.edges() if link.src.asn != link.dst.asn]
     G_ospf.remove_edges_from(non_same_asn_edges)
+    update_pika(anm)
 
+
+def update_pika(anm):
+    log.debug("Sending anm to pika")
+    body = autonetkit.ank_json.dumps(anm, None)
+    pika_channel.publish_compressed("www", "client", body)
