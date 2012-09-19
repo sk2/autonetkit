@@ -28,7 +28,7 @@ def main():
     opt.add_option('--file', '-f', default= None, help="Load topology from FILE")        
     opt.add_option('--monitor', '-m',  action="store_true", default= False, help="Monitor input file for changes")        
     opt.add_option('--debug',  action="store_true", default= False, help="Debug mode")        
-    opt.add_option('--compile',  action="store_true", default= True, help="Compile")        
+    opt.add_option('--compile',  action="store_true", default= False, help="Compile")        
     opt.add_option('--deploy',  action="store_true", default= False, help="Deploy")        
     opt.add_option('--measure',  action="store_true", default= False, help="Measure")        
     opt.add_option('--webserver',  action="store_true", default= False, help="Webserver")        
