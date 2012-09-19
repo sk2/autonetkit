@@ -44,7 +44,7 @@ def string_to_netaddr(val):
 
     return retval
 
-def ank_json_loads(data):
+def ank_json_custom_loads(data):
     #data = json.loads(data) # this is needed if dicts contain anm overlays, nidb, etc
     def dict_to_object(d):
         inst = d
@@ -73,6 +73,11 @@ def ank_json_loads(data):
         return inst
 
     d = json.loads(data, object_hook=dict_to_object)
+    return d
+
+
+def ank_json_loads(data):
+    d = ank_json_custom_loads(data)
     return json_graph.node_link_graph(d)
 
 def jsonify_anm(anm):

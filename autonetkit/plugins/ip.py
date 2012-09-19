@@ -36,15 +36,21 @@ class Tree:
 
 
     def save(self):
-#TODO: try cPickle
-        pickle_dir = os.path.join("versions", "ip")
-        if not os.path.isdir(pickle_dir):
-            os.makedirs(pickle_dir)
+        import autonetkit.ank_json
+        import gzip
+        archive_dir = os.path.join("versions", "ip")
+        if not os.path.isdir(archive_dir):
+            os.makedirs(archive_dir)
 
-        pickle_file = "ip_as%s_%s.pickle.tar.gz" % (self.asn, self.timestamp)
-        pickle_path = os.path.join(pickle_dir, pickle_file)
-        with open(pickle_path, "wb") as pickle_fh:
-            pickle.dump(self, pickle_fh, -1)
+#TODO: should this use the ank_json.jsonify_nidb() ?
+        json_file = "ip_as%s_%s.json.gz" % (self.asn, self.timestamp)
+        json_path = os.path.join(archive_dir, json_file)
+        log.debug("Saving to %s" % json_path)
+        data = self._json_element(self.root_node)
+        data = json.dumps(data, cls=autonetkit.ank_json.AnkEncoder, indent = 4)
+        with gzip.open(json_path, "wb") as json_fh:
+            json_fh.write(data)
+
 
     def __str__(self):
         print self.walk_tree(self.root_node)
@@ -64,11 +70,11 @@ class Tree:
             nodes.append(self._json_element(node.right))
         if nodes:
             return {
-                    "name": str(node),
+                    "subnet": str(node),
                     "children": nodes,
                 }
 
-        return {"name": str(node)}
+        return {"subnet": str(node)}
 
 
     def walk_tree(self, node):
@@ -173,9 +179,7 @@ def allocate_ips(G_ip):
 #tree by ASN
 #TODO: Add in loopbacks as a subnet also
         asn_address_block = subnet_address_blocks.next()
-        #print "ips for asn", asn
         G_ip.data.asn_blocks[asn].append(asn_address_block)
-#TODO: record this in G_ip graph data not node/edge data
 
         # Build list of collision domains sorted by size
         size_list = defaultdict(list)
@@ -229,7 +233,7 @@ def allocate_ips(G_ip):
         allocate_ips_to_cds(tree_root)
 
         my_tree = Tree(tree_root, asn)
-        #my_tree.save()
+        my_tree.save()
 
         # Get loopback from loopback tree node
         loopback_hosts = asn_loopback_tree_node.subnet.iter_hosts()
@@ -242,9 +246,3 @@ def allocate_ips(G_ip):
             hosts = cd.subnet.iter_hosts()
             for edge in sorted(cd.edges()):
                 edge.ip_address = hosts.next()
-
-        #TODO: Also want to store this ordering of what is assigned to which node, not just the tree...
-
-        # traverse tree, allocate back to loopbacks, and to nodes
-        # TODO: should loopbacks be a sentinel type node for faster traversal rather than checking each time?
-
