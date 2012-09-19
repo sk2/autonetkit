@@ -467,10 +467,10 @@ class NIDB_base(object):
             os.makedirs(archive_dir)
 
         data = ank_json.ank_json_dumps(self._graph)
-        json_file = "nidb_%s.json" % self.timestamp
+        json_file = "nidb_%s.json.gz" % self.timestamp
         json_path = os.path.join(archive_dir, json_file)
         log.debug("Saving to %s" % json_path)
-        with open(json_path, "wb") as json_fh:
+        with gzip.open(json_path, "wb") as json_fh:
             json_fh.write(data)
 
     def restore_latest(self, directory = None):
@@ -480,7 +480,7 @@ class NIDB_base(object):
         #TODO: make directory loaded from config
             directory = os.path.join("versions", "nidb")
 
-        glob_dir = os.path.join(directory, "*.json")
+        glob_dir = os.path.join(directory, "*.json.gz")
         pickle_files = glob.glob(glob_dir)
         pickle_files = sorted(pickle_files)
         try:
@@ -495,7 +495,7 @@ class NIDB_base(object):
         import gzip
         log.debug("Restoring %s" % pickle_file)
         log.info("Restoring %s" % pickle_file)
-        with open(pickle_file, "r") as fh:
+        with gzip.open(pickle_file, "r") as fh:
             #data = json.load(fh)
             data = fh.read()
             graph = ank_json.ank_json_loads(data)

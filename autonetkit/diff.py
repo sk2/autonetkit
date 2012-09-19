@@ -8,14 +8,13 @@ import nidb
 #TODO: make this generalise to two graphs, rather than NIDB specifically
 
 def nidb_diff(directory, length = 1):
-    glob_dir = os.path.join(directory, "*.pickle.tar.gz")
+    glob_dir = os.path.join(directory, "*.json.gz")
     pickle_files = glob.glob(glob_dir)
     pickle_files = sorted(pickle_files)
     pairs = [(a, b) for (a, b) in zip(pickle_files, pickle_files[1:])]
     pairs = pairs[-1*length:]
     diffs = []
     for fileA, fileB in pairs:
-        print fileA, fileB
         nidb_a = nidb.NIDB()
         nidb_a.restore(fileA)
         graphA = nidb_a._graph

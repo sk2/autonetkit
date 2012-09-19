@@ -90,7 +90,7 @@ def ank_json_loads(data):
                         except AttributeError:
                             pass # not a string
 
-                inst[key] = val
+                inst[key] = val # update with (possibly) updated list
 
         return inst
 

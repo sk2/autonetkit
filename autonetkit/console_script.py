@@ -45,9 +45,8 @@ def main():
     opt.add_option('--webserver',  action="store_true", default= False, help="Webserver")        
     options, arguments = opt.parse_args()
 
-    import diff
+    #import diff
     #pprint.pprint(diff.nidb_diff("versions/nidb"))
-
 
     input_filename = options.file
     if not options.file:
@@ -86,7 +85,6 @@ def main():
         anm.restore_latest()
         nidb = NIDB()
         nidb.restore_latest()
-        print nidb.dump()
         render.remove_dirs(["rendered/nectar1/nklab/"])
         render.render(nidb)
 
