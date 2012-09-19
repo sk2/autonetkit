@@ -143,6 +143,7 @@ def compile_network(anm):
     return nidb
 
 def deploy_network(nidb):
+    #TODO: make this driven from config file
     log.info("Deploying network")
     tar_file = deploy.package("rendered/nectar1/nklab/", "nklab")
     server = "trc1.trc.adelaide.edu.au"
