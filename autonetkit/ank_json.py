@@ -6,28 +6,6 @@ import string
 import autonetkit.anm
 import autonetkit.log as log
 
-def stringify_netaddr(graph):
-    import netaddr
-# converts netaddr from iterables to strings so can use with json
-    replace_as_string = set([netaddr.ip.IPAddress, netaddr.ip.IPNetwork])
-#TODO: see if should handle dict specially, eg expand to __ ?
-
-    for key, val in graph.graph.items():
-        if type(val) in replace_as_string:
-            graph.graph[key] = str(val)
-
-    for node, data in graph.nodes(data=True):
-        for key, val in data.items():
-            if type(val) in replace_as_string:
-                graph.node[node][key] = str(val)
-
-    for src, dst, data in graph.edges(data=True):
-        for key, val in data.items():
-            if type(val) in replace_as_string:
-                graph[src][dst][key] = str(val)
-
-    return graph
-
 class AnkEncoder(json.JSONEncoder):
     """Handles netaddr objects by converting to string form"""
     def default(self, obj):
@@ -97,17 +75,26 @@ def ank_json_loads(data):
     d = json.loads(data, object_hook=dict_to_object)
     return json_graph.node_link_graph(d)
 
-
 def jsonify_anm(anm):
     """ Returns a dictionary of json-ified overlay graphs"""
+    anm_json = {}
+    for overlay_id in anm.overlays():
+        overlay_graph = anm[overlay_id]._graph.copy()
+        for n in overlay_graph:
+            try:
+                del overlay_graph.node[n]['id']
+            except KeyError:
+                pass
+        anm_json[overlay_id] = ank_json_dumps(overlay_graph)
+    return json.dumps(anm_json)
+
+
+def jsonify_anm_with_graphics(anm):
+    """ Returns a dictionary of json-ified overlay graphs, with graphics data appended to each overlay"""
     anm_json = {}
     graphics_graph = anm["graphics"]._graph.copy()
     for overlay_id in anm.overlays():
         overlay_graph = anm[overlay_id]._graph.copy()
-        overlay_graph = stringify_netaddr(overlay_graph)
-# JSON writer doesn't handle 'id' already present in nodes
-                    #for n in graph:
-                                #del graph.node[n]['id']
 
 #TODO: only update, don't over write if already set
         for n in overlay_graph:
@@ -133,11 +120,7 @@ def jsonify_anm(anm):
             overlay_graph.node[n]['x'] += - x_min
             overlay_graph.node[n]['y'] += - y_min
 
-
-# strip out graph data
-        overlay_graph.graph = {} #TODO: check why need to do this - should we just check for ip addresses eg in ip overlay? eg in a try/except loop?
-        data = ank_json_dumps(overlay_graph)
-        anm_json[overlay_id] = data
+        anm_json[overlay_id] = ank_json_dumps(overlay_graph)
     return anm_json
 
 def jsonify_nidb(nidb):
@@ -160,7 +143,7 @@ def jsonify_nidb(nidb):
     return data
 
 def dumps(anm, nidb = None):
-    data = jsonify_anm(anm)
+    data = jsonify_anm_with_graphics(anm)
     if nidb:
         data['nidb'] = jsonify_nidb(nidb)
 #TODO: need to update messaging format when have nidb also (as 'anm': won't be correct)
