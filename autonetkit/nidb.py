@@ -453,6 +453,7 @@ class NIDB_base(object):
         return "nidb"
 
     def dump(self):
+        #TODO: adapt the json version?
         return "%s %s %s" % (
                 pprint.pformat(self._graph.graph),
                 pprint.pformat(self._graph.nodes(data=True)),
@@ -467,6 +468,7 @@ class NIDB_base(object):
             os.makedirs(archive_dir)
 
         data = ank_json.ank_json_dumps(self._graph)
+#TODO: should this use the ank_json.jsonify_nidb() ?
         json_file = "nidb_%s.json.gz" % self.timestamp
         json_path = os.path.join(archive_dir, json_file)
         log.debug("Saving to %s" % json_path)
@@ -497,8 +499,7 @@ class NIDB_base(object):
         with gzip.open(pickle_file, "r") as fh:
             #data = json.load(fh)
             data = fh.read()
-            graph = ank_json.ank_json_loads(data)
-            self._graph = graph
+            self._graph = ank_json.ank_json_loads(data)
 
 
     @property
