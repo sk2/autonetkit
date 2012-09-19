@@ -45,8 +45,10 @@
 
     <div class="navbar">Select overlay: <select id = "overlay_select"></select>
       Revision: <select id = "revision_select"></select>
+      <button onclick="history_start();"><<</button>
       <button onclick="history_back();"><</button>
       <button onclick="history_forward();">></button>
+      <button onclick="history_end();">>></button>
     </div>
 
     <div class="infobar"></div>
@@ -55,7 +57,7 @@
       <script type="text/javascript">
 
 
-        var overlay_id = "bgp";
+        var overlay_id = "ospf";
 
         //TODO: rename this to be overlay_dropdown
         var dropdown = d3.select("#overlay_select")

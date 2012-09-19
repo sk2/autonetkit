@@ -25,6 +25,7 @@ ws.onmessage = function (evt) {
   if ("graph" in data) {
     jsondata = data;
     graph_history.push(data);
+    revision_id = graph_history.length - 1;
     propagate_revision_dropdown(graph_history); //TODO: update this with revision from webserver
     redraw();
   }
@@ -71,14 +72,12 @@ var propagate_revision_dropdown = function(d) {
     .attr("value", String)
     .text(String);
 
-  var selected_item = graph_history.length - 1;
-  $("#revision_select option[value=" + selected_item + "]").attr("selected", "selected")
+  $("#revision_select option[value=" + revision_id + "]").attr("selected", "selected")
 }
 
 var load_revision = function() {
     jsondata = graph_history[revision_id];
-    var selected_item = graph_history.length - 1;
-    $("#revision_select option[value=" + selected_item + "]").attr("selected", "selected")
+    $("#revision_select option[value=" + revision_id + "]").attr("selected", "selected")
 }
 
 //dropdown.select("phy").text("selected");
@@ -323,12 +322,25 @@ var status_label = d3.select(".infobar").append("text")
 .text("aaa")
 ;
 
+var history_start = function() {
+  revision_id = 0;
+  load_revision();
+  redraw(); 
+}
+
+var history_end = function() {
+  revision_id = 0;
+  load_revision();
+  redraw(); 
+}
 
 var history_back = function() {
   console.log("back")
   if (revision_id - 1 >= 0) {
     revision_id--;
-    load_revision()
+    console.log(revision_id);
+    load_revision();
+    redraw(); 
   } else {
     status_label.text("Already at first revision");
   }
@@ -339,11 +351,34 @@ var history_forward = function() {
   console.log("forward")
   if (revision_id + 1 < graph_history.length) {
     revision_id++;
-    load_revision()
+    load_revision();
+    redraw(); 
   } else {
     status_label.text("Already at latest revision");
   }
 }
+
+
+$(document).keydown(function(e){
+    switch(e.which) {
+        case 37: // left
+          history_back();
+        break;
+
+        case 38: // up
+        break;
+
+        case 39: // right
+        history_forward();
+        break;
+
+        case 40: // down
+        break;
+
+        default: return; // exit this handler for other keys
+    }
+    e.preventDefault();
+});
 
 //d3.json(
 //'json/overlay/ip',
