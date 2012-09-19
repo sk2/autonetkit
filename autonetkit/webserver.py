@@ -22,12 +22,6 @@ class OverlayHandler(tornado.web.RequestHandler):
             overlay_list = sorted(self.anm.overlays())
             self.write(json.dumps({'overlay_list': overlay_list}))
             return
-        else:
-            try:
-                data = self.anm[overlay_id]
-                self.write(data)
-            except Exception, e:
-                print e
 
 class MyWebSocketHandler(websocket.WebSocketHandler):
     def initialize(self, anm, overlay_id):
