@@ -702,7 +702,6 @@ class AbstractNetworkModel(object):
         import gzip
         import ank_json
         log.debug("Restoring %s" % pickle_file)
-        log.info("Restoring %s" % pickle_file)
         with gzip.open(pickle_file, "r") as fh:
             data = json.load(fh) 
             for overlay_id, graph_data in data.items():

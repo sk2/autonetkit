@@ -5,7 +5,6 @@ import time
 import autonetkit.log as log
 import ank_json
 
-
 try:
     import cPickle as pickle
 except ImportError:
