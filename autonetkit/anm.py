@@ -701,7 +701,6 @@ class AbstractNetworkModel(object):
         import json
         import gzip
         import ank_json
-        print "here"
         log.debug("Restoring %s" % pickle_file)
         log.info("Restoring %s" % pickle_file)
         with gzip.open(pickle_file, "r") as fh:
