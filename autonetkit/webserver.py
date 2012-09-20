@@ -71,7 +71,7 @@ class PikaClient(object):
         self.connection = None
         self.channel = None
         self.event_listeners = set([])
-        self.queue_name = 'tornado-test-%i' % os.getpid()
+        self.queue_name = 'webserver-%i' % os.getpid()
         self.anm = anm
  
     def connect(self):
