@@ -64,7 +64,6 @@ var propagate_overlay_dropdown = function(d) {
 
 var propagate_revision_dropdown = function(d) {
   revisions = d3.range(graph_history.length);
-  console.log(revisions);
   revision_dropdown
     .selectAll("option")
     .data(revisions)
@@ -236,6 +235,7 @@ var path_y = function(d) {
 }
 
 var node_info = function(d) {
+  //TODO: append ul/li like table example on http://christopheviau.com/d3_tutorial/
   text = d.id;
   for (attr in d) {
     if (typeof d[attr] == 'object' && d[attr] != null) {
@@ -343,7 +343,6 @@ var history_end = function() {
 }
 
 var history_back = function() {
-  console.log("back")
   if (revision_id - 1 >= 0) {
     revision_id--;
     console.log(revision_id);
@@ -356,7 +355,6 @@ var history_back = function() {
 
 //TODO: check difference between var a = function(), and function a()... is former d3?
 var history_forward = function() {
-  console.log("forward")
   if ((revision_id + 1) < graph_history.length) {
     revision_id++;
     load_revision();

@@ -114,12 +114,9 @@ var revision_dropdown = d3.select("#revision_select")
 
 var enable_zoom = false
 
-console.log(enable_zoom);
-
 var zoom_select = d3.select("#enable_zoom")
 .on("change", function() {
     enable_zoom = d3.select(this).property("checked");
-    console.log(enable_zoom);
     })
 
 
@@ -152,7 +149,6 @@ chart.append('svg:rect')
 
 
 function redraw() {
-  console.log("here", d3.event.translate, d3.event.scale);
   if (enable_zoom == true) {
   chart.attr("transform",
       "translate(" + d3.event.translate + ")"
