@@ -169,6 +169,9 @@ var y_offset = 30;
 
 // based on http://bl.ocks.org/2920551
 var fill = d3.scale.category10();
+
+
+
 var groupFill = function(d, i) { return fill(i); };
 var groupPath = function(d) {
   if (d.values.length  == 1) {
@@ -440,7 +443,7 @@ function redraw() {
       .style("stroke", groupFill)
       .style("stroke-width", 80)
       .style("stroke-linejoin", "round")
-      .style("opacity", 0.1)
+      .style("opacity", 0.15)
       .on("mouseover", function(d){
           group_info(d);
           })
