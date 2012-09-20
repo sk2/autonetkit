@@ -21,3 +21,6 @@ doc/
 *.log
 
 autonetkit.log.*
+autonetkit.cfg
+
+erl_crash.dump
