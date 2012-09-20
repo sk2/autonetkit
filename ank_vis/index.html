@@ -7,6 +7,13 @@
 
 
     <style type="text/css">
+      
+      body
+      {
+        font-family:"Palatino Linotype", "Book Antiqua", Palatino, serif;
+        background-color: #ddd;
+      }
+
       circle {
         fill: steelblue;
       }
@@ -30,10 +37,38 @@
       }
       .infobar {
         position:absolute;
-        right:0px;
-        width:300px;
+        right:10px;
+        width:20%;
         top: 10px;
+        border: 1px solid #aaa;
+        border-radius: 10px;
+        height: 95%;
+        padding: 5px;
+        background-color: white;
       }
+
+      .navbar {
+        position:absolute;
+        top: 10px;
+        height: 30px;
+        width: 76%;
+        border: 1px solid #aaa;
+        border-radius: 10px;
+        padding: 5px;
+        background-color: white;
+      }
+
+      .visualisation {
+        position:absolute;
+        top: 60px;
+        border: 1px solid #aaa;
+        border-radius: 10px;
+        padding: 5px;
+        width: 76%;
+        height: 80%;
+        background-color: white;
+      }
+
     </style>
 
 
@@ -43,7 +78,7 @@
   </head>
   <body>
 
-    <div class="navbar">Select overlay: <select id = "overlay_select"></select>
+    <div class="navbar"><b>AutoNetkit |</b> Select overlay: <select id = "overlay_select"></select>
       Revision: <select id = "revision_select"></select>
       <button onclick="history_start();"><<</button>
       <button onclick="history_back();"><</button>
@@ -52,6 +87,7 @@
     </div>
 
     <div class="infobar"></div>
+    <div class="visualisation""></div>
 
     <div>
       <script type="text/javascript">
@@ -74,7 +110,7 @@ var revision_dropdown = d3.select("#revision_select")
     //ws.send("overlay_id=" + overlay_id); //TODO: call server for history
     })
 
-var chart = d3.select("body").append("svg")
+var chart = d3.select(".visualisation").append("svg")
 .attr("class", "chart")
 .attr("width", 1200)
 .attr("height", 1000);
@@ -83,7 +119,6 @@ var status_label = d3.select("navbar").append("text")
 .attr("class", "status label")
 .attr("y", 15)
 .attr("x", 0)
-.attr("font-family", "helvetica") 
 .attr("font-size", "14") 
 .text("")
 ;
