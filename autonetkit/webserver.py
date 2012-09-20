@@ -7,6 +7,7 @@ import os
 import json
 import glob
 import sys
+import autonetkit.config
 
 class MyWebHandler(tornado.web.RequestHandler):
     def get(self):
@@ -83,8 +84,9 @@ class PikaClient(object):
         self.connecting = True
  
         #cred = pika.PlainCredentials('guest', 'guest')
+        host = autonetkit.config.settings['Rabbitmq']['server']
         param = pika.ConnectionParameters(
-            host='115.146.94.68',
+            host= host,
             #port=5672,
             #virtual_host='/',
             #credentials=cred
