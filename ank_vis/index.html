@@ -11,7 +11,8 @@
       body
       {
         font-family:"Palatino Linotype", "Book Antiqua", Palatino, serif;
-        background-color: #ddd;
+        background-color: #eee;
+        color: #333;
       }
 
       circle {
@@ -40,7 +41,7 @@
         right:10px;
         width:20%;
         top: 10px;
-        border: 1px solid #aaa;
+        border: 1px solid steelblue;
         border-radius: 10px;
         height: 95%;
         padding: 5px;
@@ -52,7 +53,7 @@
         top: 10px;
         height: 30px;
         width: 76%;
-        border: 1px solid #aaa;
+        border: 1px solid steelblue;
         border-radius: 10px;
         padding: 5px;
         background-color: white;
@@ -61,11 +62,11 @@
       .visualisation {
         position:absolute;
         top: 60px;
-        border: 1px solid #aaa;
+        border: 1px solid steelblue;
         border-radius: 10px;
         padding: 5px;
-        width: 76%;
-        height: 80%;
+        width: 1000px;
+        height: 600px;
         background-color: white;
       }
 
@@ -84,6 +85,7 @@
       <button onclick="history_back();"><</button>
       <button onclick="history_forward();">></button>
       <button onclick="history_end();">>></button>
+      <input type="checkbox" id="enable_zoom" value="enable_zoom" />Zoom<br />
     </div>
 
     <div class="infobar"></div>
@@ -110,10 +112,16 @@ var revision_dropdown = d3.select("#revision_select")
     //ws.send("overlay_id=" + overlay_id); //TODO: call server for history
     })
 
-var chart = d3.select(".visualisation").append("svg")
-.attr("class", "chart")
-.attr("width", 1200)
-.attr("height", 1000);
+var enable_zoom = false
+
+console.log(enable_zoom);
+
+var zoom_select = d3.select("#enable_zoom")
+.on("change", function() {
+    enable_zoom = d3.select(this).property("checked");
+    console.log(enable_zoom);
+    })
+
 
 var status_label = d3.select("navbar").append("text")
 .attr("class", "status label")
@@ -122,6 +130,35 @@ var status_label = d3.select("navbar").append("text")
 .attr("font-size", "14") 
 .text("")
 ;
+
+var h = 600;
+var w = 1000;
+
+
+var chart = d3.select(".visualisation")
+  .append("svg:svg")
+    .attr("width", w)
+    .attr("height", h)
+    .attr("pointer-events", "all")
+  .append('svg:g')
+    .call(d3.behavior.zoom().on("zoom", redraw))
+  .append('svg:g');
+
+
+chart.append('svg:rect')
+    .attr('width', w)
+    .attr('height', h)
+    .attr('fill', 'white');
+
+
+function redraw() {
+  console.log("here", d3.event.translate, d3.event.scale);
+  if (enable_zoom == true) {
+  chart.attr("transform",
+      "translate(" + d3.event.translate + ")"
+      + " scale(" + d3.event.scale + ")");
+  }
+}
 
 //TODO: set title with AutoNetkit overlay_id revision
 //so then can print directly from chrome in kiosk mode to pdf with this filename
