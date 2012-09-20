@@ -75,10 +75,15 @@ var propagate_revision_dropdown = function(d) {
   $("#revision_select option[value=" + revision_id + "]").attr("selected", "selected")
 }
 
+var print_each_revision = false;
+
 var load_revision = function() {
     update_title();
     jsondata = graph_history[revision_id];
     $("#revision_select option[value=" + revision_id + "]").attr("selected", "selected")
+    if (print_each_revision) {
+      window.print();
+    }
 }
 
 //dropdown.select("phy").text("selected");
@@ -318,9 +323,8 @@ var status_label = d3.select(".infobar").append("text")
 .attr("class", "status label")
 .attr("y", 15)
 .attr("x", 0)
-.attr("font-family", "helvetica") 
 .attr("font-size", "14") 
-.text("aaa")
+.text("")
 ;
 
 var history_start = function() {
@@ -330,7 +334,7 @@ var history_start = function() {
 }
 
 var history_end = function() {
-  revision_id = 0;
+  revision_id = graph_history.length - 1;
   load_revision();
   redraw(); 
 }
@@ -343,7 +347,7 @@ var history_back = function() {
     load_revision();
     redraw(); 
   } else {
-    status_label.text("Already at first revision");
+    //status_label.text("Already at first revision");
   }
 }
 
@@ -355,7 +359,7 @@ var history_forward = function() {
     load_revision();
     redraw(); 
   } else {
-    status_label.text("Already at latest revision");
+    //status_label.text("Already at latest revision");
   }
 }
 
