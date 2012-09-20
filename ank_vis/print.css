@@ -1,7 +1,21 @@
 .navbar {
   display: none;
+  border: none;
 }
 
 .infobar {
   display: none;
+  border: none;
+}
+
+.visualisation {
+  position:absolute;
+  top: 60px;
+  border: 1px solid #aaa;
+  border-radius: 10px;
+  padding: 5px;
+  width: 76%;
+  height: 80%;
+  background-color: white;
+  border: none;
 }
