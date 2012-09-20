@@ -62,6 +62,9 @@ def main():
         pika_channel.publish_compressed("www", "client", body)
         log.debug("Sent ANM to web server")
         nidb.save()
+        render.remove_dirs(["rendered/nectar1/nklab/"])
+        render.render(nidb)
+
     else:
         import autonetkit.anm
         anm = autonetkit.anm.AbstractNetworkModel()
