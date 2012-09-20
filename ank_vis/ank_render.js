@@ -76,6 +76,7 @@ var propagate_revision_dropdown = function(d) {
 }
 
 var load_revision = function() {
+    update_title();
     jsondata = graph_history[revision_id];
     $("#revision_select option[value=" + revision_id + "]").attr("selected", "selected")
 }
@@ -146,7 +147,7 @@ d3.select("select").on("change", function() {
 });
 
 var update_title = function() {
-  document.title = "AutoNetkit - " + overlay_id;
+  document.title = "AutoNetkit - " + overlay_id + " r" + revision_id;
 }
 
 var clear_graph_history = function() {
