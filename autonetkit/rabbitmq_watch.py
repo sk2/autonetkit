@@ -1,6 +1,12 @@
 import pika
+import autonetkit.config
+import os
+settings = autonetkit.config.settings
+rabbitmq_server = settings['Rabbitmq']['server']
+
+
 connection = pika.BlockingConnection(pika.ConnectionParameters(
-        host='115.146.94.68'))
+        host = rabbitmq_server))
 channel = connection.channel()
 
 channel.exchange_declare(exchange='www',
