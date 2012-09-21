@@ -173,7 +173,10 @@ def ip_to_net_ent_title_ios(ip):
 
 def build_isis(anm):
     G_in = anm['input']
+    G_ip = anm['ip']
     G_isis = anm.add_overlay("isis")
+    #G_isis.add_nodes_from(G_in.nodes("is_router", igp = "isis"), retain=['asn'])
+#TODO: filter only igp=isis nodes, set the igp as a default in build_network
     G_isis.add_nodes_from(G_in.nodes("is_router"), retain=['asn'])
     G_isis.add_nodes_from(G_in.nodes("is_switch"), retain=['asn'])
     G_isis.add_edges_from(G_in.edges(), retain = ['edge_id', 'ospf_cost'])
@@ -187,9 +190,9 @@ def build_isis(anm):
         for x in itertools.count(0):
             yield "net%s" % x
 
-
     for node in G_isis:
-        node.net = ip_to_net_ent_title_ios("192.168.1.1")
+        ip_node = G_ip.node(node)
+        node.net = ip_to_net_ent_title_ios(ip_node.loopback)
 
 
 def update_pika(anm):
