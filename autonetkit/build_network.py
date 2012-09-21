@@ -6,6 +6,7 @@ import autonetkit.ank_pika
 import autonetkit.config
 settings = autonetkit.config.settings
 import autonetkit.log as log
+import autonetkit.load.graphml as graphml
 
 __all__ = ['build']
 
@@ -15,7 +16,7 @@ pika_channel = autonetkit.ank_pika.AnkPika(rabbitmq_server)
 def build(input_filename):
     #TODO: move this out of main console wrapper
     anm = autonetkit.anm.AbstractNetworkModel()
-    input_graph = ank.load_graphml(input_filename)
+    input_graph = graphml.load_graphml(input_filename)
 
     G_in = anm.add_overlay("input", input_graph)
     ank.set_node_default(G_in, G_in, platform="netkit")
@@ -32,6 +33,8 @@ def build(input_filename):
     G_in.update(G_in.nodes("is_router", platform = "junosphere"), syntax="junos")
     G_in.update(G_in.nodes("is_router", platform = "dynagen"), syntax="ios")
     G_in.update(G_in.nodes("is_router", platform = "netkit"), syntax="quagga")
+    G_in.update(G_in.nodes("is_router", platform = "cisco"), syntax="quagga")
+    for node in G_in:
 
     G_graphics = anm.add_overlay("graphics") # plotting data
     G_graphics.add_nodes_from(G_in, retain=['x', 'y', 'device_type', 'device_subtype', 'pop', 'asn'])
