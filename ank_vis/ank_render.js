@@ -25,6 +25,7 @@ ws.onmessage = function (evt) {
   if ("graph" in data) {
     jsondata = data;
     graph_history.push(data);
+    update_title();
     revision_id = graph_history.length - 1;
     propagate_revision_dropdown(graph_history); //TODO: update this with revision from webserver
     redraw();
