@@ -11,7 +11,6 @@ def package(src_dir, target):
     tar = tarfile.open(os.path.join(tar_filename), "w:gz")
     tar.add(src_dir)
     tar.close()
-    print tar_filename
     return tar_filename
 
 
