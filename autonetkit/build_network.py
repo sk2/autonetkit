@@ -127,8 +127,7 @@ def build_phy(anm):
     G_phy.add_nodes_from(G_in, retain=['label', 'device_type', 'device_subtype', 'asn', 'platform', 'host', 'syntax'])
     if G_in.data.Creator == "Topology Zoo Toolset":
         ank.copy_attr_from(G_in, G_phy, "Network") # Copy Network from Zoo
-# build physical graph
-    G_phy.add_edges_from([edge for edge in G_in.edges() if edge.type == "physical"])
+    G_phy.add_edges_from(G_in.edges(type="physical"))
 
 def build_ospf(anm):
     G_in = anm['input']
