@@ -19,8 +19,6 @@ def build(input_filename):
     input_graph = graphml.load_graphml(input_filename)
 
     G_in = anm.add_overlay("input", input_graph)
-    #ank.set_node_default(G_in, G_in, platform="netkit")
-    #ank.set_node_default(G_in, G_in, host="nectar1")
 
     import autonetkit.plugins.graph_product as graph_product
     graph_product.expand(G_in) # apply graph products if relevant
