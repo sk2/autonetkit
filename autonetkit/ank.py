@@ -136,7 +136,6 @@ def load_graphml(filename):
         except KeyError:
             device_type = graph.node[node]['device_type']
             graph.node[node]['label'] = "%s_%s" % (label_prefixes[device_type], unique_label.next())
-
     ank_edge_defaults = {
             'type': 'physical',
             }
