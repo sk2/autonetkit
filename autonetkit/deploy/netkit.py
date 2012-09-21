@@ -47,7 +47,6 @@ def extract(host, username, tar_file, cd_dir, timeout = 30, key_filename = None)
 
 
     def starting_host(protocol, index, data):
-        #print "Starting", data.group(index)
         m = re.search('\\"(\S+)\\"', data.group(index))
 #TODO: reverse lookup from foldername to the canonical id of device
         if m:
@@ -59,7 +58,6 @@ def extract(host, username, tar_file, cd_dir, timeout = 30, key_filename = None)
                     body= json.dumps(body))
 
     def lab_started(protocol, index, data):
-        print "Lab started"
         body = {"lab started": host}
         www_channel.basic_publish(exchange='www',
                 routing_key = "client",
