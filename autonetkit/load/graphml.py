@@ -36,17 +36,19 @@ def load_graphml(filename):
     unique_label = (letter for letter in letters if letter not in current_labels)
 
 #TODO: make sure device label set
+    ank_graph_defaults = settings['Graphml']['Graph Defaults']
+    for key, val in ank_graph_defaults.items():
+        if key not in graph.graph:
+            graph.graph[key] = val
 
-# set our own defaults if not set
 #TODO: store these in config file
-    ank_node_defaults = {
-            'asn': 1,
-            'device_type': 'router'
-            }
-    node_defaults = graph.graph['node_default']
+    ank_node_defaults = settings['Graphml']['Node Defaults']
+    node_defaults = graph.graph['node_default'] # update with defaults from graphml
     for key, val in node_defaults.items():
         if val == "False":
             node_defaults[key] = False
+
+    #TODO: do a dict update before applying so only need to iterate nodes once
 
     for key, val in ank_node_defaults.items():
         if key not in node_defaults or node_defaults[key] == "None":
@@ -76,9 +78,7 @@ def load_graphml(filename):
             device_type = graph.node[node]['device_type']
             graph.node[node]['label'] = "%s_%s" % (label_prefixes[device_type], unique_label.next())
 
-    ank_edge_defaults = {
-            'type': 'physical',
-            }
+    ank_edge_defaults = settings['Graphml']['Edge Defaults']
     edge_defaults = graph.graph['edge_default']
     for key, val in ank_edge_defaults.items():
         if key not in edge_defaults or edge_defaults[key] == "None":
