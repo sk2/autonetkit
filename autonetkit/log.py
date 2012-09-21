@@ -44,7 +44,7 @@ class ColoredLogger(logging.Logger):
     FORMAT = "%(levelname)-1s %(message)s"
     COLOR_FORMAT = formatter_message(FORMAT, True)
     def __init__(self, name):
-        logging.Logger.__init__(self, name, logging.DEBUG)                
+        logging.Logger.__init__(self, name, logging.WARNING)
 
         color_formatter = ColoredFormatter(self.COLOR_FORMAT)
 
