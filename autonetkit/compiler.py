@@ -329,7 +329,7 @@ class NetkitCompiler(PlatformCompiler):
             node.tap.ip = address_block.next()
         
     def lab_topology(self):
-        host_nodes = self.nidb.nodes(host = self.host)
+        host_nodes = self.nidb.nodes(host = self.host, platform = "netkit")
 #TODO: replace name/label and use attribute from subgraph
         lab_topology = self.nidb.topology[self.host]
         lab_topology.render_template = "templates/netkit_lab_conf.mako"
