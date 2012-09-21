@@ -45,7 +45,7 @@ def manage_network(input_filename, build_options, reload_build=False):
         pika_channel.publish_compressed("www", "client", body)
         log.debug("Sent ANM to web server")
         nidb.save()
-        render.remove_dirs(["rendered/nectar1/nklab/"])
+        render.remove_dirs(["rendered"])
         render.render(nidb)
 
     else:
@@ -163,20 +163,31 @@ def compile_network(anm):
     return nidb
 
 def deploy_network(nidb):
+    import autonetkit.deploy.netkit as netkit_deploy
+    import autonetkit.deploy.cisco as cisco_deploy
     #TODO: make this driven from config file
     log.info("Deploying network")
-    tar_file = deploy.package("rendered/nectar1/nklab/", "nklab")
-    server = "trc1.trc.adelaide.edu.au"
-    username = "sknight"
+    deploy_hosts = config.settings['Deploy Hosts']
+    for host, host_data in deploy_hosts.items():
+        for platform, platform_data in host_data.items():
 
-    server = "115.146.93.255" # 16 core
-    server = "115.146.94.68" # 8 core
-    username = "ubuntu"
-    key_filename = "/Users/sk2/.ssh/sk.pem"
-    
-    deploy.transfer(server, username, tar_file, tar_file, key_filename)
-    cd_dir = "rendered/nectar1/nklab/"
-    deploy.extract(server, username, tar_file, cd_dir, timeout = 60, key_filename= key_filename)
+#TODO: get this from config
+            server = "trc1.trc.adelaide.edu.au"
+            username = "sknight"
+
+            server = "115.146.93.255" # 16 core
+            server = "115.146.94.68" # 8 core
+            username = "ubuntu"
+            username = platform_data['username']
+            key_file = platform_data['key file']
+            config_path = os.path.join("rendered", host, platform)
+            
+            if platform == "netkit":
+                tar_file = netkit_deploy.package(config_path, "nklab")
+                netkit_deploy.transfer(server, username, tar_file, tar_file, key_file)
+                netkit_deploy.extract(server, username, tar_file, config_path, timeout = 60, key_filename= key_file)
+            if platform == "cisco":
+                cisco_deploy.package(config_path, "nklab")
 
 def measure_network(nidb):
     log.info("Measuring network")
