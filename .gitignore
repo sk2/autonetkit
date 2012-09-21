@@ -24,3 +24,5 @@ autonetkit.log.*
 autonetkit.cfg
 
 erl_crash.dump
+
+autonetkit_v3.egg-info/*
