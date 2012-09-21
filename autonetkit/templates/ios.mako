@@ -33,11 +33,11 @@ interface ${interface.id}
 	ip ospf cost ${interface.ospf_cost}
 	% endif
 	% if interface.isis:
-      ip router isis
+    ip router isis
 	% endif
-	no shutdown
    	duplex auto
 	speed auto
+	no shutdown
 !
 % endfor 
 !               
