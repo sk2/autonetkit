@@ -411,7 +411,7 @@ class CiscoCompiler(PlatformCompiler):
         for phy_node in G_phy.nodes('is_router', host = self.host, syntax='ios'):
             nidb_node = self.nidb.node(phy_node)
             nidb_node.render.template = "templates/ios.mako"
-            nidb_node.render.dst_folder = os.path.join(self.host, "cisco")
+            nidb_node.render.dst_folder = "rendered/%s/%s" % (self.host, "cisco")
             nidb_node.render.dst_file = "%s.conf" % naming.network_hostname(phy_node)
 
             # Assign interfaces
