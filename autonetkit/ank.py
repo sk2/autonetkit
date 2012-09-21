@@ -127,7 +127,7 @@ def in_edges(overlay_graph, nodes=None):
 
 def split(overlay_graph, edges, retain = []):
     try:
-        retain.lower()
+        retain.lower() #TODO: find more efficient operation to test if string-like
         retain = [retain] # was a string, put into list
     except AttributeError:
         pass # already a list
@@ -168,7 +168,9 @@ def explode_nodes(overlay_graph, nodes, retain = []):
         neigh_edge_pairs = ( (s,t) for s in neighbors for t in neighbors if s != t)
         edges_to_add = []
         for (src, dst) in neigh_edge_pairs:
-            data = dict( (key, graph[src][dst][key]) for key in retain)
+            src_to_node_data = dict( (key, graph[src][node][key]) for key in retain)
+            node_to_dst_data = dict( (key, graph[node][dst][key]) for key in retain)
+            data = src_to_node_data.update(node_to_dst_data)
             edges_to_add.append((src, dst, data))
 
         graph.add_edges_from(edges_to_add)
