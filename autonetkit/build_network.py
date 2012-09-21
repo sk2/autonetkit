@@ -7,6 +7,8 @@ import autonetkit.config
 settings = autonetkit.config.settings
 import autonetkit.log as log
 
+__all__ = ['build']
+
 rabbitmq_server = settings['Rabbitmq']['server']
 pika_channel = autonetkit.ank_pika.AnkPika(rabbitmq_server)
 
@@ -37,6 +39,7 @@ def build(input_filename):
     build_phy(anm)
     build_ip(anm)
     build_ospf(anm)
+    build_isis(anm)
     build_bgp(anm)
     return anm
 
@@ -79,7 +82,6 @@ def build_ip(anm):
     ank.aggregate_nodes(G_ip, G_ip.nodes("is_switch"), retain = "edge_id")
 #TODO: add function to update edge properties: can overload node update?
 
-#TODO: abstract this better
     edges_to_split = [edge for edge in G_ip.edges() if edge.attr_both("is_l3device")]
     split_created_nodes = list(ank.split(G_ip, edges_to_split, retain='edge_id'))
     for node in split_created_nodes:
@@ -127,24 +129,64 @@ def build_ospf(anm):
     G_in = anm['input']
     G_ospf = anm.add_overlay("ospf")
     G_ospf.add_nodes_from(G_in.nodes("is_router"), retain=['asn'])
-    update_pika(anm)
+    #update_pika(anm)
     G_ospf.add_nodes_from(G_in.nodes("is_switch"), retain=['asn'])
-    update_pika(anm)
+    #update_pika(anm)
     G_ospf.add_edges_from(G_in.edges(), retain = ['edge_id', 'ospf_cost'])
-    update_pika(anm)
-#TODO: trim out non same asn edges
+    #update_pika(anm)
     ank.aggregate_nodes(G_ospf, G_ospf.nodes("is_switch"), retain = "edge_id")
-    update_pika(anm)
+    #update_pika(anm)
     ank.explode_nodes(G_ospf, G_ospf.nodes("is_switch"))
-    update_pika(anm)
+    #update_pika(anm)
     for link in G_ospf.edges():
            link.cost = 1
-           link.area = 0
 
-    update_pika(anm)
-    non_same_asn_edges = [link for link in G_ospf.edges() if link.src.asn != link.dst.asn]
-    G_ospf.remove_edges_from(non_same_asn_edges)
-    update_pika(anm)
+    #update_pika(anm)
+    G_ospf.remove_edges_from([link for link in G_ospf.edges() if link.src.asn != link.dst.asn])
+    #update_pika(anm)
+
+def ip_to_net_ent_title_ios(ip):
+    """ Converts an IP address into an OSI Network Entity Title
+    suitable for use in IS-IS on IOS.
+
+    >>> ip_to_net_ent_title_ios(IPAddress("192.168.19.1"))
+    '49.1921.6801.9001.00'
+    """
+    try:
+        ip_words = ip.words
+    except AttributeError:
+        import netaddr
+        ip = netaddr.IPAddress(ip)
+        ip_words = ip.words
+
+    log.debug("Converting IP to OSI ENT format")
+    area_id = "49"
+    ip_octets = ["%03d" % int(octet) for octet in ip_words]
+# Condense to single string
+    ip_octets = "".join(ip_octets)
+# and split into bytes
+    ip_octets = ip_octets[0:4] + "." + ip_octets[4:8] + "." + ip_octets[8:12]
+    return area_id + "." + ip_octets + "." + "00"
+
+def build_isis(anm):
+    G_in = anm['input']
+    G_isis = anm.add_overlay("isis")
+    G_isis.add_nodes_from(G_in.nodes("is_router"), retain=['asn'])
+    G_isis.add_nodes_from(G_in.nodes("is_switch"), retain=['asn'])
+    G_isis.add_edges_from(G_in.edges(), retain = ['edge_id', 'ospf_cost'])
+# Merge and explode switches
+    ank.aggregate_nodes(G_isis, G_isis.nodes("is_switch"), retain = "edge_id")
+    ank.explode_nodes(G_isis, G_isis.nodes("is_switch"))
+
+    G_isis.remove_edges_from([link for link in G_isis.edges() if link.src.asn != link.dst.asn])
+
+    def net_id():
+        for x in itertools.count(0):
+            yield "net%s" % x
+
+
+    for node in G_isis:
+        node.net = ip_to_net_ent_title_ios("192.168.1.1")
 
 
 def update_pika(anm):
