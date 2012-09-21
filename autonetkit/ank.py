@@ -225,10 +225,10 @@ def aggregate_nodes(overlay_graph, nodes, retain = []):
 
 def most_frequent(iterable):
     """returns most frequent item in iterable"""
-    unique = set(iterable)
-    sorted_values = [val for val in sorted(unique, key = iterable.count)]
-    return sorted_values.pop() # most frequent is at end of sorted list
-
+# from http://stackoverflow.com/q/1518522
+    g = itertools.groupby
+    return max(g(sorted(iterable)), key=lambda(x, v):(len(list(v)),-iterable.index(x)))[0]
+    
 def neigh_most_frequent(overlay_graph, node, attribute, attribute_graph = None):
     """Used to explicitly force most frequent - useful if integers such as ASN which would otherwise return mean"""
     graph = unwrap_graph(overlay_graph)
