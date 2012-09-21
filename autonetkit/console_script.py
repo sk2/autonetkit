@@ -168,24 +168,22 @@ def deploy_network(nidb):
     #TODO: make this driven from config file
     log.info("Deploying network")
     deploy_hosts = config.settings['Deploy Hosts']
-    for host, host_data in deploy_hosts.items():
+    for hostname, host_data in deploy_hosts.items():
         for platform, platform_data in host_data.items():
 
-#TODO: get this from config
-            server = "trc1.trc.adelaide.edu.au"
-            username = "sknight"
+            if not platform_data['deploy']:
+                log.debug("Not deploying to %s" % hostname)
+                continue
 
-            server = "115.146.93.255" # 16 core
-            server = "115.146.94.68" # 8 core
-            username = "ubuntu"
             username = platform_data['username']
             key_file = platform_data['key file']
-            config_path = os.path.join("rendered", host, platform)
+            host = platform_data['host']
+            config_path = os.path.join("rendered", hostname, platform)
             
-            if platform == "netkit":
+            if platform == "netkit" :
                 tar_file = netkit_deploy.package(config_path, "nklab")
-                netkit_deploy.transfer(server, username, tar_file, tar_file, key_file)
-                netkit_deploy.extract(server, username, tar_file, config_path, timeout = 60, key_filename= key_file)
+                netkit_deploy.transfer(host, username, tar_file, tar_file, key_file)
+                netkit_deploy.extract(host, username, tar_file, config_path, timeout = 60, key_filename= key_file)
             if platform == "cisco":
                 cisco_deploy.package(config_path, "nklab")
 
