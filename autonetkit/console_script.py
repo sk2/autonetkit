@@ -157,8 +157,8 @@ def compile_network(anm):
     #dynagen_compiler = compiler.DynagenCompiler(nidb, anm, host)
     #dynagen_compiler.compile()
 
-    #cisco_compiler = compiler.CiscoCompiler(nidb, anm, host)
-    #cisco_compiler.compile()
+    cisco_compiler = compiler.CiscoCompiler(nidb, anm, host)
+    cisco_compiler.compile()
 
     return nidb
 
