@@ -132,17 +132,18 @@ def build_ospf(anm):
     #update_pika(anm)
     G_ospf.add_nodes_from(G_in.nodes("is_switch"), retain=['asn'])
     #update_pika(anm)
-    G_ospf.add_edges_from(G_in.edges(), retain = ['edge_id', 'ospf_cost'])
+    G_ospf.add_edges_from(G_in.edges(), retain = ['edge_id'])
     #update_pika(anm)
     ank.aggregate_nodes(G_ospf, G_ospf.nodes("is_switch"), retain = "edge_id")
     #update_pika(anm)
-    ank.explode_nodes(G_ospf, G_ospf.nodes("is_switch"))
+    ank.explode_nodes(G_ospf, G_ospf.nodes("is_switch"), retain= "edge_id")
     #update_pika(anm)
-    for link in G_ospf.edges():
-           link.cost = 1
 
     #update_pika(anm)
     G_ospf.remove_edges_from([link for link in G_ospf.edges() if link.src.asn != link.dst.asn])
+    for link in G_ospf.edges():
+        link.cost = 1
+
     #update_pika(anm)
 
 def ip_to_net_ent_title_ios(ip):
@@ -172,10 +173,10 @@ def build_isis(anm):
 #TODO: filter only igp=isis nodes, set the igp as a default in build_network
     G_isis.add_nodes_from(G_in.nodes("is_router"), retain=['asn'])
     G_isis.add_nodes_from(G_in.nodes("is_switch"), retain=['asn'])
-    G_isis.add_edges_from(G_in.edges(), retain = ['edge_id', 'ospf_cost'])
+    G_isis.add_edges_from(G_in.edges(), retain = ['edge_id'])
 # Merge and explode switches
     ank.aggregate_nodes(G_isis, G_isis.nodes("is_switch"), retain = "edge_id")
-    ank.explode_nodes(G_isis, G_isis.nodes("is_switch"))
+    ank.explode_nodes(G_isis, G_isis.nodes("is_switch"), retain = "edge_id")
 
     G_isis.remove_edges_from([link for link in G_isis.edges() if link.src.asn != link.dst.asn])
 

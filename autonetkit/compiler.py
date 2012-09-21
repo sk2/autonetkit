@@ -84,8 +84,6 @@ class RouterCompiler(object):
                 'network': ip_link.dst.subnet,
                 'area': link.area,
                 }
-
-
         return ospf_links
 
     def bgp(self, node):
@@ -166,6 +164,12 @@ class QuaggaCompiler(RouterCompiler):
 class IosCompiler(RouterCompiler):
     """Base IOS compiler"""
 
+    def compile(self, node):
+        super(IosCompiler, self).compile(node)
+        if node in self.anm['isis']:
+            node.isis.isis = dict_to_sorted_list(self.isis(node), 'network')
+            pass
+        
     def interfaces(self, node):
         ip_node = self.anm.overlay.ip.node(node)
         loopback_subnet = netaddr.IPNetwork("0.0.0.0/32")
@@ -173,8 +177,12 @@ class IosCompiler(RouterCompiler):
 #TODO: strip out returns from super
         interfaces = super(IosCompiler, self).interfaces(node)
         # OSPF cost
+        print list(self.anm['isis'].edges())
         for link in interfaces:
-            interfaces[link]['ospf_cost'] = link.overlay.ospf.cost
+            if link['ospf']: # only configure if has ospf interface
+                interfaces[link]['ospf_cost'] = link['ospf'].cost
+            if link['isis']: # only configure if has ospf interface
+                pass
 
         interfaces['lo0'] = {
             'id': 'lo0',
@@ -184,6 +192,27 @@ class IosCompiler(RouterCompiler):
             }
 
         return interfaces
+
+    def isis(self, node):
+        """Returns ISIS links
+        """
+        G_isis = self.anm['ospf']
+        G_ip = self.anm['ip']
+        phy_node = self.anm['phy'].node(node)
+        node.ospf.process_id = 1
+        node.ospf.lo_interface = "Loopback0"
+        isis_links = {}
+        for link in G_isis.edges(phy_node):
+            ip_link = G_ip.edge(link)
+            if not ip_link:
+                #TODO: fix this: due to multi edges from router to same switch cluster
+                continue
+            
+            isis_links[link] = {
+                'network': ip_link.dst.subnet,
+                'area': link.area,
+                }
+        return isis_links
 
 class JunosCompiler(RouterCompiler):
     """Base Junos compiler"""
@@ -382,7 +411,7 @@ class CiscoCompiler(PlatformCompiler):
         for phy_node in G_phy.nodes('is_router', host = self.host, syntax='ios'):
             nidb_node = self.nidb.node(phy_node)
             nidb_node.render.template = "templates/ios.mako"
-            nidb_node.render.dst_folder = os.path.join(self.host, self.timestamp)
+            nidb_node.render.dst_folder = os.path.join(self.host, "cisco")
             nidb_node.render.dst_file = "%s.conf" % naming.network_hostname(phy_node)
 
             # Assign interfaces
