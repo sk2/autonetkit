@@ -2,58 +2,41 @@ from nidb import NIDB
 import render
 import random
 import pprint
+import traceback
 import os
 import time
 import compiler
 import pkg_resources
 import deploy
 import measure
-import build_network
 import autonetkit.log as log
-import pika
-import autonetkit.ank_pika
-import autonetkit.config
+import autonetkit.ank_pika as ank_pika
+import autonetkit.config as config
 
-def main():
-    import autonetkit
-    settings = autonetkit.config.settings
-    try:
-        ank_version = pkg_resources.get_distribution("AutoNetkit").version
-    except pkg_resources.DistributionNotFound:
-        ank_version = "0.1"
-    log.info("AutoNetkit %s" % ank_version)
+class FileMonitor(object):
+    """Lightweight polling-based monitoring to see if file has changed"""
+    def __init__(self, filename):
+        self.filename = filename
+        self.last_timestamp = os.stat(filename).st_mtime
 
-    import optparse
-    opt = optparse.OptionParser()
-    opt.add_option('--file', '-f', default= None, help="Load topology from FILE")        
-    opt.add_option('--monitor', '-m',  action="store_true", default= False, help="Monitor input file for changes")        
-    opt.add_option('--debug',  action="store_true", default= False, help="Debug mode")        
-    opt.add_option('--compile',  action="store_true", default= False, help="Compile")        
-    opt.add_option('--render',  action="store_true", default= False, help="Compile")        
-    opt.add_option('--deploy',  action="store_true", default= False, help="Deploy")        
-    opt.add_option('--measure',  action="store_true", default= False, help="Measure")        
-    opt.add_option('--webserver',  action="store_true", default= False, help="Webserver")        
-    options, arguments = opt.parse_args()
+    def has_changed(self):
+        """Returns if file has changed since last called"""
+        timestamp = os.stat(self.filename).st_mtime
+        if timestamp > self.last_timestamp:
+            self.last_timestamp = timestamp
+            return True
+        return False
 
-    #import diff
-    #pprint.pprint(diff.nidb_diff("versions/nidb"))
+def manage_network(input_filename, build_options, reload_build=False):
+    import build_network
+    if reload_build:
+        build_network = reload(build_network)
+    settings = config.settings
 
-    input_filename = options.file
-    if not options.file:
-        input_filename = "ank.graphml"
-
-    if options.debug:
-        #TODO: fix this
-        import logging
-        logger = logging.getLogger("ANK")
-        logger.setLevel(logging.DEBUG)
-
-#TODO: put compile logic into a function that both compile and monitor call rather than duplicated code
-
-    if options.compile or settings['General']['compile']:
+    if build_options['compile']:
         anm = build_network.build(input_filename)
         rabbitmq_server = settings['Rabbitmq']['server']
-        pika_channel = autonetkit.ank_pika.AnkPika(rabbitmq_server)
+        pika_channel = ank_pika.AnkPika(rabbitmq_server)
 
         anm.save()
         nidb = compile_network(anm)
@@ -72,45 +55,79 @@ def main():
         nidb = NIDB()
         nidb.restore_latest()
 
-    if options.deploy or settings['General']['deploy']:
+    if build_options['deploy']:
         deploy_network(nidb)
-    if options.measure or settings['General']['measure']:
+    if build_options['measure']:
         measure_network(nidb)
+
+def parse_options():
+    import optparse
+    opt = optparse.OptionParser()
+    opt.add_option('--file', '-f', default= None, help="Load topology from FILE")        
+    opt.add_option('--monitor', '-m',  action="store_true", default= False, help="Monitor input file for changes")        
+    opt.add_option('--debug',  action="store_true", default= False, help="Debug mode")        
+    opt.add_option('--compile',  action="store_true", default= False, help="Compile")        
+    opt.add_option('--render',  action="store_true", default= False, help="Compile")        
+    opt.add_option('--deploy',  action="store_true", default= False, help="Deploy")        
+    opt.add_option('--measure',  action="store_true", default= False, help="Measure")        
+    opt.add_option('--webserver',  action="store_true", default= False, help="Webserver")        
+    options, arguments = opt.parse_args()
+    return options, arguments
+
+def main():
+    settings = config.settings
+    try:
+        ank_version = pkg_resources.get_distribution("AutoNetkit").version
+    except pkg_resources.DistributionNotFound:
+        ank_version = "0.1"
+    log.info("AutoNetkit %s" % ank_version)
+
+    options, arguments = parse_options()
+
+    input_filename = options.file
+    if not options.file:
+        input_filename = "ank.graphml"
+
+    if options.debug:
+        #TODO: fix this
+        import logging
+        logger = logging.getLogger("ANK")
+        logger.setLevel(logging.DEBUG)
+
+    build_options = {
+            'compile':  options.compile or settings['General']['compile'],
+            'deploy': options.deploy or settings['General']['deploy'],
+            'measure': options.measure or settings['General']['measure'],
+            'monitor': options.monitor or settings['General']['monitor'],
+            }
 
     if options.webserver:
         log.info("Webserver not yet supported, run as seperate module")
 
-    if options.monitor or settings['General']['monitor']:
+    manage_network(input_filename, build_options)
+    if build_options['monitor']:
         try:
             log.info("Monitoring for updates...")
-            prev_timestamp = 0
+            input_filemonitor = FileMonitor(input_filename)
+            build_filemonitor = FileMonitor("autonetkit/build_network.py")
             while True:
                 time.sleep(0.1)
-                latest_timestamp = os.stat(input_filename).st_mtime
-                if latest_timestamp > prev_timestamp:
-                    prev_timestamp = latest_timestamp
+                rebuild = False
+                reload_build = False
+                if input_filemonitor.has_changed():
+                    rebuild = True
+                if build_filemonitor.has_changed():
+                    reload_build = True
+                    rebuild = True
+
+                if rebuild:
                     try:
                         log.info("Input graph updated, recompiling network")
-                        if options.compile:
-                            anm = build_network.build(input_filename)
-                            anm.save()
-                            nidb = compile_network(anm)
-                            body = autonetkit.ank_json.dumps(anm)
-                            pika_channel.publish_compressed("www", "client", body)
-                            nidb.save()
-                            render.remove_dirs(["rendered/nectar1/nklab/"])
-                            render.render(nidb)
-
-                        if options.deploy:
-                            deploy_network(nidb)
-                        if options.measure:
-                            measure_network(nidb)
-
+                        manage_network(input_filename, build_options, reload_build)
                         log.info("Monitoring for updates...")
-                    except Exception, e:
-                        # TODO: remove this, add proper warning
-                        log.warning("Unable to build network: %s" % e)
-                        pass
+                    except Exception:
+                        log.warning("Unable to build network")
+                        traceback.print_exc()
 
         except KeyboardInterrupt:
             log.info("Exiting")
