@@ -32,6 +32,9 @@ interface ${interface.id}
 	% if interface.ospf_cost:
 	ip ospf cost ${interface.ospf_cost}
 	% endif
+	% if interface.isis:
+      ip router isis
+	% endif
 	no shutdown
    	duplex auto
 	speed auto
@@ -50,7 +53,8 @@ router ospf ${node.ospf.process_id}
 % endfor    
 % endif           
 % if node.isis: 
-router isis ${node.isis.process_id}       
+router isis
+  net ${node.isis.net}
 % endif  
 % if node.eigrp: 
 router eigrp ${node.eigrp.process_id}       
