@@ -173,7 +173,7 @@ def render_multi(nidb):
 
         # Sort so starup looks neater
 #TODO: fix sort
-        for node in nidb:
+        for node in sorted(nidb):
             q.put(node)
 
         while True:
