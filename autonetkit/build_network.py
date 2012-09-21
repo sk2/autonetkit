@@ -159,18 +159,14 @@ def ip_to_net_ent_title_ios(ip):
     try:
         ip_words = ip.words
     except AttributeError:
-        import netaddr
+        import netaddr # try to cast to IP Address
         ip = netaddr.IPAddress(ip)
         ip_words = ip.words
 
     log.debug("Converting IP to OSI ENT format")
     area_id = "49"
-    ip_octets = ["%03d" % int(octet) for octet in ip_words]
-# Condense to single string
-    ip_octets = "".join(ip_octets)
-# and split into bytes
-    ip_octets = ip_octets[0:4] + "." + ip_octets[4:8] + "." + ip_octets[8:12]
-    return area_id + "." + ip_octets + "." + "00"
+    ip_octets = "".join("%03d" % int(octet) for octet in ip_words) # single string, padded if needed
+    return ".".join([area_id, ip_octets[0:4], ip_octets[4:8], ip_octets[8:12], "00"])
 
 def build_isis(anm):
     G_in = anm['input']
@@ -186,10 +182,6 @@ def build_isis(anm):
     ank.explode_nodes(G_isis, G_isis.nodes("is_switch"))
 
     G_isis.remove_edges_from([link for link in G_isis.edges() if link.src.asn != link.dst.asn])
-
-    def net_id():
-        for x in itertools.count(0):
-            yield "net%s" % x
 
     for node in G_isis:
         ip_node = G_ip.node(node)
