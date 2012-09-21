@@ -19,8 +19,8 @@ def build(input_filename):
     input_graph = graphml.load_graphml(input_filename)
 
     G_in = anm.add_overlay("input", input_graph)
-    ank.set_node_default(G_in, G_in, platform="netkit")
-    ank.set_node_default(G_in, G_in, host="nectar1")
+    #ank.set_node_default(G_in, G_in, platform="netkit")
+    #ank.set_node_default(G_in, G_in, host="nectar1")
 
     import autonetkit.plugins.graph_product as graph_product
     graph_product.expand(G_in) # apply graph products if relevant
@@ -33,9 +33,10 @@ def build(input_filename):
     G_in.update(G_in.nodes("is_router", platform = "junosphere"), syntax="junos")
     G_in.update(G_in.nodes("is_router", platform = "dynagen"), syntax="ios")
     G_in.update(G_in.nodes("is_router", platform = "netkit"), syntax="quagga")
-    G_in.update(G_in.nodes("is_router", platform = "cisco"), syntax="quagga")
+    G_in.update(G_in.nodes("is_router", platform = "cisco"), syntax="ios")
     for node in G_in:
         print node.platform
+        print node.syntax
 
     G_graphics = anm.add_overlay("graphics") # plotting data
     G_graphics.add_nodes_from(G_in, retain=['x', 'y', 'device_type', 'device_subtype', 'pop', 'asn'])
