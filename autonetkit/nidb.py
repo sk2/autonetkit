@@ -256,6 +256,7 @@ class nidb_node_category(object):
         except AttributeError:
             pass # not a dict
         except TypeError:
+            log.debug("Access unset key %s in %s" % (key, self.node_id))
             pass # also not a dict
         return data
 
