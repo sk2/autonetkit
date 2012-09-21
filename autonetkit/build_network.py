@@ -35,6 +35,7 @@ def build(input_filename):
     G_in.update(G_in.nodes("is_router", platform = "netkit"), syntax="quagga")
     G_in.update(G_in.nodes("is_router", platform = "cisco"), syntax="quagga")
     for node in G_in:
+        print node.platform
 
     G_graphics = anm.add_overlay("graphics") # plotting data
     G_graphics.add_nodes_from(G_in, retain=['x', 'y', 'device_type', 'device_subtype', 'pop', 'asn'])
@@ -186,7 +187,6 @@ def build_isis(anm):
     for node in G_isis:
         ip_node = G_ip.node(node)
         node.net = ip_to_net_ent_title_ios(ip_node.loopback)
-
 
 def update_pika(anm):
     log.debug("Sending anm to pika")
