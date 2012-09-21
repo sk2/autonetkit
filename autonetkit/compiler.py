@@ -8,6 +8,7 @@ import autonetkit.plugins.naming as naming
 #TODO: rename compiler to build
 
 #TODO: tidy up the dict to list, and sorting formats
+#TODO: don't pass lists/dictionaries around: set directly, and then sort in-place later if needed
 
 def dot_to_underscore(instring):
     return instring.replace(".", "_")
@@ -177,12 +178,11 @@ class IosCompiler(RouterCompiler):
 #TODO: strip out returns from super
         interfaces = super(IosCompiler, self).interfaces(node)
         # OSPF cost
-        print list(self.anm['isis'].edges())
         for link in interfaces:
             if link['ospf']: # only configure if has ospf interface
                 interfaces[link]['ospf_cost'] = link['ospf'].cost
             if link['isis']: # only configure if has ospf interface
-                pass
+                interfaces[link]['isis'] = True
 
         interfaces['lo0'] = {
             'id': 'lo0',
@@ -198,11 +198,11 @@ class IosCompiler(RouterCompiler):
         """
         G_isis = self.anm['ospf']
         G_ip = self.anm['ip']
-        phy_node = self.anm['phy'].node(node)
-        node.ospf.process_id = 1
-        node.ospf.lo_interface = "Loopback0"
+        isis_node = self.anm['isis'].node(node)
+        node.isis.net = isis_node.net
+        #TODO: see if need these for configuring ISIS
         isis_links = {}
-        for link in G_isis.edges(phy_node):
+        for link in G_isis.edges(node):
             ip_link = G_ip.edge(link)
             if not ip_link:
                 #TODO: fix this: due to multi edges from router to same switch cluster
@@ -304,8 +304,8 @@ class NetkitCompiler(PlatformCompiler):
             nidb_node = self.nidb.node(phy_node)
             nidb_node.render.base = "templates/quagga"
             nidb_node.render.template = "templates/netkit_startup.mako"
-            nidb_node.render.dst_folder = "rendered/%s/%s" % (self.host, "nklab")
-            nidb_node.render.base_dst_folder = "rendered/%s/%s/%s" % (self.host, "nklab", folder_name)
+            nidb_node.render.dst_folder = "rendered/%s/%s" % (self.host, "netkit")
+            nidb_node.render.base_dst_folder = "rendered/%s/%s/%s" % (self.host, "netkit", folder_name)
             nidb_node.render.dst_file = "%s.startup" % folder_name 
 
 # allocate zebra information
@@ -362,7 +362,7 @@ class NetkitCompiler(PlatformCompiler):
 #TODO: replace name/label and use attribute from subgraph
         lab_topology = self.nidb.topology[self.host]
         lab_topology.render_template = "templates/netkit_lab_conf.mako"
-        lab_topology.render_dst_folder = "rendered/%s/%s" % (self.host, "nklab")
+        lab_topology.render_dst_folder = "rendered/%s/%s" % (self.host, "netkit")
         lab_topology.render_dst_file = "lab.conf" 
         subgraph = self.nidb.subgraph(host_nodes, self.host)
         lab_topology.description = "AutoNetkit Lab"
