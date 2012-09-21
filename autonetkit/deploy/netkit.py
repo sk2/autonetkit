@@ -105,4 +105,3 @@ def extract(host, username, tar_file, cd_dir, timeout = 30, key_filename = None)
 
     hosts = ['ssh://%s' % host]
     start(accounts, hosts, do_something, verbose = 0)
-
