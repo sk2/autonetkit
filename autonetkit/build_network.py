@@ -87,7 +87,10 @@ def build_ip(anm):
     for node in split_created_nodes:
         node.overlay.graphics.x = ank.neigh_average(G_ip, node, "x", G_graphics)
         node.overlay.graphics.y = ank.neigh_average(G_ip, node, "y", G_graphics)
-        node.overlay.graphics.asn = math.floor(ank.neigh_average(G_ip, node, "asn", G_phy)) # arbitrary choice
+        neigh_asn_list = [n.asn for n in G_ip.neighbors(node)]
+        # from http://stackoverflow.com/q/1518522
+        node.overlay.graphics.asn = max(set(neigh_asn_list), key=neigh_asn_list.count)
+        print "choose", node.overlay.graphics.asn
 
     switch_nodes = G_ip.nodes("is_switch")# regenerate due to aggregated
     G_ip.update(switch_nodes, collision_domain=True) # switches are part of collision domain
