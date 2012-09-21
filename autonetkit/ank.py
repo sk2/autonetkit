@@ -350,6 +350,18 @@ def most_frequent(iterable):
     sorted_values = [val for val in sorted(unique, key = iterable.count)]
     return sorted_values.pop() # most frequent is at end of sorted list
 
+def neigh_most_frequent(overlay_graph, node, attribute, attribute_graph = None):
+    """Used to explicitly force most frequent - useful if integers such as ASN which would otherwise return mean"""
+    graph = unwrap_graph(overlay_graph)
+    if attribute_graph:
+        attribute_graph = unwrap_graph(attribute_graph)
+    else:
+        attribute_graph = graph # use input graph
+    node = unwrap_nodes(node)
+    values = [attribute_graph.node[n].get(attribute) for n in graph.neighbors(node)]
+    return most_frequent(values)
+
+
 def neigh_average(overlay_graph, node, attribute, attribute_graph = None):
     """ averages out attribute from neighbors in specified overlay_graph
     attribute_graph is the graph to read the attribute from
