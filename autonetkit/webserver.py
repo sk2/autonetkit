@@ -14,21 +14,21 @@ class MyWebHandler(tornado.web.RequestHandler):
         self.write("Hello, world")
 
 class OverlayHandler(tornado.web.RequestHandler):
-    def initialize(self, anm):
-        self.anm = anm
+    def initialize(self, ank_accessor):
+        self.ank_accessor = ank_accessor
 
     def get(self):
         overlay_id = self.get_argument("id")
         if overlay_id == "*":
-            overlay_list = sorted(self.anm.overlays())
+            overlay_list = sorted(self.ank_accessor.overlays())
             self.write(json.dumps({'overlay_list': overlay_list}))
             return
 
 class MyWebSocketHandler(websocket.WebSocketHandler):
-    def initialize(self, anm, overlay_id):
+    def initialize(self, ank_accessor, overlay_id):
         """ Store the overlay_id this listener is currently viewing.
         Used when updating."""
-        self.anm = anm
+        self.ank_accessor = ank_accessor
         self.overlay_id = overlay_id
 
     def allow_draft76(self):
@@ -44,6 +44,7 @@ class MyWebSocketHandler(websocket.WebSocketHandler):
         self.application.pc.remove_event_listener(self)
 
     def on_message(self, message):
+        print message
         #TODO: look if can map request type here... - or even from the application ws/ mapping
         #self.application.pc.send_message(message) # TODO: do we need to pass it on to rmq?
         if "overlay_id" in message:
@@ -51,19 +52,28 @@ class MyWebSocketHandler(websocket.WebSocketHandler):
             self.overlay_id = overlay_id
             self.update_overlay()
         elif "overlay_list" in message:
-            body = json.dumps({'overlay_list': self.anm.overlays()})
+            body = json.dumps({'overlay_list': self.ank_accessor.overlays()})
+            self.write_message(body)
+        elif "ip_allocations" in message:
+            print "ip alloc"
+            print self.ank_accessor
+            body = json.dumps({'ip_allocations': self.ank_accessor.ip_allocations()})
             self.write_message(body)
 
     def update_overlay(self):
-        body = self.anm[self.overlay_id]
+        body = self.ank_accessor[self.overlay_id]
         self.write_message(body)
 # and update overlay dropdown
-        body = json.dumps({'overlay_list': self.anm.overlays()})
+        body = json.dumps({'overlay_list': self.ank_accessor.overlays()})
         self.write_message(body)
-        
+#TODO: tidy up the passing of IP allocations
+
+    def update_ip_allocation(self):
+        body = json.dumps({'ip_allocations': self.ank_accessor.ip_allocations()})
+        self.write_message(body)
 
 class PikaClient(object):
-    def __init__(self, io_loop, anm):
+    def __init__(self, io_loop, ank_accessor):
         pika.log.info('PikaClient: __init__')
         self.io_loop = io_loop
         self.connected = False
@@ -72,7 +82,7 @@ class PikaClient(object):
         self.channel = None
         self.event_listeners = set([])
         self.queue_name = 'webserver-%i' % os.getpid()
-        self.anm = anm
+        self.ank_accessor = ank_accessor
  
     def connect(self):
         if self.connecting:
@@ -146,15 +156,21 @@ class PikaClient(object):
         except zlib.error:
             pass # likely not compressed body
         body_parsed = json.loads(body)
+        print "body parsed", body_parsed
         if body_parsed.has_key("anm"):
-            print "received new anm"
+            print "Received new anm"
             try:
-                self.anm.anm = body_parsed['anm']
+                self.ank_accessor.anm = body_parsed['anm']
                 #TODO: could process diff and only update client if data has changed -> more efficient client side
-                self.update_listeners()
+                self.update_listeners("overlays")
                 # TODO: find better way to replace object not just local reference, as need to replace for RequestHandler too
             except Exception, e:
                 print "Exception is", e
+        elif body_parsed.has_key("ip_allocations"):
+            alloc = json.loads(body_parsed['ip_allocations'])
+            self.ank_accessor.ip_allocation = alloc
+            self.update_listeners("ip_allocations")
+            print "got allocs"
         elif "path" in body_parsed:
             self.notify_listeners(body) # could do extra processing here
         else:
@@ -170,9 +186,12 @@ class PikaClient(object):
             listener.write_message(body)
             pika.log.info('PikaClient: notified %s' % repr(listener))
 
-    def update_listeners(self):
+    def update_listeners(self, index):
         for listener in self.event_listeners:
-            listener.update_overlay()
+            if index == "overlays":
+                listener.update_overlay()
+            elif index == "ip_allocations":
+                listener.update_ip_allocation()
             #listener.write_message(body)
 
     def add_event_listener(self, listener):
@@ -187,9 +206,10 @@ class PikaClient(object):
             pass
 
 
-class AnmAccessor():
+class AnkAccessor():
     def __init__(self):
         self.anm = {}
+        self.ip_allocation = {}
 # try loading from vis directory
         try:
             fh = open("ank_vis/default.json", "r")
@@ -210,14 +230,12 @@ class AnmAccessor():
             return self.anm[key]
         except KeyError:
             return json.dumps(["No ANM loaded"])
+
+    def ip_allocations(self):
+        return self.ip_allocation
  
 def main():
-    # bootstrap: load anm from file
-    directory = os.path.join("versions", "anm")
-    glob_dir = os.path.join(directory, "*.pickle.tar.gz")
-    pickle_files = glob.glob(glob_dir)
-    pickle_files = sorted(pickle_files)
-    anm = AnmAccessor()
+    ank_accessor = AnkAccessor()
 # check if most recent outdates current most recent
 
     static_path = os.path.join("ank_vis")
@@ -227,14 +245,14 @@ def main():
             }
 
     application = tornado.web.Application([
-        (r'/ws', MyWebSocketHandler, {"anm": anm, "overlay_id": "phy"}),
-        (r'/overlay', OverlayHandler, {'anm': anm}),
+        (r'/ws', MyWebSocketHandler, {"ank_accessor": ank_accessor, "overlay_id": "phy"}),
+        (r'/overlay', OverlayHandler, {'ank_accessor': ank_accessor}),
         ("/(.*)", tornado.web.StaticFileHandler, {"path":settings['static_path'], "default_filename":"index.html"} )
         ], **settings)
-    pika.log.setup(pika.log.WARNING, color=True)
+    pika.log.setup(pika.log.INFO, color=True)
     io_loop = tornado.ioloop.IOLoop.instance()
     # PikaClient is our rabbitmq consumer
-    pc = PikaClient(io_loop, anm)
+    pc = PikaClient(io_loop, ank_accessor)
     application.pc = pc
     application.pc.connect()
     try:

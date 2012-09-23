@@ -5,6 +5,12 @@ import itertools
 import os
 import autonetkit.ank as ank_utils
 import autonetkit.log as log
+import autonetkit.ank_pika
+
+settings = autonetkit.config.settings
+rabbitmq_server = settings['Rabbitmq']['server']
+pika_channel = autonetkit.ank_pika.AnkPika(rabbitmq_server)
+
 
 try:
     import cPickle as pickle
@@ -34,7 +40,6 @@ class Tree:
         self.root_node = root_node
         self.asn = asn
 
-
     def save(self):
         import autonetkit.ank_json
         import gzip
@@ -50,7 +55,6 @@ class Tree:
         data = json.dumps(data, cls=autonetkit.ank_json.AnkEncoder, indent = 4)
         with gzip.open(json_path, "wb") as json_fh:
             json_fh.write(data)
-
 
     def __str__(self):
         print self.walk_tree(self.root_node)
@@ -234,6 +238,10 @@ def allocate_ips(G_ip):
 
         my_tree = Tree(tree_root, asn)
         my_tree.save()
+        tree_json = my_tree.json()
+        print tree_json
+        body = json.dumps({"ip_allocations": tree_json})
+        pika_channel.publish_compressed("www", "client", body)
 
         # Get loopback from loopback tree node
         loopback_hosts = asn_loopback_tree_node.subnet.iter_hosts()

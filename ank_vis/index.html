@@ -97,13 +97,6 @@
 
         var overlay_id = "phy";
 
-        //TODO: rename this to be overlay_dropdown
-        var dropdown = d3.select("#overlay_select")
-        .on("change", function() {
-            overlay_id = this.value;
-            ws.send("overlay_id=" + overlay_id);
-            })
-
 var revision_dropdown = d3.select("#revision_select")
 .on("change", function() {
     revision_id = this.value;

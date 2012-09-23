@@ -1,11 +1,12 @@
-        var jsondata;
-        var socket_url = "ws://" + location.host + "/ws";
-        var ws = new WebSocket(socket_url);
-        ws.onopen = function() {
-          ws.send("overlay_list");
-          ws.send("overlay_id=" + overlay_id);
-          status_label.text("WebSocket connected");
-        };
+var jsondata;
+var socket_url = "ws://" + location.host + "/ws";
+var ws = new WebSocket(socket_url);
+ws.onopen = function() {
+  ws.send("overlay_list");
+  ws.send("overlay_id=" + overlay_id);
+  ws.send("ip_allocations");
+  status_label.text("WebSocket connected");
+};
 ws.onclose = function () {
   status_label.text("Warning: WebSocket disconnected");
 };
@@ -18,12 +19,14 @@ var nodes_by_id = {};
 var pathinfo = [];
 
 var graph_history = [];
+var ip_allocations = [];
 
 ws.onmessage = function (evt) {
   var data = jQuery.parseJSON(evt.data);
   //TODO: parse to see if valid traceroute path or other data
   if ("graph" in data) {
     jsondata = data;
+    console.log(jsondata);
     graph_history.push(data);
     update_title();
     revision_id = graph_history.length - 1;
@@ -44,14 +47,67 @@ ws.onmessage = function (evt) {
   else if("lab started" in data) {
     status_label.text("Lab started on: " + data['lab started']);
   }
+  else if("ip_allocations" in data) {
+    ip_allocations = data['ip_allocations'];
+    //jsondata = null;
+    //Clear nodes and edges
+    jsondata.nodes = [];
+    jsondata.links = [];
+    redraw();
+    redraw_ip_allocations();
+  }
   else {
     console.log("got data", data);
   }
+}
+
+var load_ip_allocations = function(d) {
+
+}
+
+function redraw_ip_allocations() {
+  console.log("HERE");
+  var diagonal = d3.svg.diagonal()
+    // change x and y (for the left to right tree)
+    .projection(function(d) { return [d.y + 100, d.x]; });
+
+  var layout = d3.layout.tree().size([330,300]);
+
+  var nodes = layout.nodes(ip_allocations);
+  var links = layout.links(nodes);
+
+  var link = svg.selectAll("pathlink")
+    .data(links)
+    .enter().append("svg:path")
+    .attr("class", "link")
+    .attr("d", diagonal)
+
+
+    var node = svg.selectAll("g.node")
+    .data(nodes)
+    .enter().append("svg:g")
+    .attr("transform", function(d) { return "translate(" + (d.y + 100) + "," + d.x +  ")"; })
+
+
+    // Add the dot at every node
+    node.append("svg:circle")
+    .attr("r", 5);
+
+  // place the name atribute left or right depending if children
+  node.append("svg:text")
+    .attr("dx", function(d) { return d.children ? -8 : 8; })
+    .attr("dy", 3)
+    .attr("font-size", "small") 
+    .attr("text-anchor", function(d) { return d.children ? "end" : "start"; })
+    .text(function(d) { return d.name; });
+  
 
 }
 
 var propagate_overlay_dropdown = function(d) {
-  dropdown
+  console.log(d);
+  d.push('ip_allocations');
+  overlay_dropdown
     .selectAll("option")
     .data(d)
     .enter().append("option")
@@ -137,9 +193,15 @@ var edge_id = function(d) {
   return d.edge_id;
 }
 
-d3.select("select").on("change", function() {
+var overlay_dropdown = d3.select("#overlay_select").on("change", function() {
+  console.log("HERE");
   overlay_id = this.value;
-  ws.send("overlay_id=" + overlay_id);
+  if (overlay_id == "ip_allocations") {
+    ws.send("ip_allocations");
+  }
+  else {
+    ws.send("overlay_id=" + overlay_id);
+  }
   update_title();
   clear_graph_history();
   if (overlay_id == "nidb") {
@@ -387,9 +449,6 @@ $(document).keydown(function(e){
     e.preventDefault();
 });
 
-//d3.json(
-//'json/overlay/ip',
-//function (jsondata) {
 function redraw() {
   // create the chart here with
   // the returned data
