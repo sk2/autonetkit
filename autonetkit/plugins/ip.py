@@ -239,7 +239,6 @@ def allocate_ips(G_ip):
         my_tree = Tree(tree_root, asn)
         my_tree.save()
         tree_json = my_tree.json()
-        print tree_json
         body = json.dumps({"ip_allocations": tree_json})
         pika_channel.publish_compressed("www", "client", body)
 

@@ -26,11 +26,12 @@ ws.onmessage = function (evt) {
   //TODO: parse to see if valid traceroute path or other data
   if ("graph" in data) {
     jsondata = data;
-    console.log(jsondata);
     graph_history.push(data);
     update_title();
     revision_id = graph_history.length - 1;
     propagate_revision_dropdown(graph_history); //TODO: update this with revision from webserver
+    ip_allocations.children = [];
+    redraw_ip_allocations();
     redraw();
   }
   else if("path" in data) {
@@ -66,46 +67,100 @@ var load_ip_allocations = function(d) {
 }
 
 function redraw_ip_allocations() {
-  console.log("HERE");
+  //adapated from http://mbostock.github.com/d3/talk/20111018/tree.html
   var diagonal = d3.svg.diagonal()
     // change x and y (for the left to right tree)
-    .projection(function(d) { return [d.y + 100, d.x]; });
+    //.projection(function(d) { return [d.y + 100, d.x]; });
+    .projection(function(d) { return [d.y + 50, d.x]; });
 
-  var layout = d3.layout.tree().size([330,300]);
+  var layout = d3.layout.tree().size([400,400]);
 
   var nodes = layout.nodes(ip_allocations);
-  var links = layout.links(nodes);
-
-  var link = svg.selectAll("pathlink")
-    .data(links)
-    .enter().append("svg:path")
-    .attr("class", "link")
-    .attr("d", diagonal)
 
 
-    var node = svg.selectAll("g.node")
+  var node = chart.selectAll("g.node")
     .data(nodes)
-    .enter().append("svg:g")
-    .attr("transform", function(d) { return "translate(" + (d.y + 100) + "," + d.x +  ")"; })
+    node.enter().append("svg:g")
+    .attr("transform", function(d) { return "translate(" + (d.y + 50) + "," + d.x +  ")"; })
+
+    var nodeEnter = node.enter().append("svg:g")
+    .attr("class", "node")
+    .attr("transform", function(d) { return "translate(" + (d.y + 50) + "," + d.x +  ")"; });
 
 
-    // Add the dot at every node
-    node.append("svg:circle")
-    .attr("r", 5);
+  nodeEnter.append("svg:circle")
+    .attr("r", 1e-6)
+    .attr("fill", "steelblue");
 
-  // place the name atribute left or right depending if children
-  node.append("svg:text")
-    .attr("dx", function(d) { return d.children ? -8 : 8; })
-    .attr("dy", 3)
-    .attr("font-size", "small") 
-    .attr("text-anchor", function(d) { return d.children ? "end" : "start"; })
-    .text(function(d) { return d.name; });
+
+  var nodeUpdate = node.transition()
+    .duration(500)
+    .attr("transform", function(d) { return "translate(" + (d.y + 50) + "," + d.x + ")"; });
+
+
+  nodeUpdate.select("circle")
+    .attr("r", 6);
+
+  // Add the dot at every node
+  var nodeExit = node.exit().transition()
+      .duration(500)
+      .attr("transform", function(d) { return "translate(" + (d.y + 50) + "," + d.x + ")"; })
+      .remove();
+
+    nodeExit.select("circle")
+      .attr("r", 1e-6);
+
+  nodeEnter.append("svg:text")
+      .attr("x", function(d) { return d.children || d._children ? -10 : 10; }) 
+      .attr("dy", ".3em")
+      .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; }) //left if children otherwise right
+      .attr("font-family", "helvetica") 
+      .attr("font-size", "small") 
+      .text(function(d) { return d.subnet; })
+      .style("fill-opacity", 1e-6);
+
+
+    nodeUpdate.select("text")
+      .style("fill-opacity", 1);
+    
+    nodeExit.select("text")
+      .style("fill-opacity", 1e-6);
+
+  
+      // Update the links…
+  var link = chart.selectAll("path.link")
+      .data(layout.links(nodes), function(d) { return d.target.id; });
+
+  // Enter any new links at the parent's previous position.
+  link.enter().insert("svg:path", "g")
+      .attr("class", "link")
+      .attr("d", diagonal)
+    .transition()
+      .duration(500)
+      .attr("d", diagonal);
+
+  // Transition links to their new position.
+  link.transition()
+      .duration(500)
+      .attr("d", diagonal);
+
+  // Transition exiting nodes to the parent's new position.
+  link.exit().transition()
+      .duration(500)
+      .attr("d", diagonal)
+      .remove();
+
+  // Stash the old positions for transition.
+  nodes.forEach(function(d) {
+    d.x0 = d.x;
+    d.y0 = d.y;
+  });
+
   
 
 }
 
 var propagate_overlay_dropdown = function(d) {
-  console.log(d);
   d.push('ip_allocations');
   overlay_dropdown
     .selectAll("option")
@@ -194,7 +249,6 @@ var edge_id = function(d) {
 }
 
 var overlay_dropdown = d3.select("#overlay_select").on("change", function() {
-  console.log("HERE");
   overlay_id = this.value;
   if (overlay_id == "ip_allocations") {
     ws.send("ip_allocations");
@@ -547,19 +601,12 @@ function redraw() {
 
   var line = chart.selectAll(".link_edge")
     .data(jsondata.links, edge_id)
-    // .data(jsondata.links)
-
-    //TODO: see why edge_id changes sometimes even though appears the same
 
     //line.enter().append("line")
     line.enter().append("svg:path")
     .attr("class", "link_edge")
     .attr("d", graph_edge)
     //.attr("marker-end", marker_end)
-    //.attr("x1", source_x)
-    //.attr("y1", source_y)
-    //.attr("x2", target_x)
-    //.attr("y2", target_y)
     .style("stroke", "rgb(6,120,155)")
     .on("mouseover", function(d){
         d3.select(this).style("stroke", "orange");
@@ -576,10 +623,6 @@ function redraw() {
   line.transition()
     .duration(500)
     .attr("d", graph_edge)
-    //.attr("x1", source_x)
-    //.attr("y1", source_y)
-    //.attr("x2", target_x)
-    //.attr("y2", target_y)
 
     line.exit().transition()
     .duration(1000)
