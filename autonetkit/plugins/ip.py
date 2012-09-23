@@ -157,23 +157,43 @@ class IpTree(object):
         self.root_node = None
 #taken_nodes -> these are nodes manually specified, eg in graphml
 
-    def build(self, groupby = 'asn'):
+    def build(self, group_attr = 'asn'):
         """Builds tree from unallocated_nodes,
         groupby is the attribute to build subtrees from"""
-        self.graph.add_nodes_from([1, 2, 3, 4, 5, 6, 7])
         self.graph.add_edges_from([(1,2), (1,3), (2,4), (2,5), (3,6), (3,7), (4,8), (4,9)])
+        self.graph.add_edges_from([(4,10), (4,11)])
         #self.graph.add_edges_from([(1,2), (1,3), (2,4), (2,5), (3,6), (3,7), (4,8)])
         self.root_node = 1
 
+        unallocated_nodes = self.unallocated_nodes
+        unallocated_nodes = sorted(unallocated_nodes, key = lambda x: x.get(group_attr))
+        for attr_value, items in itertools.groupby(unallocated_nodes, key = lambda x: x.get(group_attr)):
+# make subtree for each attr
+            subgraph = nx.DiGraph()
+            for item in items:
+                if item.collision_domain:
+                    subgraph.add_node(item, prefixlen = 32 - subnet_size(item.degree()))
+            if item.is_l3device:
+                    subgraph.add_node(item, prefixlen = 32)
+
+            pprint.pprint( subgraph.nodes(data=True))
+
+
+#if collision domain, then add the interfaces connected to it
+# if node, then keep it (loopback)
+
+    def add_nodes(self, nodes):
+        self.unallocated_nodes += list(nodes)
+
     def walk(self):
-        def list_sucessors(node):
+        def list_successors(node):
             successors = self.graph.successors(node)
             if successors:
-                children = [list_sucessors(n) for n in successors]
+                children = [list_successors(n) for n in successors]
                 return {node: children}
             return node
 
-        return list_sucessors(self.root_node)
+        return list_successors(self.root_node)
 
 
     def json(self):
@@ -189,12 +209,27 @@ class IpTree(object):
 
 def allocate_ips(G_ip):
     ip_tree = IpTree()
+
+    ip_tree.add_nodes(G_ip.nodes("is_l3device"))
+
+    G_phy = G_ip.overlay.phy
+    for collision_domain in G_ip.nodes("collision_domain"):
+        neigh_asn = list(ank_utils.neigh_attr(G_ip, collision_domain, "asn", G_phy)) #asn of neighbors
+        if len(set(neigh_asn)) == 1:
+            asn = set(neigh_asn).pop() # asn of any neigh, as all same
+        else:
+            asn = ank_utils.most_frequent(neigh_asn) # allocate cd to asn with most neighbors in it
+        collision_domain.asn = asn
+
+    ip_tree.add_nodes(G_ip.nodes("collision_domain"))
+
     ip_tree.build()
-    print ip_tree.walk()
     jsontree = json.dumps(ip_tree.json())
 
     body = json.dumps({"ip_allocations": jsontree})
     pika_channel.publish_compressed("www", "client", body)
+
+# add all the collision domains
 
 
     raise SystemExit
