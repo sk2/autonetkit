@@ -44,7 +44,6 @@ class MyWebSocketHandler(websocket.WebSocketHandler):
         self.application.pc.remove_event_listener(self)
 
     def on_message(self, message):
-        print message
         #TODO: look if can map request type here... - or even from the application ws/ mapping
         #self.application.pc.send_message(message) # TODO: do we need to pass it on to rmq?
         if "overlay_id" in message:
@@ -55,8 +54,6 @@ class MyWebSocketHandler(websocket.WebSocketHandler):
             body = json.dumps({'overlay_list': self.ank_accessor.overlays()})
             self.write_message(body)
         elif "ip_allocations" in message:
-            print "ip alloc"
-            print self.ank_accessor
             body = json.dumps({'ip_allocations': self.ank_accessor.ip_allocations()})
             self.write_message(body)
 

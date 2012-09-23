@@ -2,10 +2,12 @@ import time
 from collections import defaultdict
 import json
 import itertools
+import pprint
 import os
 import autonetkit.ank as ank_utils
 import autonetkit.log as log
 import autonetkit.ank_pika
+import networkx as nx
 
 settings = autonetkit.config.settings
 rabbitmq_server = settings['Rabbitmq']['server']
@@ -147,8 +149,58 @@ def allocate_ips_to_cds(node):
             else:
                 raise # something else went wrong
 
-    
+
+class IpTree(object):
+    def __init__(self):
+        self.unallocated_nodes = []
+        self.graph = nx.DiGraph()
+        self.root_node = None
+#taken_nodes -> these are nodes manually specified, eg in graphml
+
+    def build(self, groupby = 'asn'):
+        """Builds tree from unallocated_nodes,
+        groupby is the attribute to build subtrees from"""
+        self.graph.add_nodes_from([1, 2, 3, 4, 5, 6, 7])
+        self.graph.add_edges_from([(1,2), (1,3), (2,4), (2,5), (3,6), (3,7), (4,8), (4,9)])
+        #self.graph.add_edges_from([(1,2), (1,3), (2,4), (2,5), (3,6), (3,7), (4,8)])
+        self.root_node = 1
+
+    def walk(self):
+        def list_sucessors(node):
+            successors = self.graph.successors(node)
+            if successors:
+                children = [list_sucessors(n) for n in successors]
+                return {node: children}
+            return node
+
+        return list_sucessors(self.root_node)
+
+
+    def json(self):
+        def list_sucessors(node):
+            successors = self.graph.successors(node)
+            if successors:
+                children = [list_sucessors(n) for n in successors]
+                return {"name": node,
+                        "children": children}
+            return {"name": node}
+
+        return list_sucessors(self.root_node)
+
 def allocate_ips(G_ip):
+    ip_tree = IpTree()
+    ip_tree.build()
+    print ip_tree.walk()
+    jsontree = json.dumps(ip_tree.json())
+
+    body = json.dumps({"ip_allocations": jsontree})
+    pika_channel.publish_compressed("www", "client", body)
+
+
+    raise SystemExit
+
+    
+def allocate_ips2(G_ip):
     log.info("Allocating IP addresses")
     from netaddr import IPNetwork
     address_block = IPNetwork("10.0.0.0/8")

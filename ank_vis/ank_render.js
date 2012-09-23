@@ -77,9 +77,8 @@ function redraw_ip_allocations() {
 
   var nodes = layout.nodes(ip_allocations);
 
-
   var node = chart.selectAll("g.node")
-    .data(nodes)
+    .data(nodes, name)
     node.enter().append("svg:g")
     .attr("transform", function(d) { return "translate(" + (d.y + 50) + "," + d.x +  ")"; })
 
@@ -97,67 +96,58 @@ function redraw_ip_allocations() {
     .duration(500)
     .attr("transform", function(d) { return "translate(" + (d.y + 50) + "," + d.x + ")"; });
 
+  //TODO: fix issue with node names
 
   nodeUpdate.select("circle")
     .attr("r", 6);
 
   // Add the dot at every node
   var nodeExit = node.exit().transition()
-      .duration(500)
-      .attr("transform", function(d) { return "translate(" + (d.y + 50) + "," + d.x + ")"; })
-      .remove();
+    .duration(500)
+    .attr("transform", function(d) { return "translate(" + (d.y + 50) + "," + d.x + ")"; })
+    .remove();
 
-    nodeExit.select("circle")
-      .attr("r", 1e-6);
+  nodeExit.select("circle")
+    .attr("r", 1e-6);
 
   nodeEnter.append("svg:text")
-      .attr("x", function(d) { return d.children || d._children ? -10 : 10; }) 
-      .attr("dy", ".3em")
-      .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; }) //left if children otherwise right
-      .attr("font-family", "helvetica") 
-      .attr("font-size", "small") 
-      .text(function(d) { return d.subnet; })
-      .style("fill-opacity", 1e-6);
+    .attr("x", function(d) { return d.children || d._children ? -10 : 10; }) 
+    .attr("dy", ".3em")
+    .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; }) //left if children otherwise right
+    .attr("font-family", "helvetica") 
+    .attr("font-size", "small") 
+    .text(function(d) { return d.name; })
+    .style("fill-opacity", 1e-6);
 
+  nodeUpdate.select("text")
+    .text(function(d) { return d.name; })
+    .style("fill-opacity", 1);
 
-    nodeUpdate.select("text")
-      .style("fill-opacity", 1);
-    
-    nodeExit.select("text")
-      .style("fill-opacity", 1e-6);
+  nodeExit.select("text")
+    .style("fill-opacity", 1e-6);
 
-  
-      // Update the links…
+  // Update the links…
   var link = chart.selectAll("path.link")
-      .data(layout.links(nodes), function(d) { return d.target.id; });
+    .data(layout.links(nodes, name), function(d) { return d.target.id; });
 
   // Enter any new links at the parent's previous position.
   link.enter().insert("svg:path", "g")
-      .attr("class", "link")
-      .attr("d", diagonal)
+    .attr("class", "link")
+    .attr("d", diagonal)
     .transition()
-      .duration(500)
-      .attr("d", diagonal);
+    .duration(500)
+    .attr("d", diagonal);
 
   // Transition links to their new position.
   link.transition()
-      .duration(500)
-      .attr("d", diagonal);
+    .duration(500)
+    .attr("d", diagonal);
 
   // Transition exiting nodes to the parent's new position.
   link.exit().transition()
-      .duration(500)
-      .attr("d", diagonal)
-      .remove();
-
-  // Stash the old positions for transition.
-  nodes.forEach(function(d) {
-    d.x0 = d.x;
-    d.y0 = d.y;
-  });
-
-  
-
+    .duration(500)
+    .attr("d", diagonal)
+    .remove();
 }
 
 var propagate_overlay_dropdown = function(d) {
