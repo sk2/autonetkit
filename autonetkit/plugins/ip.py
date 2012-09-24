@@ -164,7 +164,7 @@ class IpTree(object):
 
         global_graph = nx.DiGraph()
         subgraphs = sorted(subgraphs, key = lambda x: subgraph.graph['root'].group_attr)
-        subgraphs = [subgraphs[0]]
+        #subgraphs = [subgraphs[0]]
         root_nodes = [subgraph.graph['root'] for subgraph in subgraphs]
         global_graph.add_nodes_from(root_nodes)
 
@@ -187,17 +187,24 @@ class IpTree(object):
         global_root = build_tree(global_graph, level_counts, nodes_by_level)
 
         for subgraph in subgraphs:
-            print "sn nodes", subgraph.nodes()
             global_graph = nx.compose(global_graph, subgraph)
 
         # now allocate the IPs
         global_ip_block = netaddr.IPNetwork("192.168.0.0/%s" %global_root.prefixlen)
+
+# add children of collision domains
+        cd_nodes = [n for n in global_graph if n.is_collision_domain()]
+        for cd in cd_nodes:
+            for edge in cd.host.edges():
+                link_node = TreeNode(prefixlen = 32, host = edge)
+                global_graph.add_edge(cd, link_node) # cd -> neigh (cd is parent)
 
         def allocate(graph, node):
             children = graph.successors(node)
             prefixlen = node.prefixlen
             subnet = node.subnet.subnet(prefixlen+1)
             for child in children:
+                print child
                 if child.is_collision_domain():
                     child.subnet = subnet.next()
                     iterhosts = child.subnet.iter_hosts()
@@ -205,20 +212,17 @@ class IpTree(object):
                     for sub_child in sub_children:
                         sub_child.subnet = iterhosts.next()
                         #print "alloc sub_child to", sub_child, iterhosts.next()
-                     
-                elif not child.is_host():
+                elif child.is_host():
+                    child.subnet = subnet.next()
+                else:
                     child.subnet = subnet.next()
                     #TODO: tidy up this logic with node types
                     allocate(graph, child)
-                else:
-                    #print "dont allocate to child", child
-                    #print "child isnt host"
                     #child.subnet = subnet.next()
-                    child.subnet = subnet.next()
-                    pass
 
         global_root.subnet = global_ip_block
         allocate(global_graph, global_root)
+        #pprint.pprint(nx.dfs_successors(global_graph, global_root))
 
         self.graph = global_graph
         self.root_node = global_root

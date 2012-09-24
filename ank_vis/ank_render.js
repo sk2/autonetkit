@@ -84,7 +84,7 @@ function redraw_ip_allocations() {
     //.projection(function(d) { return [d.y + 100, d.x]; });
     .projection(function(d) { return [d.y + 80, d.x]; });
 
-  var layout = d3.layout.tree().size([600,800]);
+  var layout = d3.layout.tree().size([700,700]);
 
   var nodes = layout.nodes(ip_allocations);
 
@@ -117,6 +117,7 @@ function redraw_ip_allocations() {
 
   nodeUpdate.select("circle")
     .attr("r", 3);
+  //TODO: map colour to node type: edge, collision domain, subnet, l3_device
 
   // Add the dot at every node
   var nodeExit = node.exit().transition()
@@ -132,7 +133,7 @@ function redraw_ip_allocations() {
     .attr("dy", ".3em")
     .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; }) //left if children otherwise right
     .attr("font-family", "helvetica") 
-    .attr("font-size", 10) 
+    .attr("font-size", 6) 
     .text(function(d) { return d.name; })
     .style("fill-opacity", 1e-6);
 
