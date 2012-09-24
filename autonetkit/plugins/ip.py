@@ -11,6 +11,7 @@ import autonetkit.ank_pika
 import autonetkit.ank_json
 import networkx as nx
 from collections import defaultdict
+import netaddr
 
 settings = autonetkit.config.settings
 rabbitmq_server = settings['Rabbitmq']['server']
@@ -162,18 +163,74 @@ class TreeNode(object):
 
     def __repr__(self):
         if self.subnet and self.host:
-            return "Sn: %s, %s" % (self.subnet, self.host)
+            return "%s, %s" % (self.subnet.network, self.host)
         if self.subnet and self.group_attr:
-            return "Sn: %s, attr %s" % (self.subnet, self.group_attr)
+            return "%s, %s" % (self.subnet, self.group_attr)
         if self.host:
-            return "Sn: %s" % self.host
+            return "%s" % self.host
         if self.subnet:
-            return "Sn: %s" % self.subnet
-        return "Sn"
+            return "%s" % self.formatted_subnet
+        return "/%s" % self.prefixlen
+
+    @property
+    def formatted_subnet(self):
+        prefixlen = self.subnet.prefixlen
+        print prefixlen
+        octets = str(self.subnet).split(".")
+        print octets
+        if prefixlen > 24:
+            return octets[3]
+        elif prefixlen > 16:
+            return ".".join([octets[2], octets[3]])
+        elif prefixlen > 8:
+            return ".".join([octets[1], octets[2], octets[3]])
+
 
     def is_subnet(self):
-        return not self.host # if no host node, then is a subnet
+        return not (self.host or self.group_attr) # if no host node, then is a subnet
 
+    def is_host(self):
+        return self.host
+
+
+def add_parent_nodes(subgraph, level_counts):
+    for level in range(32, 0, -1):
+        try:
+            current_count = float(level_counts[level]) # float so do floating point division
+        except KeyError:
+            continue # key not present - likely higher up tree
+        parent_count = int(math.ceil(current_count/2))
+# and add this many to the graph for allocation
+        parent_level = level - 1
+        #print "level", level, "parent", level_counts[parent_level], "add", parent_count
+        level_counts[parent_level] += parent_count
+        #level_counts[parent_level] += 
+# and add this many to graph
+        subgraph.add_nodes_from(TreeNode(prefixlen = parent_level) for n in range(parent_count))
+
+        if level_counts[parent_level] == 1:
+# only one node at parent
+            if parent_level == min(level_counts.keys()):
+                break
+
+
+def build_tree(subgraph, level_counts, nodes_by_level):
+    smallest_prefix = min(level_counts.keys())
+    for prefixlen in range(smallest_prefix, 32):
+        unallocated_children = set(nodes_by_level[prefixlen + 1])
+#TODO: make list and sort
+        for node in sorted(nodes_by_level[prefixlen]):
+            if node.is_subnet():
+                child_a = unallocated_children.pop()
+                subgraph.add_edge(node, child_a)
+                try:
+                    child_b = unallocated_children.pop()
+                    subgraph.add_edge(node, child_b)
+                except KeyError:
+                    pass # single child, just attach
+
+    root_node = nodes_by_level[smallest_prefix][0]
+    return root_node
 
 class IpTree(object):
     def __init__(self):
@@ -196,7 +253,7 @@ class IpTree(object):
         unallocated_nodes = sorted(unallocated_nodes, key = lambda x: x.get(group_attr))
         for attr_value, items in itertools.groupby(unallocated_nodes, key = lambda x: x.get(group_attr)):
 # make subtree for each attr
-            #print group_attr, "is", attr_value
+            print group_attr, "is", attr_value
             items = list(items)
             subgraph = nx.DiGraph()
             for item in items:
@@ -207,62 +264,93 @@ class IpTree(object):
 
             # now group by levels
             level_counts = defaultdict(int)
+
             nodes_by_level = sorted(subgraph.nodes(), key = lambda x: x.prefixlen)
             for level, items in itertools.groupby(nodes_by_level, key = lambda x: x.prefixlen):
                 level_counts[level] = len(list(items))
 
             #print level_counts
-            for level in range(32, 0, -1):
-                current_count = float(level_counts[level]) # float so do floating point division
-                parent_count = int(math.ceil(current_count/2))
-# and add this many to the graph for allocation
-                parent_level = level - 1
-                print "level", level, "parent", level_counts[parent_level], "add", parent_count
-                level_counts[parent_level] += parent_count
-                #level_counts[parent_level] += 
-# and add this many to graph
-                subgraph.add_nodes_from(TreeNode(prefixlen = parent_level) for n in range(parent_count))
-
-                if level_counts[parent_level] == 1:
-# only one node at parent
-                    if parent_level == min(level_counts.keys()):
-                        break
+            add_parent_nodes(subgraph, level_counts)
 
             nodes_by_level = {}
             nodes = sorted(subgraph.nodes(), key = lambda x: x.prefixlen)
             for level, items in itertools.groupby(nodes, key = lambda x: x.prefixlen):
                 nodes_by_level[level] = list(items)
             
-            pprint.pprint(nodes_by_level)
+            #pprint.pprint(nodes_by_level)
+            root_node = build_tree(subgraph, level_counts, nodes_by_level)
 
 # now build the tree
             #print level_counts
             #pprint.pprint( nodes_by_level)
-            smallest_prefix = min(level_counts.keys())
-            #print "smallest prefix", smallest_prefix
-            for prefixlen in range(smallest_prefix, 32):
-                unallocated_children = set(nodes_by_level[prefixlen + 1])
-                for node in sorted(nodes_by_level[prefixlen]):
-                    if node.is_subnet():
-                        child_a = unallocated_children.pop()
-                        subgraph.add_edge(node, child_a)
-                        try:
-                            child_b = unallocated_children.pop()
-                            subgraph.add_edge(node, child_b)
-                        except KeyError:
-                            print child_a
-# single child, just attach
+
             subgraphs.append(subgraph)
 
-            root_node = nodes_by_level[smallest_prefix][0]
             subgraph.graph['root'] = root_node
             root_node.group_attr = attr_value
 
             # now fit nodes to tree
 
+
+        global_root = TreeNode(prefixlen = 8)
     # now attach subgraphs to main graph
-        subgraphs_by_prefix = dict( (graph.graph['root'].prefixlen, graph) for graph in subgraphs)
-        print subgraphs_by_prefix
+# join subgraphs
+
+
+        global_graph = nx.DiGraph()
+        subgraphs = sorted(subgraphs, key = lambda x: subgraph.graph['root'].group_attr)
+        root_nodes = [subgraph.graph['root'] for subgraph in subgraphs]
+        global_graph.add_nodes_from(root_nodes)
+
+        nodes_by_level = defaultdict(list)
+        for node in root_nodes:
+            nodes_by_level[node.prefixlen].append(node)
+
+        level_counts = defaultdict(int)
+        for level, nodes in nodes_by_level.items():
+            level_counts[level] = len(nodes)
+
+        add_parent_nodes(global_graph, level_counts)
+
+# rebuild nodes by level
+#TODO: make this a function
+        for node in global_graph:
+            nodes_by_level[node.prefixlen].append(node)
+
+        global_root = build_tree(global_graph, level_counts, nodes_by_level)
+
+        for subgraph in subgraphs:
+            global_graph = nx.compose(global_graph, subgraph)
+
+        # now allocate the IPs
+        global_ip_block = netaddr.IPNetwork("192.168.0.0/%s" %global_root.prefixlen)
+        print global_ip_block
+
+        def allocate(graph, node):
+            children = graph.successors(node)
+            prefixlen = node.prefixlen
+            subnet = node.subnet.subnet(prefixlen+1)
+            for child in children:
+                child.subnet = subnet.next()
+                if not child.is_host():
+                    print "allocate to child", child
+                    allocate(graph, child)
+                else:
+                    #print "dont allocate to child", child
+                    pass
+
+        global_root.subnet = global_ip_block
+        allocate(global_graph, global_root)
+
+
+#TODO: Store the IP allocations based on the groupattrs
+
+
+        self.graph = global_graph
+        self.root_node = global_root
+
+
+
 
         #self.graph = subgraph
 
@@ -330,7 +418,7 @@ def allocate_ips(G_ip):
 
     ip_tree.build()
     jsontree = json.dumps(ip_tree.json(), cls=autonetkit.ank_json.AnkEncoder, indent = 4)
-    print jsontree
+    #print jsontree
     #print "walk", ip_tree.walk()
     
 

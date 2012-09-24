@@ -71,20 +71,20 @@ function redraw_ip_allocations() {
   var diagonal = d3.svg.diagonal()
     // change x and y (for the left to right tree)
     //.projection(function(d) { return [d.y + 100, d.x]; });
-    .projection(function(d) { return [d.y + 50, d.x]; });
+    .projection(function(d) { return [d.y + 80, d.x]; });
 
-  var layout = d3.layout.tree().size([400,400]);
+  var layout = d3.layout.tree().size([600,600]);
 
   var nodes = layout.nodes(ip_allocations);
 
   var node = chart.selectAll("g.node")
     .data(nodes, name)
     node.enter().append("svg:g")
-    .attr("transform", function(d) { return "translate(" + (d.y + 50) + "," + d.x +  ")"; })
+    .attr("transform", function(d) { return "translate(" + (d.y + 80) + "," + d.x +  ")"; })
 
     var nodeEnter = node.enter().append("svg:g")
     .attr("class", "node")
-    .attr("transform", function(d) { return "translate(" + (d.y + 50) + "," + d.x +  ")"; });
+    .attr("transform", function(d) { return "translate(" + (d.y + 80) + "," + d.x +  ")"; });
 
 
   nodeEnter.append("svg:circle")
@@ -94,28 +94,28 @@ function redraw_ip_allocations() {
 
   var nodeUpdate = node.transition()
     .duration(500)
-    .attr("transform", function(d) { return "translate(" + (d.y + 50) + "," + d.x + ")"; });
+    .attr("transform", function(d) { return "translate(" + (d.y + 80) + "," + d.x + ")"; });
 
   //TODO: fix issue with node names
 
   nodeUpdate.select("circle")
-    .attr("r", 6);
+    .attr("r", 4);
 
   // Add the dot at every node
   var nodeExit = node.exit().transition()
     .duration(500)
-    .attr("transform", function(d) { return "translate(" + (d.y + 50) + "," + d.x + ")"; })
+    .attr("transform", function(d) { return "translate(" + (d.y + 80) + "," + d.x + ")"; })
     .remove();
 
   nodeExit.select("circle")
     .attr("r", 1e-6);
 
   nodeEnter.append("svg:text")
-    .attr("x", function(d) { return d.children || d._children ? -10 : 10; }) 
+    .attr("x", function(d) { return d.children || d._children ? -15 : 15; }) 
     .attr("dy", ".3em")
     .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; }) //left if children otherwise right
     .attr("font-family", "helvetica") 
-    .attr("font-size", "small") 
+    .attr("font-size", 8) 
     .text(function(d) { return d.name; })
     .style("fill-opacity", 1e-6);
 
