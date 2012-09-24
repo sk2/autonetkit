@@ -74,7 +74,7 @@ var ip_node_info = function(d) {
     child = d.children[index];
     children += "(" + child.name + ", " + child.subnet + ") ";
   }
-  status_label.text(d.name + " children: " + children);
+  status_label.text(d.name + ": " + d.subnet + " children: " + children);
 }
 
 function redraw_ip_allocations() {
@@ -84,7 +84,7 @@ function redraw_ip_allocations() {
     //.projection(function(d) { return [d.y + 100, d.x]; });
     .projection(function(d) { return [d.y + 80, d.x]; });
 
-  var layout = d3.layout.tree().size([1000,800]);
+  var layout = d3.layout.tree().size([600,800]);
 
   var nodes = layout.nodes(ip_allocations);
 
@@ -132,7 +132,7 @@ function redraw_ip_allocations() {
     .attr("dy", ".3em")
     .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; }) //left if children otherwise right
     .attr("font-family", "helvetica") 
-    .attr("font-size", 8) 
+    .attr("font-size", 10) 
     .text(function(d) { return d.name; })
     .style("fill-opacity", 1e-6);
 
