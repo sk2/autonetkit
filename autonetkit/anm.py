@@ -176,6 +176,9 @@ class overlay_node(object):
     def degree(self):
         return self._graph.degree(self.node_id)
 
+    def neighbors(self):
+        return self._graph.neighbors(self.node_id)
+
     @property
     def label(self):
         return self.__repr__()

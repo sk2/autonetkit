@@ -153,7 +153,6 @@ def allocate_ips_to_cds(node):
             else:
                 raise # something else went wrong
 
-
 class TreeNode(object):
     def __init__(self, prefixlen, host = None):
         self.subnet = None
@@ -163,9 +162,9 @@ class TreeNode(object):
 
     def __repr__(self):
         if self.subnet and self.host:
-            return "%s, %s" % (self.subnet.network, self.host)
+            return "%s, %s" % (self.host, self.formatted_subnet)
         if self.subnet and self.group_attr:
-            return "%s, %s" % (self.subnet, self.group_attr)
+            return "%s, %s" % (self.formatted_subnet, self.group_attr)
         if self.host:
             return "%s" % self.host
         if self.subnet:
@@ -175,23 +174,19 @@ class TreeNode(object):
     @property
     def formatted_subnet(self):
         prefixlen = self.subnet.prefixlen
-        print prefixlen
-        octets = str(self.subnet).split(".")
-        print octets
+        octets = str(self.subnet.network).split(".")
         if prefixlen > 24:
-            return octets[3]
+            return ".".join([octets[3]])
         elif prefixlen > 16:
             return ".".join([octets[2], octets[3]])
         elif prefixlen > 8:
             return ".".join([octets[1], octets[2], octets[3]])
-
 
     def is_subnet(self):
         return not (self.host or self.group_attr) # if no host node, then is a subnet
 
     def is_host(self):
         return self.host
-
 
 def add_parent_nodes(subgraph, level_counts):
     for level in range(32, 0, -1):
@@ -212,7 +207,6 @@ def add_parent_nodes(subgraph, level_counts):
 # only one node at parent
             if parent_level == min(level_counts.keys()):
                 break
-
 
 def build_tree(subgraph, level_counts, nodes_by_level):
     smallest_prefix = min(level_counts.keys())
@@ -258,7 +252,12 @@ class IpTree(object):
             subgraph = nx.DiGraph()
             for item in items:
                 if item.collision_domain:
-                    subgraph.add_node(TreeNode(prefixlen = 32 - subnet_size(item.degree()), host = item))
+                    cd_node = TreeNode(prefixlen = 32 - subnet_size(item.degree()), host = item) 
+                    subgraph.add_node(cd_node)
+# and add elements for each interface
+                    for neigh in item.neighbors():
+                        neigh_node = TreeNode(prefixlen = 32, host = neigh)
+                        subgraph.add_edge(cd_node, neigh_node)
                 if item.is_l3device:
                     subgraph.add_node(TreeNode(prefixlen = 32, host = item))
 
@@ -324,7 +323,6 @@ class IpTree(object):
 
         # now allocate the IPs
         global_ip_block = netaddr.IPNetwork("192.168.0.0/%s" %global_root.prefixlen)
-        print global_ip_block
 
         def allocate(graph, node):
             children = graph.successors(node)
@@ -333,11 +331,12 @@ class IpTree(object):
             for child in children:
                 child.subnet = subnet.next()
                 if not child.is_host():
-                    print "allocate to child", child
                     allocate(graph, child)
                 else:
                     #print "dont allocate to child", child
                     pass
+#TODO: allocate back to device (if l3 device) or to collision domain
+#TODO: Add collision domain edges as nodes
 
         global_root.subnet = global_ip_block
         allocate(global_graph, global_root)
@@ -345,27 +344,17 @@ class IpTree(object):
 
 #TODO: Store the IP allocations based on the groupattrs
 
-
         self.graph = global_graph
         self.root_node = global_root
 
+        group_allocations = {}
 
+        for node in global_graph:
+            if node.group_attr:
+                group_allocations[node.group_attr] = node.subnet
 
+        print group_allocations
 
-        #self.graph = subgraph
-
-
-# now build tree
-#TODO: make this work if loading an already existing tree
-
-
-            #pprint.pprint( subgraph.nodes(data=True))
-
-# organise by prefixlengths to allocate parent nodes
-
-
-#if collision domain, then add the interfaces connected to it
-# if node, then keep it (loopback)
 
     def add_nodes(self, nodes):
         self.unallocated_nodes += list(nodes)
