@@ -173,11 +173,15 @@ class overlay_node(object):
     def id(self):
         return self.node_id
 
+    @property
+    def _overlay(self):
+        return overlay_graph(self.anm, self.overlay_id)
+
     def degree(self):
         return self._graph.degree(self.node_id)
 
     def neighbors(self):
-        return self._graph.neighbors(self.node_id)
+        return self._overlay.neighbors(self)
 
     @property
     def label(self):
@@ -203,7 +207,7 @@ class overlay_node(object):
 
     def edges(self, *args, **kwargs):
         #TODO: want to add filter for *args and **kwargs here too
-        return overlay_graph(self.anm, self.overlay_id).edges(self, *args, **kwargs)
+        return self._overlay.edges(self, *args, **kwargs)
 
     def __repr__(self):
         """Try label if set in overlay, otherwise from physical, otherwise node id"""
