@@ -753,7 +753,8 @@ class AbstractNetworkModel(object):
 
     def _build_node_label(self):
         def custom_label(node):
-            return self.label_seperator.join(str(self._overlays['phy'].node[node.node_id].get(val)) for val in self.label_attrs
+            return self.label_seperator.join(str(self._overlays['phy'].node[node.node_id].get(val)) 
+                    for val in self.label_attrs
                     if self._overlays['phy'].node[node.node_id].get(val) != None)
 
         self.node_label = custom_label
