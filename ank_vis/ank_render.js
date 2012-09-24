@@ -66,6 +66,17 @@ var load_ip_allocations = function(d) {
 
 }
 
+var ip_node_info = function(d) {
+  console.log(d);
+  var children = "" ;
+
+  for (index in d.children) {
+    child = d.children[index];
+    children += "(" + child.name + ", " + child.subnet + ") ";
+  }
+  status_label.text(d.name + " children: " + children);
+}
+
 function redraw_ip_allocations() {
   //adapated from http://mbostock.github.com/d3/talk/20111018/tree.html
   var diagonal = d3.svg.diagonal()
@@ -73,50 +84,44 @@ function redraw_ip_allocations() {
     //.projection(function(d) { return [d.y + 100, d.x]; });
     .projection(function(d) { return [d.y + 80, d.x]; });
 
-   var diagonal = d3.svg.diagonal.radial()
-      .projection(function(d) { return [d.y, d.x / 180 * Math.PI]; })
+  var layout = d3.layout.tree().size([1000,800]);
 
-  //var layout = d3.layout.tree().size([800,600]);
-  var radius = 960 / 2;
-  
-  var layout = d3.layout.tree()
-      .size([360, radius - 120])
-     .separation(function(a, b) { return (a.parent == b.parent ? 1 : 2) / a.depth; });
-  
   var nodes = layout.nodes(ip_allocations);
 
   var node = chart.selectAll("g.node")
     .data(nodes, name)
     node.enter().append("svg:g")
-    .attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + d.y + ")"; })
-    //.attr("transform", function(d) { return "translate(" + (d.y + 80) + "," + d.x +  ")"; })
+    .attr("transform", function(d) { return "translate(" + (d.y + 80) + "," + d.x +  ")"; })
 
     var nodeEnter = node.enter().append("svg:g")
     .attr("class", "node")
-    .attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + d.y + ")"; })
-    //.attr("transform", function(d) { return "translate(" + (d.y + 80) + "," + d.x +  ")"; });
+    .attr("transform", function(d) { return "translate(" + (d.y + 80) + "," + d.x +  ")"; });
 
 
   nodeEnter.append("svg:circle")
     .attr("r", 1e-6)
-    .attr("fill", "steelblue");
+    .attr("fill", "steelblue")
+    .on("mouseover", function(d){
+      ip_node_info(d);
+    })
+  .on("mouseout", function(){
+    clear_label();
+  });
 
 
   var nodeUpdate = node.transition()
     .duration(500)
-    .attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + d.y + ")"; })
-    //.attr("transform", function(d) { return "translate(" + (d.y + 80) + "," + d.x + ")"; });
+    .attr("transform", function(d) { return "translate(" + (d.y + 80) + "," + d.x + ")"; });
 
   //TODO: fix issue with node names
 
   nodeUpdate.select("circle")
-    .attr("r", 2);
+    .attr("r", 3);
 
   // Add the dot at every node
   var nodeExit = node.exit().transition()
     .duration(500)
-    //.attr("transform", function(d) { return "translate(" + (d.y + 80) + "," + d.x + ")"; })
-    .attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + d.y + ")"; })
+    .attr("transform", function(d) { return "translate(" + (d.y + 80) + "," + d.x + ")"; })
     .remove();
 
   nodeExit.select("circle")
@@ -125,9 +130,7 @@ function redraw_ip_allocations() {
   nodeEnter.append("svg:text")
     .attr("x", function(d) { return d.children || d._children ? -15 : 15; }) 
     .attr("dy", ".3em")
-    //.attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; }) //left if children otherwise right
-    .attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
-    .attr("transform", function(d) { return d.x < 180 ? "translate(8)" : "rotate(180)translate(-8)"; })
+    .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; }) //left if children otherwise right
     .attr("font-family", "helvetica") 
     .attr("font-size", 8) 
     .text(function(d) { return d.name; })

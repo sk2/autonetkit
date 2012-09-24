@@ -257,6 +257,7 @@ class IpTree(object):
 # and add elements for each interface
                     for neigh in item.neighbors():
                         neigh_node = TreeNode(prefixlen = 32, host = neigh)
+#TODO: Add edge id so allocate in same way?
                         subgraph.add_edge(cd_node, neigh_node)
                 if item.is_l3device:
                     subgraph.add_node(TreeNode(prefixlen = 32, host = item))
@@ -380,8 +381,9 @@ class IpTree(object):
             if successors:
                 children = [list_successors(n) for n in successors]
                 return {"name": node,
+                        "subnet": node.subnet,
                         "children": children}
-            return {"name": node}
+            return {"name": node, "subnet": node.subnet}
 
         return list_successors(self.root_node)
 
