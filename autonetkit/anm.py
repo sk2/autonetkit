@@ -378,10 +378,14 @@ class OverlayBase(object):
     def __contains__(self, n):
         return n.node_id in self._graph
 
-    def edge(self, edge_to_find):
+    def edge(self, edge_to_find, dst_to_find = None):
         """returns edge in this graph with same src and same edge_id"""
-        src_id = edge_to_find.src_id
-        search_id = edge_to_find.edge_id
+        if dst_to_find:
+            src_id = edge_to_find.node_id
+            search_id = dst_to_find.node_id
+        else:
+            src_id = edge_to_find.src_id
+            search_id = edge_to_find.edge_id
 #TODO: if no edge_id then search for src, dst pair
 
         for src, dst in self._graph.edges_iter(src_id):
