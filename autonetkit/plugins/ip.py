@@ -3,11 +3,14 @@ from collections import defaultdict
 import json
 import itertools
 import pprint
+import math
 import os
 import autonetkit.ank as ank_utils
 import autonetkit.log as log
 import autonetkit.ank_pika
+import autonetkit.ank_json
 import networkx as nx
+from collections import defaultdict
 
 settings = autonetkit.config.settings
 rabbitmq_server = settings['Rabbitmq']['server']
@@ -150,6 +153,28 @@ def allocate_ips_to_cds(node):
                 raise # something else went wrong
 
 
+class TreeNode(object):
+    def __init__(self, prefixlen, host = None):
+        self.subnet = None
+        self.prefixlen = prefixlen
+        self.host = host
+        self.group_attr = None
+
+    def __repr__(self):
+        if self.subnet and self.host:
+            return "Sn: %s, %s" % (self.subnet, self.host)
+        if self.subnet and self.group_attr:
+            return "Sn: %s, attr %s" % (self.subnet, self.group_attr)
+        if self.host:
+            return "Sn: %s" % self.host
+        if self.subnet:
+            return "Sn: %s" % self.subnet
+        return "Sn"
+
+    def is_subnet(self):
+        return not self.host # if no host node, then is a subnet
+
+
 class IpTree(object):
     def __init__(self):
         self.unallocated_nodes = []
@@ -165,18 +190,90 @@ class IpTree(object):
         #self.graph.add_edges_from([(1,2), (1,3), (2,4), (2,5), (3,6), (3,7), (4,8)])
         self.root_node = 1
 
+        subgraphs = []
+
         unallocated_nodes = self.unallocated_nodes
         unallocated_nodes = sorted(unallocated_nodes, key = lambda x: x.get(group_attr))
         for attr_value, items in itertools.groupby(unallocated_nodes, key = lambda x: x.get(group_attr)):
 # make subtree for each attr
+            #print group_attr, "is", attr_value
+            items = list(items)
             subgraph = nx.DiGraph()
             for item in items:
                 if item.collision_domain:
-                    subgraph.add_node(item, prefixlen = 32 - subnet_size(item.degree()))
-            if item.is_l3device:
-                    subgraph.add_node(item, prefixlen = 32)
+                    subgraph.add_node(TreeNode(prefixlen = 32 - subnet_size(item.degree()), host = item))
+                if item.is_l3device:
+                    subgraph.add_node(TreeNode(prefixlen = 32, host = item))
 
-            pprint.pprint( subgraph.nodes(data=True))
+            # now group by levels
+            level_counts = defaultdict(int)
+            nodes_by_level = sorted(subgraph.nodes(), key = lambda x: x.prefixlen)
+            for level, items in itertools.groupby(nodes_by_level, key = lambda x: x.prefixlen):
+                level_counts[level] = len(list(items))
+
+            #print level_counts
+            for level in range(32, 0, -1):
+                current_count = float(level_counts[level]) # float so do floating point division
+                parent_count = int(math.ceil(current_count/2))
+# and add this many to the graph for allocation
+                parent_level = level - 1
+                print "level", level, "parent", level_counts[parent_level], "add", parent_count
+                level_counts[parent_level] += parent_count
+                #level_counts[parent_level] += 
+# and add this many to graph
+                subgraph.add_nodes_from(TreeNode(prefixlen = parent_level) for n in range(parent_count))
+
+                if level_counts[parent_level] == 1:
+# only one node at parent
+                    if parent_level == min(level_counts.keys()):
+                        break
+
+            nodes_by_level = {}
+            nodes = sorted(subgraph.nodes(), key = lambda x: x.prefixlen)
+            for level, items in itertools.groupby(nodes, key = lambda x: x.prefixlen):
+                nodes_by_level[level] = list(items)
+            
+            pprint.pprint(nodes_by_level)
+
+# now build the tree
+            #print level_counts
+            #pprint.pprint( nodes_by_level)
+            smallest_prefix = min(level_counts.keys())
+            #print "smallest prefix", smallest_prefix
+            for prefixlen in range(smallest_prefix, 32):
+                unallocated_children = set(nodes_by_level[prefixlen + 1])
+                for node in sorted(nodes_by_level[prefixlen]):
+                    if node.is_subnet():
+                        child_a = unallocated_children.pop()
+                        subgraph.add_edge(node, child_a)
+                        try:
+                            child_b = unallocated_children.pop()
+                            subgraph.add_edge(node, child_b)
+                        except KeyError:
+                            print child_a
+# single child, just attach
+            subgraphs.append(subgraph)
+
+            root_node = nodes_by_level[smallest_prefix][0]
+            subgraph.graph['root'] = root_node
+            root_node.group_attr = attr_value
+
+            # now fit nodes to tree
+
+    # now attach subgraphs to main graph
+        subgraphs_by_prefix = dict( (graph.graph['root'].prefixlen, graph) for graph in subgraphs)
+        print subgraphs_by_prefix
+
+        #self.graph = subgraph
+
+
+# now build tree
+#TODO: make this work if loading an already existing tree
+
+
+            #pprint.pprint( subgraph.nodes(data=True))
+
+# organise by prefixlengths to allocate parent nodes
 
 
 #if collision domain, then add the interfaces connected to it
@@ -186,6 +283,10 @@ class IpTree(object):
         self.unallocated_nodes += list(nodes)
 
     def walk(self):
+        #print "walk"
+        #print nx.dfs_tree(self.graph, self.root_node)
+        #print (nx.dfs_successors(self.graph, self.root_node))
+        #return
         def list_successors(node):
             successors = self.graph.successors(node)
             if successors:
@@ -197,21 +298,17 @@ class IpTree(object):
 
 
     def json(self):
-        def list_sucessors(node):
+        def list_successors(node):
             successors = self.graph.successors(node)
             if successors:
-                children = [list_sucessors(n) for n in successors]
+                children = [list_successors(n) for n in successors]
                 return {"name": node,
                         "children": children}
             return {"name": node}
 
-        return list_sucessors(self.root_node)
+        return list_successors(self.root_node)
 
-def allocate_ips(G_ip):
-    ip_tree = IpTree()
-
-    ip_tree.add_nodes(G_ip.nodes("is_l3device"))
-
+def assign_asn_to_interasn_cds(G_ip):
     G_phy = G_ip.overlay.phy
     for collision_domain in G_ip.nodes("collision_domain"):
         neigh_asn = list(ank_utils.neigh_attr(G_ip, collision_domain, "asn", G_phy)) #asn of neighbors
@@ -221,10 +318,21 @@ def allocate_ips(G_ip):
             asn = ank_utils.most_frequent(neigh_asn) # allocate cd to asn with most neighbors in it
         collision_domain.asn = asn
 
+    return
+
+def allocate_ips(G_ip):
+    ip_tree = IpTree()
+
+    ip_tree.add_nodes(G_ip.nodes("is_l3device"))
+    assign_asn_to_interasn_cds(G_ip)
+
     ip_tree.add_nodes(G_ip.nodes("collision_domain"))
 
     ip_tree.build()
-    jsontree = json.dumps(ip_tree.json())
+    jsontree = json.dumps(ip_tree.json(), cls=autonetkit.ank_json.AnkEncoder, indent = 4)
+    print jsontree
+    #print "walk", ip_tree.walk()
+    
 
     body = json.dumps({"ip_allocations": jsontree})
     pika_channel.publish_compressed("www", "client", body)

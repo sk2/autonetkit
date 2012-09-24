@@ -246,7 +246,7 @@ def main():
         (r'/overlay', OverlayHandler, {'ank_accessor': ank_accessor}),
         ("/(.*)", tornado.web.StaticFileHandler, {"path":settings['static_path'], "default_filename":"index.html"} )
         ], **settings)
-    pika.log.setup(pika.log.INFO, color=True)
+    pika.log.setup(pika.log.WARNING, color=True)
     io_loop = tornado.ioloop.IOLoop.instance()
     # PikaClient is our rabbitmq consumer
     pc = PikaClient(io_loop, ank_accessor)
