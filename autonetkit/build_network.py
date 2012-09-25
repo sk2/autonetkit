@@ -114,6 +114,7 @@ def build_ip(anm):
             node.cd_id = cd_label
             graphics_node.label = cd_label
 
+
     ip.allocate_ips(G_ip)
     ank.save(G_ip)
 
@@ -125,6 +126,7 @@ def build_phy(anm):
     if G_in.data.Creator == "Topology Zoo Toolset":
         ank.copy_attr_from(G_in, G_phy, "Network") # Copy Network from Zoo
     G_phy.add_edges_from(G_in.edges(type="physical"))
+
 
 def build_ospf(anm):
     G_in = anm['input']
