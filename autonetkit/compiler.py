@@ -2,6 +2,7 @@ import ank
 import itertools
 import netaddr
 import os
+import pprint
 import autonetkit.log as log
 import autonetkit.plugins.naming as naming
 
@@ -36,12 +37,8 @@ class RouterCompiler(object):
             node.ospf.ospf_links = dict_to_sorted_list(self.ospf(node), 'network')
 
         if node in self.anm.overlay.bgp:
-            bgp_data = self.bgp(node)
-#TODO: just use lists, sort as needed
-            node.bgp.ibgp_rr_clients = dict_to_sorted_list(bgp_data['ibgp_rr_clients'], 'neighbor')
-            node.bgp.ibgp_rr_parents = dict_to_sorted_list(bgp_data['ibgp_rr_parents'], 'neighbor')
-            node.bgp.ibgp_neighbors = dict_to_sorted_list(bgp_data['ibgp_neighbors'], 'neighbor')
-            node.bgp.ebgp_neighbors = dict_to_sorted_list(bgp_data['ebgp_neighbors'], 'neighbor')
+            self.bgp(node)
+            print "neigh", node.bgp.ebgp_neighbors
 
     def interfaces(self, node):
         phy_node = self.anm.overlay.phy.node(node)
@@ -95,14 +92,13 @@ class RouterCompiler(object):
         node.asn = asn
         node.bgp.advertise_subnets = G_ip.data.asn_blocks[asn]
         
-        ibgp_neighbors = {}
-        ibgp_rr_clients = {}
-        ibgp_rr_parents = {}
-        ebgp_neighbors = {}
+        node.bgp.ibgp_neighbors = []
+        node.bgp.ibgp_rr_clients = []
+        node.bgp.ibgp_rr_parents = []
+        node.bgp.ebgp_neighbors = []
 
         for session in G_bgp.edges(phy_node):
             neigh = session.dst
-            key = str(neigh) # used to index dict for sorting
             neigh_ip = G_ip.node(neigh)
             if session.type == "ibgp":
                 data = {
@@ -112,33 +108,29 @@ class RouterCompiler(object):
                     'update_source': "loopback 0",
                     }
                 if session.direction == 'down':
-                    ibgp_rr_clients[key] = data
+                    #ibgp_rr_clients[key] = data
+                    node.bgp.ibgp_rr_clients.append(data)
                 elif session.direction == 'up':
-                    ibgp_rr_parents[key] = data
+                    node.bgp.ibgp_rr_parents.append(data)
                 else:
-                    ibgp_neighbors[key] = data
+                    node.bgp.ibgp_neighbors.append(data)
             else:
                 #TODO: fix this: this is a workaround for Quagga next-hop denied for loopback (even with static route)
                 ip_link = G_ip.edge(session)
-                ip_link = G_ip.edge(session)
                 dst_int_ip = G_ip.edges(ip_link.dst, neigh).next().ip_address #TODO: split this to a helper function
-                
-                ebgp_neighbors[key] = {
+                node.bgp.ebgp_neighbors.append( {
                     'neighbor': neigh.label,
                     'asn': neigh.asn,
                     'loopback': neigh_ip.loopback,
                     'local_int_ip': ip_link.ip_address,
                     'dst_int_ip': dst_int_ip,
                     'update_source': "loopback 0",
-                }
+                })
 
-        return {
-                'ibgp_rr_clients':  ibgp_rr_clients,
-                'ibgp_rr_parents': ibgp_rr_parents,
-                'ibgp_neighbors': ibgp_neighbors,
-                'ebgp_neighbors': ebgp_neighbors,
-                }
+        node.bgp.ebgp_neighbors.sort("asn")
+        #pprint.pprint(node.bgp.ebgp_neighbors.dump())
 
+        return
 
 class QuaggaCompiler(RouterCompiler):
     """Base Router compiler"""

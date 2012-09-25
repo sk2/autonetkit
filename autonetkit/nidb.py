@@ -46,6 +46,9 @@ class overlay_data_dict(collections.MutableMapping):
         return self.store.get(key)
 
 class overlay_data_list_of_dicts(object):
+    #NOTE: this is just a presentation of the data - so can't modify the original
+# but can do in place sort, append, etc
+    #TODO: make this inherit from list - so can remove .append() etc
     def __init__(self, data):
         self.data = data
 
@@ -70,6 +73,16 @@ class overlay_data_list_of_dicts(object):
             return True
         else:
             return False
+
+    def dump(self):
+        return self.data
+
+    def append(self, item):
+        self.data.append(item)
+
+    def sort(self, key, reverse = False):
+        self.data.sort(key = lambda x: x.get(key), reverse = reverse)
+        pass
 
     def __iter__(self):
         #TODO: want to introduce some sorting here.... how?
