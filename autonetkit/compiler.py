@@ -38,7 +38,6 @@ class RouterCompiler(object):
 
         if node in self.anm.overlay.bgp:
             self.bgp(node)
-            print "neigh", node.bgp.ebgp_neighbors
 
     def interfaces(self, node):
         phy_node = self.anm.overlay.phy.node(node)
@@ -63,12 +62,11 @@ class RouterCompiler(object):
         return interfaces
 
     def ospf(self, node):
-        """Returns OSPF links
-        Also sets process_id
+        """Returns OSPF links, also sets process_id
         """
-        G_ospf = self.anm.overlay.ospf
-        G_ip = self.anm.overlay.ip
-        phy_node = self.anm.overlay.phy.node(node)
+        G_ospf = self.anm['ospf']
+        G_ip = self.anm['ip']
+        phy_node = self.anm['phy'].node(node)
         node.ospf.process_id = 1
         node.ospf.lo_interface = "Loopback0"
         ospf_links = {}
@@ -318,19 +316,6 @@ class NetkitCompiler(PlatformCompiler):
             #TODO: move these into inherited BGP config
             nidb_node.bgp.debug = True
             static_routes = []
-            """
-            for session in G_bgp.edges(phy_node):
-                if session.type == "ebgp":
-                    neigh = session.dst
-                    nidb_neigh = self.nidb.node(neigh)
-                    ip_link = G_ip.edge(session)
-                    dst_int_ip = G_ip.edges(ip_link.dst, neigh).next().ip_address #TODO: split this to a helper function
-                    static_routes.append( {
-                        "description": neigh,
-                        "loopback": nidb_neigh.loopback_subnet,
-                        "next_hop": dst_int_ip,
-                        })
-            """
             nidb_node.zebra.static_routes = static_routes
 
         # and lab.conf
@@ -350,44 +335,53 @@ class NetkitCompiler(PlatformCompiler):
             node.tap.ip = address_block.next()
         
     def lab_topology(self):
-        host_nodes = self.nidb.nodes(host = self.host, platform = "netkit")
 #TODO: replace name/label and use attribute from subgraph
         lab_topology = self.nidb.topology[self.host]
         lab_topology.render_template = "templates/netkit_lab_conf.mako"
         lab_topology.render_dst_folder = "rendered/%s/%s" % (self.host, "netkit")
         lab_topology.render_dst_file = "lab.conf" 
-        subgraph = self.nidb.subgraph(host_nodes, self.host)
         lab_topology.description = "AutoNetkit Lab"
         lab_topology.author = "AutoNetkit"
         lab_topology.web = "www.autonetkit.org"
+        host_nodes = self.nidb.nodes(host = self.host, platform = "netkit")
+        host_nodes = list(host_nodes)
+        print "host nodes", host_nodes
+        subgraph = self.nidb.subgraph(host_nodes, self.host)
+        print "subgraph nodes", list(subgraph.nodes())
+        print "subgraph edges", list(subgraph.edges())
 
         lab_topology.machines = " ".join(sorted(naming.network_hostname(phy_node) for phy_node in subgraph.nodes("is_l3device")))
 
         G_ip = self.anm['ip']
-        config_items = []
+        lab_topology.config_items = []
+        print list(subgraph.edges())
         for node in subgraph.nodes("is_l3device"):
+            print node
             for edge in node.edges():
+                print edge
+                print edge, G_ip.edge(edge).dst.subnet
                 collision_domain = str(G_ip.edge(edge).dst.subnet).replace("/", ".")
                 numeric_id = edge.id.replace("eth", "") # netkit lab.conf uses 1 instead of eth1
-                config_items.append({
+                lab_topology.config_items.append({
                     'device': naming.network_hostname(node),
                     'key': numeric_id,
                     'value':  collision_domain,
                     })
 
-        tap_ips = []
+        lab_topology.tap_ips = []
         for node in subgraph:
             if node.tap:
-                tap_ips.append({
+                lab_topology.tap_ips.append({
                     'device': naming.network_hostname(node),
                     'id': node.tap.id,
                     'ip': node.tap.ip,
                     })
 
-
 #TODO: include ram, etc from here
-        lab_topology.config_items = sort_attribute(config_items, "device")
-        lab_topology.tap_ips = sort_attribute(tap_ips, "device")
+        lab_topology.tap_ips.sort("ip")
+        lab_topology.config_items.sort("device")
+        #lab_topology.config_items = sort_attribute(config_items, "device")
+        #lab_topology.tap_ips = sort_attribute(tap_ips, "device")
 
 class CiscoCompiler(PlatformCompiler):
     """Cisco Platform Compiler"""
