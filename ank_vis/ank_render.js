@@ -52,7 +52,6 @@ ws.onmessage = function (evt) {
   }
   else if("ip_allocations" in data) {
     ip_allocations = data['ip_allocations'];
-    console.log("got ip alloc and overlay_id", overlay_id);
     if (overlay_id == "ip_allocations") {
       //Only redraw if currently selected
       jsondata.nodes = [];
@@ -622,6 +621,7 @@ function redraw() {
     .attr("d", graph_edge)
     //.attr("marker-end", marker_end)
     .style("stroke", "rgb(6,120,155)")
+    .style("fill", "none")
     .on("mouseover", function(d){
         d3.select(this).style("stroke", "orange");
         d3.select(this).style("stroke-width", "4");
