@@ -3,6 +3,7 @@ password ${node.zebra.password}
 banner motd file /etc/quagga/motd.txt
 !
 % for interface in node.interfaces:  
+  ${interface}
   %if interface.ospf_cost:
   interface ${interface.id}
   #Link to ${interface.description}

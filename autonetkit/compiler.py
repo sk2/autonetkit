@@ -32,7 +32,7 @@ class RouterCompiler(object):
         node.loopback = ip_node.loopback
         node.loopback_subnet = netaddr.IPNetwork(node.loopback)
         node.loopback_subnet.prefixlen = 32
-        node.interfaces = dict_to_sorted_list(self.interfaces(node), 'id')
+        self.interfaces(node)
         if node in self.anm.overlay.ospf:
             self.ospf(node)
 
@@ -42,7 +42,7 @@ class RouterCompiler(object):
     def interfaces(self, node):
         phy_node = self.anm.overlay.phy.node(node)
         G_ip = self.anm.overlay.ip
-        interfaces = {}
+        node.interfaces = []
         for link in phy_node.edges():
             ip_link = G_ip.edge(link)
             nidb_edge = self.nidb.edge(link)
@@ -52,14 +52,14 @@ class RouterCompiler(object):
                 continue
 
             subnet =  ip_link.dst.subnet # netmask comes from collision domain on the link
-            interfaces[link] = {
-                    'id': nidb_edge.id,
-                    'description': "%s to %s" % (link.src, link.dst),
-                    'ip_address': link.overlay.ip.ip_address,
-                    'subnet': subnet,
-                    }
+            node.interfaces.append(
+                    _edge_id = link.edge_id, # used if need to append
+                    id = nidb_edge.id,
+                    description = "%s to %s" % (link.src, link.dst),
+                    ip_address = link.overlay.ip.ip_address,
+                    subnet = subnet,
+                    )
 
-        return interfaces
 
     def ospf(self, node):
         """Returns OSPF links, also sets process_id
@@ -138,22 +138,29 @@ class QuaggaCompiler(RouterCompiler):
     def interfaces(self, node):
         ip_node = self.anm.overlay.ip.node(node)
         phy_node = self.anm.overlay.phy.node(node)
+        G_phy = self.anm['phy']
 
-        interfaces = super(QuaggaCompiler, self).interfaces(node)
+        super(QuaggaCompiler, self).interfaces(node)
         # OSPF cost
-        for link in interfaces:
+        for interface in node.interfaces:
+            link = G_phy.edge(interface._edge_id)
             if link['ospf']:
-                interfaces[link]['ospf_cost'] = link['ospf'].cost
+                interface['ospf_cost'] = link['ospf'].cost
+                interface.cost = 19
+                #print "dump", interface.dump()
+                #interfaces[link]['ospf_cost'] = link['ospf'].cost
 
         if phy_node.is_router:
-            interfaces["lo:1"] = {
-                    'id': "lo:1",
-                    'description': "Loopback for BGP",
-                    'ip_address': ip_node.loopback,
-                    'subnet': node.loopback_subnet,
-                    }
+            node.interfaces.append(
+                    id = "lo:1",
+                    description = "Loopback for BGP",
+                    ip_address = ip_node.loopback,
+                    subnet = node.loopback_subnet
+                    )
 
-        return interfaces
+
+        #print
+        #pprint.pprint( node.interfaces.dump())
 
 class IosCompiler(RouterCompiler):
     """Base IOS compiler"""
@@ -171,6 +178,7 @@ class IosCompiler(RouterCompiler):
 #TODO: strip out returns from super
         interfaces = super(IosCompiler, self).interfaces(node)
         # OSPF cost
+        print "ToDO: Update IOS compiler for interfaces"
         for link in interfaces:
             if link['ospf']: # only configure if has ospf interface
                 interfaces[link]['ospf_cost'] = link['ospf'].cost
@@ -189,53 +197,10 @@ class IosCompiler(RouterCompiler):
     def isis(self, node):
         """Returns ISIS links
         """
-        G_isis = self.anm['ospf']
-        G_ip = self.anm['ip']
         isis_node = self.anm['isis'].node(node)
         node.isis.net = isis_node.net
         #TODO: see if need these for configuring ISIS
-        isis_links = {}
-        for link in G_isis.edges(node):
-            ip_link = G_ip.edge(link)
-            if not ip_link:
-                #TODO: fix this: due to multi edges from router to same switch cluster
-                continue
-            
-            isis_links[link] = {
-                'network': ip_link.dst.subnet,
-                'area': link.area,
-                }
-        return isis_links
 
-class JunosCompiler(RouterCompiler):
-    """Base Junos compiler"""
-
-    def compile(self, node):
-        node.interfaces = dict_to_sorted_list(self.interfaces(node), 'id')
-        if node in self.anm.overlay.ospf:
-            node.ospf.ospf_links = dict_to_sorted_list(self.ospf(node), 'network')
-            
-        if node in self.anm.overlay.bgp:
-            bgp_data = self.bgp(node)
-            node.bgp.ebgp_neighbors = dict_to_sorted_list(bgp_data['ebgp_neighbors'], 'neighbor')
-
-    def interfaces(self, node):
-        ip_node = self.anm.overlay.ip.node(node)
-        loopback_subnet = netaddr.IPNetwork("0.0.0.0/32")
-
-        interfaces = super(JunosCompiler, self).interfaces(node)
-        for link in interfaces:
-            nidb_link =  self.nidb.edge(link)
-            interfaces[link]['unit'] = nidb_link.unit
-
-        interfaces['lo0'] = {
-            'id': 'lo0',
-            'description': "Loopback",
-            'ip_address': ip_node.loopback,
-            'subnet': loopback_subnet,
-            }
-
-        return interfaces
 
 # Platform compilers
 class PlatformCompiler(object):

@@ -20,15 +20,17 @@ class overlay_data_dict(collections.MutableMapping):
     def __repr__(self):
         return ", ".join(self.store.keys())
 
-    def __init__(self, *args, **kwargs):
-        self.store = dict()
-        self.update(dict(*args, **kwargs)) # use the free update to set keys
+    def __init__(self, data):
+#Note this won't allow updates in place
+        self.store = data
+        #self.update(dict(*args, **kwargs)) # use the free update to set keys
 
     def __getitem__(self, key):
         return self.store[self.__keytransform__(key)]
 
     def __setitem__(self, key, value):
         self.store[self.__keytransform__(key)] = value
+        self.store[key] = value
 
     def __delitem__(self, key):
         del self.store[self.__keytransform__(key)]
@@ -44,6 +46,9 @@ class overlay_data_dict(collections.MutableMapping):
 
     def __getattr__(self, key):
         return self.store.get(key)
+
+    def dump(self):
+        return self.store
 
 class overlay_data_list_of_dicts(object):
     #NOTE: this is just a presentation of the data - so can't modify the original
@@ -90,7 +95,9 @@ class overlay_data_list_of_dicts(object):
 
     def __iter__(self):
         #TODO: want to introduce some sorting here.... how?
-        return iter(overlay_data_dict(item) for item in self.data)
+        #return iter(overlay_data_dict(item) for item in self.data)
+        for item in self.data:
+            yield overlay_data_dict(item)
 
     def __getitem__(self, key):
         return overlay_data_dict(self.data[key])
@@ -270,7 +277,7 @@ class nidb_node_category(object):
             return None # key doesn't exist
         try:
             [item.keys() for item in data]
-#TODO: replace this with an OrderedDict
+            #print "from nidb_node_category", self.nidb, self.node_id, self.category_id
             return overlay_data_list_of_dicts(data)
         except AttributeError:
             pass # not a dict
@@ -380,6 +387,7 @@ class nidb_node(object):
         data = self._node_data.get(key)
         try:
             [item.keys() for item in data]
+            #print "from nidb node", self.nidb, self.node_id, key
             return overlay_data_list_of_dicts(data)
         except TypeError:
             pass # Not set yet
@@ -457,6 +465,7 @@ class lab_topology(object):
         try:
             [item.keys() for item in data]
 #TODO: replace this with an OrderedDict
+            #print "from lab_topology", self.nidb, self.topology_id, key
             return overlay_data_list_of_dicts(data)
         except AttributeError:
             pass # not a dict

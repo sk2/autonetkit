@@ -141,13 +141,11 @@ def render_node(node):
         return
 
 def render(nidb):
-    #TODO: option for single or multi threaded
+    #TODO: config option for single or multi threaded
     log.info("Rendering Network")
-    #render_single(nidb)
-    render_multi(nidb)
+    render_single(nidb)
+    #render_multi(nidb)
     render_topologies(nidb)
-
-#TODO: turn back on multithreaded rendering?
 
 def render_single(nidb):
     for node in sorted(nidb):
