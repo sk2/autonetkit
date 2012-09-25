@@ -14,10 +14,6 @@ import autonetkit.plugins.naming as naming
 def dot_to_underscore(instring):
     return instring.replace(".", "_")
 
-def dict_to_sorted_list(data, sort_key):
-    """Returns values in dict, sorted by sort_key"""
-    return sorted(data.values(), key = lambda x: x[sort_key])
-
 def sort_attribute(attribute, sort_key):
     return sorted(attribute,  key = lambda x: x[sort_key])
 
@@ -33,10 +29,10 @@ class RouterCompiler(object):
         node.loopback_subnet = netaddr.IPNetwork(node.loopback)
         node.loopback_subnet.prefixlen = 32
         self.interfaces(node)
-        if node in self.anm.overlay.ospf:
+        if node in self.anm['ospf']:
             self.ospf(node)
 
-        if node in self.anm.overlay.bgp:
+        if node in self.anm['bgp']:
             self.bgp(node)
 
     def interfaces(self, node):
@@ -138,18 +134,15 @@ class QuaggaCompiler(RouterCompiler):
     def interfaces(self, node):
         ip_node = self.anm.overlay.ip.node(node)
         phy_node = self.anm.overlay.phy.node(node)
-        G_phy = self.anm['phy']
+        G_ospf = self.anm['ospf']
 
         super(QuaggaCompiler, self).interfaces(node)
         # OSPF cost
         for interface in node.interfaces:
-            link = G_phy.edge(interface._edge_id)
-            print "link is", link
-            if link['ospf']:
-                interface['ospf_cost'] = link['ospf'].cost
-                interface.cost = 19
-                #print "dump", interface.dump()
-                #interfaces[link]['ospf_cost'] = link['ospf'].cost
+            ospf_link = G_ospf.edge(interface._edge_id) # find link in OSPF with this ID
+#TODO: check finding link if returns cost from r1 -> r2, or r2 -> r1 (directionality)
+            if ospf_link:
+                interface['ospf_cost'] = ospf_link.cost
 
         if phy_node.is_router:
             node.interfaces.append(
@@ -159,10 +152,11 @@ class QuaggaCompiler(RouterCompiler):
                     subnet = node.loopback_subnet
                     )
 
-
         #print
-        print "---"
-        pprint.pprint( node.interfaces.dump())
+        #print "---"
+        #pprint.pprint( node.interfaces.dump())
+
+#TODO: Don't render netkit lab topology if no netkit hosts
 
 class IosCompiler(RouterCompiler):
     """Base IOS compiler"""
@@ -170,38 +164,40 @@ class IosCompiler(RouterCompiler):
     def compile(self, node):
         super(IosCompiler, self).compile(node)
         if node in self.anm['isis']:
-            node.isis.isis = dict_to_sorted_list(self.isis(node), 'network')
-            pass
+            self.isis(node)
         
     def interfaces(self, node):
         ip_node = self.anm.overlay.ip.node(node)
         loopback_subnet = netaddr.IPNetwork("0.0.0.0/32")
 
 #TODO: strip out returns from super
-        interfaces = super(IosCompiler, self).interfaces(node)
+        super(IosCompiler, self).interfaces(node)
         # OSPF cost
-        print "ToDO: Update IOS compiler for interfaces"
-        for link in interfaces:
-            if link['ospf']: # only configure if has ospf interface
-                interfaces[link]['ospf_cost'] = link['ospf'].cost
-            if link['isis']: # only configure if has ospf interface
-                interfaces[link]['isis'] = True
+        G_ospf = self.anm['ospf']
+        G_isis = self.anm['isis']
+        
+        for interface in node.interfaces:
+            ospf_link = G_ospf.edge(interface._edge_id) # find link in OSPF with this ID
+            if ospf_link:
+                interface['ospf_cost'] = ospf_link.cost
+            isis_link = G_isis.edge(interface._edge_id) # find link in OSPF with this ID
+            if isis_link: # only configure if has ospf interface
+                interface['isis'] = True
 
-        interfaces['lo0'] = {
-            'id': 'lo0',
-            'description': "Loopback",
-            'ip_address': ip_node.loopback,
-            'subnet': loopback_subnet,
-            }
+#TODO: update this to new format
+        node.interfaces.append(
+            id = 'lo0',
+            description = "Loopback",
+            ip_address = ip_node.loopback,
+            subnet = loopback_subnet,
+            )
 
-        return interfaces
 
     def isis(self, node):
         """Returns ISIS links
         """
         isis_node = self.anm['isis'].node(node)
         node.isis.net = isis_node.net
-        #TODO: see if need these for configuring ISIS
 
 
 # Platform compilers
@@ -310,11 +306,14 @@ class NetkitCompiler(PlatformCompiler):
         lab_topology.description = "AutoNetkit Lab"
         lab_topology.author = "AutoNetkit"
         lab_topology.web = "www.autonetkit.org"
-        host_nodes = self.nidb.nodes(host = self.host, platform = "netkit")
+        host_nodes = list(self.nidb.nodes(host = self.host, platform = "netkit"))
+        if not len(host_nodes):
+            log.debug("No Netkit hosts for %s" % self.host)
+            #TODO: make so can return here 
+            #return
 # also need collision domains for this host
         cd_nodes = self.nidb.nodes("collision_domain", host = self.host) # add in collision domains for this host (don't have platform)
 #TODO: need to allocate cds to a platform
-        host_nodes = list(host_nodes)
         host_nodes += cd_nodes
         subgraph = self.nidb.subgraph(host_nodes, self.host)
 
