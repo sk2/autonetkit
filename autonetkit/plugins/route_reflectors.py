@@ -2,6 +2,7 @@ import autonetkit.ank as ank_utils
 import autonetkit.log as log
 import networkx as nx
 import itertools
+import autonetkit.log as log
 
 def allocate(G_phy, G_bgp):
     log.info("Allocating route reflectors")
@@ -18,8 +19,9 @@ def allocate(G_phy, G_bgp):
 
         ordered = sorted(subgraph_phy.nodes(), key = lambda x: betw_cen[x], reverse = True)
 
-        rr_count = len(subgraph_phy)/5 # Take top 20% to be route reflectors
+        rr_count = len(subgraph_phy)/5 or 1# Take top 20% to be route reflectors
         route_reflectors = ordered[:rr_count] # most connected 20%
+        log.debug("Chose route_reflectors %s" % route_reflectors)
         rr_clients = ordered[rr_count:] # the other routers
         route_reflectors = list(ank_utils.wrap_nodes(G_bgp, route_reflectors))
         rr_clients = list(ank_utils.wrap_nodes(G_bgp, rr_clients))
