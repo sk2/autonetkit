@@ -20,17 +20,20 @@ class overlay_data_dict(collections.MutableMapping):
     def __repr__(self):
         return ", ".join(self.store.keys())
 
-    def __init__(self, data):
+    def __init__(self, parent, index, data):
 #Note this won't allow updates in place
+        self.parent = parent
+        self.index = index
         self.store = data
+        #self.data = parent[index]
         #self.update(dict(*args, **kwargs)) # use the free update to set keys
 
     def __getitem__(self, key):
         return self.store[self.__keytransform__(key)]
 
     def __setitem__(self, key, value):
-        self.store[self.__keytransform__(key)] = value
-        self.store[key] = value
+        self.store[key] = value # store locally
+        self.parent._update_dict(self.index, key, value)
 
     def __delitem__(self, key):
         del self.store[self.__keytransform__(key)]
@@ -54,8 +57,10 @@ class overlay_data_list_of_dicts(object):
     #NOTE: this is just a presentation of the data - so can't modify the original
 # but can do in place sort, append, etc
     #TODO: make this inherit from list - so can remove .append() etc
-    def __init__(self, data):
-        self.data = data
+    def __init__(self, parent, key):
+        self.parent = parent
+        self.key = key
+        self.data = parent[key]
 
     def __getstate__(self):
         return (self.data)
@@ -95,12 +100,16 @@ class overlay_data_list_of_dicts(object):
 
     def __iter__(self):
         #TODO: want to introduce some sorting here.... how?
-        #return iter(overlay_data_dict(item) for item in self.data)
-        for item in self.data:
-            yield overlay_data_dict(item)
+        #return iter(overlay_data_dict(self, item) for item in self.data)
+        for index, item in enumerate(self.data):
+            yield overlay_data_dict(self, index, item)
 
-    def __getitem__(self, key):
-        return overlay_data_dict(self.data[key])
+    def __getitem__(self, index):
+        return overlay_data_dict(self, index, self.data[index])
+
+    def _update_dict(self, index, key, value):
+        """Used to feed changes from overlay_data_dict back"""
+        self.parent[self.key][index][key] = value
 
 class overlay_edge_accessor(object):
 #TODO: do we even need this?
@@ -278,7 +287,7 @@ class nidb_node_category(object):
         try:
             [item.keys() for item in data]
             #print "from nidb_node_category", self.nidb, self.node_id, self.category_id
-            return overlay_data_list_of_dicts(data)
+            return overlay_data_list_of_dicts(self._category_data, key)
         except AttributeError:
             pass # not a dict
         except TypeError:
@@ -388,7 +397,7 @@ class nidb_node(object):
         try:
             [item.keys() for item in data]
             #print "from nidb node", self.nidb, self.node_id, key
-            return overlay_data_list_of_dicts(data)
+            return overlay_data_list_of_dicts(self._node_data, key)
         except TypeError:
             pass # Not set yet
         except AttributeError:
@@ -440,7 +449,6 @@ class nidb_graph_data(object):
 #TODO: make this inherit same overlay base as overlay_graph for add nodes etc properties
 # but not the degree etc
 
-
 class lab_topology(object):
     """API to access lab topology in network"""
 
@@ -466,7 +474,7 @@ class lab_topology(object):
             [item.keys() for item in data]
 #TODO: replace this with an OrderedDict
             #print "from lab_topology", self.nidb, self.topology_id, key
-            return overlay_data_list_of_dicts(data)
+            return overlay_data_list_of_dicts(self._topology_data, key)
         except AttributeError:
             pass # not a dict
         except TypeError:

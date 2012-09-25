@@ -144,6 +144,7 @@ class QuaggaCompiler(RouterCompiler):
         # OSPF cost
         for interface in node.interfaces:
             link = G_phy.edge(interface._edge_id)
+            print "link is", link
             if link['ospf']:
                 interface['ospf_cost'] = link['ospf'].cost
                 interface.cost = 19
@@ -160,7 +161,8 @@ class QuaggaCompiler(RouterCompiler):
 
 
         #print
-        #pprint.pprint( node.interfaces.dump())
+        print "---"
+        pprint.pprint( node.interfaces.dump())
 
 class IosCompiler(RouterCompiler):
     """Base IOS compiler"""
