@@ -140,7 +140,8 @@ def compile_network(anm):
 #TODO: build this on a platform by platform basis
     nidb.add_nodes_from(G_phy, retain=['label', 'host', 'platform', 'Network'])
 
-    nidb.add_nodes_from(G_ip.nodes("collision_domain"), retain=['label', 'host'], collision_domain = True)
+    cd_nodes = [n for n in G_ip.nodes("collision_domain") if not n.is_switch] # Only add created cds - otherwise overwrite host of switched
+    nidb.add_nodes_from(cd_nodes, retain=['label', 'host'], collision_domain = True)
 # add edges to switches
     edges_to_add = [edge for edge in G_phy.edges() if edge.src.is_switch or edge.dst.is_switch]
     edges_to_add += [edge for edge in G_ip.edges() if edge.src.collision_domain or edge.dst.collision_domain]
