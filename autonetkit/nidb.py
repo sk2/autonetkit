@@ -77,12 +77,16 @@ class overlay_data_list_of_dicts(object):
     def dump(self):
         return self.data
 
-    def append(self, item):
-        self.data.append(item)
+    def append(self, *args, **kwargs):
+        if args:
+            item = args[0]
+            self.data.append(item)
+        if kwargs:
+            self.data.append(kwargs)
 
     def sort(self, key, reverse = False):
+        #TODO: allow multiple keys
         self.data.sort(key = lambda x: x.get(key), reverse = reverse)
-        pass
 
     def __iter__(self):
         #TODO: want to introduce some sorting here.... how?

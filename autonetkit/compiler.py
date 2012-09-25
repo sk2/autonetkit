@@ -344,42 +344,40 @@ class NetkitCompiler(PlatformCompiler):
         lab_topology.author = "AutoNetkit"
         lab_topology.web = "www.autonetkit.org"
         host_nodes = self.nidb.nodes(host = self.host, platform = "netkit")
+# also need collision domains for this host
+        cd_nodes = self.nidb.nodes("collision_domain", host = self.host) # add in collision domains for this host (don't have platform)
+#TODO: need to allocate cds to a platform
         host_nodes = list(host_nodes)
-        print "host nodes", host_nodes
+        host_nodes += cd_nodes
         subgraph = self.nidb.subgraph(host_nodes, self.host)
-        print "subgraph nodes", list(subgraph.nodes())
-        print "subgraph edges", list(subgraph.edges())
 
         lab_topology.machines = " ".join(sorted(naming.network_hostname(phy_node) for phy_node in subgraph.nodes("is_l3device")))
 
         G_ip = self.anm['ip']
         lab_topology.config_items = []
-        print list(subgraph.edges())
         for node in subgraph.nodes("is_l3device"):
-            print node
             for edge in node.edges():
-                print edge
-                print edge, G_ip.edge(edge).dst.subnet
                 collision_domain = str(G_ip.edge(edge).dst.subnet).replace("/", ".")
                 numeric_id = edge.id.replace("eth", "") # netkit lab.conf uses 1 instead of eth1
-                lab_topology.config_items.append({
-                    'device': naming.network_hostname(node),
-                    'key': numeric_id,
-                    'value':  collision_domain,
-                    })
+                lab_topology.config_items.append(
+                    device = naming.network_hostname(node),
+                    key = numeric_id,
+                    value =  collision_domain,
+                    )
 
         lab_topology.tap_ips = []
         for node in subgraph:
             if node.tap:
-                lab_topology.tap_ips.append({
-                    'device': naming.network_hostname(node),
-                    'id': node.tap.id,
-                    'ip': node.tap.ip,
-                    })
+                lab_topology.tap_ips.append(
+                    device= naming.network_hostname(node),
+                    id= node.tap.id,
+                    ip= node.tap.ip,
+                    )
 
 #TODO: include ram, etc from here
         lab_topology.tap_ips.sort("ip")
         lab_topology.config_items.sort("device")
+        lab_topology.config_items.sort("value")
         #lab_topology.config_items = sort_attribute(config_items, "device")
         #lab_topology.tap_ips = sort_attribute(tap_ips, "device")
 
