@@ -271,7 +271,7 @@ class IpTree(object):
 
         host_tree_nodes = [n for n in self.graph if n.is_host() and n.host.is_l3device]
         for host_tree_node in host_tree_nodes:
-            host_tree_node.host.loopback = host_tree_node.subnet
+            host_tree_node.host.loopback = host_tree_node.subnet.ip
 
         cds = [n for n in self.graph if n.is_collision_domain()]
         for cd in cds:
