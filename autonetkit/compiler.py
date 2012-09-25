@@ -34,7 +34,7 @@ class RouterCompiler(object):
         node.loopback_subnet.prefixlen = 32
         node.interfaces = dict_to_sorted_list(self.interfaces(node), 'id')
         if node in self.anm.overlay.ospf:
-            node.ospf.ospf_links = dict_to_sorted_list(self.ospf(node), 'network')
+            self.ospf(node)
 
         if node in self.anm.overlay.bgp:
             self.bgp(node)
@@ -69,23 +69,26 @@ class RouterCompiler(object):
         phy_node = self.anm['phy'].node(node)
         node.ospf.process_id = 1
         node.ospf.lo_interface = "Loopback0"
-        ospf_links = {}
+        node.ospf.ospf_links = []
+        added_networks = set()
         for link in G_ospf.edges(phy_node):
             ip_link = G_ip.edge(link)
             if not ip_link:
                 #TODO: fix this: due to multi edges from router to same switch cluster
                 continue
+            network = ip_link.dst.subnet,
+            if network not in added_networks: # don't add more than once
+                added_networks.add(network)
+                node.ospf.ospf_links.append(
+                    network = ip_link.dst.subnet,
+                    area = link.area,
+                    )
             
-            ospf_links[link] = {
-                'network': ip_link.dst.subnet,
-                'area': link.area,
-                }
-        return ospf_links
 
     def bgp(self, node):
-        phy_node = self.anm.overlay.phy.node(node)
-        G_bgp = self.anm.overlay.bgp
-        G_ip = self.anm.overlay.ip
+        phy_node = self.anm['phy'].node(node)
+        G_bgp = self.anm['bgp']
+        G_ip = self.anm['ip']
         asn = phy_node.asn # easy reference for cleaner code
         node.asn = asn
         node.bgp.advertise_subnets = G_ip.data.asn_blocks[asn]
@@ -285,8 +288,6 @@ class NetkitCompiler(PlatformCompiler):
     def compile(self):
         log.info("Compiling Netkit for %s" % self.host)
         G_phy = self.anm.overlay.phy
-        G_bgp = self.anm['bgp']
-        G_ip = self.anm['ip']
         quagga_compiler = QuaggaCompiler(self.nidb, self.anm)
 #TODO: this should be all l3 devices not just routers
         for phy_node in G_phy.nodes('is_router', host = self.host, syntax='quagga'):
@@ -302,7 +303,6 @@ class NetkitCompiler(PlatformCompiler):
             nidb_node.zebra.password = "1234"
             nidb_node.zebra.hostname = folder_name # can't have . in quagga hostnames
             nidb_node.ssh.use_key = True #TODO: make this set based on presence of key
-
             
             # Note this could take external data
             int_ids = self.interface_ids()
@@ -326,7 +326,7 @@ class NetkitCompiler(PlatformCompiler):
         #TODO: take tap subnet parameter
         lab_topology = self.nidb.topology[self.host]
         from netaddr import IPNetwork
-        address_block = IPNetwork("172.16.0.0/16").iter_hosts()
+        address_block = IPNetwork("172.16.0.0/16").iter_hosts() #TODO: read this from config
         lab_topology.tap_host = address_block.next()
         lab_topology.tap_vm = address_block.next() # for tunnel host
         for node in sorted(self.nidb.nodes("is_l3device", host = self.host)):
@@ -374,12 +374,8 @@ class NetkitCompiler(PlatformCompiler):
                     ip= node.tap.ip,
                     )
 
-#TODO: include ram, etc from here
         lab_topology.tap_ips.sort("ip")
         lab_topology.config_items.sort("device")
-        lab_topology.config_items.sort("value")
-        #lab_topology.config_items = sort_attribute(config_items, "device")
-        #lab_topology.tap_ips = sort_attribute(tap_ips, "device")
 
 class CiscoCompiler(PlatformCompiler):
     """Cisco Platform Compiler"""
