@@ -146,10 +146,6 @@ def build_ospf(anm):
     for link in G_ospf.edges():
         link.cost = 1
 
-    ospf_nodes = list(G_ospf.nodes())
-    print ospf_nodes
-    print sorted(ospf_nodes)
-
     #update_pika(anm)
 
 def ip_to_net_ent_title_ios(ip):

@@ -4,6 +4,8 @@ import pprint
 import time
 from ank_utils import unwrap_edges
 import autonetkit.log as log
+import functools
+import string
 
 
 try:
@@ -92,6 +94,7 @@ class overlay_edge_accessor(object):
         edge = overlay.edge(self.edge)
         return edge
 
+@functools.total_ordering
 class overlay_node(object):
     def __init__(self, anm, overlay_id, node_id):
 #Set using this method to bypass __setattr__ 
@@ -129,6 +132,22 @@ class overlay_node(object):
 
     def __eq__(self, other):
         return self.node_id == other.node_id
+
+    def __lt__(self, other):
+# want [r1, r2, ..., r11, r12, ..., r21, r22] not [r1, r11, r12, r2, r21, r22]
+# so need to look at numeric part
+        self_node_id = self.node_id
+        other_node_id = other.node_id
+        self_node_string = [x for x in self.node_id if x not in string.digits]
+        other_node_string = [x for x in self.node_id if x not in string.digits]
+        if self_node_string == other_node_string:
+            self_node_id = "".join([x for x in self.node_id if x in string.digits])
+            other_node_id = "".join([x for x in other.node_id if x in string.digits])
+            self_node_id = int(self_node_id)
+            other_node_id = int(other_node_id)
+
+        return ((self.asn, self_node_id) < (other.asn, other_node_id))
+
 
     @property
     def _graph(self):

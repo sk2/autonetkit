@@ -4,6 +4,8 @@ import collections
 import time
 import autonetkit.log as log
 import ank_json
+import functools
+import string
 
 try:
     import cPickle as pickle
@@ -273,6 +275,7 @@ class nidb_node_category(object):
 
 #TODO: this should also inherit from collections, so don't break __getnewargs__ etc
 
+@functools.total_ordering
 class nidb_node(object):
     """API to access overlay graph node in network"""
 
@@ -294,6 +297,22 @@ class nidb_node(object):
         (nidb, node_id) = state
         object.__setattr__(self, 'nidb', nidb)
         object.__setattr__(self, 'node_id', node_id)
+
+    def __lt__(self, other):
+# want [r1, r2, ..., r11, r12, ..., r21, r22] not [r1, r11, r12, r2, r21, r22]
+# so need to look at numeric part
+#TODO: make this work with ASN (which isn't always imported to NIDB)
+        self_node_id = self.node_id
+        other_node_id = other.node_id
+        self_node_string = [x for x in self.node_id if x not in string.digits]
+        other_node_string = [x for x in self.node_id if x not in string.digits]
+        if self_node_string == other_node_string:
+            self_node_id = "".join([x for x in self.node_id if x in string.digits])
+            other_node_id = "".join([x for x in other.node_id if x in string.digits])
+            self_node_id = int(self_node_id)
+            other_node_id = int(other_node_id)
+
+        return ((self.asn, self_node_id) < (other.asn, other_node_id))
 
     @property
     def _node_data(self):
