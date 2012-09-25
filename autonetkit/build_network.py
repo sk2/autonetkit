@@ -144,6 +144,7 @@ def build_ospf(anm):
     #update_pika(anm)
     G_ospf.remove_edges_from([link for link in G_ospf.edges() if link.src.asn != link.dst.asn])
     for link in G_ospf.edges():
+        link.area = 0
         link.cost = 1
 
     #update_pika(anm)
