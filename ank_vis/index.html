@@ -37,10 +37,11 @@
         margin: 1px;
         color: white;
       }
+
       .infobar {
         position:absolute;
         right:10px;
-        width:20%;
+        width:15%;
         top: 10px;
         border: 1px solid steelblue;
         border-radius: 10px;
@@ -53,7 +54,7 @@
         position:absolute;
         top: 10px;
         height: 30px;
-        width: 76%;
+        width: 80%;
         border: 1px solid steelblue;
         border-radius: 10px;
         padding: 5px;
@@ -66,10 +67,11 @@
         border: 1px solid steelblue;
         border-radius: 10px;
         padding: 5px;
-        width: 1000px;
-        height: 600px;
+        width: 80%;
+        height: 80%;
         background-color: white;
       }
+
 
     </style>
 
@@ -122,15 +124,17 @@ var status_label = d3.select("navbar").append("text")
 .text("")
 ;
 
-var h = 800;
-var w = 1000;
 
+//TODO: make these scale, rather than fixed
+var h = 800;
+var w = 1400;
 
 var chart = d3.select(".visualisation")
   .append("svg:svg")
-    .attr("width", w)
-    .attr("height", h)
+    .attr("width", "100%")
+    .attr("height", "100%")
     .attr("pointer-events", "all")
+     .attr("viewBox", "0 0 " + w * 0.8 + " " + h * 0.8 )
   .append('svg:g')
     .call(d3.behavior.zoom().on("zoom", redraw))
   .append('svg:g');
