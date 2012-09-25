@@ -31,7 +31,7 @@ ws.onmessage = function (evt) {
       update_title();
       revision_id = graph_history.length - 1;
       propagate_revision_dropdown(graph_history); //TODO: update this with revision from webserver
-      ip_allocations.children = [];
+      ip_allocations = [];
       redraw_ip_allocations();
       redraw();
     }
@@ -90,6 +90,9 @@ function redraw_ip_allocations() {
   var layout = d3.layout.tree().size([700,700]);
 
   var nodes = layout.nodes(ip_allocations);
+  if (ip_allocations.length == 0) {
+    nodes = []; //otherwise have single root node always present
+  }
 
   var node = chart.selectAll("g.node")
     .data(nodes, name)
@@ -167,6 +170,7 @@ function redraw_ip_allocations() {
   link.exit().transition()
     .duration(500)
     .attr("d", diagonal)
+    .style("opacity", 1e-6)
     .remove();
 }
 
