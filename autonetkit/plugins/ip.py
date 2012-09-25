@@ -233,7 +233,7 @@ class IpTree(object):
         allocs = {}
         for node in self.graph:
             if node.group_attr:
-                allocs[node.group_attr] = node.subnet
+                allocs[node.group_attr] = [node.subnet]
 
         return allocs
 
