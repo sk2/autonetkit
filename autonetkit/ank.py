@@ -151,7 +151,9 @@ def split(overlay_graph, edges, retain = []):
 def explode_nodes(overlay_graph, nodes, retain = []):
     """Explodes all nodes in nodes
     TODO: explain better
+    TODO: Add support for digraph - check if overlay_graph.is_directed()
     """
+    log.debug("Exploding nodes")
     try:
         retain.lower()
         retain = [retain] # was a string, put into list
@@ -164,14 +166,15 @@ def explode_nodes(overlay_graph, nodes, retain = []):
 #TODO: need to keep track of edge_ids here also?
     nodes = list(nodes)
     for node in nodes:
+        log.debug("Exploding from %s" % node)
         neighbors = graph.neighbors(node)
         neigh_edge_pairs = ( (s,t) for s in neighbors for t in neighbors if s != t)
         edges_to_add = []
         for (src, dst) in neigh_edge_pairs:
             src_to_node_data = dict( (key, graph[src][node][key]) for key in retain)
             node_to_dst_data = dict( (key, graph[node][dst][key]) for key in retain)
-            data = src_to_node_data.update(node_to_dst_data)
-            edges_to_add.append((src, dst, data))
+            src_to_node_data.update(node_to_dst_data)
+            edges_to_add.append((src, dst, src_to_node_data))
 
         graph.add_edges_from(edges_to_add)
         added_edges.append(edges_to_add)

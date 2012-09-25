@@ -25,14 +25,16 @@ ws.onmessage = function (evt) {
   var data = jQuery.parseJSON(evt.data);
   //TODO: parse to see if valid traceroute path or other data
   if ("graph" in data) {
-    jsondata = data;
-    graph_history.push(data);
-    update_title();
-    revision_id = graph_history.length - 1;
-    propagate_revision_dropdown(graph_history); //TODO: update this with revision from webserver
-    ip_allocations.children = [];
-    redraw_ip_allocations();
-    redraw();
+    if (overlay_id != "ip_allocations") {
+      jsondata = data;
+      graph_history.push(data);
+      update_title();
+      revision_id = graph_history.length - 1;
+      propagate_revision_dropdown(graph_history); //TODO: update this with revision from webserver
+      ip_allocations.children = [];
+      redraw_ip_allocations();
+      redraw();
+    }
   }
   else if("path" in data) {
     pathinfo.push(data['path']);
@@ -50,12 +52,14 @@ ws.onmessage = function (evt) {
   }
   else if("ip_allocations" in data) {
     ip_allocations = data['ip_allocations'];
-    //jsondata = null;
-    //Clear nodes and edges
-    jsondata.nodes = [];
-    jsondata.links = [];
-    redraw();
-    redraw_ip_allocations();
+    console.log("got ip alloc and overlay_id", overlay_id);
+    if (overlay_id == "ip_allocations") {
+      //Only redraw if currently selected
+      jsondata.nodes = [];
+      jsondata.links = [];
+      redraw();
+      redraw_ip_allocations();
+    }
   }
   else {
     console.log("got data", data);
@@ -67,7 +71,6 @@ var load_ip_allocations = function(d) {
 }
 
 var ip_node_info = function(d) {
-  console.log(d);
   var children = "" ;
 
   for (index in d.children) {
@@ -96,7 +99,6 @@ function redraw_ip_allocations() {
     var nodeEnter = node.enter().append("svg:g")
     .attr("class", "node")
     .attr("transform", function(d) { return "translate(" + (d.y + 80) + "," + d.x +  ")"; });
-
 
   nodeEnter.append("svg:circle")
     .attr("r", 1e-6)

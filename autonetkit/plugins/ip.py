@@ -43,9 +43,11 @@ class TreeNode(object):
 
     def __repr__(self):
         if self.subnet and self.host:
-            return "%s, %s" % (self.host, self.formatted_subnet)
+            if self.host.dst:
+                return ".%s %s" % (self.formatted_subnet, self.host.dst)
+            return ".%s %s" % (self.formatted_subnet, self.host)
         if self.subnet and self.group_attr:
-            return "%s, %s" % (self.formatted_subnet, self.group_attr)
+            return "%s, group: %s" % (self.formatted_subnet, self.group_attr)
         if self.host:
             return "%s" % (self.host)
         if self.subnet:
@@ -54,12 +56,12 @@ class TreeNode(object):
 
     @property
     def formatted_subnet(self):
-        return self.subnet
         try:
             prefixlen = self.subnet.prefixlen
+            octets = str(self.subnet.network).split(".")
         except AttributeError:
-            return self.subnet
-        octets = str(self.subnet.network).split(".")
+            prefixlen = 32 # IP address
+            octets = str(self.subnet).split(".")
         if prefixlen > 24:
             return ".".join([octets[3]])
         elif prefixlen > 16:
@@ -164,7 +166,6 @@ class IpTree(object):
 
         global_graph = nx.DiGraph()
         subgraphs = sorted(subgraphs, key = lambda x: subgraph.graph['root'].group_attr)
-        #subgraphs = [subgraphs[0]]
         root_nodes = [subgraph.graph['root'] for subgraph in subgraphs]
         global_graph.add_nodes_from(root_nodes)
 
@@ -190,7 +191,7 @@ class IpTree(object):
             global_graph = nx.compose(global_graph, subgraph)
 
         # now allocate the IPs
-        global_ip_block = netaddr.IPNetwork("192.168.0.0/%s" %global_root.prefixlen)
+        global_ip_block = netaddr.IPNetwork("192.168.0.0/%s" % global_root.prefixlen)
 
 # add children of collision domains
         cd_nodes = [n for n in global_graph if n.is_collision_domain()]
@@ -199,12 +200,12 @@ class IpTree(object):
                 link_node = TreeNode(prefixlen = 32, host = edge)
                 global_graph.add_edge(cd, link_node) # cd -> neigh (cd is parent)
 
+#TODO: make allocate seperate step
         def allocate(graph, node):
             children = graph.successors(node)
             prefixlen = node.prefixlen
             subnet = node.subnet.subnet(prefixlen+1)
             for child in children:
-                print child
                 if child.is_collision_domain():
                     child.subnet = subnet.next()
                     iterhosts = child.subnet.iter_hosts()
@@ -216,23 +217,25 @@ class IpTree(object):
                     child.subnet = subnet.next()
                 else:
                     child.subnet = subnet.next()
-                    #TODO: tidy up this logic with node types
-                    allocate(graph, child)
-                    #child.subnet = subnet.next()
+                    allocate(graph, child) # continue down the tree
 
         global_root.subnet = global_ip_block
         allocate(global_graph, global_root)
-        #pprint.pprint(nx.dfs_successors(global_graph, global_root))
 
         self.graph = global_graph
         self.root_node = global_root
 
-        group_allocations = {}
-        for node in global_graph:
-            if node.group_attr:
-                group_allocations[node.group_attr] = node.subnet
+
         #print group_allocations
 #TODO: Store these back into G_ip
+
+    def group_allocations(self):
+        allocs = {}
+        for node in self.graph:
+            if node.group_attr:
+                allocs[node.group_attr] = node.subnet
+
+        return allocs
 
     def add_nodes(self, nodes):
         self.unallocated_nodes += list(nodes)
@@ -259,6 +262,21 @@ class IpTree(object):
 
         return list_successors(self.root_node)
 
+    
+    def assign(self):
+# assigns allocated addresses back to hosts
+        edges = [n for n in self.graph if n.is_host() and n.host.src]
+        for edge in edges:
+            edge.host.ip_address = edge.subnet
+
+        host_tree_nodes = [n for n in self.graph if n.is_host() and n.host.is_l3device]
+        for host_tree_node in host_tree_nodes:
+            host_tree_node.host.loopback = host_tree_node.subnet
+
+        cds = [n for n in self.graph if n.is_collision_domain()]
+        for cd in cds:
+            cd.host.subnet = cd.subnet
+
 def assign_asn_to_interasn_cds(G_ip):
     G_phy = G_ip.overlay.phy
     for collision_domain in G_ip.nodes("collision_domain"):
@@ -284,28 +302,16 @@ def allocate_ips(G_ip):
     
     body = json.dumps({"ip_allocations": jsontree})
     pika_channel.publish_compressed("www", "client", body)
-    for node in ip_tree.graph:
-        if node.host:
-            host = node.host
-            if host.collision_domain:
-                #print "host is CD", host
-                for child in ip_tree.graph.successors(node):
-                    child_host = child.host
-                    edge = G_ip.edge(host, child_host)
-                    #print "child has subnet", child.subnet
-            else:
-                #print "host"
-                pass
+    ip_tree.assign()
+    G_ip.data.asn_blocks = ip_tree.group_allocations()
 
-    raise SystemExit
 
 # add all the collision domains
-    for node in G_ip.nodes("collision_domain"):
-        print "coll dom", node, node.subnet
+    #for node in G_ip.nodes("collision_domain"):
+        #print "coll dom", node, node.subnet
         
-    for node in G_ip.nodes("is_l3device"):
-        print "lo", node.loopback
-        for edge in node.edges():
-            print "link", edge.ip_address
+    #for node in G_ip.nodes("is_l3device"):
+        #print "lo", node.loopback
+        #for edge in node.edges():
+            #print "link", edge.ip_address
 
-    raise SystemExit

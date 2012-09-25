@@ -99,7 +99,8 @@ def build_ip(anm):
             node.host = ank.neigh_attr(G_ip, node, "host", G_phy).next() # first attribute
 
 # set collision domain IPs
-    collision_domain_id = (i for i in itertools.count(0))
+#TODO: trim next line
+    collision_domain_id = itertools.count(0)
     for node in G_ip.nodes("collision_domain"):
         graphics_node = G_graphics.node(node)
         graphics_node.device_type = "collision_domain"
@@ -133,6 +134,7 @@ def build_ospf(anm):
     G_ospf.add_nodes_from(G_in.nodes("is_switch"), retain=['asn'])
     #update_pika(anm)
     G_ospf.add_edges_from(G_in.edges(), retain = ['edge_id'])
+
     #update_pika(anm)
     ank.aggregate_nodes(G_ospf, G_ospf.nodes("is_switch"), retain = "edge_id")
     #update_pika(anm)
@@ -143,6 +145,10 @@ def build_ospf(anm):
     G_ospf.remove_edges_from([link for link in G_ospf.edges() if link.src.asn != link.dst.asn])
     for link in G_ospf.edges():
         link.cost = 1
+
+    ospf_nodes = list(G_ospf.nodes())
+    print ospf_nodes
+    print sorted(ospf_nodes)
 
     #update_pika(anm)
 
