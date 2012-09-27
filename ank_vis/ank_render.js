@@ -106,9 +106,11 @@ function redraw_ip_allocations() {
     .attr("r", 1e-6)
     .attr("fill", "steelblue")
     .on("mouseover", function(d){
+      d3.select(this).style("fill", "orange");
       ip_node_info(d);
     })
   .on("mouseout", function(){
+    d3.select(this).style("fill", "steelblue");
     clear_label();
   });
 
@@ -120,7 +122,7 @@ function redraw_ip_allocations() {
   //TODO: fix issue with node names
 
   nodeUpdate.select("circle")
-    .attr("r", 3);
+    .attr("r", 6);
   //TODO: map colour to node type: edge, collision domain, subnet, l3_device
 
   // Add the dot at every node
@@ -137,7 +139,7 @@ function redraw_ip_allocations() {
     .attr("dy", ".3em")
     .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; }) //left if children otherwise right
     .attr("font-family", "helvetica") 
-    .attr("font-size", 6) 
+    .attr("font-size", 10) 
     .text(function(d) { return d.name; })
     .style("fill-opacity", 1e-6);
 
