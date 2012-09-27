@@ -25,6 +25,7 @@ class RouterCompiler(object):
 
     def compile(self, node):
         ip_node = self.anm.overlay.ip.node(node)
+        node.label = naming.network_hostname(self.anm['phy'].node(node))
         node.loopback = ip_node.loopback
         node.loopback_subnet = netaddr.IPNetwork(node.loopback)
         node.loopback_subnet.prefixlen = 32
@@ -375,7 +376,6 @@ class CiscoCompiler(PlatformCompiler):
 
         ios2_compiler = Ios2Compiler(self.nidb, self.anm)
         for phy_node in G_phy.nodes('is_router', host = self.host, syntax='ios2'):
-            print "ios2", phy_node
             nidb_node = self.nidb.node(phy_node)
             #nidb_node.render.base = "templates/ios2"
             #nidb_node.render.base_dst_folder = "rendered/%s/%s/%s" % (self.host, "cisco", folder_name)
