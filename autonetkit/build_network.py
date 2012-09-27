@@ -29,7 +29,7 @@ def build(input_filename):
             return # module not present (development module)
         input_graph = bug.load(input_filename)
         import pprint
-        pprint.pprint(input_graph.nodes(data=True))
+        #pprint.pprint(input_graph.nodes(data=True))
 
     G_in = anm.add_overlay("input", input_graph)
 
@@ -41,10 +41,11 @@ def build(input_filename):
         anm.set_node_label(".",  ['label', 'pop', 'asn'])
 
 # set syntax for routers according to platform
+#TODO: make these defaults
     G_in.update(G_in.nodes("is_router", platform = "junosphere"), syntax="junos")
     G_in.update(G_in.nodes("is_router", platform = "dynagen"), syntax="ios")
     G_in.update(G_in.nodes("is_router", platform = "netkit"), syntax="quagga")
-    G_in.update(G_in.nodes("is_router", platform = "cisco"), syntax="ios")
+    #G_in.update(G_in.nodes("is_router", platform = "cisco"), syntax="ios")
 
     G_graphics = anm.add_overlay("graphics") # plotting data
     G_graphics.add_nodes_from(G_in, retain=['x', 'y', 'device_type', 'device_subtype', 'pop', 'asn'])

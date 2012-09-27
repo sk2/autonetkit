@@ -158,11 +158,11 @@ class QuaggaCompiler(RouterCompiler):
 
 #TODO: Don't render netkit lab topology if no netkit hosts
 
-class IosCompiler(RouterCompiler):
+class IosBaseCompiler(RouterCompiler):
     """Base IOS compiler"""
 
     def compile(self, node):
-        super(IosCompiler, self).compile(node)
+        super(IosBaseCompiler, self).compile(node)
         if node in self.anm['isis']:
             self.isis(node)
         
@@ -171,7 +171,7 @@ class IosCompiler(RouterCompiler):
         loopback_subnet = netaddr.IPNetwork("0.0.0.0/32")
 
 #TODO: strip out returns from super
-        super(IosCompiler, self).interfaces(node)
+        super(IosBaseCompiler, self).interfaces(node)
         # OSPF cost
         G_ospf = self.anm['ospf']
         G_isis = self.anm['isis']
@@ -198,6 +198,12 @@ class IosCompiler(RouterCompiler):
         """
         isis_node = self.anm['isis'].node(node)
         node.isis.net = isis_node.net
+
+class IosClassicCompiler(IosBaseCompiler):
+    pass
+
+class Ios2Compiler(IosBaseCompiler):
+    pass
 
 
 # Platform compilers
@@ -353,7 +359,7 @@ class CiscoCompiler(PlatformCompiler):
     def compile(self):
         log.info("Compiling Cisco for %s" % self.host)
         G_phy = self.anm.overlay.phy
-        ios_compiler = IosCompiler(self.nidb, self.anm)
+        ios_compiler = IosClassicCompiler(self.nidb, self.anm)
         for phy_node in G_phy.nodes('is_router', host = self.host, syntax='ios'):
             nidb_node = self.nidb.node(phy_node)
             nidb_node.render.template = "templates/ios.mako"
@@ -367,6 +373,23 @@ class CiscoCompiler(PlatformCompiler):
 
             ios_compiler.compile(nidb_node)
 
+        ios2_compiler = Ios2Compiler(self.nidb, self.anm)
+        for phy_node in G_phy.nodes('is_router', host = self.host, syntax='ios2'):
+            print "ios2", phy_node
+            nidb_node = self.nidb.node(phy_node)
+            #nidb_node.render.base = "templates/ios2"
+            #nidb_node.render.base_dst_folder = "rendered/%s/%s/%s" % (self.host, "cisco", folder_name)
+            nidb_node.render.template = "templates/ios2/router.conf.mako"
+            nidb_node.render.dst_folder = "rendered/%s/%s" % (self.host, "cisco")
+            nidb_node.render.dst_file = "%s.conf" % naming.network_hostname(phy_node)
+
+            # Assign interfaces
+            int_ids = self.interface_ids_ios()
+            for edge in self.nidb.edges(nidb_node):
+                edge.id = int_ids.next()
+
+            ios2_compiler.compile(nidb_node)
+
 class DynagenCompiler(PlatformCompiler):
     """Dynagen Platform Compiler"""
     def interface_ids(self):
@@ -376,7 +399,7 @@ class DynagenCompiler(PlatformCompiler):
     def compile(self):
         log.info("Compiling Dynagen for %s" % self.host)
         G_phy = self.anm.overlay.phy
-        ios_compiler = IosCompiler(self.nidb, self.anm)
+        ios_compiler = IosClassicCompiler(self.nidb, self.anm)
         for phy_node in G_phy.nodes('is_router', host = self.host, syntax='ios'):
             nidb_node = self.nidb.node(phy_node)
             nidb_node.render.template = "templates/ios.mako"
