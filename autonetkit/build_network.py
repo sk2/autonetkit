@@ -1,3 +1,4 @@
+import autonetkit
 import autonetkit.anm
 import autonetkit.ank as ank
 import math
@@ -7,6 +8,8 @@ import autonetkit.config
 settings = autonetkit.config.settings
 import autonetkit.log as log
 import autonetkit.load.graphml as graphml
+import autonetkit.exception
+
 
 __all__ = ['build']
 
@@ -16,7 +19,17 @@ pika_channel = autonetkit.ank_pika.AnkPika(rabbitmq_server)
 def build(input_filename):
     #TODO: move this out of main console wrapper
     anm = autonetkit.anm.AbstractNetworkModel()
-    input_graph = graphml.load_graphml(input_filename)
+    try:
+        input_graph = graphml.load_graphml(input_filename)
+    except autonetkit.exception.AnkIncorrectFileFormat:
+# try a different reader
+        try:
+            import autonetkit.load.bug as bug
+        except ImportError:
+            return # module not present (development module)
+        input_graph = bug.load(input_filename)
+        import pprint
+        pprint.pprint(input_graph.nodes(data=True))
 
     G_in = anm.add_overlay("input", input_graph)
 
