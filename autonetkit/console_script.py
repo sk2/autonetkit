@@ -55,8 +55,10 @@ def manage_network(input_filename, build_options, reload_build=False):
         nidb = NIDB()
         nidb.restore_latest()
 
+    build_options.update(settings['General']) # update in case build has updated, eg for deploy
+
     if build_options['deploy']:
-        deploy_network(nidb)
+        deploy_network(nidb, input_filename)
     if build_options['measure']:
         measure_network(nidb)
 
@@ -64,7 +66,8 @@ def parse_options():
     import optparse
     opt = optparse.OptionParser()
     opt.add_option('--file', '-f', default= None, help="Load topology from FILE")        
-    opt.add_option('--monitor', '-m',  action="store_true", default= False, help="Monitor input file for changes")        
+    opt.add_option('--monitor', '-m',  action="store_true", default= False, 
+            help="Monitor input file for changes")        
     opt.add_option('--debug',  action="store_true", default= False, help="Debug mode")        
     opt.add_option('--compile',  action="store_true", default= False, help="Compile")        
     opt.add_option('--render',  action="store_true", default= False, help="Compile")        
@@ -88,7 +91,7 @@ def main():
     if not options.file:
         input_filename = "ank.graphml"
 
-    if options.debug:
+    if options.debug or settings['General']['debug']:
         #TODO: fix this
         import logging
         logger = logging.getLogger("ANK")
@@ -138,7 +141,7 @@ def compile_network(anm):
     G_ip = anm.overlay.ip
     G_graphics = anm.overlay.graphics
 #TODO: build this on a platform by platform basis
-    nidb.add_nodes_from(G_phy, retain=['label', 'host', 'platform', 'Network'])
+    nidb.add_nodes_from(G_phy, retain=['label', 'host', 'platform', 'Network', 'update'])
 
     cd_nodes = [n for n in G_ip.nodes("collision_domain") if not n.is_switch] # Only add created cds - otherwise overwrite host of switched
     nidb.add_nodes_from(cd_nodes, retain=['label', 'host'], collision_domain = True)
@@ -166,11 +169,13 @@ def compile_network(anm):
 
     return nidb
 
-def deploy_network(nidb):
+def deploy_network(nidb, input_filename):
     import autonetkit.deploy.netkit as netkit_deploy
     import autonetkit.deploy.cisco as cisco_deploy
     #TODO: make this driven from config file
     log.info("Deploying network")
+
+#TODO: pick up platform, host, filenames from nidb (as set in there)
     deploy_hosts = config.settings['Deploy Hosts']
     for hostname, host_data in deploy_hosts.items():
         for platform, platform_data in host_data.items():
@@ -179,10 +184,24 @@ def deploy_network(nidb):
                 log.debug("Not deploying to %s" % hostname)
                 continue
 
+            config_path = os.path.join("rendered", hostname, platform)
+
+            if hostname == "internal":
+                if platform == "cisco":
+                    try:
+                        import autonetkit.deploy.bug as bug_deploy
+                    except ImportError:
+                        continue # development module, may not be available
+
+                    bug_deploy.package(nidb, config_path, input_filename)
+
+
+                continue
+
+
             username = platform_data['username']
             key_file = platform_data['key file']
             host = platform_data['host']
-            config_path = os.path.join("rendered", hostname, platform)
             
             if platform == "netkit" :
                 tar_file = netkit_deploy.package(config_path, "nklab")
