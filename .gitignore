@@ -28,3 +28,6 @@ erl_crash.dump
 autonetkit_v3.egg-info/*
 
 nectar1/*
+autonetkit/load/bug.py
+
+autonetkit/deploy/bug.py
