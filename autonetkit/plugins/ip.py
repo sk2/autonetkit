@@ -12,6 +12,7 @@ import autonetkit.ank_json
 import networkx as nx
 from collections import defaultdict
 import netaddr
+import functools
 
 settings = autonetkit.config.settings
 rabbitmq_server = settings['Rabbitmq']['server']
@@ -30,6 +31,8 @@ def subnet_size(host_count):
     host_count += 2 # network and broadcast
     return int(math.ceil(math.log(host_count, 2)))
 
+
+@functools.total_ordering
 class TreeNode(object):
     def __init__(self, graph, node):
         object.__setattr__(self, 'graph', graph)
@@ -41,6 +44,11 @@ class TreeNode(object):
 
     def __setattr__(self, key, val):
         self.graph.node[self.node][key] = val
+
+    def __lt__(self, other):
+        if self.host and other.host:
+            return self.host < other.host
+        return self.node < other.node
 
     def __repr__(self):
         if self.host:
@@ -58,7 +66,6 @@ class TreeNode(object):
         return self.host
 
     def children(self):
-        print "graph is", len(self.graph)
         return [TreeNode(self.graph, child) for child in self.graph.successors(self.node)]
 
 class IpTree(object):
@@ -98,8 +105,8 @@ class IpTree(object):
     def build_tree(self, subgraph, level_counts, nodes_by_level):
         smallest_prefix = min(level_counts.keys())
         for prefixlen in range(smallest_prefix, 32):
+            #TODO: fix sorting here
             unallocated_children = set(nodes_by_level[prefixlen + 1])
-#TODO: make list and sort
             for node in sorted(nodes_by_level[prefixlen]):
                 is_not_subnet = not ("host" in subgraph.node[node] or "group_attr" in subgraph.node[node])
                 if is_not_subnet:
@@ -225,7 +232,7 @@ class IpTree(object):
 #TODO: make allocate seperate step
         def allocate(node):
             #children = graph.successors(node)
-            children = node.children()
+            children = sorted(node.children())
             prefixlen = node.prefixlen
             subnet = node.subnet.subnet(prefixlen+1)
             for child in children:
@@ -333,4 +340,4 @@ def allocate_ips(G_ip):
     ip_tree.assign()
     G_ip.data.asn_blocks = ip_tree.group_allocations()
 
-    ip_tree.save()
+    #ip_tree.save()
