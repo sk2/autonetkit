@@ -158,6 +158,9 @@ def compile_network(anm):
     #dynagen_compiler = compiler.DynagenCompiler(nidb, anm, host)
     #dynagen_compiler.compile()
 
+#TODO: map this to all hosts present in config. By default include "internal" for each platform
+
+    host = "internal"
     cisco_compiler = compiler.CiscoCompiler(nidb, anm, host)
     cisco_compiler.compile()
 
