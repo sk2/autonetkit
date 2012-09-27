@@ -28,8 +28,13 @@ def build(input_filename):
         except ImportError:
             return # module not present (development module)
         input_graph = bug.load(input_filename)
-        import pprint
-        #pprint.pprint(input_graph.nodes(data=True))
+# add local deployment host
+        settings['General']['deploy'] = True
+        settings['Deploy Hosts']['internal'] = {
+                'cisco': {
+                    'deploy': True,
+                    },
+                }
 
     G_in = anm.add_overlay("input", input_graph)
 
@@ -136,7 +141,7 @@ def build_ip(anm):
 def build_phy(anm):
     G_in = anm['input']
     G_phy = anm['phy']
-    G_phy.add_nodes_from(G_in, retain=['label', 'device_type', 'device_subtype', 'asn', 'platform', 'host', 'syntax'])
+    G_phy.add_nodes_from(G_in, retain=['label', 'update', 'device_type', 'device_subtype', 'asn', 'platform', 'host', 'syntax'])
     if G_in.data.Creator == "Topology Zoo Toolset":
         ank.copy_attr_from(G_in, G_phy, "Network") # Copy Network from Zoo
     G_phy.add_edges_from(G_in.edges(type="physical"))
