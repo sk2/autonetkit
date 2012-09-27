@@ -41,13 +41,14 @@ class TreeNode(object):
 
     def __setattr__(self, key, val):
         self.graph.node[self.node][key] = val
-        if key == "subnet":
-            print "set subnet for", self.node
-            #print self.graph.node[self.node]
 
     def __repr__(self):
         if self.host:
             return "%s %s" % (self.node, self.host)
+        if self.group_attr:
+            return "%s: %s" % (self.group_attr, self.subnet)
+        if self.subnet:
+            return "%s" % self.subnet
         return "TreeNode: %s" % self.node 
 
     def is_collision_domain(self):
@@ -214,7 +215,7 @@ class IpTree(object):
 # add children of collision domains
         cd_nodes = [n for n in self if n.is_collision_domain()]
         for cd in cd_nodes:
-            for edge in cd.host.edges():
+            for edge in sorted(cd.host.edges()):
                 #TODO: sort these
                 child_id = self.next_node_id
                 cd_id = cd.node
