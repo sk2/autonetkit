@@ -34,3 +34,5 @@ autonetkit/deploy/bug.py
 
 autonetkit/templates/ios2/*
 test.xml
+
+output.xml
