@@ -19,6 +19,7 @@ except ImportError:
 
 # working with views allows us to spin off subgraphs, and work with them the same as a standard overlay
 
+#TODO: move exceptions into the exception class
 class AutoNetkitException(Exception):
     pass
 
