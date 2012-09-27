@@ -5,6 +5,7 @@ import itertools
 import autonetkit.config
 settings = autonetkit.config.settings
 import autonetkit.log as log
+import autonetkit.exception
 
 def load_graphml(filename):
     #TODO: allow default properties to be passed in as dicts
@@ -14,6 +15,8 @@ def load_graphml(filename):
     except IOError:
         log.warning("Unable to read GraphML %s" % filename)
         return
+    except IndexError:
+        raise autonetkit.exception.AnkIncorrectFileFormat
     graph.graph['timestamp'] =  os.stat(filename).st_mtime
 
     # remove selfloops
