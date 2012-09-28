@@ -21,10 +21,9 @@ class EchoServer(TCPServer):
         TCPServer.__init__(self, io_loop=io_loop, ssl_options=ssl_options, **kwargs)
 
     def handle_stream(self, stream, address):
-        EchoConnection(stream, address)
+        EchoConnection(stream, address, self.event_listeners)
 
     def add_event_listener(self, listener):
-        print "HERE"
         self.event_listeners.add(listener)
         print('PikaClient: listener %s added' % repr(listener))
  
@@ -39,18 +38,22 @@ class EchoConnection(object):
 
     stream_set = set([])
 
-    def __init__(self, stream, address):
+    def __init__(self, stream, address, event_listeners):
         logging.info('receive a new connection from %s', address)
         self.stream = stream
         self.address = address
         self.stream_set.add(self.stream)
         self.stream.set_close_callback(self._on_close)
         self.stream.read_until('\n', self._on_read_line)
+        self.event_listeners = event_listeners
 
     def _on_read_line(self, data):
         logging.info('read a new line from %s', self.address)
         for stream in self.stream_set:
-            stream.write(data, self._on_write_complete)
+            #stream.write(data, self._on_write_complete)
+            for listener in self.event_listeners:
+                body = json.dumps(data)
+                listener.write_message(body)
 
     def _on_write_complete(self):
         logging.info('write a line to %s', self.address)
@@ -89,14 +92,19 @@ class MyWebSocketHandler(websocket.WebSocketHandler):
 
     def open(self, *args, **kwargs):
         self.application.pc.add_event_listener(self)
-        print "echo", self.application.echo_server
-        self.application.echo_server.add_event_listener(self)
+        try:
+            self.application.echo_server.add_event_listener(self)
+        except AttributeError:
+            pass # no echo_server
         pika.log.info("WebSocket opened")
 
     def on_close(self):
         pika.log.info("WebSocket closed")
         self.application.pc.remove_event_listener(self)
-        self.application.echo_server.add_event_listener(self)
+        try:
+            self.application.echo_server.add_event_listener(self)
+        except AttributeError:
+            pass # no echo_server
 
     def on_message(self, message):
         #TODO: look if can map request type here... - or even from the application ws/ mapping
@@ -207,7 +215,6 @@ class PikaClient(object):
         except zlib.error:
             pass # likely not compressed body
         body_parsed = json.loads(body)
-        print "body parsed", body_parsed
         if body_parsed.has_key("anm"):
             print "Received new anm"
             try:
@@ -221,7 +228,6 @@ class PikaClient(object):
             alloc = json.loads(body_parsed['ip_allocations'])
             self.ank_accessor.ip_allocation = alloc
             self.update_listeners("ip_allocations")
-            print "got allocs"
         elif "path" in body_parsed:
             self.notify_listeners(body) # could do extra processing here
         else:
@@ -255,7 +261,6 @@ class PikaClient(object):
             pika.log.info('PikaClient: listener %s removed' % repr(listener))
         except KeyError:
             pass
-
 
 class AnkAccessor():
     def __init__(self):
@@ -300,7 +305,7 @@ def main():
         (r'/overlay', OverlayHandler, {'ank_accessor': ank_accessor}),
         ("/(.*)", tornado.web.StaticFileHandler, {"path":settings['static_path'], "default_filename":"index.html"} )
         ], **settings)
-    pika.log.setup(pika.log.DEBUG, color=True)
+    pika.log.setup(pika.log.WARNING, color=True)
     io_loop = tornado.ioloop.IOLoop.instance()
     # PikaClient is our rabbitmq consumer
     use_rabbitmq = ank_config.settings['Rabbitmq']['active']
@@ -311,6 +316,7 @@ def main():
         application.pc.connect()
 
     use_message_pipe = ank_config.settings['Message Pipe']['active']
+    use_message_pipe = False # disable for now
     if use_message_pipe:
         port = ank_config.settings['Message Pipe']['port']
         application.echo_server = EchoServer()
