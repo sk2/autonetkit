@@ -36,3 +36,5 @@ autonetkit/templates/ios2/*
 test.xml
 
 output.xml
+
+testenv/*

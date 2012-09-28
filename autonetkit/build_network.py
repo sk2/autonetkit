@@ -16,6 +16,9 @@ __all__ = ['build']
 rabbitmq_server = settings['Rabbitmq']['server']
 pika_channel = autonetkit.ank_pika.AnkPika(rabbitmq_server)
 
+#TODO: seperate out load and build - build should take a ready made nx graph and work from there.... load should do file handling error checking etc
+# Also makes automated testing easier!
+
 def build(input_filename):
     #TODO: move this out of main console wrapper
     anm = autonetkit.anm.AbstractNetworkModel()
@@ -36,6 +39,7 @@ def build(input_filename):
                     },
                 }
 
+    #TODO: make this more explicit than overloading add_overlay - make it load_graph or something similar
     G_in = anm.add_overlay("input", input_graph)
 
     import autonetkit.plugins.graph_product as graph_product
@@ -104,9 +108,9 @@ def build_ip(anm):
     edges_to_split = [edge for edge in G_ip.edges() if edge.attr_both("is_l3device")]
     split_created_nodes = list(ank.split(G_ip, edges_to_split, retain='edge_id'))
     for node in split_created_nodes:
-        node.overlay.graphics.x = ank.neigh_average(G_ip, node, "x", G_graphics)
-        node.overlay.graphics.y = ank.neigh_average(G_ip, node, "y", G_graphics)
-        node.overlay.graphics.asn = ank.neigh_most_frequent(G_ip, node, "asn", G_phy) # arbitrary choice
+        node['graphics'].x = ank.neigh_average(G_ip, node, "x", G_graphics)
+        node['graphics'].y = ank.neigh_average(G_ip, node, "y", G_graphics)
+        node['graphics'].asn = ank.neigh_most_frequent(G_ip, node, "asn", G_phy) # arbitrary choice
 #TODO: could choose largest ASN if tie break
 
     switch_nodes = G_ip.nodes("is_switch")# regenerate due to aggregated
@@ -133,10 +137,8 @@ def build_ip(anm):
             node.cd_id = cd_label
             graphics_node.label = cd_label
 
-
     ip.allocate_ips(G_ip)
     ank.save(G_ip)
-
 
 def build_phy(anm):
     G_in = anm['input']
@@ -145,7 +147,6 @@ def build_phy(anm):
     if G_in.data.Creator == "Topology Zoo Toolset":
         ank.copy_attr_from(G_in, G_phy, "Network") # Copy Network from Zoo
     G_phy.add_edges_from(G_in.edges(type="physical"))
-
 
 def build_ospf(anm):
     G_in = anm['input']

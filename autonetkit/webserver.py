@@ -2,12 +2,64 @@
 import pika
 import tornado
 import tornado.websocket as websocket
+from tornado.netutil import TCPServer
 from pika.adapters.tornado_connection import TornadoConnection
 import os
 import json
 import glob
 import sys
-import autonetkit.config
+import autonetkit.config as ank_config
+from multiprocessing.connection import Listener
+import logging
+
+
+class EchoServer(TCPServer):
+
+    def __init__(self, io_loop=None, ssl_options=None, **kwargs):
+        logging.info('a echo tcp server is started')
+        self.event_listeners = set([])
+        TCPServer.__init__(self, io_loop=io_loop, ssl_options=ssl_options, **kwargs)
+
+    def handle_stream(self, stream, address):
+        EchoConnection(stream, address)
+
+    def add_event_listener(self, listener):
+        print "HERE"
+        self.event_listeners.add(listener)
+        print('PikaClient: listener %s added' % repr(listener))
+ 
+    def remove_event_listener(self, listener):
+        try:
+            self.event_listeners.remove(listener)
+            print('PikaClient: listener %s removed' % repr(listener))
+        except KeyError:
+            pass
+
+class EchoConnection(object):
+
+    stream_set = set([])
+
+    def __init__(self, stream, address):
+        logging.info('receive a new connection from %s', address)
+        self.stream = stream
+        self.address = address
+        self.stream_set.add(self.stream)
+        self.stream.set_close_callback(self._on_close)
+        self.stream.read_until('\n', self._on_read_line)
+
+    def _on_read_line(self, data):
+        logging.info('read a new line from %s', self.address)
+        for stream in self.stream_set:
+            stream.write(data, self._on_write_complete)
+
+    def _on_write_complete(self):
+        logging.info('write a line to %s', self.address)
+        if not self.stream.reading():
+            self.stream.read_until('\n', self._on_read_line)
+
+    def _on_close(self):
+        logging.info('client quit %s', self.address)
+        self.stream_set.remove(self.stream)
 
 class MyWebHandler(tornado.web.RequestHandler):
     def get(self):
@@ -37,11 +89,14 @@ class MyWebSocketHandler(websocket.WebSocketHandler):
 
     def open(self, *args, **kwargs):
         self.application.pc.add_event_listener(self)
+        print "echo", self.application.echo_server
+        self.application.echo_server.add_event_listener(self)
         pika.log.info("WebSocket opened")
 
     def on_close(self):
         pika.log.info("WebSocket closed")
         self.application.pc.remove_event_listener(self)
+        self.application.echo_server.add_event_listener(self)
 
     def on_message(self, message):
         #TODO: look if can map request type here... - or even from the application ws/ mapping
@@ -70,7 +125,7 @@ class MyWebSocketHandler(websocket.WebSocketHandler):
         self.write_message(body)
 
 class PikaClient(object):
-    def __init__(self, io_loop, ank_accessor):
+    def __init__(self, io_loop, ank_accessor, host_address):
         pika.log.info('PikaClient: __init__')
         self.io_loop = io_loop
         self.connected = False
@@ -80,20 +135,19 @@ class PikaClient(object):
         self.event_listeners = set([])
         self.queue_name = 'webserver-%i' % os.getpid()
         self.ank_accessor = ank_accessor
+        self.host_address = host_address
  
     def connect(self):
         if self.connecting:
             pika.log.info('PikaClient: Already connecting to RabbitMQ')
             return
-
  
         pika.log.info('PikaClient: Connecting to RabbitMQ')
         self.connecting = True
  
         #cred = pika.PlainCredentials('guest', 'guest')
-        host = autonetkit.config.settings['Rabbitmq']['server']
         param = pika.ConnectionParameters(
-            host= host,
+            host= self.host_address,
             #port=5672,
             #virtual_host='/',
             #credentials=cred
@@ -246,17 +300,30 @@ def main():
         (r'/overlay', OverlayHandler, {'ank_accessor': ank_accessor}),
         ("/(.*)", tornado.web.StaticFileHandler, {"path":settings['static_path'], "default_filename":"index.html"} )
         ], **settings)
-    pika.log.setup(pika.log.WARNING, color=True)
+    pika.log.setup(pika.log.DEBUG, color=True)
     io_loop = tornado.ioloop.IOLoop.instance()
     # PikaClient is our rabbitmq consumer
-    pc = PikaClient(io_loop, ank_accessor)
-    application.pc = pc
-    application.pc.connect()
+    use_rabbitmq = ank_config.settings['Rabbitmq']['active']
+    if use_rabbitmq:
+        host_address = ank_config.settings['Rabbitmq']['server']
+        pc = PikaClient(io_loop, ank_accessor, host_address)
+        application.pc = pc
+        application.pc.connect()
+
+    use_message_pipe = ank_config.settings['Message Pipe']['active']
+    if use_message_pipe:
+        port = ank_config.settings['Message Pipe']['port']
+        application.echo_server = EchoServer()
+        application.echo_server.listen(6000)
+
+    #listening for web clientshost_address
+#TODO: make this driven from config
     try:
         port = sys.argv[1]
     except IndexError:
         port = 8000
     application.listen(port)
+
     io_loop.start()
 
     #TODO: run main web server here too for HTTP
