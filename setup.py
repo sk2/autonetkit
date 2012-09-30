@@ -19,15 +19,21 @@ setup (
      author = 'Simon Knight',
      author_email = "simon.knight@gmail.com",
      url = "http://www.autonetkit.org",
-     packages = ['autonetkit'],
+     packages = ['autonetkit', 'autonetkit.deploy', 
+     'autonetkit.load', 'autonetkit.messaging', 'autonetkit.plugins'],
 
      package_data = {'': ['settings.cfg', 
+         'autonetkit/config/configspec.cfg',
+         'autonetkit/templates/*.mako',
+         'autonetkit/templates/*/*.mako',
                           ]},
      download_url = ("http://pypi.python.org/pypi/AutoNetkit"),
 
      install_requires = ['netaddr', 'mako', 'networkx>=1.7', 
-         'configobj',  'textfsm', 'pika',
-         ],
+         'configobj', 
+         #'textfsm', 
+'pika',
+],
 
      classifiers = [
          "Programming Language :: Python",

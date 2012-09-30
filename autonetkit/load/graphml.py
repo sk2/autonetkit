@@ -13,8 +13,8 @@ def load_graphml(filename):
     try:
         graph = nx.read_graphml(filename)
     except IOError:
+        raise autonetkit.exception.AnkIncorrectFileFormat
         log.warning("Unable to read GraphML %s" % filename)
-        return
     except IndexError:
         raise autonetkit.exception.AnkIncorrectFileFormat
     graph.graph['timestamp'] =  os.stat(filename).st_mtime

@@ -189,15 +189,13 @@ def deploy_network(nidb, input_filename):
             if hostname == "internal":
                 if platform == "cisco":
                     try:
-                        import autonetkit.deploy.bug as bug_deploy
+                        import autonetkit.deploy.worm as worm_deploy
                     except ImportError:
                         continue # development module, may not be available
 
-                    bug_deploy.package(nidb, config_path, input_filename)
-
+                    worm_deploy.package(nidb, config_path, input_filename)
 
                 continue
-
 
             username = platform_data['username']
             key_file = platform_data['key file']

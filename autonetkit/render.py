@@ -63,7 +63,11 @@ def render_node(node):
         except KeyError, error:
             return
 
-        ank_version = pkg_resources.get_distribution("AutoNetkit").version
+        try:
+            ank_version = pkg_resources.get_distribution("AutoNetkit").version
+        except pkg_resources.DistributionNotFound:
+            ank_version = "beta"
+
         date = time.strftime("%Y-%m-%d %H:%M", time.localtime())
 
 #TODO: make sure is an abspath here so don't wipe user directory!!!
@@ -190,7 +194,10 @@ def render_topologies(nidb):
         render_topology(topology)
 
 def render_topology(topology):
-    ank_version = pkg_resources.get_distribution("AutoNetkit").version
+    try:
+        ank_version = pkg_resources.get_distribution("AutoNetkit").version
+    except pkg_resources.DistributionNotFound:
+        ank_version = "beta"
     date = time.strftime("%Y-%m-%d %H:%M", time.localtime())
     try:
         render_output_dir = topology.render_dst_folder

@@ -28,9 +28,9 @@ erl_crash.dump
 autonetkit_v3.egg-info/*
 
 nectar1/*
-autonetkit/load/bug.py
+autonetkit/load/worm.py
 
-autonetkit/deploy/bug.py
+autonetkit/deploy/worm.py
 
 autonetkit/templates/ios2/*
 test.xml
@@ -38,3 +38,5 @@ test.xml
 output.xml
 
 testenv/*
+dist/*
+

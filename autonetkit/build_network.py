@@ -27,10 +27,10 @@ def build(input_filename):
     except autonetkit.exception.AnkIncorrectFileFormat:
 # try a different reader
         try:
-            import autonetkit.load.bug as bug
+            import autonetkit.load.worm as worm
         except ImportError:
             return # module not present (development module)
-        input_graph = bug.load(input_filename)
+        input_graph = worm.load(input_filename)
 # add local deployment host
         settings['General']['deploy'] = True
         settings['Deploy Hosts']['internal'] = {

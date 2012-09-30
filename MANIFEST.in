@@ -1,0 +1,5 @@
+recursive-include package *
+
+include autonetkit/templates/*.mako
+include autonetkit/templates/ios2/*.mako
+include autonetkit/config/configspec.cfg
