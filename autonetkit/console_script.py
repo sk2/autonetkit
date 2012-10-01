@@ -7,11 +7,13 @@ import os
 import time
 import compiler
 import pkg_resources
-import deploy
-import measure
 import autonetkit.log as log
 import autonetkit.ank_pika as ank_pika
 import autonetkit.config as config
+
+import autonetkit.bgp_pol as bgp_pol
+
+raise SystemExit
 
 class FileMonitor(object):
     """Lightweight polling-based monitoring to see if file has changed"""
@@ -45,7 +47,7 @@ def manage_network(input_filename, build_options, reload_build=False):
         pika_channel.publish_compressed("www", "client", body)
         log.debug("Sent ANM to web server")
         nidb.save()
-        render.remove_dirs(["rendered"])
+        #render.remove_dirs(["rendered"])
         render.render(nidb)
 
     else:
@@ -209,6 +211,7 @@ def deploy_network(nidb, input_filename):
                 cisco_deploy.package(config_path, "nklab")
 
 def measure_network(nidb):
+    import measure
     log.info("Measuring network")
     remote_hosts = [node.tap.ip for node in nidb.nodes("is_router") ]
     dest_node = random.choice([n for n in nidb.nodes("is_l3device")])
