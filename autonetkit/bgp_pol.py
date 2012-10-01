@@ -19,6 +19,19 @@ class pol_else(pol_conditional):
 class pol_match(object):
     pass
 
+class pol_match_tag(object):
+    def __init__(self, tag):
+        self.tag = tag
+
+    def __repr__(self):
+        return "tags contain %s" % self.tag
+
+class pol_match_pl(object):
+    def __init__(self, pl):
+        self.pl = pl
+
+    def __repr__(self):
+        return "prefix_list is %s" % self.pl
 
 def fn_if(strg, loc, toks):
     print "tokens are", toks
@@ -28,11 +41,12 @@ def fn_if(strg, loc, toks):
 
 def fn_match_tags(strg, loc, toks):
     #print strg, loc, toks
-    pass
+    tag = toks[0][1]
+    return pol_match_tag(tag)
 
 def fn_match_pl(strg, loc, toks):
-    #print strg, loc, toks
-    pass
+    pl = toks[0][2]
+    return pol_match_pl(pl)
 
 class pol_action(object):
     pass
@@ -57,7 +71,7 @@ is_token = Literal("is")
 # matches
 # tags contain xyz
 match_tags = Group(Literal("tags contain") + Word(alphas)).setParseAction(fn_match_tags)
-match_pl = Group(Literal("prefix_list") + is_token + Word(alphas)).setParseAction(fn_match_tags)
+match_pl = Group(Literal("prefix_list") + is_token + Word(alphas)).setParseAction(fn_match_pl)
 
 # advanced matches (need to be expanded)
 # origin(...)
@@ -83,7 +97,7 @@ token_reject = Literal("reject").setParseAction(fn_reject)
 match_clause = (match_tags | match_pl)
 match_clauses = match_clause + ZeroOrMore(and_token + match_clause)
 if_clause = Group(Literal("if") + Suppress("(") + match_clauses + Suppress(")")).setParseAction(fn_if)
-my_policy = "if (tags contain aaa and prefix_list is zyx)"
+my_policy = "if (tags contain aaa and prefix_list is zyx and tags contain bbb)"
 results = if_clause.parseString(my_policy)
 
 print "results", results
