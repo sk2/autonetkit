@@ -3,6 +3,7 @@ import itertools
 import netaddr
 import os
 import pprint
+from datetime import datetime
 import autonetkit.log as log
 import autonetkit.plugins.naming as naming
 
@@ -294,7 +295,7 @@ class NetkitCompiler(PlatformCompiler):
 
     def allocate_tap_ips(self):
         #TODO: take tap subnet parameter
-        lab_topology = self.nidb.topology[self.host]
+        lab_topology = self.nidb.topology[self.host] #TODO: also store platform
         from netaddr import IPNetwork
         address_block = IPNetwork("172.16.0.0/16").iter_hosts() #TODO: read this from config
         lab_topology.tap_host = address_block.next()
@@ -361,10 +362,13 @@ class CiscoCompiler(PlatformCompiler):
         log.info("Compiling Cisco for %s" % self.host)
         G_phy = self.anm.overlay.phy
         ios_compiler = IosClassicCompiler(self.nidb, self.anm)
+        now = datetime.now()
+        timestamp = now.strftime("%Y%m%d_%H%M%S_%f")
+        dst_folder = "rendered/%s_%s/%s" % (self.host, timestamp, "cisco")
         for phy_node in G_phy.nodes('is_router', host = self.host, syntax='ios'):
             nidb_node = self.nidb.node(phy_node)
             nidb_node.render.template = "templates/ios.mako"
-            nidb_node.render.dst_folder = "rendered/%s/%s" % (self.host, "cisco")
+            nidb_node.render.dst_folder = dst_folder
             nidb_node.render.dst_file = "%s.conf" % naming.network_hostname(phy_node)
 
             # Assign interfaces
@@ -380,7 +384,7 @@ class CiscoCompiler(PlatformCompiler):
             #nidb_node.render.base = "templates/ios2"
             #nidb_node.render.base_dst_folder = "rendered/%s/%s/%s" % (self.host, "cisco", folder_name)
             nidb_node.render.template = "templates/ios2/router.conf.mako"
-            nidb_node.render.dst_folder = "rendered/%s/%s" % (self.host, "cisco")
+            nidb_node.render.dst_folder = dst_folder
             nidb_node.render.dst_file = "%s.conf" % naming.network_hostname(phy_node)
 
             # Assign interfaces
