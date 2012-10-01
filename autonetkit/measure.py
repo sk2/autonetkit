@@ -1,6 +1,5 @@
 import autonetkit.log as log
 import time
-import textfsm
 import pika
 import json
 import pprint
