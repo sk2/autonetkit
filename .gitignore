@@ -40,3 +40,5 @@ output.xml
 testenv/*
 dist/*
 
+
+autonetkit_v3_cisco.egg-info/*
