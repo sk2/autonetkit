@@ -1,10 +1,12 @@
 from pyparsing import Suppress,Word,ZeroOrMore,alphas,nums,delimitedList, Literal, Group, Optional, Forward
+import json
 
 #TODO: see if can just use t for the functions rather than strc, loc, toks
 #TODO: generate all of the "boilerplate" classes and match functions from YAML or other description
 #TODO: consider the switch to lambda x: with __init__ rather than a function and a class
 #TODO: add in parse fail handling for more descriptive error messages
 
+#TODO: make methods that atoms inherit: key, value eg (setLP, 120), (prefix_list, blah_abc)
 class pol_conditional(object):
     pass
 
@@ -13,7 +15,7 @@ class pol_match_or_action(object):
     is_then = False
     is_else = False
 
-class pol_if(pol_conditional):
+class pol_clause(pol_conditional):
     def __init__(self, match_clause = None, then_clause = None, else_clause = None):
         self.match_clause = match_clause
         self.then_clause = then_clause
@@ -34,13 +36,18 @@ class pol_else(pol_conditional):
 
 def fn_if(strg, loc, toks):
 # Extract matches and actions - need to search through list. Return first (only) instance
+    toks = toks[0] # TODO: make this clearer - due to nesting of groups
+    if toks[0].is_then:
+        then_clause = toks[0]
+        return pol_clause(None, then_clause, None)
+
     match_clause = [tok for tok in toks[0] if tok.is_match][0]
     then_clause = [tok for tok in toks[0] if tok.is_then][0]
     try:
         else_clause = [tok for tok in toks[0] if tok.is_else][0]
     except IndexError:
         else_clause = None
-    return pol_if(match_clause, then_clause, else_clause)
+    return pol_clause(match_clause, then_clause, else_clause)
 
 class pol_match(pol_match_or_action):
     def __init__(self, matches):
@@ -50,19 +57,23 @@ class pol_match(pol_match_or_action):
     def __repr__(self):
         return "Match: %s" % self.matches
 
-class pol_match_tag(object):
+class pol_match_atom(object):
+    pass
+
+
+class pol_match_tag(pol_match_atom):
     def __init__(self, tag):
         self.tag = tag
 
     def __repr__(self):
         return "tags contain %s" % self.tag
 
-class pol_match_pl(object):
+class pol_match_pl(pol_match_atom):
     def __init__(self, pl):
         self.pl = pl
 
     def __repr__(self):
-        return "prefix_list is %s" % self.pl
+        return "prefix_list %s" % self.pl
 
 # Matches
 
@@ -95,7 +106,10 @@ class pol_else(pol_match_or_action):
         return "Else: %s" % self.actions
 
 # Actions
-class pol_set_lp(object):
+class pol_action_atom(object):
+    pass
+
+class pol_set_lp(pol_action_atom):
     #TODO: take either an integer value, or if alpha, then need to add it to a list to perform ordering on... may be better to have two different actions, and then feed into the same class once processed.
     def __init__(self, pl):
         self.pl = pl
@@ -103,28 +117,28 @@ class pol_set_lp(object):
     def __repr__(self):
         return "setLP %s" % self.pl
 
-class pol_set_med(object):
+class pol_set_med(pol_action_atom):
     def __init__(self, med):
         self.med = med
 
     def __repr__(self):
         return "setMED %s" % self.med
 
-class pol_add_tag(object):
+class pol_add_tag(pol_action_atom):
     def __init__(self, tag):
         self.tag = tag
 
     def __repr__(self):
         return "addTag %s" % self.tag
 
-class pol_remove_tag(object):
+class pol_remove_tag(pol_action_atom):
     def __init__(self, tag):
         self.tag = tag
 
     def __repr__(self):
         return "removeTag %s" % self.tag
 
-class pol_reject(object):
+class pol_reject(pol_action_atom):
     def __init__(self):
         pass # no parameter for reject route
 
@@ -132,6 +146,10 @@ class pol_reject(object):
         return "reject" 
 
 def fn_then(strg, loc, toks):
+    actions = toks[0]
+    return pol_then(actions)
+
+def fn_standalone_then(strg, loc, toks):
     actions = toks[0]
     return pol_then(actions)
 
@@ -192,38 +210,61 @@ token_reject = Literal("reject").setParseAction(fn_reject)
 # setOriginAttribute ip | host
 
 action_clause = (token_set_lp | token_set_med | token_add_tag | token_remove_tag | token_reject ) 
-then_clause = Group(Suppress("then") + Suppress("(") + action_clause + ZeroOrMore(and_token + action_clause) 
+then_actions =  action_clause + ZeroOrMore(and_token + action_clause)
+then_clause = Group(Suppress("then") + Suppress("(") + then_actions 
         + Suppress(")")).setParseAction(fn_then)
+standlone_then_clause = Group(then_actions).setParseAction(fn_standalone_then)
 
-if_clause = Forward()
+bgp_pol = Forward() # if clause can be present inside an else
 
-else_actions = (action_clause + ZeroOrMore(and_token + action_clause)) | if_clause
+else_actions = (action_clause + ZeroOrMore(and_token + action_clause)) | bgp_pol
 else_clause = Group(Suppress("else") + Suppress("(") + else_actions 
         + Suppress(")")).setParseAction(fn_else)
 
-if_clause << Group(Suppress("if") + match_clauses + then_clause + Optional(else_clause)).setParseAction(fn_if)
-my_policy = "if (tags contain aaa and prefix_list is zyx and tags contain bbb) then (reject and setLP 100)"
-results = if_clause.parseString(my_policy)
-print "results", results
-
-print
-#my_policy = "if (tags contain aaa ) then (if (prefix_list is ccc) then (reject and setLP 100))"
-my_policy = "if (prefix_list is ccc) then (reject and setLP 100) else (reject and setMED 240 and setLP 210)"
-results = if_clause.parseString(my_policy)
-print "results", results
-
-print
-#my_policy = "if (tags contain aaa ) then (if (prefix_list is ccc) then (reject and setLP 100))"
-my_policy = "if (prefix_list is ccc) then (reject and setLP 100) else (if(prefix_list is ccc) then (setLP 120) else (setMED 230))"
-results = if_clause.parseString(my_policy)
-print "results", results
+bgp_pol << Group(Group(Suppress("if") + match_clauses + then_clause + Optional(else_clause)) | standlone_then_clause).setParseAction(fn_if)
 
 
-# Now have a list of tokens, these need to be parsed into a AST
+class BgpPolEncoder(json.JSONEncoder):
+    """Handles netaddr objects by converting to string form"""
+    def default(self, obj):
+        if isinstance(obj, pol_clause):
+            #TODO: add documentation about serializing anm nodes
+            return {'match': obj.match_clause, 'then': obj.then_clause, 'else': obj.else_clause}
+
+        if isinstance(obj, pol_match):
+            return [match for match in obj.matches]
+        if isinstance(obj, pol_then):
+            return [action for action in obj.actions]
+        if isinstance(obj, pol_else):
+            return [action for action in obj.actions]
+
+        if isinstance(obj, pol_match_atom):
+            return str(obj)
+        if isinstance(obj, pol_action_atom):
+            return str(obj)
+
+        print "objs is", type(obj)
+        return json.JSONEncoder.default(self, obj)
+
+policies = [
+"if (tags contain aaa and prefix_list is zyx and tags contain bbb) then (reject and setLP 100)",
+"if (prefix_list is ccc) then (reject and setLP 100) else (reject and setMED 240 and setLP 210)",
+("if (prefix_list is ccc) then (reject and setLP 100) else "
+"(if (prefix_list is ccc) then (setLP 120) else (setMED 230))"),
+"reject",
+]
 
 
+for my_policy in policies:
+    print "Policy: ", my_policy
+    results = bgp_pol.parseString(my_policy)
+    #print "results", results
+    results = list(results) # list context
+    data = json.dumps(results, cls=BgpPolEncoder, indent = 4)
+    print data
 
 # also need to walk tree to build up a list of all tags present, and all prefix lists
 
-
 # end up with lists of named tuples for tokens: (match, value), and (action, value) that can then format inside the template - that way slight differences between syntaxes are able to be handles in templates rather than back up in the parser
+
+#TODO: implement both visitors and transformers
