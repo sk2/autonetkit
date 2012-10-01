@@ -4,10 +4,10 @@ from setuptools import setup
 #from setuptools import setup, find_packages
 
 setup (
-     name = "autonetkit-v3",
+     name = "autonetkit-v3-cisco",
      version = "0.0.1",
-     description = 'Automated configuration generator for cBGP, Netkit and Junosphere',
-     long_description = 'Automated configuration generator for cBGP, Netkit and Junosphere',
+     description = 'Automated configuration generator',
+     long_description = 'Automated configuration generator',
 
      # simple to run 
      entry_points = {
@@ -23,9 +23,9 @@ setup (
      'autonetkit.load', 'autonetkit.messaging', 'autonetkit.plugins'],
 
      package_data = {'': ['settings.cfg', 
-         'autonetkit/config/configspec.cfg',
-         'autonetkit/templates/*.mako',
-         'autonetkit/templates/*/*.mako',
+         'config/configspec.cfg',
+         'templates/*.mako',
+         'templates/*/*.mako',
                           ]},
      download_url = ("http://pypi.python.org/pypi/AutoNetkit"),
 
