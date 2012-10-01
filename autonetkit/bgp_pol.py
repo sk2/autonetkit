@@ -34,7 +34,6 @@ class pol_else(pol_conditional):
 
 def fn_if(strg, loc, toks):
 # Extract matches and actions - need to search through list. Return first (only) instance
-    print "toks", toks
     match_clause = [tok for tok in toks[0] if tok.is_match][0]
     then_clause = [tok for tok in toks[0] if tok.is_then][0]
     try:
@@ -97,6 +96,7 @@ class pol_else(pol_match_or_action):
 
 # Actions
 class pol_set_lp(object):
+    #TODO: take either an integer value, or if alpha, then need to add it to a list to perform ordering on... may be better to have two different actions, and then feed into the same class once processed.
     def __init__(self, pl):
         self.pl = pl
 
@@ -179,7 +179,7 @@ match_clauses = Group(Suppress("(") + match_clause + ZeroOrMore(and_token + matc
 # setLP lp
 token_set_lp = Group(Literal("setLP") + Word(nums)).setParseAction(fn_set_lp)
 # setMED med
-token_set_med = Group(Literal("setMed") + Word(nums)).setParseAction(fn_set_med)
+token_set_med = Group(Literal("setMED") + Word(nums)).setParseAction(fn_set_med)
 # addTag tag
 token_add_tag = Group(Literal("addTag") + Word(nums)).setParseAction(fn_add_tag)
 # removeTag tag
@@ -195,16 +195,26 @@ action_clause = (token_set_lp | token_set_med | token_add_tag | token_remove_tag
 then_clause = Group(Suppress("then") + Suppress("(") + action_clause + ZeroOrMore(and_token + action_clause) 
         + Suppress(")")).setParseAction(fn_then)
 
-else_clause = Group(Suppress("else") + Suppress("(") + action_clause + ZeroOrMore(and_token + action_clause) 
+if_clause = Forward()
+
+else_actions = (action_clause + ZeroOrMore(and_token + action_clause)) | if_clause
+else_clause = Group(Suppress("else") + Suppress("(") + else_actions 
         + Suppress(")")).setParseAction(fn_else)
 
-if_clause = Group(Suppress("if") + match_clauses + then_clause).setParseAction(fn_if)
+if_clause << Group(Suppress("if") + match_clauses + then_clause + Optional(else_clause)).setParseAction(fn_if)
 my_policy = "if (tags contain aaa and prefix_list is zyx and tags contain bbb) then (reject and setLP 100)"
 results = if_clause.parseString(my_policy)
 print "results", results
 
+print
 #my_policy = "if (tags contain aaa ) then (if (prefix_list is ccc) then (reject and setLP 100))"
-my_policy = "if (prefix_list is ccc) then (reject and setLP 100) else (reject)"
+my_policy = "if (prefix_list is ccc) then (reject and setLP 100) else (reject and setMED 240 and setLP 210)"
+results = if_clause.parseString(my_policy)
+print "results", results
+
+print
+#my_policy = "if (tags contain aaa ) then (if (prefix_list is ccc) then (reject and setLP 100))"
+my_policy = "if (prefix_list is ccc) then (reject and setLP 100) else (if(prefix_list is ccc) then (setLP 120) else (setMED 230))"
 results = if_clause.parseString(my_policy)
 print "results", results
 
