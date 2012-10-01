@@ -1,6 +1,8 @@
-import textfsm
-import pika
 import autonetkit.log as log
+try:
+    import textfsm
+except ImportError:
+    log.info("Unable to import TextFSM")
 
 def sh_ip_route(nidb, data):
     template = open("autonetkit/textfsm/quagga/sh_ip_route")
