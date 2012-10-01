@@ -251,7 +251,7 @@ policies = [
 "if (prefix_list is ccc) then (reject and setLP 100) else (reject and setMED 240 and setLP 210)",
 ("if (prefix_list is ccc) then (reject and setLP 100) else "
 "(if (prefix_list is ccc) then (setLP 120) else (setMED 230))"),
-"reject",
+"reject and setLP 200",
 ]
 
 

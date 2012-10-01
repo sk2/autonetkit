@@ -11,9 +11,8 @@ import autonetkit.log as log
 import autonetkit.ank_pika as ank_pika
 import autonetkit.config as config
 
-import autonetkit.bgp_pol as bgp_pol
-
-raise SystemExit
+#import autonetkit.bgp_pol as bgp_pol
+#raise SystemExit
 
 class FileMonitor(object):
     """Lightweight polling-based monitoring to see if file has changed"""
