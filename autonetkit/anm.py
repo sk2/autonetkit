@@ -108,6 +108,9 @@ class overlay_node(object):
 #TODO: allow access back up to overlays from this
 # eg self.ip.property self.bgp.property etc
 
+    def __hash__(self):
+        return hash(self.node_id)
+
     def __nonzero__(self):
         """Allows for checking if node exists
         """
@@ -366,6 +369,7 @@ class overlay_graph_data(object):
     def dump(self):
         print str(self._graph.graph) 
 
+
     @property
     def _graph(self):
         #access underlying graph for this overlay_node
@@ -566,6 +570,10 @@ class overlay_graph(OverlayBase):
 #TODO: provide an strip_id function to turn node tuples back into just ids for the graph
 
     @property
+    def anm(self):
+        return self._anm
+
+    @property
     def _graph(self):
         #access underlying graph for this overlay_node
         return self._anm._overlays[self._overlay_id]
@@ -574,7 +582,8 @@ class overlay_graph(OverlayBase):
         self._anm._overlays[self._overlay_id] = graph
 
     # these work similar to their nx counterparts: just need to strip the node_id
-    def add_nodes_from(self, nbunch, retain=[], **kwargs):
+    def add_nodes_from(self, nbunch, retain=[], update = False, **kwargs):
+        """Update won't append data (which could clobber) if node exists"""
         try:
             retain.lower()
             retain = [retain] # was a string, put into list
@@ -589,7 +598,20 @@ class overlay_graph(OverlayBase):
             nbunch = add_nodes
         else:
             nbunch = (n.node_id for n in nbunch) # only store the id in overlay
+
+        if not update:
+# filter out existing nodes
+            print "filter"
+            nbunch = list(nbunch)
+            print "before", len(nbunch)
+            print [n for n in self._graph]
+            nbunch = (n for n in nbunch if n not in self._graph)
+            nbunch = list(nbunch)
+            print "after", len(nbunch)
         self._graph.add_nodes_from(nbunch, **kwargs)
+
+    def add_node(self, node_id, **kwargs):
+        self._graph.add_node(node_id, kwargs)
 
     def add_edge(self, src, dst, retain=[], **kwargs):
         try:
