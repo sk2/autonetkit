@@ -2,8 +2,10 @@ import pkg_resources
 import validate
 import ConfigParser
 from configobj import ConfigObj, flatten_errors
+import configobj
 validator = validate.Validator()
 import os.path
+import pprint
 
 #Note: configspec preserves order: configobj.Sections which behave as a dict, but retain order specified in - allows precedence based on ordering in specification file
 
@@ -13,6 +15,10 @@ def InterfaceGenerator(interfaces):
     #    for x in interface:
     #        print "x is", x
     pass
+
+class Interface(object):
+    def __init__(self, ):
+        self.data = kwargs
 
 class HardwareProfile(object):
     def __init__(self, data):
@@ -25,11 +31,9 @@ class HardwareProfile(object):
         #print interfaces
 
         test = InterfaceGenerator(interfaces)
-        print test
-
+        #print test
 
 #TODO: do string matching to see if generator in list of reserved... ie taken interfaces
-
 
         self.interface_generator = self.build_interfaces()
 
@@ -76,10 +80,30 @@ def load_profiles():
 
 # walk to return tree of interfaces, subinterfaces, etc
     def walker(section, key):
-        print "parent", section.parent.name
+        val = section[key]
+        if isinstance(val, configobj.Section): #TODO: filter on depth > 1 otherwise get bases... if depth == 1 then this is a hardwareprofile class if any greater then is a interface
+            print section.name, "is section", section
+#TODO: also check type of section? eg for subeth?? - this would then have the data as a dict... and then hand this off tp the interface object, and skip any others for this section... which are the individual values
+        print section.depth, section.name,  key, type(section), val, type(val)
+        return
+# skip system
+        if section.depth == 1:
+            print "here for ", section.name, key
+            return "CCC"
+            return "Platform: %s" % section.name
+        if section.depth == 2 and section.name == "System":
+            #print "skip system"
+            return
+        print "parent", section.parent.name, type(section)
         print "Subsection", section.depth, section.name, key
-        return "A"
+        print
+        return "AA"
 
+#TODO: Note this doesn't replace the parent.... which is what would be ideal for quickly building structure (like pyparsing does)
+# but does as a dict, so can traverse the dict easily (build recursive walker)
+    res = settings.walk(walker, call_on_sections=True)
+    pprint.pprint(res)
+    return
 
     for name in settings:
         print name
