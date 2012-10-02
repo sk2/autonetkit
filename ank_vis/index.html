@@ -98,7 +98,7 @@
       <script type="text/javascript">
 
 
-        var overlay_id = "phy";
+        var overlay_id = "conn";
 
 var revision_dropdown = d3.select("#revision_select")
 .on("change", function() {
@@ -134,7 +134,7 @@ var chart = d3.select(".visualisation")
     .attr("width", "100%")
     .attr("height", "100%")
     .attr("pointer-events", "all")
-     .attr("viewBox", "0 0 " + w * 0.4 + " " + h * 0.4 )
+     .attr("viewBox", "0 0 " + w * 0.7 + " " + h * 0.7)
   .append('svg:g')
     .call(d3.behavior.zoom().on("zoom", redraw))
   .append('svg:g');
