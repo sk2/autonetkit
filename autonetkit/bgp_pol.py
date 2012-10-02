@@ -5,6 +5,7 @@ import json
 #TODO: generate all of the "boilerplate" classes and match functions from YAML or other description
 #TODO: consider the switch to lambda x: with __init__ rather than a function and a class
 #TODO: add in parse fail handling for more descriptive error messages
+#TODO: drop pol_clause.map, etc and use as children: or have visitor that returns these as children - easier to traverse tree
 
 #TODO: make methods that atoms inherit: key, value eg (setLP, 120), (prefix_list, blah_abc)
 class pol_conditional(object):

@@ -112,6 +112,7 @@ def build_ip(anm):
         node['graphics'].y = ank.neigh_average(G_ip, node, "y", G_graphics)
         node['graphics'].asn = ank.neigh_most_frequent(G_ip, node, "asn", G_phy) # arbitrary choice
 #TODO: could choose largest ASN if tie break
+#TODO: see if need G_phy - should auto fall through to phy for ASN
 
     switch_nodes = G_ip.nodes("is_switch")# regenerate due to aggregated
     G_ip.update(switch_nodes, collision_domain=True) # switches are part of collision domain
@@ -147,6 +148,11 @@ def build_phy(anm):
     if G_in.data.Creator == "Topology Zoo Toolset":
         ank.copy_attr_from(G_in, G_phy, "Network") # Copy Network from Zoo
     G_phy.add_edges_from(G_in.edges(type="physical"))
+
+
+# testing
+    import autonetkit.allocate_hardware
+    autonetkit.allocate_hardware.allocate(G_phy)
 
 def build_ospf(anm):
     G_in = anm['input']
