@@ -273,19 +273,7 @@ var overlay_dropdown = d3.select("#overlay_select").on("change", function() {
   }
   update_title();
   clear_graph_history();
-  if (overlay_id == "nidb") {
-    group_attr = "host";
-    redraw(); //TODO: see if can cut this and make group auto update
-  }
-  if (overlay_id == "conn") {
-    console.log("conn");
-    group_attr = "device";
-    redraw(); //TODO: see if can cut this and make group auto update
-  }
-  else {
-    group_attr = "asn";
-  }
-});
+ });
 
 var update_title = function() {
   document.title = "AutoNetkit - " + overlay_id + " r" + revision_id;
@@ -534,6 +522,16 @@ function redraw() {
       nodes_by_id[node.id] = node;
       });
 
+
+  group_attr = "asn";
+  if (overlay_id == "nidb") {
+    group_attr = "host";
+  }
+  if (overlay_id == "conn") {
+    group_attr = "device";
+  }
+
+
   node_attr_groups = d3.nest().key(function(d) { return d[group_attr]; }).entries(nodes);
   edge_attr_groups = d3.nest().key(function(d) { return d.type; }).entries(jsondata.links);
 
@@ -541,34 +539,13 @@ function redraw() {
   groupings = chart.selectAll(".attr_group")
     .data(node_attr_groups)
 
+    console.log(groupings);
+
     var test = 0;
 
-  var cloud_x = function(data) {
-    var mean =  d3.mean(data.values, function(d) { return d.x; });
-    mean = mean - cloud_width(data)/4;
-    return mean;
-  }
 
-  var cloud_y = function(data) {
-    var mean =  d3.mean(data.values, function(d) { return d.y; });
-    //mean = mean + cloud_height(data)/2;
-    return mean;
-  }
 
-  var cloud_width = function(data) {
-    var max =  d3.max(data.values, function(d) { return d.x; });
-    var min =  d3.min(data.values, function(d) { return d.x; });
-    return 2*(max - min);
-  }
-
-  var cloud_height = function(data) {
-    var max =  d3.max(data.values, function(d) { return d.y; });
-    var min =  d3.min(data.values, function(d) { return d.y; });
-    return 2*(max - min);
-  }
-
-  if (test == 0) {
-    groupings.enter().insert("path")
+  groupings.enter().insert("path")
       .attr("class", "attr_group")
       .attr("d", groupPath)
       .style("fill", groupFill)
@@ -586,31 +563,6 @@ function redraw() {
     groupings.transition()
       .duration(500)
       .attr("d", groupPath)
-  } 
-  else {
-    //TODO: use following instead of d groupPath
-    //.data(nodes, node_id);
-
-    groupings.enter().append("image")
-      .attr("d", groupPath)
-      .attr("xlink:href", "icons/cloud.svg")
-      .attr("x", cloud_x)
-      .attr("y", cloud_y)
-      .attr("width", cloud_width)
-      .attr("height", cloud_height)
-      .on("mouseover", function(d){
-          group_info(d);
-          })
-    .on("mouseout", function(){
-        clear_label();
-        });
-    ;
-
-    groupings.transition()
-      //TODO: put x,y etc here
-      .duration(500)
-
-  }
 
   groupings.exit().transition()
     .duration(1000)
