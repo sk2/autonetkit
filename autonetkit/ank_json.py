@@ -108,6 +108,7 @@ def jsonify_anm_with_graphics(anm):
     for overlay_id in anm.overlays():
         overlay_graph = anm[overlay_id]._graph.copy()
 
+
 #TODO: only update, don't over write if already set
         for n in overlay_graph:
             overlay_graph.node[n].update( {
