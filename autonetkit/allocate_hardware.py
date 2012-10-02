@@ -14,13 +14,24 @@ def allocate(anm):
     G_phy = anm['phy']
     print "hardware"
 
+    graph_conn = unwrap_graph(G_conn)
+    graph_phy = unwrap_graph(G_conn)
+
 # add at high level
     nodes = list(G_conn.nodes())
     for node in nodes:
         for index in range(3):
             new_label = "%s_%s" % (node, index)
-            print new_label
-            #G_conn.add_node(new_label, x = 100, y = 10, asn = 1)
+            x = node.x + index*50
+            y = node.y + index*50
+            G_conn.add_node(new_label, x = x, y = y, asn = 1, 
+                    device_type = "interface",
+                    device_sub_type = None,
+                    
+                    )
+
+    for node in nodes:
+        G_conn.remove_node(node)
 
         
 
