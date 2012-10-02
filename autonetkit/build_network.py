@@ -60,6 +60,7 @@ def build(input_filename):
     G_graphics.add_nodes_from(G_in, retain=['x', 'y', 'device_type', 'device_subtype', 'pop', 'asn'])
 
     build_phy(anm)
+    build_conn(anm)
     build_ip(anm)
     build_ospf(anm)
     build_isis(anm)
@@ -150,9 +151,41 @@ def build_phy(anm):
     G_phy.add_edges_from(G_in.edges(type="physical"))
 
 
-# testing
+def build_conn(anm):
+    G_in = anm['input']
+    G_phy = anm['phy']
+    G_conn = anm.add_overlay("conn")
+    G_conn.add_nodes_from(G_in, retain = ["device_type", "device_subtype"])
+
     import autonetkit.allocate_hardware
-    autonetkit.allocate_hardware.allocate(G_phy)
+    autonetkit.allocate_hardware.allocate(anm)
+
+    G_graphics = anm['graphics']
+    print "HERE"
+    print "len before", len(G_graphics)
+    a = set(G_conn)
+    b = set(G_phy)
+    print a, b, a - b
+
+    new_nodes = set(G_conn) - set(G_phy)
+    print set(G_conn), set(G_phy)
+    print "new nodes", new_nodes
+    G_graphics.add_nodes_from(G_conn, retain = ['x', 'y'])
+    print "len after", len(G_graphics)
+
+
+# add to graphics
+
+    print "g nodes"
+    for node in anm['graphics']:
+        print node, node.x, node.y
+        
+
+#TODO: Add a function to auto-update graphics, if any node present in overlay but not in graphics then add with sensible defaults
+
+
+# testing
+
 
 def build_ospf(anm):
     G_in = anm['input']
