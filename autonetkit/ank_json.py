@@ -127,8 +127,14 @@ def jsonify_anm_with_graphics(anm):
 #TODO: combine these, and round as necessary
         x = (overlay_graph.node[n]['x'] for n in overlay_graph)
         y = (overlay_graph.node[n]['y'] for n in overlay_graph)
-        x_min = min(x)
-        y_min = min(y)
+        try:
+            x_min = min(x)
+        except ValueError:
+            x_min = 0
+        try:
+            y_min = min(y)
+        except ValueError:
+            y_min = 0
         for n in overlay_graph:
             overlay_graph.node[n]['x'] += - x_min
             overlay_graph.node[n]['y'] += - y_min
