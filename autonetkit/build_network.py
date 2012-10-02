@@ -163,9 +163,9 @@ def build_conn(anm):
 
     new_nodes = set(G_conn) - set(G_phy)
     #G_graphics.add_nodes_from(new_nodes, retain = ['x', 'y', 'asn', "device_type", "device_subtype"])
-
-# add to graphics
-
+    for node in new_nodes:
+        G_graphics.add_node(node, retain = ['x', 'y', 'asn', "device_type", "device_subtype"])
+        #print node['graphics'].dump()
 
 #TODO: Add a function to auto-update graphics, if any node present in overlay but not in graphics then add with sensible defaults
 
