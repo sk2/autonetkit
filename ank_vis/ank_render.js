@@ -277,6 +277,11 @@ var overlay_dropdown = d3.select("#overlay_select").on("change", function() {
     group_attr = "host";
     redraw(); //TODO: see if can cut this and make group auto update
   }
+  if (overlay_id == "conn") {
+    console.log("conn");
+    group_attr = "device";
+    redraw(); //TODO: see if can cut this and make group auto update
+  }
   else {
     group_attr = "asn";
   }
