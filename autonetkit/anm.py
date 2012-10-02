@@ -601,17 +601,18 @@ class overlay_graph(OverlayBase):
 
         if not update:
 # filter out existing nodes
-            print "filter"
-            nbunch = list(nbunch)
-            print "before", len(nbunch)
-            print [n for n in self._graph]
             nbunch = (n for n in nbunch if n not in self._graph)
-            nbunch = list(nbunch)
-            print "after", len(nbunch)
         self._graph.add_nodes_from(nbunch, **kwargs)
 
     def add_node(self, node_id, **kwargs):
         self._graph.add_node(node_id, kwargs)
+    
+    def remove_node(self, node, **kwargs):
+        try:
+            node_id = node.node_id
+        except AttributeError:
+            node_id = node
+        self._graph.remove_node(node_id)
 
     def add_edge(self, src, dst, retain=[], **kwargs):
         try:
