@@ -135,7 +135,10 @@ class overlay_node(object):
         object.__setattr__(self, 'node_id', node_id)
 
     def __eq__(self, other):
-        return self.node_id == other.node_id
+        try:
+            return self.node_id == other.node_id
+        except AttributeError:
+            return self.node_id == other #TODO: check why comparing against strings - if in overlay graph...
 
     def __lt__(self, other):
 # want [r1, r2, ..., r11, r12, ..., r21, r22] not [r1, r11, r12, r2, r21, r22]
@@ -239,6 +242,7 @@ class overlay_node(object):
             return self.anm.node_label(self)
         except KeyError:
             try:
+#TODO: shouldn't this be accessing the physical graph?
                 return self._graph.node[self.node_id]['label']
             except KeyError:
                 return self.node_id # node not in physical graph
@@ -604,7 +608,22 @@ class overlay_graph(OverlayBase):
             nbunch = (n for n in nbunch if n not in self._graph)
         self._graph.add_nodes_from(nbunch, **kwargs)
 
-    def add_node(self, node_id, **kwargs):
+    def add_node(self, node, retain=[], **kwargs):
+        try:
+            retain.lower()
+            retain = [retain] # was a string, put into list
+        except AttributeError:
+            pass # already a list
+
+        try:
+            node_id = node.id
+        except AttributeError:
+            node_id = node # use the string node id
+
+        data = {}
+        if len(retain):
+            data = dict( (key, node.get(key)) for key in retain)
+            kwargs.update(data) # also use the retained data
         self._graph.add_node(node_id, kwargs)
     
     def remove_node(self, node, **kwargs):
