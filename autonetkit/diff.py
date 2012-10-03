@@ -1,8 +1,5 @@
-import networkx as nx
 import glob
 import os
-import pprint
-from collections import defaultdict
 import nidb
 
 #TODO: make this generalise to two graphs, rather than NIDB specifically
@@ -16,150 +13,127 @@ def nidb_diff(directory = None, length = 1):
     pairs = [(a, b) for (a, b) in zip(pickle_files, pickle_files[1:])]
     pairs = pairs[-1*length:]
     diffs = []
-    for fileA, fileB in pairs:
+    for file_a, file_b in pairs:
         nidb_a = nidb.NIDB()
-        nidb_a.restore(fileA)
-        graphA = nidb_a._graph
+        nidb_a.restore(file_a)
+        graph_a = nidb_a._graph
         nidb_b = nidb.NIDB()
-        nidb_b.restore(fileB)
-        graphB = nidb_b._graph
-        diff = compare(graphA, graphB)
+        nidb_b.restore(file_b)
+        graph_b = nidb_b._graph
+        diff = compare(graph_a, graph_b)
         # remove render folder which is timestamps
         diffs.append(diff)
 
     return diffs
 
-#TODO: tidy the recursive algorithm for list/dict diffing: see stackoverflow
+def elem_diff(elem_a, elem_b):
+    if type(elem_a) != type(elem_b):
+        return "different types"
 
-def element_diff(elemA, elemB):
-    try: # split out if single element lists
-        if len(elemA) == len(elemB) == 1:
-            elemA = elemA[0]
-            elemB = elemB[0]
-    except TypeError:
-        pass
-    try:
-        elemA.keys() # see if both are dicts
-        elemB.keys()
-        return dict_diff(elemA, elemB)
-    except (TypeError, AttributeError):
-        if isinstance(elemA, list) and  isinstance(elemB, list):
-            if len(elemA) > 1 and len(elemB) > 1:
-                return list_diff(elemA, elemB)
-            else:
-                pass # single element in each list, compare as elements
-    if elemA == elemB:
-        return #TODO: see why this performs different to elemA != elemB
-    else:
-        return { '1': elemA, '2': elemB, }
+    if isinstance(elem_a, dict):
+        retval = {}
+        keys_a = set(elem_a.keys())
+        keys_b = set(elem_b.keys())
+        added_keys = keys_b - keys_a
+        if len(added_keys):
+            retval['a'] = list(added_keys)
+        removed_keys = keys_a - keys_b
+        if len(removed_keys):
+            retval['r'] = list(removed_keys)
+        common_keys = keys_a & keys_b
+        for key in common_keys:
+            res = elem_diff(elem_a[key], elem_b[key])
+            if res:
+                retval[key] = res
 
-def list_diff(listA, listB):
-    listA = sorted(listA)
-    listB = sorted(listB)
-    elements = zip(listA, listB)
-#TODO: check if list different lengths
-    list_changed = []
-    for (elemA, elemB) in elements:
-        try:
-            elemA.keys() # see if both are dicts
-            elemB.keys()
-            elem_changed = dict_diff(elemA, elemB) # are dicts, compare as a dict
-            if elem_changed:
-                list_changed.append(elem_changed)
-        except (TypeError, AttributeError):
-            try:
-                if len(elemA) > 1 and len(elemB) > 1:
-                    elem_changed = list_diff(elemA, elemB)
-                    if elem_changed:
-                        list_changed.append(elem_changed)
+        if len(retval):
+            return retval
 
-            except AttributeError:
-                return element_diff(elemA, elemB)
+    if isinstance(elem_a, list):
+        len_a = len(elem_a)
+        len_b = len(elem_b)
+#TODO: handle if different lengths
+        retval = []
+        min_len = min(len_a, len_b)
+        for index in range(min_len):
+            res = elem_diff(elem_a[index], elem_b[index])
+            if res:
+                retval.append(res)
 
-    if list_changed:
-        if len(list_changed) == 1:
-            return list_changed[0] # return as element
-        return list_changed
+        if any(retval):
+            return retval
 
-def dict_diff(dictA, dictB):
-    """Calls self recursively to see if any changes
-    If no changes returns None, if changes, returns changes
-    If no keys in self, returns None"""
-    #TODO: if no keys then return items???
-    #print "comparing", dictA, dictB
-    diff = defaultdict(dict)
-#TODO: start with elem diff
-    try:
-        keysA = set(dictA.keys())
-        keysB = set(dictB.keys())
-    except (TypeError, AttributeError):
-# if list, compare list items
-        element_modified = element_diff(dictA, dictB)
-        if element_modified:
-            return {'m': element_modified}
-        return
+    if elem_a != elem_b:
+        return {1: elem_a, 2: elem_b }
 
-#TODO: change commonKeys to common_keys
-
-    commonKeys = keysA & keysB
-    keys_modified = {}
-    for key in commonKeys:
-        subDictA = dictA[key]
-        subDictB = dictB[key]
-        changed = dict_diff(subDictA, subDictB)
-        if changed:
-            keys_modified[key] = changed
-
-    keys_added = keysB - keysA
-    if keys_added:
-        diff['a'] = keys_added
-    keys_removed = keysA - keysB
-    if keys_removed:
-        diff['r'] = keys_removed
-    if keys_modified:
-        diff['m'] = keys_modified
-
-    if diff:
-        return dict(diff)
-
-def compare(graphA, graphB):
+def compare(graph_a, graph_b):
     diff = {}
-    nodesA = set(graphA.nodes())
-    nodesB = set(graphB.nodes())
-    commonNodes = nodesA & nodesB
+
     diff = {
             'graph': {},
             'nodes': {},
             'edges': {},
             }
+
+    diff['graph'] = elem_diff(graph_a.graph, graph_b.graph)
+
+    nodes_a = set(graph_a.nodes())
+    nodes_b = set(graph_b.nodes())
+    common_nodes = nodes_a & nodes_b
+    added_nodes = nodes_b - nodes_a
+    if added_nodes:
+        diff['nodes']['a'] = list(added_nodes)
+    removed_nodes = nodes_a - nodes_b
+    if removed_nodes:
+        diff['nodes']['r'] = list(removed_nodes)
     diff['nodes'] = {
-            'a': nodesB - nodesA,
-            'r': nodesA - nodesB,
             'm': {},
             }
 
-    for node in commonNodes:
-        dictA = graphA.node[node]
-        dictB = graphB.node[node]
-        node_diff = dict_diff(dictA, dictB)
+    for node in common_nodes:
+        dict_a = graph_a.node[node]
+        dict_b = graph_b.node[node]
+        node_diff = elem_diff(dict_a, dict_b)
         if node_diff:
             diff['nodes']['m'][node] = node_diff
 
-    edgesA = set(graphA.edges())
-    edgesB = set(graphB.edges())
+    # remove empty if no changes
+    if not len(diff['nodes']['m']):
+        del diff['nodes']['m']
+
+    #TODO: do this backwards, and append at end
+    if not len(diff['nodes']):
+        del diff['nodes']
+
+    edges_a = set(graph_a.edges())
+    edges_b = set(graph_b.edges())
+    added_edges = edges_b - edges_a
+    if added_edges:
+        diff['edges']['a'] = list(added_edges)
+    removed_edges = edges_a - edges_b
+    if removed_edges:
+        diff['edges']['r'] = list(removed_edges)
+
     diff['edges'] = {
-            'a': edgesB - edgesA,
-            'r': edgesA - edgesB,
             'm': {},
             }
 
-    commonEdges = edgesA & edgesB
-    for (src, dst) in commonEdges:
-        dictA = graphA[src][dst]
-        dictB = graphB[src][dst]
-        edge_diff = dict_diff(dictA, dictB)
+    common_edges = edges_a & edges_b
+    for (src, dst) in common_edges:
+        dictA = graph_a[src][dst]
+        dictB = graph_b[src][dst]
+        edge_diff = elem_diff(dictA, dictB)
         if edge_diff:
-            diff['edges']['m'][(src, dst)] = edge_diff
+            name = "%s_%s" % (src, dst)
+            diff['edges']['m'][name] = edge_diff
+
+    # remove empty if no changes
+    if not len(diff['edges']['m']):
+        del diff['edges']['m']
+
+    #TODO: do this backwards, and append at end
+    if not len(diff['edges']):
+        del diff['edges']
 
 
     return diff
