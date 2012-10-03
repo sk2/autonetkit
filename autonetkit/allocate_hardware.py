@@ -11,6 +11,7 @@ class HardwareModel(object):
         self.graph = graph
 
 def allocate(anm):
+    return
     G_conn = anm['conn']
     G_phy = anm['phy']
     print "hardware"
