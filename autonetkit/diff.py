@@ -7,7 +7,9 @@ import nidb
 
 #TODO: make this generalise to two graphs, rather than NIDB specifically
 
-def nidb_diff(directory, length = 1):
+def nidb_diff(directory = None, length = 1):
+    if not directory:
+        directory = os.path.join("versions", "nidb")
     glob_dir = os.path.join(directory, "*.json.gz")
     pickle_files = glob.glob(glob_dir)
     pickle_files = sorted(pickle_files)
