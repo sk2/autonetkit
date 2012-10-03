@@ -56,15 +56,14 @@ def manage_network(input_filename, build_options, reload_build=False):
         nidb = NIDB()
         nidb.restore_latest()
 
-    import autonetkit.diff
-    nidb_diff = autonetkit.diff.nidb_diff()
-    #pprint.pprint(nidb_diff)
-    import ank_json
-    import json
-    data = json.dumps(nidb_diff, cls=ank_json.AnkEncoder, indent = 4)
-    print data
-    with open("diff.json", "w") as fh:
-        fh.write(data)
+    if build_options['diff']:
+        import autonetkit.diff
+        nidb_diff = autonetkit.diff.nidb_diff()
+        import ank_json
+        import json
+        data = json.dumps(nidb_diff, cls=ank_json.AnkEncoder, indent = 4)
+        with open("diff.json", "w") as fh:
+            fh.write(data)
     
 
 
@@ -82,6 +81,7 @@ def parse_options():
     opt.add_option('--monitor', '-m',  action="store_true", default= False, 
             help="Monitor input file for changes")        
     opt.add_option('--debug',  action="store_true", default= False, help="Debug mode")        
+    opt.add_option('--diff',  action="store_true", default= False, help="Diff NIDB")        
     opt.add_option('--compile',  action="store_true", default= False, help="Compile")        
     opt.add_option('--render',  action="store_true", default= False, help="Compile")        
     opt.add_option('--deploy',  action="store_true", default= False, help="Deploy")        
@@ -115,16 +115,16 @@ def main():
             'deploy': options.deploy or settings['General']['deploy'],
             'measure': options.measure or settings['General']['measure'],
             'monitor': options.monitor or settings['General']['monitor'],
+            'diff': options.diff or settings['General']['diff'],
             }
 
-
     if options.webserver:
-        log.info("Webserver not yet supported, run as seperate module")
+        log.info("Webserver not yet supported, please run as seperate module")
 
     manage_network(input_filename, build_options)
 
 #TODO: work out why build_options is being clobbered for monitor mode
-    build_options['monitor'] = options.monitor or settings['General']['monitor'],
+    build_options['monitor'] = options.monitor or settings['General']['monitor']
 
     if build_options['monitor']:
         try:
