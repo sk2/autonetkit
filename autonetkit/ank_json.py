@@ -9,6 +9,8 @@ import autonetkit.log as log
 class AnkEncoder(json.JSONEncoder):
     """Handles netaddr objects by converting to string form"""
     def default(self, obj):
+        if isinstance(obj, set):
+            return str(obj)
         if isinstance(obj, netaddr.IPAddress):
             return str(obj)
         if isinstance(obj, netaddr.IPNetwork):
@@ -32,6 +34,7 @@ def ank_json_dumps(graph, indent = 4):
 #TODO: use regex to convert IPAddress and IPNetwork back to respective form in decoder
     data = json.dumps(data, cls=AnkEncoder, indent = indent)
     return data
+
 
 def string_to_netaddr(val):
     retval = None
