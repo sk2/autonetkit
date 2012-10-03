@@ -314,6 +314,9 @@ def main():
         pc = PikaClient(io_loop, ank_accessor, host_address)
         application.pc = pc
         application.pc.connect()
+    else:
+        print "RabbitMQ disabled, exiting. Please set in config."
+        raise SystemExit
 
     use_message_pipe = ank_config.settings['Message Pipe']['active']
     use_message_pipe = False # disable for now
@@ -321,6 +324,7 @@ def main():
         port = ank_config.settings['Message Pipe']['port']
         application.echo_server = EchoServer()
         application.echo_server.listen(6000)
+
 
     #listening for web clientshost_address
 #TODO: make this driven from config
