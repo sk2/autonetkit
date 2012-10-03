@@ -56,6 +56,18 @@ def manage_network(input_filename, build_options, reload_build=False):
         nidb = NIDB()
         nidb.restore_latest()
 
+    import autonetkit.diff
+    nidb_diff = autonetkit.diff.nidb_diff()
+    #pprint.pprint(nidb_diff)
+    import ank_json
+    import json
+    data = json.dumps(nidb_diff, cls=ank_json.AnkEncoder, indent = 4)
+    print data
+    with open("diff.json", "w") as fh:
+        fh.write(data)
+    
+
+
     build_options.update(settings['General']) # update in case build has updated, eg for deploy
 
     if build_options['deploy']:
@@ -105,10 +117,15 @@ def main():
             'monitor': options.monitor or settings['General']['monitor'],
             }
 
+
     if options.webserver:
         log.info("Webserver not yet supported, run as seperate module")
 
     manage_network(input_filename, build_options)
+
+#TODO: work out why build_options is being clobbered for monitor mode
+    build_options['monitor'] = options.monitor or settings['General']['monitor'],
+
     if build_options['monitor']:
         try:
             log.info("Monitoring for updates...")
