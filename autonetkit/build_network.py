@@ -62,8 +62,17 @@ def build(input_filename):
     build_phy(anm)
     build_conn(anm)
     build_ip(anm)
-    build_ospf(anm)
-    build_isis(anm)
+    igp = G_in.data.igp or "ospf" #TODO: make default template driven
+#TODO: make the global igp be set on each node - this way can also support different IGPs per router
+
+# Add overlays even if not used: simplifies compiler where can check for presence in overlay (if blank not present, don't configure ospf etc)
+    anm.add_overlay("ospf")
+    anm.add_overlay("isis")
+    
+    if igp == "ospf":
+        build_ospf(anm)
+    if igp == "isis":
+        build_isis(anm)
     build_bgp(anm)
     return anm
 
@@ -78,7 +87,7 @@ def build_bgp(anm):
     G_bgp.add_edges_from(ebgp_edges, bidirectional = True, type = 'ebgp')
 
 # now iBGP
-    if len(G_phy) < 5:
+    if len(G_phy) < 500:
 # full mesh
         for asn, devices in G_phy.groupby("asn").items():
             routers = [d for d in devices if d.is_router]
