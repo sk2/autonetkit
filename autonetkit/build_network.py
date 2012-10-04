@@ -242,6 +242,7 @@ def build_isis(anm):
     for node in G_isis:
         ip_node = G_ip.node(node)
         node.net = ip_to_net_ent_title_ios(ip_node.loopback)
+        node.process_id = 1 # default
 
 def update_pika(anm):
     log.debug("Sending anm to pika")
