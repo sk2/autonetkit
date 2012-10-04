@@ -43,3 +43,5 @@ dist/*
 
 autonetkit_v3_cisco.egg-info/*
 diff.json
+
+autonetkit_v3_dev.egg-info/*
