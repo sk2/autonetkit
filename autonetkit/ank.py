@@ -35,13 +35,27 @@ def set_node_default(overlay_graph, nbunch, **kwargs):
                 graph.node[node][key] = val
 
 
+#TODO: rename to copy_node_attr_from
 def copy_attr_from(overlay_src, overlay_dst, attr):
     graph_src = unwrap_graph(overlay_src)
     graph_dst = unwrap_graph(overlay_dst)
     for n in graph_src:
-        graph_dst.node[n][attr] = graph_src.node[n][attr]
+        try:
+            graph_dst.node[n][attr] = graph_src.node[n][attr]
+        except KeyError:
+            #TODO: check if because node doesn't exist in dest, or because attribute doesn't exist in graph_src
+            log.debug("Unable to copy node attribute %s for %s in %s" % (attr, n, overlay_src))
 
 
+def copy_edge_attr_from(overlay_src, overlay_dst, attr):
+    graph_src = unwrap_graph(overlay_src)
+    graph_dst = unwrap_graph(overlay_dst)
+    for src, dst in graph_src.edges():
+        try:
+            graph_dst[src][dst][attr] = graph_src[src][dst][attr]
+        except KeyError:
+            #TODO: check if because edge doesn't exist in dest, or because attribute doesn't exist in graph_src
+            log.warning("Unable to copy edge attribute %s for (%s, %s) in %s" % (attr, src, dst, overlay_src))
 
 def stringify_netaddr(graph):
     import netaddr
