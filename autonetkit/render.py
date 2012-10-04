@@ -66,7 +66,7 @@ def render_node(node):
         try:
             ank_version = pkg_resources.get_distribution("AutoNetkit").version
         except pkg_resources.DistributionNotFound:
-            ank_version = "beta"
+            ank_version = "autonetkit_dev"
 
         date = time.strftime("%Y-%m-%d %H:%M", time.localtime())
 
@@ -197,7 +197,7 @@ def render_topology(topology):
     try:
         ank_version = pkg_resources.get_distribution("AutoNetkit").version
     except pkg_resources.DistributionNotFound:
-        ank_version = "beta"
+        ank_version = "autonetkit_dev"
     date = time.strftime("%Y-%m-%d %H:%M", time.localtime())
     try:
         render_output_dir = topology.render_dst_folder
