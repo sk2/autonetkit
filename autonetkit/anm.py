@@ -273,6 +273,7 @@ class overlay_node(object):
         """For consistency, node.set(key, value) is neater than setattr(node, key, value)"""
         return self.__setattr__(key, val)
 
+@functools.total_ordering
 class overlay_edge(object):
     """API to access link in network"""
     def __init__(self, anm, overlay_id, src_id, dst_id):
@@ -295,6 +296,9 @@ class overlay_edge(object):
     def __getstate__(self):
         """For pickling"""
         return (self.anm, self.overlay_id, self.src_id, self.dst_id)
+
+    def __lt__(self, other):
+        return ((self.src.node_id, self.dst.node_id) < (other.src.node_id, other.dst.node_id))
 
     def __setstate__(self, state):
         """For pickling"""
@@ -686,6 +690,7 @@ class overlay_graph(OverlayBase):
 #TODO: log to debug any filtered out nodes... if if lengths not the same
 
         #TODO: decide if want to allow nodes to be created when adding edge if not already in graph
+        ebunch = list(ebunch)
         self._graph.add_edges_from(ebunch, **kwargs)
 
     def update(self, nbunch, **kwargs):
