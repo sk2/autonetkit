@@ -27,6 +27,7 @@ class overlay_data_dict(collections.MutableMapping):
         self.store = data
         #self.data = parent[index]
         #self.update(dict(*args, **kwargs)) # use the free update to set keys
+#TODO: remove duplicate of self.store and parent
 
     def __getitem__(self, key):
         return self.store[self.__keytransform__(key)]
@@ -49,6 +50,8 @@ class overlay_data_dict(collections.MutableMapping):
 
     def __getattr__(self, key):
         return self.store.get(key)
+
+#TODO: fix __setattr__ so doesn't cause recursion - and so doesn't silently not set values in compiler
 
     def dump(self):
         return self.store
