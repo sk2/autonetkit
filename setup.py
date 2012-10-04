@@ -4,8 +4,8 @@ from setuptools import setup
 #from setuptools import setup, find_packages
 
 setup (
-     name = "autonetkit-v3-cisco",
-     version = "0.0.1",
+     name = "autonetkit-v3-dev",
+     version = "0.0.3",
      description = 'Automated configuration generator',
      long_description = 'Automated configuration generator',
 
