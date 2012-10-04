@@ -60,6 +60,9 @@ class RouterCompiler(object):
                     subnet = subnet,
                     )
 
+        node.interfaces.sort("id")
+    
+
 
     def ospf(self, node):
         """Returns OSPF links, also sets process_id
