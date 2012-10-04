@@ -39,13 +39,15 @@ def manage_network(input_filename, build_options, reload_build=False):
         rabbitmq_server = settings['Rabbitmq']['server']
         pika_channel = ank_pika.AnkPika(rabbitmq_server)
 
-        anm.save()
+        if build_options['archive']:
+            anm.save()
         nidb = compile_network(anm)
         import autonetkit.ank_json
         body = autonetkit.ank_json.dumps(anm, nidb)
         pika_channel.publish_compressed("www", "client", body)
         log.debug("Sent ANM to web server")
-        nidb.save()
+        if build_options['archive']:
+            nidb.save()
         #render.remove_dirs(["rendered"])
         render.render(nidb)
 
@@ -62,10 +64,9 @@ def manage_network(input_filename, build_options, reload_build=False):
         import ank_json
         import json
         data = json.dumps(nidb_diff, cls=ank_json.AnkEncoder, indent = 4)
-        with open("diff.json", "w") as fh:
+        log.info("Wrote diff to diff.json")
+        with open("diff.json", "w") as fh: #TODO: make file specified in config
             fh.write(data)
-    
-
 
     build_options.update(settings['General']) # update in case build has updated, eg for deploy
 
@@ -85,6 +86,7 @@ def parse_options():
     opt.add_option('--compile',  action="store_true", default= False, help="Compile")        
     opt.add_option('--render',  action="store_true", default= False, help="Compile")        
     opt.add_option('--deploy',  action="store_true", default= False, help="Deploy")        
+    opt.add_option('--archive',  action="store_true", default= False, help="Archive ANM, NIDB, and IP allocations")        
     opt.add_option('--measure',  action="store_true", default= False, help="Measure")        
     opt.add_option('--webserver',  action="store_true", default= False, help="Webserver")        
     options, arguments = opt.parse_args()
@@ -116,6 +118,7 @@ def main():
             'measure': options.measure or settings['General']['measure'],
             'monitor': options.monitor or settings['General']['monitor'],
             'diff': options.diff or settings['General']['diff'],
+            'archive': options.archive or settings['General']['archive'],
             }
 
     if options.webserver:
@@ -132,10 +135,11 @@ def main():
             input_filemonitor = FileMonitor(input_filename)
             build_filemonitor = FileMonitor("autonetkit/build_network.py")
             while True:
-                time.sleep(0.1)
+                time.sleep(1)
                 rebuild = False
                 reload_build = False
                 if input_filemonitor.has_changed():
+                    print "input changed"
                     rebuild = True
                 if build_filemonitor.has_changed():
                     reload_build = True
@@ -188,6 +192,7 @@ def compile_network(anm):
     return nidb
 
 def deploy_network(nidb, input_filename):
+    return
     import autonetkit.deploy.netkit as netkit_deploy
     import autonetkit.deploy.cisco as cisco_deploy
     #TODO: make this driven from config file
