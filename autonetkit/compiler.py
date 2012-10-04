@@ -376,7 +376,6 @@ class CiscoCompiler(PlatformCompiler):
         ios_compiler = IosClassicCompiler(self.nidb, self.anm)
         now = datetime.now()
         timestamp = now.strftime("%Y%m%d_%H%M%S_%f")
-        timestamp = ""
         dst_folder = "rendered/%s_%s/%s" % (self.host, timestamp, "cisco")
         for phy_node in G_phy.nodes('is_router', host = self.host, syntax='ios'):
             nidb_node = self.nidb.node(phy_node)
