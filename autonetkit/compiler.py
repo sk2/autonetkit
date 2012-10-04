@@ -27,8 +27,10 @@ class RouterCompiler(object):
         self.anm = anm
 
     def compile(self, node):
+        phy_node = self.anm['phy'].node(node)
         ip_node = self.anm.overlay.ip.node(node)
-        node.label = naming.network_hostname(self.anm['phy'].node(node))
+        node.label = naming.network_hostname(phy_node)
+        node.input_label = phy_node.id
         node.loopback = ip_node.loopback
         node.loopback_subnet = netaddr.IPNetwork(node.loopback)
         node.loopback_subnet.prefixlen = 32
