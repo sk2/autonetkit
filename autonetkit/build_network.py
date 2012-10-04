@@ -9,6 +9,7 @@ settings = autonetkit.config.settings
 import autonetkit.log as log
 import autonetkit.load.graphml as graphml
 import autonetkit.exception
+import networkx as nx
 
 
 __all__ = ['build']
@@ -40,7 +41,9 @@ def build(input_filename):
                 }
 
     #TODO: make this more explicit than overloading add_overlay - make it load_graph or something similar
-    G_in = anm.add_overlay("input", input_graph)
+    input_undirected = nx.Graph(input_graph)
+    G_in = anm.add_overlay("input", input_undirected)
+    G_in_directed = anm.add_overlay("input_directed", input_graph, directed = True)
 
     import autonetkit.plugins.graph_product as graph_product
     graph_product.expand(G_in) # apply graph products if relevant
@@ -62,6 +65,7 @@ def build(input_filename):
     build_phy(anm)
     build_conn(anm)
     build_ip(anm)
+    
     igp = G_in.data.igp or "ospf" #TODO: make default template driven
 #TODO: make the global igp be set on each node - this way can also support different IGPs per router
 
@@ -74,6 +78,7 @@ def build(input_filename):
     if igp == "isis":
         build_isis(anm)
     build_bgp(anm)
+    update_pika(anm)
     return anm
 
 
@@ -156,14 +161,22 @@ def build_phy(anm):
     G_phy = anm['phy']
     G_phy.add_nodes_from(G_in, retain=['label', 'update', 'device_type', 'device_subtype', 'asn', 'platform', 'host', 'syntax'])
     if G_in.data.Creator == "Topology Zoo Toolset":
-        ank.copy_attr_from(G_in, G_phy, "Network") # Copy Network from Zoo
+        ank.copy_attr_from(G_in, G_phy, "Network") 
+
     G_phy.add_edges_from(G_in.edges(type="physical"))
 
 
 def build_conn(anm):
     G_in = anm['input']
     G_phy = anm['phy']
-    G_conn = anm.add_overlay("conn")
+    G_conn = anm.add_overlay("conn", directed = True)
+    G_conn.add_nodes_from(G_in, retain=['label'])
+    G_conn.add_edges_from(G_in.edges(type="physical"))
+
+    if G_in.data.Creator == "Maestro":
+        ank.copy_edge_attr_from(G_in, G_conn, "index")
+
+    return
 
     import autonetkit.allocate_hardware
     autonetkit.allocate_hardware.allocate(anm)
