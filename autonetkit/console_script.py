@@ -103,9 +103,9 @@ def parse_options():
 def main():
     settings = config.settings
 
-    log.info("AutoNetkit %s" % ank_version)
 
     options, arguments = parse_options()
+    log.info("AutoNetkit %s" % ank_version)
 
     input_filename = options.file
     if not options.file:
@@ -199,7 +199,6 @@ def compile_network(anm):
     return nidb
 
 def deploy_network(nidb, input_filename):
-    return
     import autonetkit.deploy.netkit as netkit_deploy
     import autonetkit.deploy.cisco as cisco_deploy
     #TODO: make this driven from config file
