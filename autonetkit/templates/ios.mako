@@ -28,17 +28,17 @@ line con 0
 ## Physical Interfaces
 % for interface in node.interfaces:  
 interface ${interface.id}
-	description ${interface.description}
-	ip address ${interface.ip_address} ${interface.subnet.netmask}   
+  description ${interface.description}
+  ip address ${interface.ip_address} ${interface.subnet.netmask}   
 	% if interface.ospf_cost:
-	ip ospf cost ${interface.ospf_cost}
+  ip ospf cost ${interface.ospf_cost}
 	% endif
 	% if interface.isis:
-    ip router isis
+  ip router isis
 	% endif
-   	duplex auto
-	speed auto
-	no shutdown
+  duplex auto
+  speed auto
+  no shutdown
 !
 % endfor 
 !               
@@ -74,33 +74,35 @@ router eigrp ${node.eigrp.process_id}
 ! ibgp
 % for client in node.bgp.ibgp_rr_clients:   
 % if loop.first:
-	! ibgp clients
+  ! ibgp clients
 % endif    
-	! ${client.neighbor}
-    neighbor ${client.loopback} update-source ${node.bgp.lo_interface} 
-	neighbor ${client.loopback} route-reflector-client                                                   
+  ! ${client.neighbor}
+  neighbor ${client.loopback} update-source ${node.bgp.lo_interface} 
+  neighbor ${client.loopback} route-reflector-client                                                   
 % endfor            
 % for parent in node.bgp.ibgp_rr_parents:   
 % if loop.first:
-	! ibgp route reflector servers
+  ! ibgp route reflector servers
 % endif    
-	! ${parent.neighbor}
-    neighbor ${parent.loopback} remote-as ${parent.asn}
-    neighbor ${parent.loopback} update-source ${node.bgp.lo_interface} 
+  ! ${parent.neighbor}
+  neighbor ${parent.loopback} remote-as ${parent.asn}
+  neighbor ${parent.loopback} update-source ${node.bgp.lo_interface} 
 % endfor
 % for neigh in node.bgp.ibgp_neighbors:      
 % if loop.first:
-	! ibgp peers
+  ! ibgp peers
 % endif 
-	! ${neigh.neighbor}
-    neighbor ${neigh.loopback} remote-as ${neigh.asn}
-    neighbor ${neigh.loopback} update-source ${node.bgp.lo_interface}
-    neighbor ${neigh.loopback} next-hop-self
+  ! ${neigh.neighbor}
+  neighbor ${neigh.loopback} remote-as ${neigh.asn}
+  neighbor ${neigh.loopback} update-source ${node.bgp.lo_interface}
+  neighbor ${neigh.loopback} next-hop-self
 % endfor
-! ebgp
 % for neigh in node.bgp.ebgp_neighbors:      
-	! ${neigh.neighbor} 
-    neighbor ${neigh.dst_int_ip} remote-as ${neigh.asn}
-    neighbor ${neigh.dst_int_ip} send-community
+% if loop.first:
+! ebgp
+% endif
+  ! ${neigh.neighbor} 
+  neighbor ${neigh.dst_int_ip} remote-as ${neigh.asn}
+  neighbor ${neigh.dst_int_ip} send-community
 % endfor    
 % endif 
