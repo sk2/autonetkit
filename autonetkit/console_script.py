@@ -14,6 +14,11 @@ import autonetkit.config as config
 #import autonetkit.bgp_pol as bgp_pol
 #raise SystemExit
 
+try:
+    ank_version = pkg_resources.get_distribution("autonetkit-v3-dev").version
+except pkg_resources.DistributionNotFound:
+    ank_version = "dev"
+
 class FileMonitor(object):
     """Lightweight polling-based monitoring to see if file has changed"""
     def __init__(self, filename):
@@ -78,6 +83,9 @@ def manage_network(input_filename, build_options, reload_build=False):
 def parse_options():
     import optparse
     opt = optparse.OptionParser()
+    usage = ("autonetkit -f input.graphml\n"
+            "www.autonetkit.org")
+    opt = optparse.OptionParser(usage, version="%prog " + str(ank_version))
     opt.add_option('--file', '-f', default= None, help="Load topology from FILE")        
     opt.add_option('--monitor', '-m',  action="store_true", default= False, 
             help="Monitor input file for changes")        
@@ -94,17 +102,16 @@ def parse_options():
 
 def main():
     settings = config.settings
-    try:
-        ank_version = pkg_resources.get_distribution("AutoNetkit").version
-    except pkg_resources.DistributionNotFound:
-        ank_version = "0.1"
+
     log.info("AutoNetkit %s" % ank_version)
 
     options, arguments = parse_options()
 
     input_filename = options.file
     if not options.file:
-        input_filename = "ank.graphml"
+        #input_filename = "ank.graphml"
+        log.warning("No input file specified. Please specify an input file, eg autonetkit -f input.graphml")
+        raise SystemExit
 
     if options.debug or settings['General']['debug']:
         #TODO: fix this
