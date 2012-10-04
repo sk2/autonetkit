@@ -19,6 +19,8 @@ def sort_attribute(attribute, sort_key):
     return sorted(attribute,  key = lambda x: x[sort_key])
 
 class RouterCompiler(object):
+    lo_interface = "lo0" #make this clear distinction between interface id and lo IP
+
     """Base Router compiler"""
     def __init__(self, nidb, anm):
         self.nidb = nidb
@@ -66,7 +68,7 @@ class RouterCompiler(object):
         G_ip = self.anm['ip']
         phy_node = self.anm['phy'].node(node)
         node.ospf.process_id = 1
-        node.ospf.lo_interface = "Loopback0"
+        node.ospf.lo_interface = self.lo_interface 
         node.ospf.ospf_links = []
         added_networks = set()
         for link in G_ospf.edges(phy_node):
@@ -104,7 +106,7 @@ class RouterCompiler(object):
                     'neighbor': neigh.label,
                     'asn': neigh.asn,
                     'loopback': neigh_ip.loopback,
-                    'update_source': "loopback 0",
+                    'update_source': "loopback 0", #TODO: this is platform dependent???
                     }
                 if session.direction == 'down':
                     #ibgp_rr_clients[key] = data
@@ -123,7 +125,7 @@ class RouterCompiler(object):
                     'loopback': neigh_ip.loopback,
                     'local_int_ip': ip_link.ip_address,
                     'dst_int_ip': dst_int_ip,
-                    'update_source': "loopback 0",
+                    'update_source': self.lo_interface, # TODO: change templates to access this from node.bgp.lo_interface
                 })
 
         node.bgp.ebgp_neighbors.sort("asn")
@@ -133,6 +135,8 @@ class RouterCompiler(object):
 
 class QuaggaCompiler(RouterCompiler):
     """Base Router compiler"""
+    lo_interface = "lo0:1"
+
     def interfaces(self, node):
         ip_node = self.anm.overlay.ip.node(node)
         phy_node = self.anm.overlay.phy.node(node)
@@ -148,20 +152,18 @@ class QuaggaCompiler(RouterCompiler):
 
         if phy_node.is_router:
             node.interfaces.append(
-                    id = "lo:1",
+                    id = self.lo_interface,
                     description = "Loopback for BGP",
                     ip_address = ip_node.loopback,
                     subnet = node.loopback_subnet
                     )
 
-        #print
-        #print "---"
-        #pprint.pprint( node.interfaces.dump())
-
 #TODO: Don't render netkit lab topology if no netkit hosts
 
 class IosBaseCompiler(RouterCompiler):
     """Base IOS compiler"""
+
+    lo_interface = "Loopback0"
 
     def compile(self, node):
         super(IosBaseCompiler, self).compile(node)
@@ -185,14 +187,20 @@ class IosBaseCompiler(RouterCompiler):
             isis_link = G_isis.edge(interface._edge_id) # find link in OSPF with this ID
             if isis_link: # only configure if has ospf interface
                 interface['isis'] = True
+                isis_node = G_isis.node(node)
+                interface['isis_process_id'] = isis_node.process_id  #TODO: should this be from the interface?
 
 #TODO: update this to new format
         node.interfaces.append(
-            id = 'lo0',
+            id = self.lo_interface,
             description = "Loopback",
             ip_address = ip_node.loopback,
             subnet = loopback_subnet,
             )
+
+    def bgp(self, node):
+        node.bgp.lo_interface = self.lo_interface
+        super(IosBaseCompiler, self).bgp(node)
 
 
     def isis(self, node):
@@ -200,6 +208,7 @@ class IosBaseCompiler(RouterCompiler):
         """
         isis_node = self.anm['isis'].node(node)
         node.isis.net = isis_node.net
+        node.isis.process_id = isis_node.process_id
 
 class IosClassicCompiler(IosBaseCompiler):
     pass
@@ -364,6 +373,7 @@ class CiscoCompiler(PlatformCompiler):
         ios_compiler = IosClassicCompiler(self.nidb, self.anm)
         now = datetime.now()
         timestamp = now.strftime("%Y%m%d_%H%M%S_%f")
+        timestamp = ""
         dst_folder = "rendered/%s_%s/%s" % (self.host, timestamp, "cisco")
         for phy_node in G_phy.nodes('is_router', host = self.host, syntax='ios'):
             nidb_node = self.nidb.node(phy_node)
