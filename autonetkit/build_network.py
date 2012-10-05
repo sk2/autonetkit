@@ -52,12 +52,18 @@ def build(input_filename):
         # Multiple ASNs set, use label format device.asn 
         anm.set_node_label(".",  ['label', 'pop', 'asn'])
 
+    for node in G_in:
+        node.platform = "netkit"
+        node.host = "nectar1"
+
 # set syntax for routers according to platform
 #TODO: make these defaults
     G_in.update(G_in.nodes("is_router", platform = "junosphere"), syntax="junos")
     G_in.update(G_in.nodes("is_router", platform = "dynagen"), syntax="ios")
     G_in.update(G_in.nodes("is_router", platform = "netkit"), syntax="quagga")
     #G_in.update(G_in.nodes("is_router", platform = "cisco"), syntax="ios")
+
+
 
     G_graphics = anm.add_overlay("graphics") # plotting data
     G_graphics.add_nodes_from(G_in, retain=['x', 'y', 'device_type', 'device_subtype', 'pop', 'asn'])
