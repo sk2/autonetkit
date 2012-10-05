@@ -57,12 +57,11 @@ def build(input_filename):
         # Multiple ASNs set, use label format device.asn 
         anm.set_node_label(".",  ['label', 'pop', 'asn'])
 
-
 #TODO: remove, used for demo on nectar
-    for node in G_in:
-        node.platform = "netkit"
-        node.host = "nectar1"
-    G_in.data.igp = "ospf"
+    #for node in G_in:
+        #node.platform = "netkit"
+        #node.host = "nectar1"
+    #G_in.data.igp = "ospf"
 
 # set syntax for routers according to platform
 #TODO: make these defaults
