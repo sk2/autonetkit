@@ -42,6 +42,11 @@ def build(input_filename):
 
     #TODO: make this more explicit than overloading add_overlay - make it load_graph or something similar
     input_undirected = nx.Graph(input_graph)
+    for node in input_graph:
+        #del input_graph.node[node]['router config']
+        #del input_graph.node[node]['device_subtype']
+        pass
+    #nx.write_graphml(input_graph, "output.graphml")
     G_in = anm.add_overlay("input", input_undirected)
     G_in_directed = anm.add_overlay("input_directed", input_graph, directed = True)
 
@@ -52,9 +57,12 @@ def build(input_filename):
         # Multiple ASNs set, use label format device.asn 
         anm.set_node_label(".",  ['label', 'pop', 'asn'])
 
+
+#TODO: remove, used for demo on nectar
     for node in G_in:
         node.platform = "netkit"
         node.host = "nectar1"
+    G_in.data.igp = "ospf"
 
 # set syntax for routers according to platform
 #TODO: make these defaults
@@ -63,12 +71,11 @@ def build(input_filename):
     G_in.update(G_in.nodes("is_router", platform = "netkit"), syntax="quagga")
     #G_in.update(G_in.nodes("is_router", platform = "cisco"), syntax="ios")
 
-
-
     G_graphics = anm.add_overlay("graphics") # plotting data
     G_graphics.add_nodes_from(G_in, retain=['x', 'y', 'device_type', 'device_subtype', 'pop', 'asn'])
 
     build_phy(anm)
+    update_pika(anm)
     build_conn(anm)
     build_ip(anm)
     
