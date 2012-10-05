@@ -64,8 +64,6 @@ class RouterCompiler(object):
 
         node.interfaces.sort("id")
     
-
-
     def ospf(self, node):
         """Returns OSPF links, also sets process_id
         """
@@ -372,6 +370,12 @@ class CiscoCompiler(PlatformCompiler):
         for (slot, port) in id_pairs:
             yield "Ethernet%s/%s" % (slot, port)
 
+
+    def interface_ids_ios2(self):
+        id_pairs = ( (slot, port) for (slot, port) in itertools.product(range(17), range(5))) 
+        for (slot, port) in id_pairs:
+            yield "GigabitEthernet/%s/%s/%s" % (1, slot, port)
+
     def compile(self):
         log.info("Compiling Cisco for %s" % self.host)
         G_phy = self.anm.overlay.phy
@@ -402,7 +406,7 @@ class CiscoCompiler(PlatformCompiler):
             nidb_node.render.dst_file = "%s.conf" % naming.network_hostname(phy_node)
 
             # Assign interfaces
-            int_ids = self.interface_ids_ios()
+            int_ids = self.interface_ids_ios2()
             for edge in self.nidb.edges(nidb_node):
                 edge.id = int_ids.next()
 
