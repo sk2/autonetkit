@@ -5,7 +5,7 @@ from setuptools import setup
 
 setup (
      name = "autonetkit-v3-dev",
-     version = "0.0.15",
+     version = "0.0.17",
      description = 'Automated configuration generator',
      long_description = 'Automated configuration generator',
 
