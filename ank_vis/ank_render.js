@@ -706,8 +706,9 @@ function redraw_paths() {
       })
   .transition()
     .duration(1000)
-    .style("stroke-width", 3)
-    .style("stroke", "rgb(0,154,138)")
+    .style("stroke-width", 5)
+    //.style("stroke", "rgb(0,154,138)")
+    .style("stroke", "orange")
     .style("opacity", 50)
     ;
 
