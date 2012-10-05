@@ -14,6 +14,8 @@ import autonetkit.config as config
 #import autonetkit.bgp_pol as bgp_pol
 #raise SystemExit
 
+#TODO: make if measure set, then not compile - or warn if both set, as don't want to regen topology when measuring
+
 try:
     ank_version = pkg_resources.get_distribution("autonetkit-v3-dev").version
 except pkg_resources.DistributionNotFound:
@@ -39,10 +41,12 @@ def manage_network(input_filename, build_options, reload_build=False):
         build_network = reload(build_network)
     settings = config.settings
 
+    rabbitmq_server = settings['Rabbitmq']['server']
+    pika_channel = ank_pika.AnkPika(rabbitmq_server)
+
     if build_options['compile']:
         anm = build_network.build(input_filename)
-        rabbitmq_server = settings['Rabbitmq']['server']
-        pika_channel = ank_pika.AnkPika(rabbitmq_server)
+
 
         if build_options['archive']:
             anm.save()
@@ -62,6 +66,8 @@ def manage_network(input_filename, build_options, reload_build=False):
         anm.restore_latest()
         nidb = NIDB()
         nidb.restore_latest()
+        body = autonetkit.ank_json.dumps(anm, nidb)
+        pika_channel.publish_compressed("www", "client", body)
 
     if build_options['diff']:
         import autonetkit.diff
