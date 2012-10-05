@@ -54,7 +54,7 @@ def run_command(rmq_channel, command, hosts,  threads):
                 body= body)
         #conn.execute("exit")
         
-    accounts = [Account("root")] 
+    accounts = [Account("root", password = "1234")] 
 
     hosts = [Host(h, default_protocol = "ssh") for h in hosts]
 #TODO: open multiple ssh sessions

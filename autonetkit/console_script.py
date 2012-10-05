@@ -74,9 +74,12 @@ def manage_network(input_filename, build_options, reload_build=False):
             fh.write(data)
 
     build_options.update(settings['General']) # update in case build has updated, eg for deploy
+    build_options.update(settings['General']) # update in case build has updated, eg for deploy
 
     if build_options['deploy']:
         deploy_network(nidb, input_filename)
+
+    print build_options
     if build_options['measure']:
         measure_network(nidb)
 

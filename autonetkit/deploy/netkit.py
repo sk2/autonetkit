@@ -108,7 +108,7 @@ def extract(host, username, tar_file, cd_dir, timeout = 30, key_filename = None)
 
     if key_filename:
         key = PrivateKey.from_file(key_filename)
-        log.debug("Connecting to %s with username %s and key %s" % (host, username, key))
+        log.debug("Connecting to %s with username %s and key %s" % (host, username, key_filename))
         accounts = [Account(username, key = key)] 
     else:
         log.debug("Connecting to %s with username %s" % (host, username))
