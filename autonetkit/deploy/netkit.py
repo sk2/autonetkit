@@ -1,6 +1,7 @@
 import autonetkit.log as log
 import time
 import re
+import autonetkit.config as config
 
 def package(src_dir, target):
     log.info("Packaging %s" % src_dir)
@@ -13,7 +14,6 @@ def package(src_dir, target):
     tar.close()
     return tar_filename
 
-
 def transfer(host, username, local, remote, key_filename = None):
     log.info("Transferring lab to %s" % host)
     import paramiko
@@ -21,29 +21,39 @@ def transfer(host, username, local, remote, key_filename = None):
     ssh.set_missing_host_key_policy(
         paramiko.AutoAddPolicy())
     if key_filename:
+        log.debug("Connecting to %s with %s and key %s" % (host, username, key_filename))
         ssh.connect(host, username = username, key_filename = key_filename)
     else:
+        log.debug("Connecting to %s with %s" % (host, username))
+        ssh.connect(host, username = username, key_filename = key_filename)
         ssh.connect(host, username = username)
+    log.debug("Opening SSH for SFTP")
     ftp = ssh.open_sftp()
+    log.debug("Putting file %s to %s" % (local, remote))
     ftp.put(local, remote)
+    log.debug("Put file %s to %s" % (local, remote))
     ftp.close()
 
 def extract(host, username, tar_file, cd_dir, timeout = 30, key_filename = None):
     """Extract and start lab"""
+    log.debug("Extracting and starting lab on %s" % (host))
     from Exscript import Account
     from Exscript.util.start import start
     from Exscript.util.match import first_match
     from Exscript import PrivateKey
     from Exscript.protocols.Exception import InvalidCommandException
 
-    import pika
-    import json
-    www_connection = pika.BlockingConnection(pika.ConnectionParameters(
-            host='115.146.94.68'))
-    www_channel = www_connection.channel()
 
-    www_channel.exchange_declare(exchange='www',
-            type='direct')
+    use_rabbitmq = config.settings['Rabbitmq']['active']
+    if use_rabbitmq:
+        import pika
+        import json
+        pika_host = config.settings['Rabbitmq']['server']
+        www_connection = pika.BlockingConnection(pika.ConnectionParameters(
+                host = pika_host))
+        www_channel = www_connection.channel()
+        www_channel.exchange_declare(exchange='www',
+                type='direct')
 
 
     def starting_host(protocol, index, data):
@@ -53,15 +63,17 @@ def extract(host, username, tar_file, cd_dir, timeout = 30, key_filename = None)
             hostname = m.group(1)
             log.info(data.group(index)) #TODO: use regex to strip out just the machine name
             body = {"starting": hostname}
-            www_channel.basic_publish(exchange='www',
-                    routing_key = "client",
-                    body= json.dumps(body))
+            if use_rabbitmq:
+                www_channel.basic_publish(exchange='www',
+                        routing_key = "client",
+                        body= json.dumps(body))
 
     def lab_started(protocol, index, data):
         body = {"lab started": host}
-        www_channel.basic_publish(exchange='www',
-                routing_key = "client",
-                body= json.dumps(body))
+        if use_rabbitmq:
+            www_channel.basic_publish(exchange='www',
+                    routing_key = "client",
+                    body= json.dumps(body))
 
     def do_something(thread, host, conn):
         conn.set_timeout(timeout)
@@ -96,8 +108,10 @@ def extract(host, username, tar_file, cd_dir, timeout = 30, key_filename = None)
 
     if key_filename:
         key = PrivateKey.from_file(key_filename)
+        log.debug("Connecting to %s with username %s and key %s" % (host, username, key))
         accounts = [Account(username, key = key)] 
     else:
+        log.debug("Connecting to %s with username %s" % (host, username))
         accounts = [Account(username)] 
 
     hosts = ['ssh://%s' % host]

@@ -4,21 +4,23 @@ import pika
 import json
 import pprint
 import autonetkit.plugins.process_data as process_data
+import autonetkit.config as config
 
 def send(nidb, server, command, hosts, threads = 5):
 # netaddr IP addresses not JSON serializable
     hosts = [str(h) for h in hosts]
 
+    pika_host = config.settings['Rabbitmq']['server']
 
     www_connection = pika.BlockingConnection(pika.ConnectionParameters(
-            host='115.146.94.68'))
+            host= pika_host))
     www_channel = www_connection.channel()
 
     www_channel.exchange_declare(exchange='www',
             type='direct')
 
     connection = pika.BlockingConnection(pika.ConnectionParameters(
-        host='115.146.94.68'))
+        host= pika_host))
     channel = connection.channel()
 
     channel.exchange_declare(exchange='measure',

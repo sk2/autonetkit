@@ -2,11 +2,13 @@ import pika
 import json
 import pprint
 import sys
+import autonetkit.config as config
 
 def main():
     server = sys.argv[1]
+    pika_host = config.settings['Rabbitmq']['server']
     connection = pika.BlockingConnection(pika.ConnectionParameters(
-            host='115.146.94.68'))
+            host = pika_host))
     channel = connection.channel()
 
     channel.exchange_declare(exchange='measure',
@@ -38,10 +40,6 @@ def run_command(rmq_channel, command, hosts,  threads):
     """Execute command on remote host"""
     from Exscript import Account, Host
     from Exscript.util.start import start
-    from Exscript.util.match import first_match, any_match
-    from Exscript import PrivateKey
-    from Exscript.util.template import eval_file
-    from Exscript.protocols.Exception import InvalidCommandException
 
     results = {}
 
