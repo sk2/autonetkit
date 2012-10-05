@@ -210,7 +210,7 @@ def deploy_network(nidb, input_filename):
         for platform, platform_data in host_data.items():
 
             if not platform_data['deploy']:
-                log.debug("Not deploying to %s" % hostname)
+                log.debug("Not deploying to %s on %s" % (platform, hostname))
                 continue
 
             config_path = os.path.join("rendered", hostname, platform)
