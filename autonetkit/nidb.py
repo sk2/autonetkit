@@ -345,8 +345,14 @@ class nidb_node(object):
         if self_node_string == other_node_string:
             self_node_id = "".join([x for x in self.node_id if x in string.digits])
             other_node_id = "".join([x for x in other.node_id if x in string.digits])
-            self_node_id = int(self_node_id)
-            other_node_id = int(other_node_id)
+            try:
+                self_node_id = int(self_node_id)
+            except ValueError:
+                pass # not a number
+            try:
+                other_node_id = int(other_node_id)
+            except ValueError:
+                pass # not a number
 
         return ((self.asn, self_node_id) < (other.asn, other_node_id))
 
