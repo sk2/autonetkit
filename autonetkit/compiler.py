@@ -370,11 +370,10 @@ class CiscoCompiler(PlatformCompiler):
         for (slot, port) in id_pairs:
             yield "Ethernet%s/%s" % (slot, port)
 
-
     def interface_ids_ios2(self):
         id_pairs = ( (slot, port) for (slot, port) in itertools.product(range(17), range(5))) 
         for (slot, port) in id_pairs:
-            yield "GigabitEthernet/%s/%s/%s" % (1, slot, port)
+            yield "GigabitEthernet%s/%s/%s" % (0, slot, port)
 
     def compile(self):
         log.info("Compiling Cisco for %s" % self.host)
