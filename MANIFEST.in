@@ -1,5 +1,8 @@
 recursive-include package *
+include autonetkit/ank_vis/*.*
+include autonetkit/ank_vis/icons/*.*
 
 include autonetkit/templates/*.mako
 include autonetkit/templates/ios2/*.mako
 include autonetkit/config/configspec.cfg
+
