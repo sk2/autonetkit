@@ -11,6 +11,9 @@ import sys
 import autonetkit.config as ank_config
 from multiprocessing.connection import Listener
 import logging
+import pkg_resources
+www_dir = pkg_resources.resource_filename(__name__, "ank_vis")
+
 
 
 class EchoServer(TCPServer):
@@ -268,7 +271,7 @@ class AnkAccessor():
         self.ip_allocation = {}
 # try loading from vis directory
         try:
-            fh = open("ank_vis/default.json", "r")
+            fh = open(os.path.join(www_dir, "default.json"), "r")
             data = json.load(fh)
             #data = json.loads(loaded)
             self.anm = data.get("anm")
@@ -294,9 +297,8 @@ def main():
     ank_accessor = AnkAccessor()
 # check if most recent outdates current most recent
 
-    static_path = os.path.join("ank_vis")
     settings = {
-            "static_path": static_path,
+            "static_path": www_dir,
             'debug': False,
             }
 
