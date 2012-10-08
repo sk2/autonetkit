@@ -5,7 +5,7 @@ from setuptools import setup
 
 setup (
      name = "autonetkit-v3-dev",
-     version = "0.0.18",
+     version = "0.0.20",
      description = 'Automated configuration generator',
      long_description = 'Automated configuration generator',
 
@@ -13,6 +13,7 @@ setup (
      entry_points = {
          'console_scripts': [
              'autonetkit = autonetkit.console_script:main',
+             'ank_webserver = autonetkit.webserver:main',
          ],
      },
 
