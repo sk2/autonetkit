@@ -9,63 +9,83 @@ import json
 import glob
 import sys
 import autonetkit.config as ank_config
-from multiprocessing.connection import Listener
 import logging
 import pkg_resources
 www_dir = pkg_resources.resource_filename(__name__, "ank_vis")
 
-
-
 class EchoServer(TCPServer):
 
-    def __init__(self, io_loop=None, ssl_options=None, **kwargs):
+    def __init__(self, io_loop=None, ssl_options=None, ank_accessor = None, **kwargs):
         logging.info('a echo tcp server is started')
         self.event_listeners = set([])
+        self.ank_accessor = ank_accessor
         TCPServer.__init__(self, io_loop=io_loop, ssl_options=ssl_options, **kwargs)
 
     def handle_stream(self, stream, address):
-        EchoConnection(stream, address, self.event_listeners)
+        EchoConnection(stream, address, self.event_listeners, self.ank_accessor)
 
     def add_event_listener(self, listener):
         self.event_listeners.add(listener)
         print('PikaClient: listener %s added' % repr(listener))
  
     def remove_event_listener(self, listener):
-        try:
-            self.event_listeners.remove(listener)
-            print('PikaClient: listener %s removed' % repr(listener))
-        except KeyError:
-            pass
+        #TODO: check this works....
+        print "removed listener"
+        self.event_listeners.remove(listener)
+        print('PikaClient: listener %s removed' % repr(listener))
 
 class EchoConnection(object):
 
     stream_set = set([])
 
-    def __init__(self, stream, address, event_listeners):
+    def __init__(self, stream, address, event_listeners, ank_accessor):
         logging.info('receive a new connection from %s', address)
         self.stream = stream
         self.address = address
         self.stream_set.add(self.stream)
-        self.stream.set_close_callback(self._on_close)
-        self.stream.read_until('\n', self._on_read_line)
+        #self.stream.set_close_callback(self._on_close)
+        #self.stream.read_until('__end__', self._on_read_line)
+        self.stream.read_until_close(self._on_close)
         self.event_listeners = event_listeners
+        self.ank_accessor = ank_accessor
 
-    def _on_read_line(self, data):
-        logging.info('read a new line from %s', self.address)
-        for stream in self.stream_set:
-            #stream.write(data, self._on_write_complete)
-            for listener in self.event_listeners:
-                body = json.dumps(data)
-                listener.write_message(body)
+    def _on_close(self, data):
+        #TODO: check this is called
+        body_parsed = json.loads(data)
+        if body_parsed.has_key("anm"):
+            print "Received new anm"
+            try:
+                self.ank_accessor.anm = body_parsed['anm']
+                #TODO: could process diff and only update client if data has changed -> more efficient client side
+                self.update_listeners("overlays")
+                # TODO: find better way to replace object not just local reference, as need to replace for RequestHandler too
+            except Exception, e:
+                print "Exception is", e
+        elif body_parsed.has_key("ip_allocations"):
+            alloc = json.loads(body_parsed['ip_allocations'])
+            self.ank_accessor.ip_allocation = alloc
+            self.update_listeners("ip_allocations")
+        elif "path" in body_parsed:
+            self.notify_listeners(data) # could do extra processing here
+        else:
+            self.notify_listeners(data)
 
-    def _on_write_complete(self):
-        logging.info('write a line to %s', self.address)
-        if not self.stream.reading():
-            self.stream.read_until('\n', self._on_read_line)
-
-    def _on_close(self):
+        for listener in self.event_listeners:
+            try:
+                listener.write_message(data) 
+            except AttributeError:
+                pass # listener was removed from parent EchoServer, but not from this stream...?
         logging.info('client quit %s', self.address)
         self.stream_set.remove(self.stream)
+
+    
+    def update_listeners(self, index):
+        for listener in self.event_listeners:
+            if index == "overlays":
+                listener.update_overlay()
+            elif index == "ip_allocations":
+                listener.update_ip_allocation()
+            #listener.write_message(body)
 
 class MyWebHandler(tornado.web.RequestHandler):
     def get(self):
@@ -94,18 +114,24 @@ class MyWebSocketHandler(websocket.WebSocketHandler):
         return True
 
     def open(self, *args, **kwargs):
-        self.application.pc.add_event_listener(self)
         try:
             self.application.echo_server.add_event_listener(self)
         except AttributeError:
-            pass # no echo_server
+            pass # no echo server
+        try:
+            self.application.pc.add_event_listener(self)
+        except AttributeError:
+            pass # no RabbitMQ server
         pika.log.info("WebSocket opened")
 
     def on_close(self):
         pika.log.info("WebSocket closed")
-        self.application.pc.remove_event_listener(self)
         try:
-            self.application.echo_server.add_event_listener(self)
+            self.application.pc.remove_event_listener(self)
+        except AttributeError:
+            pass # no RabbitMQ server
+        try:
+            self.application.echo_server.remove_event_listener(self)
         except AttributeError:
             pass # no echo_server
 
@@ -318,14 +344,14 @@ def main():
         application.pc.connect()
     else:
         print "RabbitMQ disabled, exiting. Please set in config."
-        raise SystemExit
+        #raise SystemExit
 
     use_message_pipe = ank_config.settings['Message Pipe']['active']
-    use_message_pipe = False # disable for now
+    #use_message_pipe = False # disable for now
     if use_message_pipe:
         port = ank_config.settings['Message Pipe']['port']
-        application.echo_server = EchoServer()
-        application.echo_server.listen(6000)
+        application.echo_server = EchoServer(ank_accessor = ank_accessor)
+        application.echo_server.listen(port)
 
 
     #listening for web clientshost_address
