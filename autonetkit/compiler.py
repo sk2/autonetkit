@@ -375,7 +375,13 @@ class CiscoCompiler(PlatformCompiler):
         for (slot, port) in id_pairs:
             yield "GigabitEthernet%s/%s/%s" % (0, slot, port)
 
+
     def compile(self):
+
+        def edge_id_numeric(edge):
+            # assumes format xx_src_dst -> return the xx component
+            return int(edge.edge_id.split("_")[0])
+
         log.info("Compiling Cisco for %s" % self.host)
         G_phy = self.anm.overlay.phy
         ios_compiler = IosClassicCompiler(self.nidb, self.anm)
@@ -390,7 +396,7 @@ class CiscoCompiler(PlatformCompiler):
 
             # Assign interfaces
             int_ids = self.interface_ids_ios()
-            for edge in self.nidb.edges(nidb_node):
+            for edge in sorted(self.nidb.edges(nidb_node), key = edge_id_numeric):
                 edge.id = int_ids.next()
 
             ios_compiler.compile(nidb_node)
@@ -406,9 +412,10 @@ class CiscoCompiler(PlatformCompiler):
 
             # Assign interfaces
             int_ids = self.interface_ids_ios2()
-            for edge in self.nidb.edges(nidb_node):
+            for edge in sorted(self.nidb.edges(nidb_node), key = edge_id_numeric):
                 edge.id = int_ids.next()
 
+            print edge.edge_id
             ios2_compiler.compile(nidb_node)
 
 class DynagenCompiler(PlatformCompiler):
