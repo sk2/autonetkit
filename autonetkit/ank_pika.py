@@ -1,37 +1,82 @@
 import autonetkit.config as config
 import autonetkit.log as log
+import socket
 
 use_rabbitmq = config.settings['Rabbitmq']['active']
 if use_rabbitmq:
     import pika
+
+use_message_pipe = config.settings['Message Pipe']['active']
+if use_message_pipe:
+    import telnetlib
 
 #TODO: tidy this to be a try/except ImportError
 
 #import pika.log
 #pika.log.setup(pika.log.DEBUG, color=True)
 
+
+#TODO: rename to messaging
+
 class AnkPika(object):
 
     def __init__(self, host):
-        if use_rabbitmq:
-            log.debug("Using Rabbitmq with server %s " % host)
-            self.connection = pika.BlockingConnection(pika.ConnectionParameters(
-                host = host))
-            self.channel = self.connection.channel()
-            self.channel.exchange_declare(exchange='www',
-                    type='direct')
-        else:
-            log.debug("Not using Rabbitmq")
+        try:
+            if use_rabbitmq:
+                log.debug("Using Rabbitmq with server %s " % host)
+                self.connection = pika.BlockingConnection(pika.ConnectionParameters(
+                    host = host))
+                self.channel = self.connection.channel()
+                self.channel.exchange_declare(exchange='www',
+                        type='direct')
+                self.publish = self.publish_pika
+                self.publish_compressed = self.publish_compressed_pika
+
+            if use_message_pipe:
+                #TODO: make message server also settable
+                port = config.settings['Message Pipe']['port']
+                self.telnet_port = port
+                self.publish = self.publish_telnet
+                self.publish_compressed = self.publish_telnet
+#TODO: support use of both at once....
+
+
+            if not (use_rabbitmq or use_message_pipe):
+                log.debug("Not using Rabbitmq or telnet")
+                self.publish = self.publish_blank_stub
+                self.publish_compressed = self.publish_blank_stub
+        except socket.timeout:
+            log.warning("Socket Timeout: not using Rabbitmq")
             self.publish = self.publish_blank_stub
             self.publish_compressed = self.publish_blank_stub
+    
+    def publish(self):
+        pass # will be replaced at init
 
+    def publish_compressed(self):
+        pass # will be replaced at init
 
-    def publish(self, exchange, routing_key, body):
+    def publish_telnet(self, exchange, routing_key, body):
+        try:
+            tn = telnetlib.Telnet("localhost", self.telnet_port)
+            tn.write(body)
+            tn.close()
+        except socket.error:
+            log.warning("Unable to connect to telnet on localhost at %s" % self.telnet_port)
+
+    def publish_compressed_telnet(self, exchange, routing_key, body):
+        import zlib
+        print "sending", body
+#TODO: note don't compress - no upper bound if telnet sockets
+        #body = zlib.compress(body, 9)
+        self.tn.write(body + "__end__")
+
+    def publish_pika(self, exchange, routing_key, body):
         self.channel.basic_publish(exchange= exchange,
                 routing_key = routing_key,
                 body= body)
 
-    def publish_compressed(self, exchange, routing_key, body):
+    def publish_compressed_pika(self, exchange, routing_key, body):
         """Compresses body using zlib before sending"""
         import zlib
         body = zlib.compress(body, 9)
