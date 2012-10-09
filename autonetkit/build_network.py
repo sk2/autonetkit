@@ -185,8 +185,8 @@ def build_conn(anm):
     G_conn.add_nodes_from(G_in, retain=['label'])
     G_conn.add_edges_from(G_in.edges(type="physical"))
 
-    if G_in.data.Creator == "Maestro":
-        ank.copy_edge_attr_from(G_in, G_conn, "index")
+    #if G_in.data.Creator == "Maestro":
+        #ank.copy_edge_attr_from(G_in, G_conn, "index")
 
     return
 
