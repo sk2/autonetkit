@@ -5,7 +5,7 @@ from setuptools import setup
 
 setup (
      name = "autonetkit-v3-dev",
-     version = "0.0.20",
+     version = "0.0.24",
      description = 'Automated configuration generator',
      long_description = 'Automated configuration generator',
 
@@ -20,11 +20,13 @@ setup (
      author = 'Simon Knight',
      author_email = "simon.knight@gmail.com",
      url = "http://www.autonetkit.org",
-     packages = ['autonetkit', 'autonetkit.deploy', 
+     packages = ['autonetkit', 'autonetkit.deploy', 'autonetkit.ank_vis',
      'autonetkit.load', 'autonetkit.messaging', 'autonetkit.plugins'],
 
      package_data = {'': ['settings.cfg', 
          'config/configspec.cfg',
+         'ank_vis/*.*',
+         'ank_vis/icons/*.*',
          'templates/*.mako',
          'templates/*/*.mako',
                           ]},
