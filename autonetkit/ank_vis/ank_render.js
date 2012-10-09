@@ -688,25 +688,25 @@ function redraw_paths() {
     path2.enter().append("svg:path")
     .attr("d", traceroute_line)
     .attr("class", "trace_path")
-    .style("stroke-width", 6)
-    .style("stroke", "orange")
+    .style("stroke-width", 8)
+    .style("stroke", "green")
     .style("fill", "none")
     //TODO: can use following to map to marker type
     //.attr("marker-end", function(d) { return "url(#" + d.type + ")"; });
     //.attr("marker-end", "url(#trace)")
     .on("mouseover", function(d){
-        d3.select(this).style("stroke", "orange");
+        d3.select(this).style("stroke", "blue");
         d3.select(this).style("stroke-width", "6");
         path_info(d);
         })
   .on("mouseout", function(){
       d3.select(this).style("stroke-width", "3");
-      d3.select(this).style("stroke", "rgb(6,120,155)");
+      d3.select(this).style("stroke", "orange");
       clear_label();
       })
   .transition()
     .duration(1000)
-    .style("stroke-width", 5)
+    .style("stroke-width", 3)
     //.style("stroke", "rgb(0,154,138)")
     .style("stroke", "orange")
     .style("opacity", 50)
