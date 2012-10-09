@@ -85,7 +85,6 @@ def manage_network(input_filename, build_options, reload_build=False):
     if build_options['deploy']:
         deploy_network(nidb, input_filename)
 
-    print build_options
     if build_options['measure']:
         measure_network(nidb)
 
