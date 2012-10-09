@@ -4,6 +4,7 @@ import autonetkit.ank as ank
 import os
 import pprint
 import autonetkit.log as log
+import autonetkit.load.graphml
 
 def expand(G_in):
     """ Expands out graph products. G is the source "backbone" graph. H_x is the "PoP template" graphs
@@ -24,7 +25,7 @@ def expand(G_in):
     templates = {}
     for template in template_names:
         template_filename = os.path.join("pop_templates", "%s.graphml" % template)
-        pop_graph = ank.load_graphml(template_filename) #TODO: pass in properties eg edge type = physical
+        pop_graph = autonetkit.load.graphml.load_graphml(template_filename) #TODO: pass in properties eg edge type = physical
         pop_graph = pop_graph.to_undirected() # Undirected for now TODO: document this
         templates[template] = pop_graph
 
