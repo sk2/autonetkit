@@ -6,7 +6,7 @@ import pprint
 import autonetkit.plugins.process_data as process_data
 import autonetkit.config as config
 
-def send(nidb, server, command, hosts, threads = 5):
+def send(nidb, server, command, hosts, threads = 3):
 # netaddr IP addresses not JSON serializable
     hosts = [str(h) for h in hosts]
 
@@ -62,10 +62,10 @@ def send(nidb, server, command, hosts, threads = 5):
                     dst_host = process_data.reverse_lookup(nidb, dst)
                     log.info("Trace from %s to %s" % (src_host, dst_host[1]))
                     parse_command = parsing["traceroute"]
-                    log.debug(command_result)
+                    log.info(command_result)
                     trace_result = parse_command(nidb, command_result)
                     trace_result.insert(0, src_host) 
-                    log.debug(trace_result)
+                    log.info(trace_result)
                     if str(trace_result[-1]) == str(dst_host[1]): #TODO: fix so direct comparison, not string, either here or in anm object comparison: eg compare on label?
 #TODO: make this use custom ANK serializer function
                         trace_result = [str(t.id) for t in trace_result if t] # make serializable
