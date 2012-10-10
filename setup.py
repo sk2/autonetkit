@@ -5,7 +5,7 @@ from setuptools import setup
 
 setup (
      name = "autonetkit-v3-dev",
-     version = "0.0.30",
+     version = "0.0.34",
      description = 'Automated configuration generator',
      long_description = 'Automated configuration generator',
 
@@ -23,12 +23,10 @@ setup (
      packages = ['autonetkit', 'autonetkit.deploy', 'autonetkit.ank_vis',
      'autonetkit.load', 'autonetkit.messaging', 'autonetkit.plugins'],
 
+     include_package_data = True, # include data from MANIFEST.in
+
      package_data = {'': ['settings.cfg', 
          'config/configspec.cfg',
-         'ank_vis/*.*',
-         'ank_vis/icons/*.*',
-         'templates/*.mako',
-         'templates/*/*.mako',
                           ]},
      download_url = ("http://pypi.python.org/pypi/AutoNetkit"),
 
