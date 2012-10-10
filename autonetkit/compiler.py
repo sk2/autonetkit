@@ -212,6 +212,7 @@ class IosBaseCompiler(RouterCompiler):
         isis_node = self.anm['isis'].node(node)
         node.isis.net = isis_node.net
         node.isis.process_id = isis_node.process_id
+        node.isis.lo_interface = self.lo_interface
 
 class IosClassicCompiler(IosBaseCompiler):
     pass
@@ -373,7 +374,7 @@ class CiscoCompiler(PlatformCompiler):
     def interface_ids_ios2(self):
         id_pairs = ( (slot, port) for (slot, port) in itertools.product(range(17), range(5))) 
         for (slot, port) in id_pairs:
-            yield "GigabitEthernet%s/%s/%s" % (0, slot, port)
+            yield "GigabitEthernet%s/%s/%s/%s" % (0, 0, slot, port)
 
 
     def compile(self):
