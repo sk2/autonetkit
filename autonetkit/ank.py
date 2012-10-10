@@ -118,8 +118,8 @@ def save(overlay_graph):
     nx.relabel_nodes( graph, mapping, copy=False)
 #TODO: See why getting networkx.exception.NetworkXError: GraphML writer does not support <type 'NoneType'> as data values.
 #TODO: process writer to allow writing of IPnetwork class values
-    filename = "%s.graphml" % overlay_graph.name
-    nx.write_graphml(graph, filename)
+    #filename = "%s.graphml" % overlay_graph.name
+    #nx.write_graphml(graph, filename)
 
 # probably want to create a graph from input with switches expanded to direct connections
 
