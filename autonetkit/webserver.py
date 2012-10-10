@@ -343,7 +343,8 @@ def main():
         application.pc = pc
         application.pc.connect()
     else:
-        print "RabbitMQ disabled, exiting. Please set in config."
+        #print "RabbitMQ disabled, exiting. Please set in config."
+        pass
         #raise SystemExit
 
     use_message_pipe = ank_config.settings['Message Pipe']['active']
