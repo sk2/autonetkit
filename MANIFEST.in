@@ -4,5 +4,5 @@ include autonetkit/ank_vis/icons/*.*
 
 include autonetkit/templates/*.mako
 include autonetkit/templates/ios2/*.mako
+recursive-include autonetkit/templates/quagga *
 include autonetkit/config/configspec.cfg
-
