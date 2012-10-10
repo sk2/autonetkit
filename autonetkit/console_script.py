@@ -190,19 +190,22 @@ def compile_network(anm):
 #TODO: boundaries is still a work in progress...
     nidb.copy_graphics(G_graphics)
 
-    host = "nectar1"
     #junosphere_compiler = compiler.JunosphereCompiler(nidb, anm, host)
     #junosphere_compiler.compile()
-    netkit_compiler = compiler.NetkitCompiler(nidb, anm, host)
-    netkit_compiler.compile()
-    #dynagen_compiler = compiler.DynagenCompiler(nidb, anm, host)
-    #dynagen_compiler.compile()
+    #host = "nectar1"
+    #netkit_compiler = compiler.NetkitCompiler(nidb, anm, host)
+    #netkit_compiler.compile()
+
+    host = "localhost"
+    if any(G_phy.nodes(host = host, platform = "netkit")):
+        netkit_compiler = compiler.NetkitCompiler(nidb, anm, host)
+        netkit_compiler.compile()
 
 #TODO: map this to all hosts present in config. By default include "internal" for each platform
-
     host = "internal"
-    cisco_compiler = compiler.CiscoCompiler(nidb, anm, host)
-    cisco_compiler.compile()
+    if any(G_phy.nodes(host = host, platform = "cisco")):
+        cisco_compiler = compiler.CiscoCompiler(nidb, anm, host)
+        cisco_compiler.compile()
 
     return nidb
 
