@@ -358,19 +358,21 @@ quagga/
             pip install AutoNetkit</pre>
             <h2>Mac OS X</h2>
             <p>
-            Note: depending on your system, you may need to use sudo with pip or easy_install.
+            Note: depending on your system, you may need to use sudo with pip or easy_install.   
             </p>
             <pre>
             sudo easy_install AutoNetkit</pre>
             <p> or </p>
             <pre>
-            sudo pip install AutoNetkit</pre>
+            sudo pip install AutoNetkit</pre>      
+
             <h2>Linux</h2>
             <p>
             First install Python, and easy_install or pip using your package manager:
             <pre>
             sknight@trc1:~$ sudo apt-get install python-pip
-            sknight@trc1:~$ pip install AutoNetkit</pre>
+            sknight@trc1:~$ pip install AutoNetkit</pre>    
+
             <h2>Windows</h2>
             <ol>
               <li>Download Python for Windows from:
@@ -407,6 +409,33 @@ quagga/
               AutoNetkit is now installed in the ‘scripts’ directory
               </li>
               </ol>
+
+              <h2>Development Alpha</h2>
+            These instructions work for both OSX and Linux. They are untested on Windows, but if you have Pip you should be able to run the development branch.
+            To install pip:
+            <pre>
+wget http://pypi.python.org/packages/2.6/s/setuptools/setuptools-0.6c11-py2.6.egg#md5=bfa92100bd772d5a213eedd356d64086
+sudo sh ./setuptools-0.6c11-py2.6.egg
+sudo easy_install pip</pre>      
+            You can now install the development branch of AutoNetkit (note this is in alpha stage!)
+            <pre>
+sudo pip install git+https://github.com/sk2/ank_v3_dev</pre>                                                   
+            Draw a graph in yED, save as .graphml format, and pass this to AutoNetkit:
+            <pre>
+autonetkit -f backbone.graphml --compile</pre>                           
+            To use the web visualisations, you will need to enable the telnet message passing, by setting the following option in a file called <tt>autonetkit.cfg</tt> in the same directory that you run autonetkit in:
+            <pre>
+[Message Pipe]
+active = 1</pre>                   
+            The webserver uses Tornado, so install this:
+            <pre>
+sudo pip install tornado</pre>
+            You can now start the webserver from this same directory:
+            <pre>ank_webserver</pre>
+            And should be able to connect in a browser at 127.0.0.1:8080
+            If you now run autonetkit -f as before, the output will update in your web browser.
+
+
 
             <section id="opensource">
             <div class="page-header">
