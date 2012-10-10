@@ -207,12 +207,24 @@ class IosBaseCompiler(RouterCompiler):
 
 
     def isis(self, node):
-        """Returns ISIS links
+        #TODO: this needs to go into IOS2 for neatness
+        """Sets ISIS links
         """
+        G_isis = self.anm['isis']
         isis_node = self.anm['isis'].node(node)
         node.isis.net = isis_node.net
         node.isis.process_id = isis_node.process_id
         node.isis.lo_interface = self.lo_interface
+        node.isis.isis_links = []
+        for interface in node.interfaces:
+            isis_link = G_isis.edge(interface._edge_id) # find link in OSPF with this ID
+            if isis_link: # only configure if has ospf interface
+                node.isis.isis_links.append(
+                        id = interface.id,
+                        metric = isis_link.metric,
+                        )
+
+
 
 class IosClassicCompiler(IosBaseCompiler):
     pass
