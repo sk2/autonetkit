@@ -436,9 +436,11 @@ sudo pip install tornado</pre>
             If you now run autonetkit -f as before, the output will update in your web browser.
 
 
-            <section id="drawing">
+            <section id="using">
             <div class="page-header">
-            <h1>Drawing a Network</h1>
+              <h1>Using AutoNetkit</h1>
+              Note: this section assumes you have installed the "Development Alpha" using the above instructions.
+            <h2>Drawing a Network</h2>
             <ol>
               <li> Download yEd from <a href="http://www.yworks.com/en/products_yed_download.html">yWorks</a>.</li>
               <li> Clicking will create a node. By default nodes are treated as routers. </li>
@@ -521,12 +523,40 @@ rendered/
         ├── 4.startup
         └── lab.conf
   </pre>
-<li>
+              </ol>
 
+            <h2>Setting up Webserver for Visualisation</h2>
+            <ol>
+              <li>You will need to create a file <tt>autonetkit.cfg</tt> in the same folder that you run AutoNetkit in.
+              This configuration file will activate the telnet messaging used to send the data from AutoNetkit to the visualisation server. Inside <tt>autonetkit.cfg</tt>, put the following:
+              <pre>
+[Message Pipe]
+active = 1</pre>
+              </li>
+              <li>
+              You will then need to start the webserver for AutoNetkit to connect to. This can be run as the normal user (sudo is not required).
+              <pre>
+$ ank_webserver</pre>
+              This will start the webserver on port 8000. You can choose a different port such as <tt>8080</tt>:
+              <pre>
+$ ank_webserver 8080</pre>
+              </li>
 
+              <li> You should now be able to connect in a web browser to the site <tt>localhost:8000</tt>. A modern browser such as Chrome, Safari or Firefox should work fine. The visualisations has been tested most in Google Chrome.
+              This will display a placeholder network topology.</li>
 
+              <li> You can now run AutoNetkit, which will send the topology automatically to the webserver. Run autonetkit as before:
+              <pre>
+autonetkit -f test.graphml</pre>
+              You should see the webpage update to reflect your network topology.
+              </li>
 
-
+              <li>
+              It is often convenient to put autonetkit into <i>monitor</i> mode, where it will automatically re-generate the configuration files, and update the webserver, if the input file changes. This can be done using the <tt>--monitor</tt> parameter:
+              <pre>
+autonetkit -f test.graphml --monitor</pre>
+              You should now be able to update the network diagram, with the visualisation automatically updated.
+              </li>
               </ol>
 
 

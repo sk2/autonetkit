@@ -269,6 +269,9 @@ def build_isis(anm):
         node.net = ip_to_net_ent_title_ios(ip_node.loopback)
         node.process_id = 1 # default
 
+    for link in G_isis.edges():
+        link.metric = 1 # default
+
 def update_pika(anm):
     log.debug("Sending anm to pika")
     body = autonetkit.ank_json.dumps(anm, None)
