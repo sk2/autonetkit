@@ -449,6 +449,82 @@ sudo pip install tornado</pre>
               
               </li>.
               <li>Save the diagram in graphml format, eg <tt>test.graphml</tt>.
+              <li>Run autonetkit with this input file <tt>autonetkit -f test.graphml</tt>.
+              You should receive output similar to the following:
+              <pre>
+sk:Desktop sk2$ autonetkit -f test.graphml 
+INFO AutoNetkit 0.0.34
+INFO Compiling Netkit for localhost
+INFO Rendering Network
+</pre>
+This will create the files in the <tt>rendered</tt> folder:
+<pre>
+sk:Desktop sk2$ tree rendered/
+rendered/
+└── localhost
+    └── netkit
+        ├── 1
+        │   ├── etc
+        │   │   ├── hostname
+        │   │   ├── shadow
+        │   │   ├── ssh
+        │   │   │   └── sshd_config
+        │   │   └── zebra
+        │   │       ├── bgpd.conf
+        │   │       ├── daemons
+        │   │       ├── motd.txt
+        │   │       ├── ospfd.conf
+        │   │       └── zebra.conf
+        │   └── root
+        ├── 1.startup
+        ├── 2
+        │   ├── etc
+        │   │   ├── hostname
+        │   │   ├── shadow
+        │   │   ├── ssh
+        │   │   │   └── sshd_config
+        │   │   └── zebra
+        │   │       ├── bgpd.conf
+        │   │       ├── daemons
+        │   │       ├── motd.txt
+        │   │       ├── ospfd.conf
+        │   │       └── zebra.conf
+        │   └── root
+        ├── 2.startup
+        ├── 3
+        │   ├── etc
+        │   │   ├── hostname
+        │   │   ├── shadow
+        │   │   ├── ssh
+        │   │   │   └── sshd_config
+        │   │   └── zebra
+        │   │       ├── bgpd.conf
+        │   │       ├── daemons
+        │   │       ├── motd.txt
+        │   │       ├── ospfd.conf
+        │   │       └── zebra.conf
+        │   └── root
+        ├── 3.startup
+        ├── 4
+        │   ├── etc
+        │   │   ├── hostname
+        │   │   ├── shadow
+        │   │   ├── ssh
+        │   │   │   └── sshd_config
+        │   │   └── zebra
+        │   │       ├── bgpd.conf
+        │   │       ├── daemons
+        │   │       ├── motd.txt
+        │   │       ├── ospfd.conf
+        │   │       └── zebra.conf
+        │   └── root
+        ├── 4.startup
+        └── lab.conf
+  </pre>
+<li>
+
+
+
 
 
               </ol>
