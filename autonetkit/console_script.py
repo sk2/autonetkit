@@ -25,7 +25,15 @@ class FileMonitor(object):
     """Lightweight polling-based monitoring to see if file has changed"""
     def __init__(self, filename):
         self.filename = filename
-        self.last_timestamp = os.stat(filename).st_mtime
+        try:
+            self.last_timestamp = os.stat(filename).st_mtime
+        except OSError:
+            log.debug("Unable to read file %s, disabling monitoring" % filename)
+            self.has_changed = self.return_false #TODO: use a lambda for succintness
+
+    def return_false(self):
+        """Used if unable to load file to monitor"""
+        return False
 
     def has_changed(self):
         """Returns if file has changed since last called"""
