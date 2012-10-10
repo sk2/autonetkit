@@ -56,16 +56,18 @@ class ColoredLogger(logging.Logger):
 
 
 import logging.handlers
-LOG_FILENAME =  "autonetkit.log"
-LOG_SIZE = 2097152 # 2 MB
-fh = logging.handlers.RotatingFileHandler(
-            LOG_FILENAME, maxBytes=LOG_SIZE, backupCount=5)
-fh.setLevel(logging.DEBUG)
-formatter = logging.Formatter("%(asctime)s %(levelname)s "
-                            "%(funcName)s %(message)s")
-fh.setFormatter(formatter)
+#TODO: make this toggle on/off
+if False:
+    LOG_FILENAME =  "autonetkit.log"
+    LOG_SIZE = 2097152 # 2 MB
+    fh = logging.handlers.RotatingFileHandler(
+                LOG_FILENAME, maxBytes=LOG_SIZE, backupCount=5)
+    fh.setLevel(logging.DEBUG)
+    formatter = logging.Formatter("%(asctime)s %(levelname)s "
+                                "%(funcName)s %(message)s")
+    fh.setFormatter(formatter)
 
-logging.getLogger('').addHandler(fh)
+    logging.getLogger('').addHandler(fh)
 
 
 logging.setLoggerClass(ColoredLogger)
