@@ -416,7 +416,6 @@ class CiscoCompiler(PlatformCompiler):
             for edge in sorted(self.nidb.edges(nidb_node), key = edge_id_numeric):
                 edge.id = int_ids.next()
 
-            print edge.edge_id
             ios2_compiler.compile(nidb_node)
 
 class DynagenCompiler(PlatformCompiler):
