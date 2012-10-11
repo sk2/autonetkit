@@ -2,6 +2,7 @@ import networkx as nx
 import string
 import os
 import itertools
+import math
 import autonetkit.config
 settings = autonetkit.config.settings
 import autonetkit.log as log
@@ -63,8 +64,40 @@ def load_graphml(input_graph_string):
             if key not in graph.node[node]:
                 graph.node[node][key] = val
 
+    # map lat/lon from zoo to crude x/y approximation
+    if graph.graph.get('Creator') == "Topology Zoo Toolset":
+        all_lat = [graph.node[n].get('Latitude') for n in graph
+                if graph.node[n].get("Latitude")]
+        all_lon = [graph.node[n].get('Longitude') for n in graph
+                if graph.node[n].get("Longitude")]
+
+        lat_min = min(all_lat)
+        lon_min = min(all_lon)
+        lat_max = max(all_lat)
+        lon_max = max(all_lon)
+        lat_mean = (lat_max - lat_min) / 2
+        lon_mean = (lon_max - lon_min) / 2
+        lat_scale = 500/(lat_max - lat_min)
+        lon_scale = 500/(lon_max - lon_min)
+        for node in graph:
+            lat = graph.node[node].get('Latitude') or lat_mean # set default to be mean of min/max
+            lon = graph.node[node].get('Longitude') or lon_mean # set default to be mean of min/max
+            graph.node[node]['y'] = -1 * lat * lat_scale
+            graph.node[node]['x'] = lon * lon_scale
+
+    if not( any(graph.node[n].get('x') for n in graph)
+            and any(graph.node[n].get('y') for n in graph)):
+# No x, y set, layout in a grid
+        grid_length = int(math.ceil(math.sqrt(len(graph))))
+        co_ords = [(x*100, y*100) for y in range(grid_length) for x in range(grid_length)]
+        # (0,0), (100, 0), (200, 0), (0, 100), (100, 100) ....
+        for node in sorted(graph):
+            x, y = co_ords.pop(0)
+            graph.node[node]['x'] = x
+            graph.node[node]['y'] = y
+
     # and ensure asn is integer, x and y are floats
-    for node in graph:
+    for node in sorted(graph):
         graph.node[node]['asn'] = int(graph.node[node]['asn'])
         try:
             x = float(graph.node[node]['x'])
