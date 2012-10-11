@@ -89,7 +89,7 @@ def manage_network(input_filename, build_options, reload_build=False):
 
     build_options.update(settings['General']) # update in case build has updated, eg for deploy
     build_options.update(settings['General']) # update in case build has updated, eg for deploy
-
+    
     if build_options['deploy']:
         deploy_network(nidb, input_filename)
 
@@ -97,30 +97,28 @@ def manage_network(input_filename, build_options, reload_build=False):
         measure_network(nidb)
 
 def parse_options():
-    import optparse
-    opt = optparse.OptionParser()
-    usage = ("autonetkit -f input.graphml\n"
-            "www.autonetkit.org")
-    opt = optparse.OptionParser(usage, version="%prog " + str(ank_version))
-    opt.add_option('--file', '-f', default= None, help="Load topology from FILE")        
-    opt.add_option('--monitor', '-m',  action="store_true", default= False, 
+    import argparse
+    usage = "autonetkit -f input.graphml\n www.autonetkit.org"
+    version="%(prog)s " + str(ank_version)
+    opt = argparse.ArgumentParser(description = usage, version = version)
+    opt.add_argument('--file', '-f', default= None, help="Load topology from FILE")        
+    opt.add_argument('--monitor', '-m',  action="store_true", default= False, 
             help="Monitor input file for changes")        
-    opt.add_option('--debug',  action="store_true", default= False, help="Debug mode")        
-    opt.add_option('--diff',  action="store_true", default= False, help="Diff NIDB")        
-    opt.add_option('--compile',  action="store_true", default= False, help="Compile")        
-    opt.add_option('--render',  action="store_true", default= False, help="Compile")        
-    opt.add_option('--deploy',  action="store_true", default= False, help="Deploy")        
-    opt.add_option('--archive',  action="store_true", default= False, help="Archive ANM, NIDB, and IP allocations")        
-    opt.add_option('--measure',  action="store_true", default= False, help="Measure")        
-    opt.add_option('--webserver',  action="store_true", default= False, help="Webserver")        
-    options, arguments = opt.parse_args()
-    return options, arguments
+    opt.add_argument('--debug',  action="store_true", default= False, help="Debug mode")        
+    opt.add_argument('--diff',  action="store_true", default= False, help="Diff NIDB")        
+    opt.add_argument('--compile',  action="store_true", default= False, help="Compile")        
+    opt.add_argument('--render',  action="store_true", default= False, help="Compile")        
+    opt.add_argument('--deploy',  action="store_true", default= False, help="Deploy")        
+    opt.add_argument('--archive',  action="store_true", default= False, help="Archive ANM, NIDB, and IP allocations")        
+    opt.add_argument('--measure',  action="store_true", default= False, help="Measure")        
+    opt.add_argument('--webserver',  action="store_true", default= False, help="Webserver")        
+    arguments = opt.parse_args()
+    return arguments
 
 def main():
     settings = config.settings
 
-
-    options, arguments = parse_options()
+    options = parse_options()
     log.info("AutoNetkit %s" % ank_version)
 
     input_filename = options.file
