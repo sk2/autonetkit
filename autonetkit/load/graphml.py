@@ -6,18 +6,19 @@ import autonetkit.config
 settings = autonetkit.config.settings
 import autonetkit.log as log
 import autonetkit.exception
+#TODO: fallback to python if cStringIO version is not available
+from cStringIO import StringIO
 
-def load_graphml(filename):
+def load_graphml(input_graph_string):
     #TODO: allow default properties to be passed in as dicts
 
     try:
-        graph = nx.read_graphml(filename)
+        input_pseduo_fh = StringIO(input_graph_string) # load into filehandle to networkx
+        graph = nx.read_graphml(input_pseduo_fh)
     except IOError:
         raise autonetkit.exception.AnkIncorrectFileFormat
-        log.warning("Unable to read GraphML %s" % filename)
     except IndexError:
         raise autonetkit.exception.AnkIncorrectFileFormat
-    graph.graph['timestamp'] =  os.stat(filename).st_mtime
 
     # remove selfloops
     graph.remove_edges_from(edge for edge in graph.selfloop_edges())

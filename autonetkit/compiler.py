@@ -6,6 +6,8 @@ import pprint
 from datetime import datetime
 import autonetkit.log as log
 import autonetkit.plugins.naming as naming
+import autonetkit.config
+settings = autonetkit.config.settings
 
 #TODO: rename compiler to build
 
@@ -377,6 +379,8 @@ class NetkitCompiler(PlatformCompiler):
         lab_topology.config_items.sort("device")
 
 class CiscoCompiler(PlatformCompiler):
+    to_memory = settings['Compiler']['Cisco']['to memory']
+
     """Cisco Platform Compiler"""
     def interface_ids_ios(self):
         id_pairs = ( (slot, port) for (slot, port) in itertools.product(range(17), range(5))) 
@@ -388,11 +392,10 @@ class CiscoCompiler(PlatformCompiler):
         for (slot, port) in id_pairs:
             yield "GigabitEthernet%s/%s/%s/%s" % (0, 0, slot, port)
 
-
     def compile(self):
-
         def edge_id_numeric(edge):
-            # assumes format xx_src_dst -> return the xx component
+            """ Used for sorting
+            assumes format xx_src_dst -> return the xx component"""
             return int(edge.edge_id.split("_")[0])
 
         log.info("Compiling Cisco for %s" % self.host)
@@ -401,11 +404,15 @@ class CiscoCompiler(PlatformCompiler):
         now = datetime.now()
         timestamp = now.strftime("%Y%m%d_%H%M%S_%f")
         dst_folder = "rendered/%s_%s/%s" % (self.host, timestamp, "cisco")
+#TODO: merge common router code, so end up with three loops: routers, ios routers, ios2 routers
         for phy_node in G_phy.nodes('is_router', host = self.host, syntax='ios'):
             nidb_node = self.nidb.node(phy_node)
             nidb_node.render.template = "templates/ios.mako"
-            nidb_node.render.dst_folder = dst_folder
-            nidb_node.render.dst_file = "%s.conf" % naming.network_hostname(phy_node)
+            if self.to_memory:
+                nidb_node.render.to_memory = True
+            else:
+                nidb_node.render.dst_folder = dst_folder
+                nidb_node.render.dst_file = "%s.conf" % naming.network_hostname(phy_node)
 
             # Assign interfaces
             int_ids = self.interface_ids_ios()
@@ -420,8 +427,11 @@ class CiscoCompiler(PlatformCompiler):
             #nidb_node.render.base = "templates/ios2"
             #nidb_node.render.base_dst_folder = "rendered/%s/%s/%s" % (self.host, "cisco", folder_name)
             nidb_node.render.template = "templates/ios2/router.conf.mako"
-            nidb_node.render.dst_folder = dst_folder
-            nidb_node.render.dst_file = "%s.conf" % naming.network_hostname(phy_node)
+            if self.to_memory:
+                nidb_node.render.to_memory = True
+            else:
+                nidb_node.render.dst_folder = dst_folder
+                nidb_node.render.dst_file = "%s.conf" % naming.network_hostname(phy_node)
 
             # Assign interfaces
             int_ids = self.interface_ids_ios2()

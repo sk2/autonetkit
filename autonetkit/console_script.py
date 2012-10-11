@@ -3,6 +3,7 @@ import render
 import random
 import pprint
 import traceback
+from datetime import datetime
 import os
 import time
 import compiler
@@ -43,9 +44,10 @@ class FileMonitor(object):
             return True
         return False
 
-def manage_network(input_filename, build_options, reload_build=False):
+def manage_network(input_graph_string, timestamp, build_options, reload_build=False):
     import build_network
     if reload_build:
+# remap?
         build_network = reload(build_network)
     settings = config.settings
 
@@ -53,8 +55,8 @@ def manage_network(input_filename, build_options, reload_build=False):
     pika_channel = ank_pika.AnkPika(rabbitmq_server)
 
     if build_options['compile']:
-        anm = build_network.build(input_filename)
-
+        anm = build_network.build(input_graph_string, timestamp)
+        
 
         if build_options['archive']:
             anm.save()
@@ -89,45 +91,45 @@ def manage_network(input_filename, build_options, reload_build=False):
 
     build_options.update(settings['General']) # update in case build has updated, eg for deploy
     build_options.update(settings['General']) # update in case build has updated, eg for deploy
-
+    
     if build_options['deploy']:
-        deploy_network(nidb, input_filename)
+        deploy_network(nidb, input_graph_string)
 
     if build_options['measure']:
         measure_network(nidb)
 
 def parse_options():
-    import optparse
-    opt = optparse.OptionParser()
-    usage = ("autonetkit -f input.graphml\n"
-            "www.autonetkit.org")
-    opt = optparse.OptionParser(usage, version="%prog " + str(ank_version))
-    opt.add_option('--file', '-f', default= None, help="Load topology from FILE")        
-    opt.add_option('--monitor', '-m',  action="store_true", default= False, 
+    import argparse
+    usage = "autonetkit -f input.graphml\n www.autonetkit.org"
+    version="%(prog)s " + str(ank_version)
+    parser = argparse.ArgumentParser(description = usage, version = version)
+
+    input_group = parser.add_mutually_exclusive_group()
+    input_group.add_argument('--file', '-f', default= None, help="Load topology from FILE")        
+    input_group.add_argument('--stdin',  action="store_true", default= False, help="Load topology from STDIN")        
+
+
+    #TODO: move from -f to -i for --input
+    parser.add_argument('--monitor', '-m',  action="store_true", default= False, 
             help="Monitor input file for changes")        
-    opt.add_option('--debug',  action="store_true", default= False, help="Debug mode")        
-    opt.add_option('--diff',  action="store_true", default= False, help="Diff NIDB")        
-    opt.add_option('--compile',  action="store_true", default= False, help="Compile")        
-    opt.add_option('--render',  action="store_true", default= False, help="Compile")        
-    opt.add_option('--deploy',  action="store_true", default= False, help="Deploy")        
-    opt.add_option('--archive',  action="store_true", default= False, help="Archive ANM, NIDB, and IP allocations")        
-    opt.add_option('--measure',  action="store_true", default= False, help="Measure")        
-    opt.add_option('--webserver',  action="store_true", default= False, help="Webserver")        
-    options, arguments = opt.parse_args()
-    return options, arguments
+    parser.add_argument('--debug',  action="store_true", default= False, help="Debug mode")        
+    parser.add_argument('--diff',  action="store_true", default= False, help="Diff NIDB")        
+    parser.add_argument('--compile',  action="store_true", default= False, help="Compile")        
+    parser.add_argument('--render',  action="store_true", default= False, help="Compile")        
+    parser.add_argument('--deploy',  action="store_true", default= False, help="Deploy")        
+    parser.add_argument('--archive',  action="store_true", default= False, help="Archive ANM, NIDB, and IP allocations")        
+    parser.add_argument('--measure',  action="store_true", default= False, help="Measure")        
+    parser.add_argument('--webserver',  action="store_true", default= False, help="Webserver")        
+    arguments = parser.parse_args()
+    return arguments
 
 def main():
     settings = config.settings
 
-
-    options, arguments = parse_options()
+    options = parse_options()
     log.info("AutoNetkit %s" % ank_version)
 
-    input_filename = options.file
-    if not options.file:
-        #input_filename = "ank.graphml"
-        log.warning("No input file specified. Please specify an input file, eg autonetkit -f input.graphml")
-        raise SystemExit
+#TODO: only allow monitor mode with options.file not options.stdin
 
     if options.debug or settings['General']['debug']:
         #TODO: fix this
@@ -147,7 +149,17 @@ def main():
     if options.webserver:
         log.info("Webserver not yet supported, please run as seperate module")
 
-    manage_network(input_filename, build_options)
+    if options.file:
+        with open(options.file, "r") as fh:
+            input_string = fh.read()
+        timestamp =  os.stat(options.file).st_mtime
+    if options.stdin:
+        import sys
+        input_string = sys.stdin
+        now = datetime.now()
+        timestamp = now.strftime("%Y%m%d_%H%M%S_%f")
+
+    manage_network(input_string, timestamp, build_options = build_options)
 
 #TODO: work out why build_options is being clobbered for monitor mode
     build_options['monitor'] = options.monitor or settings['General']['monitor']
@@ -155,7 +167,7 @@ def main():
     if build_options['monitor']:
         try:
             log.info("Monitoring for updates...")
-            input_filemonitor = FileMonitor(input_filename)
+            input_filemonitor = FileMonitor(options.file)
             build_filemonitor = FileMonitor("autonetkit/build_network.py")
             while True:
                 time.sleep(1)
@@ -171,13 +183,14 @@ def main():
                 if rebuild:
                     try:
                         log.info("Input graph updated, recompiling network")
-                        manage_network(input_filename, build_options, reload_build)
+                        manage_network(input_string, timestamp, build_options, reload_build)
                         log.info("Monitoring for updates...")
                     except Exception:
                         log.warning("Unable to build network")
                         traceback.print_exc()
 
         except KeyboardInterrupt:
+            #TODO: need to close filehandles for input and output
             log.info("Exiting")
 
 def compile_network(anm):
@@ -217,7 +230,7 @@ def compile_network(anm):
 
     return nidb
 
-def deploy_network(nidb, input_filename):
+def deploy_network(nidb, input_graph_string):
     import autonetkit.deploy.netkit as netkit_deploy
     import autonetkit.deploy.cisco as cisco_deploy
     #TODO: make this driven from config file
@@ -241,7 +254,7 @@ def deploy_network(nidb, input_filename):
                     except ImportError:
                         continue # development module, may not be available
 
-                    worm_deploy.package(nidb, config_path, input_filename)
+                    worm_deploy.package(nidb, config_path, input_graph_string)
 
                 continue
 
