@@ -1,7 +1,6 @@
 import autonetkit
 import autonetkit.anm
 import autonetkit.ank as ank
-import math
 import itertools
 import autonetkit.ank_pika
 import autonetkit.config
@@ -10,6 +9,7 @@ import autonetkit.log as log
 import autonetkit.load.graphml as graphml
 import autonetkit.exception
 import networkx as nx
+import os
 
 
 __all__ = ['build']
@@ -20,18 +20,19 @@ pika_channel = autonetkit.ank_pika.AnkPika(rabbitmq_server)
 #TODO: seperate out load and build - build should take a ready made nx graph and work from there.... load should do file handling error checking etc
 # Also makes automated testing easier!
 
-def build(input_filename):
+def build(input_graph_string, timestamp):
     #TODO: move this out of main console wrapper
     anm = autonetkit.anm.AbstractNetworkModel()
+    
     try:
-        input_graph = graphml.load_graphml(input_filename)
+        input_graph = graphml.load_graphml(input_graph_string)
     except autonetkit.exception.AnkIncorrectFileFormat:
 # try a different reader
         try:
             import autonetkit.load.worm as worm
         except ImportError:
             return # module not present (development module)
-        input_graph = worm.load(input_filename)
+        input_graph = worm.load(input_graph_string)
 # add local deployment host
         settings['General']['deploy'] = True
         settings['Deploy Hosts']['internal'] = {
@@ -39,6 +40,7 @@ def build(input_filename):
                     'deploy': True,
                     },
                 }
+
 
     #TODO: make this more explicit than overloading add_overlay - make it load_graph or something similar
     input_undirected = nx.Graph(input_graph)
