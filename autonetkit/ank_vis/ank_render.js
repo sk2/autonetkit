@@ -5,10 +5,10 @@ ws.onopen = function() {
   ws.send("overlay_list");
   ws.send("overlay_id=" + overlay_id);
   ws.send("ip_allocations");
-  status_label.text("WebSocket connected");
+  status_label.html("WebSocket connected");
 };
 ws.onclose = function () {
-  status_label.text("Warning: WebSocket disconnected");
+  status_label.html("Warning: WebSocket disconnected");
 };
 
 
@@ -38,17 +38,17 @@ ws.onmessage = function (evt) {
   }
   else if("path" in data) {
     pathinfo.push(data['path']);
-    status_label.text("Path: " + data['path']);
+    status_label.html("Path: " + data['path']);
     redraw_paths();
   }
   else if("overlay_list" in data) {
     propagate_overlay_dropdown(data['overlay_list']);
   }
   else if("starting" in data) {
-    status_label.text("Starting: " + data['starting']);
+    status_label.html("Starting: " + data['starting']);
   }
   else if("lab started" in data) {
-    status_label.text("Lab started on: " + data['lab started']);
+    status_label.html("Lab started on: " + data['lab started']);
   }
   else if("ip_allocations" in data) {
     ip_allocations = data['ip_allocations'];
@@ -76,7 +76,7 @@ var ip_node_info = function(d) {
     child = d.children[index];
     children += "(" + child.name + ", " + child.subnet + ") ";
   }
-  status_label.text(d.name + ": " + d.subnet + " children: " + children);
+  status_label.html(d.name + ": " + d.subnet + " children: " + children);
 }
 
 function redraw_ip_allocations() {
@@ -215,7 +215,7 @@ var load_revision = function() {
 //dropdown.select("phy").text("selected");
 
   var clear_label = function() {
-    status_label.text("");
+    status_label.html("");
   }
 
 var trace_paths = chart.append("svg:g")
@@ -359,32 +359,35 @@ var path_y = function(d) {
   return node.y+ 32 + y_offset;
 }
 
+//TODO: make recursive, if type is object and not null then call, and repeat...
 var node_info = function(d) {
   //TODO: append ul/li like table example on http://christopheviau.com/d3_tutorial/
   text = d.id;
+  text += "<ul>";
   for (attr in d) {
     if (typeof d[attr] == 'object' && d[attr] != null) {
-      text += ", " + attr + ": (";
+      text += "<li>" + attr + "<ul>";
       for (subattr in d[attr]) {
-        text += ", " + subattr + ": " + d[attr][subattr];
+        text += "<li>" + subattr + ": " + d[attr][subattr] + "</li>";
       }
-      text += ") ";
+      text += "</ul></li>";
     }
     else if (d[attr] != null && d[attr] != "None" && attr != "" & attr != "" && attr != "label" && attr != "id") {
-      text += ", " + attr + ": " + d[attr];
+      text += "<li>" + attr + ": " + d[attr] + "</li>";
     }
   }
-  status_label.text("Node: " + text);
+  text += "</ul>";
+  status_label.html("<b>Node</b>: " + text);
 }
 
 var group_attr = "asn";
 
 var group_info = function(d) {
-  status_label.text("Group: " + group_attr + " " + d.key);
+  status_label.html("Group: " + group_attr + " " + d.key);
 }
 
 var path_info = function(d) {
-  status_label.text("Path: " + d);
+  status_label.html("Path: " + d);
 }
 
 var link_info = function(d) {
@@ -397,7 +400,7 @@ var link_info = function(d) {
       text += ", " + attr + ": " + d[attr];
     }
   }
-  status_label.text("Link: " + text);
+  status_label.html("Link: " + text);
 }
 
 

@@ -71,8 +71,7 @@ def render_node(node):
         date = time.strftime("%Y-%m-%d %H:%M", time.localtime())
 
 #TODO: make sure is an abspath here so don't wipe user directory!!!
-        
-        if not os.path.isdir(render_output_dir):
+        if render_output_dir and not os.path.isdir(render_output_dir):
             try:
                 os.makedirs(render_output_dir)
             except OSError, e:
@@ -88,25 +87,30 @@ def render_node(node):
             except SyntaxException, error:
                 log.warning( "Unable to render %s: Syntax error in template: %s" % (node, error))
                 return
-            dst_file = os.path.join(render_output_dir, node.render.dst_file)
 
-#TODO: may need to iterate if multiple parts of the directory need to be created
+            if node.render.dst_file:
+                dst_file = os.path.join(render_output_dir, node.render.dst_file)
+                with open( dst_file, 'wb') as dst_fh:
+                    try:
+                        dst_fh.write(render_template.render(
+                            node = node,
+                            ank_version = ank_version,
+                            date = date,
+                            ))
+                    except KeyError, error:
+                        log.warning( "Unable to render %s: %s not set" % (node, error))
+                    except AttributeError, error:
+                        log.warning( "Unable to render %s: %s " % (node, error))
+                    except NameError, error:
+                        log.warning( "Unable to render %s: %s. Check all variables used are defined" % (node, error))
 
-            #TODO: capture mako errors better
-
-            with open( dst_file, 'wb') as dst_fh:
-                try:
-                    dst_fh.write(render_template.render(
-                        node = node,
-                        ank_version = ank_version,
-                        date = date,
-                        ))
-                except KeyError, error:
-                    log.warning( "Unable to render %s: %s not set" % (node, error))
-                except AttributeError, error:
-                    log.warning( "Unable to render %s: %s " % (node, error))
-                except NameError, error:
-                    log.warning( "Unable to render %s: %s. Check all variables used are defined" % (node, error))
+            if node.render.to_memory:
+# Render directly to NIDB
+                node.render.to_memory = render_template.render(
+                            node = node,
+                            ank_version = ank_version,
+                            date = date,
+                            )
 
         if render_base:
             render_base = resource_path(render_base)
