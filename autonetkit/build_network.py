@@ -175,7 +175,7 @@ def build_phy(anm):
     G_phy = anm['phy']
     G_phy.add_nodes_from(G_in, retain=['label', 'update', 'device_type', 'device_subtype', 'asn', 'platform', 'host', 'syntax'])
     if G_in.data.Creator == "Topology Zoo Toolset":
-        ank.copy_attr_from(G_in, G_phy, "Network") 
+        ank.copy_attr_from(G_in, G_phy, "Network") #TODO: move this into graphml (and later gml) reader
 
     G_phy.add_edges_from(G_in.edges(type="physical"))
 
