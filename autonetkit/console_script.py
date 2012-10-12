@@ -226,13 +226,11 @@ def compile_network(anm):
         elif platform == "cisco":
             platform_compiler = compiler.CiscoCompiler(nidb, anm, host)
 
-        for node in G_phy:
-            print node, node.host, node.platform
-
         if any(G_phy.nodes(host = host, platform = platform)):
-            platform_compiler.compile()
+            log.info("Compile for %s on %s" % (platform, host))
+            platform_compiler.compile() # only compile if hosts set
         else:
-            log.info("No devices set for host %s and platform %s" % (host, platform))
+            log.debug("No devices set for %s on %s" % (platform, host))
 
     return nidb
 
