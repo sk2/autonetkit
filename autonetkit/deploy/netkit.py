@@ -15,7 +15,8 @@ def package(src_dir, target):
     return tar_filename
 
 def transfer(host, username, local, remote, key_filename = None):
-    log.info("Transferring lab to %s" % host)
+    log.debug("Transferring lab to %s" % host)
+    log.info("Transferring Netkit lab")
     import paramiko
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(
@@ -37,6 +38,7 @@ def transfer(host, username, local, remote, key_filename = None):
 def extract(host, username, tar_file, cd_dir, timeout = 30, key_filename = None):
     """Extract and start lab"""
     log.debug("Extracting and starting lab on %s" % (host))
+    log.info("Extracting and starting Netkit lab")
     from Exscript import Account
     from Exscript.util.start import start
     from Exscript.util.match import first_match
