@@ -325,7 +325,7 @@ def assign_asn_to_interasn_cds(G_ip):
     return
 
 def allocate_ips(G_ip):
-    ip_tree = IpTree("172.16.0.0")
+    ip_tree = IpTree("172.16.127.0")
     ip_tree.add_nodes(G_ip.nodes("is_l3device"))
     ip_tree.build()
     loopback_tree = ip_tree.json()
