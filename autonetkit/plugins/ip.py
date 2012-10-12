@@ -69,13 +69,14 @@ class TreeNode(object):
         return [TreeNode(self.graph, child) for child in self.graph.successors(self.node)]
 
 class IpTree(object):
-    def __init__(self):
+    def __init__(self, root_ip_block):
         self.unallocated_nodes = []
         self.graph = nx.DiGraph()
         self.root_node = None
         self.timestamp = time.strftime("%Y%m%d_%H%M%S", time.localtime())
 #taken_nodes -> these are nodes manually specified, eg in graphml
         self.node_id_counter = (i for i in itertools.count(0) if i not in self.graph)
+        self.root_ip_block = root_ip_block
 
     def __len__(self):
         return len(self.graph)
@@ -132,7 +133,6 @@ class IpTree(object):
         data = autonetkit.ank_json.ank_json_dumps(self.graph)
 #TODO: should this use the ank_json.jsonify_nidb() ?
         json_file = "ip_%s.json.gz" % self.timestamp
-        json_file = "ip.json"
         json_path = os.path.join(archive_dir, json_file)
         log.debug("Saving to %s" % json_path)
         #with gzip.open(json_path, "wb") as json_fh:
@@ -216,7 +216,7 @@ class IpTree(object):
 
         # now allocate the IPs
         global_prefix_len = global_root.prefixlen
-        global_ip_block = netaddr.IPNetwork("192.168.0.0/%s" % global_prefix_len)
+        global_ip_block = netaddr.IPNetwork("%s/%s" % (self.root_ip_block, global_prefix_len))
         self.graph = global_graph
 
 # add children of collision domains
@@ -325,19 +325,33 @@ def assign_asn_to_interasn_cds(G_ip):
     return
 
 def allocate_ips(G_ip):
-    ip_tree = IpTree()
-
+    ip_tree = IpTree("172.16.0.0")
     ip_tree.add_nodes(G_ip.nodes("is_l3device"))
-    assign_asn_to_interasn_cds(G_ip)
-
-    ip_tree.add_nodes(G_ip.nodes("collision_domain"))
-
     ip_tree.build()
-    jsontree = json.dumps(ip_tree.json(), cls=autonetkit.ank_json.AnkEncoder, indent = 4)
-    
+    loopback_tree = ip_tree.json()
+   # json.dumps(ip_tree.json(), cls=autonetkit.ank_json.AnkEncoder, indent = 4)
+    #body = json.dumps({"ip_allocations": jsontree})
+    #pika_channel.publish_compressed("www", "client", body)
+    ip_tree.assign()
+
+    ip_tree = IpTree("192.168.3.0")
+    assign_asn_to_interasn_cds(G_ip)
+    ip_tree.add_nodes(G_ip.nodes("collision_domain"))
+    ip_tree.build()
+    cd_tree = ip_tree.json()
+    ip_tree.assign()
+
+    total_tree = {
+            'name': "ip",
+            'children': 
+                [loopback_tree, cd_tree],
+            }
+    jsontree = json.dumps(total_tree, cls=autonetkit.ank_json.AnkEncoder, indent = 4)
+
     body = json.dumps({"ip_allocations": jsontree})
     pika_channel.publish_compressed("www", "client", body)
-    ip_tree.assign()
+
+#TODO: need to update with loopbacks if wish to advertise also - or subdivide blocks?
     G_ip.data.asn_blocks = ip_tree.group_allocations()
 
     #ip_tree.save()

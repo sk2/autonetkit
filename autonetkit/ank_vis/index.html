@@ -5,85 +5,11 @@
     <script type="text/javascript" src="jquery-1.7.2.min.js"></script>
     <title>AutoNetkit</title>
 
+    <link rel="stylesheet" type="text/css" href="default.css" title = "default">
 
-    <style type="text/css">
-      
-      body
-      {
-        font-family:"Palatino Linotype", "Book Antiqua", Palatino, serif;
-        background-color: #eee;
-        color: #333;
-      }
+    <link rel="alternate stylesheet" type="text/css" title="maximised" href = "maximised.css">
 
-      circle {
-        fill: steelblue;
-      }
-
-      path.link {
-        fill: none;
-        stroke: steelblue;
-      }
-
-      marker {
-        stroke: rgb(6,120,155);
-        fill: rgb(6,120,155);
-      }
-
-      .chart div {
-        font: 10px sans-serif;
-        background-color: steelblue;
-        text-align: right;
-        padding: 3px;
-        margin: 1px;
-        color: white;
-      }
-
-      .infobar {
-        position:absolute;
-        right:10px;
-        width:15%;
-        top: 10px;
-        border: 1px solid steelblue;
-        border-radius: 10px;
-        height: 90%;
-        padding: 5px;
-        background-color: white;
-      }
-
-      .infobar ul{
-        list-style-type:none;
-	margin-left: 0;
-	padding-left: 1em;
-    font-size: small;
-      }
-
-      .navbar {
-        position:absolute;
-        top: 10px;
-        height: 30px;
-        width: 80%;
-        border: 1px solid steelblue;
-        border-radius: 10px;
-        padding: 5px;
-        background-color: white;
-      }
-
-      .visualisation {
-        position:absolute;
-        top: 60px;
-        border: 1px solid steelblue;
-        border-radius: 10px;
-        padding: 5px;
-        width: 80%;
-        height: 90%;
-        background-color: white;
-      }
-
-
-    </style>
-
-
-    <link rel="stylesheet" type="text/css" media="print" href="print.css">
+    <link rel="stylesheet" type="text/css" title="maximised" media="print" href="print.css">
     
 
   </head>
@@ -95,17 +21,31 @@
       <button onclick="history_back();"><</button>
       <button onclick="history_forward();">></button>
       <button onclick="history_end();">>></button>
-      <input type="checkbox" id="enable_zoom" value="enable_zoom" />Zoom<br />
+      <button onclick="javascript:setActiveStyleSheet('maximised');">Maximise</button>
+      <input type="checkbox" id="enable_zoom" value="enable_zoom" />Zoom
     </div>
 
     <div class="infobar"></div>
     <div class="visualisation""></div>
+    <div class="size_box"><a href="javascript:setActiveStyleSheet('default');">Resize</a></div>
 
     <div>
       <script type="text/javascript">
 
+        function setActiveStyleSheet(title) {
+          //From http://www.alistapart.com/articles/alternate/
+          var i, a, main;
+          for(i=0; (a = document.getElementsByTagName("link")[i]); i++) {
+            if(a.getAttribute("rel").indexOf("style") != -1
+                && a.getAttribute("title")) {
+              a.disabled = true;
+              if(a.getAttribute("title") == title) a.disabled = false;
+            }
+          }
+        }
 
-        var overlay_id = "phy";
+
+var overlay_id = "phy";
 
 var revision_dropdown = d3.select("#revision_select")
 .on("change", function() {
@@ -133,31 +73,31 @@ var status_label = d3.select("navbar").append("text")
 
 
 //TODO: make these scale, rather than fixed
-var h = 800;
-var w = 1400;
+var h = 1000;
+var w = 1200;
 
 var chart = d3.select(".visualisation")
-  .append("svg:svg")
-    .attr("width", "100%")
-    .attr("height", "100%")
-    .attr("pointer-events", "all")
-     .attr("viewBox", "0 0 " + w * 0.7 + " " + h * 0.7)
-  .append('svg:g')
-    .call(d3.behavior.zoom().on("zoom", redraw))
-  .append('svg:g');
+.append("svg:svg")
+.attr("width", "100%")
+.attr("height", "100%")
+.attr("pointer-events", "all")
+.attr("viewBox", "0 0 " + w * 0.7 + " " + h * 0.7)
+.append('svg:g')
+.call(d3.behavior.zoom().on("zoom", redraw))
+.append('svg:g');
 
 
 chart.append('svg:rect')
-    .attr('width', w)
-    .attr('height', h)
-    .attr('fill', 'white');
+.attr('width', w)
+.attr('height', h)
+.attr('fill', 'white');
 
 
 function redraw() {
   if (enable_zoom == true) {
-  chart.attr("transform",
-      "translate(" + d3.event.translate + ")"
-      + " scale(" + d3.event.scale + ")");
+    chart.attr("transform",
+        "translate(" + d3.event.translate + ")"
+        + " scale(" + d3.event.scale + ")");
   }
 }
 
