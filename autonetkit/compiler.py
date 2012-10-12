@@ -352,6 +352,7 @@ class NetkitCompiler(PlatformCompiler):
         host_nodes += cd_nodes
         subgraph = self.nidb.subgraph(host_nodes, self.host)
 
+#TODO: sort this numerically, not just by string
         lab_topology.machines = " ".join(sorted(naming.network_hostname(phy_node) for phy_node in subgraph.nodes("is_l3device")))
 
         G_ip = self.anm['ip']
