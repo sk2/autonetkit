@@ -183,6 +183,8 @@ def main():
                 if rebuild:
                     try:
                         log.info("Input graph updated, recompiling network")
+                        with open(options.file, "r") as fh:
+                            input_string = fh.read() # read updates
                         manage_network(input_string, timestamp, build_options, reload_build)
                         log.info("Monitoring for updates...")
                     except Exception:

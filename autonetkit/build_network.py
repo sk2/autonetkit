@@ -76,7 +76,7 @@ def build(input_graph_string, timestamp):
     G_graphics.add_nodes_from(G_in, retain=['x', 'y', 'device_type', 'device_subtype', 'pop', 'asn'])
 
     build_phy(anm)
-    update_pika(anm)
+    #update_pika(anm)
     build_conn(anm)
     build_ip(anm)
     
@@ -92,7 +92,6 @@ def build(input_graph_string, timestamp):
     if igp == "isis":
         build_isis(anm)
     build_bgp(anm)
-    update_pika(anm)
     return anm
 
 
