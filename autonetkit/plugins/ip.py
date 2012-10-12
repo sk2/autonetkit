@@ -346,10 +346,7 @@ def allocate_ips(G_ip):
             'children': 
                 [loopback_tree, cd_tree],
             }
-    #{'name': 'loopback', 'subnet': 'blah', 'children': loopback_tree},
-    #{'name': 'infrastruture', 'subnet': 'blah2', 'children': cd_tree},
     jsontree = json.dumps(total_tree, cls=autonetkit.ank_json.AnkEncoder, indent = 4)
-    print jsontree
 
     body = json.dumps({"ip_allocations": jsontree})
     pika_channel.publish_compressed("www", "client", body)
