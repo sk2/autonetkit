@@ -88,8 +88,9 @@ def manage_network(input_graph_string, timestamp, build_options, reload_build=Fa
         with open("diff.json", "w") as fh: #TODO: make file specified in config
             fh.write(data)
 
-    build_options.update(settings['General']) # update in case build has updated, eg for deploy
-    build_options.update(settings['General']) # update in case build has updated, eg for deploy
+    # Note: this clobbers command line options
+    #build_options.update(settings['General']) # update in case build has updated, eg for deploy
+    #build_options.update(settings['General']) # update in case build has updated, eg for deploy
     
     if build_options['deploy']:
         deploy_network(nidb, input_graph_string)
@@ -144,6 +145,7 @@ def main():
             'diff': options.diff or settings['General']['diff'],
             'archive': options.archive or settings['General']['archive'],
             }
+
 
     if options.webserver:
         log.info("Webserver not yet supported, please run as seperate module")
