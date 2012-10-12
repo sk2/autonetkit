@@ -56,7 +56,6 @@ def manage_network(input_graph_string, timestamp, build_options, reload_build=Fa
 
     if build_options['compile']:
         anm = build_network.build(input_graph_string, timestamp)
-        
 
         if build_options['archive']:
             anm.save()
@@ -219,16 +218,21 @@ def compile_network(anm):
     #netkit_compiler = compiler.NetkitCompiler(nidb, anm, host)
     #netkit_compiler.compile()
 
-    host = "localhost"
-    if any(G_phy.nodes(host = host, platform = "netkit")):
-        netkit_compiler = compiler.NetkitCompiler(nidb, anm, host)
-        netkit_compiler.compile()
+    for target, target_data in config.settings['Compile Targets'].items():
+        host = target_data['host']
+        platform = target_data['platform']
+        if platform == "netkit":
+            platform_compiler = compiler.NetkitCompiler(nidb, anm, host)
+        elif platform == "cisco":
+            platform_compiler = compiler.CiscoCompiler(nidb, anm, host)
 
-#TODO: map this to all hosts present in config. By default include "internal" for each platform
-    host = "internal"
-    if any(G_phy.nodes(host = host, platform = "cisco")):
-        cisco_compiler = compiler.CiscoCompiler(nidb, anm, host)
-        cisco_compiler.compile()
+        for node in G_phy:
+            print node, node.host, node.platform
+
+        if any(G_phy.nodes(host = host, platform = platform)):
+            platform_compiler.compile()
+        else:
+            log.info("No devices set for host %s and platform %s" % (host, platform))
 
     return nidb
 
