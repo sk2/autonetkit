@@ -61,7 +61,7 @@ ws.onmessage = function (evt) {
     }
   }
   else {
-    console.log("got data", data);
+    console.log("got unknown data", data);
   }
 }
 
@@ -473,7 +473,6 @@ var history_end = function() {
 var history_back = function() {
   if (revision_id - 1 >= 0) {
     revision_id--;
-    console.log(revision_id);
     load_revision();
     redraw(); 
   } else {
@@ -542,11 +541,7 @@ function redraw() {
   groupings = chart.selectAll(".attr_group")
     .data(node_attr_groups)
 
-    console.log(groupings);
-
     var test = 0;
-
-
 
   groupings.enter().insert("path")
       .attr("class", "attr_group")
