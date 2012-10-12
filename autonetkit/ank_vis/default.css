@@ -1,0 +1,85 @@
+body
+{
+  font-family:"Palatino Linotype", "Book Antiqua", Palatino, serif;
+  background-color: #eee;
+  color: #333;
+}
+
+circle {
+  fill: steelblue;
+}
+
+path.link {
+  fill: none;
+  stroke: steelblue;
+}
+
+marker {
+  stroke: rgb(6,120,155);
+  fill: rgb(6,120,155);
+}
+
+.chart div {
+  font: 10px sans-serif;
+  background-color: steelblue;
+  text-align: right;
+  padding: 3px;
+  margin: 1px;
+  color: white;
+}
+
+.infobar {
+  position:absolute;
+  right:10px;
+  width:15%;
+  top: 10px;
+  border: 1px solid steelblue;
+  border-radius: 10px;
+  height: 90%;
+  padding: 5px;
+  background-color: white;
+}
+
+.infobar ul{
+  list-style-type:none;
+  margin-left: 0;
+  padding-left: 1em;
+  font-size: small;
+}
+
+.navbar {
+  position:absolute;
+  top: 10px;
+  height: 30px;
+  width: 80%;
+  border: 1px solid steelblue;
+  border-radius: 10px;
+  padding: 5px;
+  background-color: white;
+}
+
+.visualisation {
+  position:absolute;
+  top: 60px;
+  border: 1px solid steelblue;
+  border-radius: 10px;
+  padding: 5px;
+  width: 80%;
+  height: 90%;
+  background-color: white;
+}
+
+.size_box {
+  position:absolute;
+  top: 65px;
+  left:75%;
+  border: 1px solid steelblue;
+  border-radius: 10px;
+  padding: 5px;
+  width: 50px%;
+  height: 50px%;
+  background-color: white;
+  display: none;
+  border: none;
+}
+
