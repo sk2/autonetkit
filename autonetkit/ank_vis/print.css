@@ -8,6 +8,11 @@
   border: none;
 }
 
+.size_box {
+  display: none;
+  border: none;
+}
+
 .visualisation {
   position:absolute;
   top: 60px;
