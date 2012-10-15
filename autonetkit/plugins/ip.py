@@ -325,7 +325,7 @@ def assign_asn_to_interasn_cds(G_ip):
     return
 
 def allocate_ips(G_ip):
-    ip_tree = IpTree("172.16.0.0")
+    ip_tree = IpTree("10.0.0.0")
     ip_tree.add_nodes(G_ip.nodes("is_l3device"))
     ip_tree.build()
     loopback_tree = ip_tree.json()
@@ -334,7 +334,7 @@ def allocate_ips(G_ip):
     #pika_channel.publish_compressed("www", "client", body)
     ip_tree.assign()
 
-    ip_tree = IpTree("192.168.3.0")
+    ip_tree = IpTree("192.168.1.0")
     assign_asn_to_interasn_cds(G_ip)
     ip_tree.add_nodes(G_ip.nodes("collision_domain"))
     ip_tree.build()
