@@ -357,7 +357,7 @@ class NetkitCompiler(PlatformCompiler):
 
         G_ip = self.anm['ip']
         lab_topology.config_items = []
-        for node in subgraph.nodes("is_l3device"):
+        for node in sorted(subgraph.nodes("is_l3device")):
             for edge in node.edges():
                 collision_domain = str(G_ip.edge(edge).dst.subnet).replace("/", ".")
                 numeric_id = edge.id.replace("eth", "") # netkit lab.conf uses 1 instead of eth1
