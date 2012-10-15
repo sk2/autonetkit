@@ -8,6 +8,7 @@ import autonetkit.log as log
 import autonetkit.plugins.naming as naming
 import autonetkit.config
 settings = autonetkit.config.settings
+from ank_utils import alphabetical_sort as alpha_sort
 
 #TODO: rename compiler to build
 
@@ -17,11 +18,9 @@ settings = autonetkit.config.settings
 def dot_to_underscore(instring):
     return instring.replace(".", "_")
 
-def sort_attribute(attribute, sort_key):
-    return sorted(attribute,  key = lambda x: x[sort_key])
-
 class RouterCompiler(object):
     lo_interface = "lo0" #make this clear distinction between interface id and lo IP
+# and set per platform
 
     """Base Router compiler"""
     def __init__(self, nidb, anm):
@@ -353,7 +352,8 @@ class NetkitCompiler(PlatformCompiler):
         subgraph = self.nidb.subgraph(host_nodes, self.host)
 
 #TODO: sort this numerically, not just by string
-        lab_topology.machines = " ".join(sorted(naming.network_hostname(phy_node) for phy_node in subgraph.nodes("is_l3device")))
+        lab_topology.machines = " ".join(alpha_sort(naming.network_hostname(phy_node) 
+            for phy_node in subgraph.nodes("is_l3device")))
 
         G_ip = self.anm['ip']
         lab_topology.config_items = []
@@ -371,10 +371,6 @@ class NetkitCompiler(PlatformCompiler):
         for node in subgraph:
             if node.tap:
                 lab_topology.tap_ips.append(
-                    device= naming.network_hostname(node),
-                    id= node.tap.id,
-                    ip= node.tap.ip,
-                    )
                         #TODO: merge the following and previous into a single function
                         device= naming.network_hostname(node),
                         id= node.tap.id.replace("eth", ""), # strip ethx -> x 
