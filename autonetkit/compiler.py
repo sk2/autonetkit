@@ -375,6 +375,11 @@ class NetkitCompiler(PlatformCompiler):
                     id= node.tap.id,
                     ip= node.tap.ip,
                     )
+                        #TODO: merge the following and previous into a single function
+                        device= naming.network_hostname(node),
+                        id= node.tap.id.replace("eth", ""), # strip ethx -> x 
+                        ip= node.tap.ip,
+                        )
 
         lab_topology.tap_ips.sort("ip")
         lab_topology.config_items.sort("device")
