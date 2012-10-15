@@ -21,6 +21,9 @@ def transfer(host, username, local, remote, key_filename = None):
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(
         paramiko.AutoAddPolicy())
+# handle key_filename of '' (empty string)
+    if not len(key_filename):
+        key_filename = None
     if key_filename:
         log.debug("Connecting to %s with %s and key %s" % (host, username, key_filename))
         ssh.connect(host, username = username, key_filename = key_filename)
