@@ -162,6 +162,33 @@ class QuaggaCompiler(RouterCompiler):
                     subnet = node.loopback_subnet
                     )
 
+
+    def ospf(self, node):
+        super(QuaggaCompiler, self).ospf(node)
+
+        # add eBGP link subnets
+        G_ip = self.anm['ip']
+        G_bgp = self.anm['bgp']
+        node.ospf.passive_interfaces = []
+        
+        for link in G_bgp.edges(node, type = "ebgp"):
+            nidb_edge = self.nidb.edge(link)
+            node.ospf.passive_interfaces.append(
+                    id = nidb_edge.id,
+                    )
+
+            ip_link = G_ip.edge(link)
+            default_ebgp_area = 0
+            if not ip_link:
+                #TODO: fix this: due to multi edges from router to same switch cluster
+                continue
+            node.ospf.ospf_links.append(
+                    network = ip_link.dst.subnet,
+                    area = default_ebgp_area,
+                    )
+
+
+
 #TODO: Don't render netkit lab topology if no netkit hosts
 
 class IosBaseCompiler(RouterCompiler):
