@@ -1,11 +1,13 @@
 import autonetkit.log as log
+import pkg_resources
 try:
     import textfsm
 except ImportError:
     log.info("Unable to import TextFSM")
 
 def sh_ip_route(nidb, data):
-    template = open("autonetkit/textfsm/quagga/sh_ip_route")
+    template_file = pkg_resources.resource_filename(__name__, "textfsm/quagga/sh_ip_route")
+    template = open(template_file)
     re_table = textfsm.TextFSM(template)
     routes = re_table.ParseText(data)
     print "\t".join(re_table.header)
