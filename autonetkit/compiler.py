@@ -3,6 +3,7 @@ import itertools
 import netaddr
 import os
 import pprint
+import string
 from datetime import datetime
 import autonetkit.log as log
 import autonetkit.plugins.naming as naming
@@ -325,7 +326,10 @@ class NetkitCompiler(PlatformCompiler):
 
 # allocate zebra information
             nidb_node.zebra.password = "1234"
-            nidb_node.zebra.hostname = folder_name # can't have . in quagga hostnames
+            hostname = folder_name
+            if hostname[0] in string.digits:
+                hostname = "r" + hostname
+            nidb_node.zebra.hostname = hostname # can't have . in quagga hostnames
             nidb_node.ssh.use_key = True #TODO: make this set based on presence of key
             
             # Note this could take external data
