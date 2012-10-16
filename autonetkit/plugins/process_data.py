@@ -16,7 +16,8 @@ def sh_ip_route(nidb, data):
     return
 
 def traceroute(nidb, data):
-    template = open("autonetkit/textfsm/linux/traceroute")
+    template_file = pkg_resources.resource_filename(__name__, "textfsm/linux/traceroute")
+    template = open(template_file)
     re_table = textfsm.TextFSM(template)
     routes = re_table.ParseText(data)
     #print "\t".join(re_table.header)
