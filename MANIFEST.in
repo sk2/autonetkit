@@ -2,6 +2,7 @@ recursive-include package *
 include autonetkit/ank_vis/*.*
 include autonetkit/ank_vis/icons/*.*
 
+recursive-include autonetkit/textfsm/*
 include autonetkit/templates/*.mako
 include autonetkit/templates/ios2/*.mako
 recursive-include autonetkit/templates/quagga *
