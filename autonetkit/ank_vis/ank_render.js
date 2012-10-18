@@ -602,6 +602,8 @@ function redraw() {
     node_attributes.push.apply(node_attributes, _.keys(node));
   });
 
+  //TODO: add support for color for edge id edge_group_id
+
 
   //TODO: sort then make unique
   node_attributes.sort();
@@ -618,6 +620,7 @@ function redraw() {
 
   node_attr_groups = d3.nest().key( node_group_id ).entries(nodes);
   edge_attr_groups = d3.nest().key(function(d) { return d[edge_group_id]; }).entries(jsondata.links);
+  console.log(edge_attr_groups);
   //TODO: use edge attr groups for edge colours
 
   //TODO: make group path change/exit with node data

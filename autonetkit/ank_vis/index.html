@@ -70,6 +70,7 @@ var node_label_select = d3.select("#node_label_select")
 var edge_group_select = d3.select("#edge_group_select")
 .on("change", function() {
     edge_group_id = this.value;
+    redraw();
     })
 
 var enable_zoom = false
