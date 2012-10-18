@@ -642,37 +642,39 @@ function redraw() {
 
   //TODO: filter the json data x and y ranges: store in nodes, and use this for the image plotting
 
-  var line = chart.selectAll(".link_edge")
-    .data(jsondata.links, edge_id)
+    var line = chart.selectAll(".link_edge")
+      .data(jsondata.links, edge_id)
 
-    //line.enter().append("line")
-    line.enter().append("svg:path")
-    .attr("class", "link_edge")
-    .attr("d", graph_edge)
-    .style("stroke-width", 2)
-    //.attr("marker-end", marker_end)
-    .style("stroke", "rgb(6,120,155)")
-    .style("fill", "none")
-    .on("mouseover", function(d){
+      //line.enter().append("line")
+      line.enter().append("svg:path")
+      .attr("class", "link_edge")
+      .attr("d", graph_edge)
+      .style("stroke-width", 2)
+      //.attr("marker-end", marker_end)
+      .style("stroke", "rgb(6,120,155)")
+      .style("fill", "none")
+
+      .on("mouseover", function(d){
         d3.select(this).style("stroke", "orange");
         d3.select(this).style("stroke-width", "4");
         d3.select(this).attr("marker-end", "");
         link_info(d);
-        })
-  .on("mouseout", function(){
+      })
+    .on("mouseout", function(){
       d3.select(this).style("stroke-width", "2");
       d3.select(this).style("stroke", "rgb(6,120,155)");
       //d3.select(this).attr("marker-end", marker_end);
       clear_label();
-      });
-  line.transition()
-    .duration(500)
-    .attr("d", graph_edge)
+    })
 
-    line.exit().transition()
-    .duration(1000)
-    .style("opacity",0)
-    .remove();
+    line.transition()
+      .duration(500)
+      .attr("d", graph_edge)
+
+      line.exit().transition()
+      .duration(1000)
+      .style("opacity",0)
+      .remove();
 
   var node_id = function(d) {
     return d.label + d.network;
@@ -694,7 +696,9 @@ function redraw() {
         })
   .on("mouseout", function(){
       clear_label();
-      });
+      })
+  .append("svg:title")
+    .text(function(d) { return d.id; })
 
   image
     .attr("width", 64)
@@ -704,6 +708,9 @@ function redraw() {
     .attr("x", function(d) { return d.x + x_offset; })
     .attr("y", function(d) { return d.y + y_offset; })
     .duration(500)
+
+
+
 
 
     image.exit().transition()
