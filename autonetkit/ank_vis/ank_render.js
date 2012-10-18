@@ -1,3 +1,6 @@
+//TODO: see if can use underscore.js for other operations, to simplify mapping, iterationl etc
+//List concat based on http://stackoverflow.com/questions/5080028
+
 var jsondata;
 var socket_url = "ws://" + location.host + "/ws";
 var ws = new WebSocket(socket_url);
@@ -20,6 +23,9 @@ var pathinfo = [];
 
 var graph_history = [];
 var ip_allocations = [];
+
+var node_label_id = "id";
+var edge_group_id;
 
 ws.onmessage = function (evt) {
   var data = jQuery.parseJSON(evt.data);
@@ -59,9 +65,9 @@ ws.onmessage = function (evt) {
       redraw();
       redraw_ip_allocations();
     }
-  }
-  else {
-    console.log("got unknown data", data);
+  } else {
+    //TODO: work out why reaching here if passing the "graph in data" check above
+    //console.log("got unknown data", data);
   }
 }
 
@@ -176,7 +182,8 @@ function redraw_ip_allocations() {
 }
 
 var propagate_overlay_dropdown = function(d) {
-  d.push('ip_allocations');
+  $("#overlay_select").empty();
+  d.push('ip_allocations'); //manually append as not in graph overlay list
   overlay_dropdown
     .selectAll("option")
     .data(d)
@@ -186,7 +193,6 @@ var propagate_overlay_dropdown = function(d) {
 
 //TODO only set the first time around?
     $("#overlay_select option[value=" + overlay_id + "]").attr("selected", "selected")
-  
 }
 
 var propagate_revision_dropdown = function(d) {
@@ -199,6 +205,35 @@ var propagate_revision_dropdown = function(d) {
     .text(String);
 
   $("#revision_select option[value=" + revision_id + "]").attr("selected", "selected")
+}
+
+var propagate_node_label_select = function(d) {
+  $("#node_label_select").empty();
+  node_label_select
+    .selectAll("option")
+    .data(d)
+    .enter().append("option")
+    .attr("value", String)
+    .text(String);
+
+//TODO only set the first time around?
+  console.log(node_label_id);
+    $("#node_label_select option[value=" + node_label_id + "]").attr("selected", "selected")
+}
+
+var propagate_edge_group_select = function(d) {
+  //TODO: make default "none" and don't group?
+  $("#edge_group_select").empty();
+  var dropdown = edge_group_select
+    .selectAll("option")
+    .data(d)
+
+    dropdown.enter().append("option")
+    .attr("value", String)
+    .text(String);
+
+//TODO only set the first time around?
+    $("#edge_group_select option[value=" + edge_group_id + "]").attr("selected", "selected")
 }
 
 var print_each_revision = false;
@@ -514,8 +549,6 @@ $(document).keydown(function(e){
 //
 var group_attr = "asn";
 
-var global;
-
 var group_info = function(d) {
   if (overlay_id == "ospf") {
     var data = d.key.split(",");
@@ -524,7 +557,6 @@ var group_info = function(d) {
     status_label.html("Group: " + group_attr + " " + d.key);
   }
 }
-
 
 var node_group_id = function(d) {
 
@@ -544,19 +576,41 @@ var node_group_id = function(d) {
 
 }
 
-function redraw() {
-  // create the chart here with
-  // the returned data
+var device_label = function(d) {
+  return d[node_label_id];
+}
 
+// Store the attributes used for nodes and edges, to allow user to select
+var node_attributes = [];
+var edge_attributes = [];
+
+function redraw() {
   nodes = jsondata.nodes;
-  //TODO: only update if changed
+
+  node_attributes = []; //reset
   nodes.forEach(function(node) {
-      //todo: should this just be the index mapping?
-      nodes_by_id[node.id] = node;
-      });
+    nodes_by_id[node.id] = node;
+
+    node_attributes.push.apply(node_attributes, _.keys(node));
+  });
+
+
+  //TODO: sort then make unique
+  node_attributes.sort();
+  node_attributes = _.uniq(node_attributes);
+  propagate_node_label_select(node_attributes);
+
+  edge_attributes = []; //reset
+  jsondata.links.forEach(function(link) {
+    node_attributes.push.apply(edge_attributes, _.keys(link));
+  });
+  edge_attributes.sort();
+  edge_attributes = _.uniq(edge_attributes);
+  propagate_edge_group_select(edge_attributes);
 
   node_attr_groups = d3.nest().key( node_group_id ).entries(nodes);
-  edge_attr_groups = d3.nest().key(function(d) { return d.type; }).entries(jsondata.links);
+  edge_attr_groups = d3.nest().key(function(d) { return d[edge_group_id]; }).entries(jsondata.links);
+  //TODO: use edge attr groups for edge colours
 
   //TODO: make group path change/exit with node data
   groupings = chart.selectAll(".attr_group")
@@ -595,6 +649,7 @@ function redraw() {
     line.enter().append("svg:path")
     .attr("class", "link_edge")
     .attr("d", graph_edge)
+    .style("stroke-width", 2)
     //.attr("marker-end", marker_end)
     .style("stroke", "rgb(6,120,155)")
     .style("fill", "none")
@@ -605,7 +660,7 @@ function redraw() {
         link_info(d);
         })
   .on("mouseout", function(){
-      d3.select(this).style("stroke-width", "1");
+      d3.select(this).style("stroke-width", "2");
       d3.select(this).style("stroke", "rgb(6,120,155)");
       //d3.select(this).attr("marker-end", marker_end);
       clear_label();
@@ -671,7 +726,7 @@ function redraw() {
     device_labels 
     .attr("dx", 32) // padding-right
     .attr("dy", 65) // vertical-align: middle
-    .text(function (d) { return d.id; } );
+    .text(device_label);
 
   device_labels.transition()
     .attr("x", function(d) { return d.x + x_offset; })
