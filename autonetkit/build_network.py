@@ -228,6 +228,10 @@ def build_ospf(anm):
     ank.aggregate_nodes(G_ospf, G_ospf.nodes("is_switch"), retain = "edge_id")
     ank.explode_nodes(G_ospf, G_ospf.nodes("is_switch"), retain= "edge_id")
     for router in G_ospf:
+        if router.area == "None":
+            #TODO: tidy up this default of None being a string
+            router.area = 0
+
         router.area = int(router.area) #TODO: use dst type in copy_attr_from
 
     # list type
