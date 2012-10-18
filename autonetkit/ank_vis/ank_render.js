@@ -394,28 +394,32 @@ var path_y = function(d) {
   return node.y+ 32 + y_offset;
 }
 
+var data_to_li = function(d, depth) {
+  //TODO: may want to limit recursion depth
+  max_depth = 1;
+  text = "<ul>"; //begin the unordered list
+  for (attr in d) {
+    if (typeof d[attr] == 'object' && d[attr] != null && depth < max_depth) {
+      text += data_to_li(d[attr], depth +1); // recurse
+    }
+    else {
+      text += "<li><b>" + attr + ":</b> " + d[attr] + "</li>"; //add the key/val
+    }
+  }
+  text += "<ul>"; //finish the unordered list
+  return text;
+
+}
+
 //TODO: make recursive, if type is object and not null then call, and repeat...
 var node_info = function(d) {
   //TODO: append ul/li like table example on http://christopheviau.com/d3_tutorial/
   text = d.id;
-  text += "<ul>";
-  for (attr in d) {
-    if (typeof d[attr] == 'object' && d[attr] != null) {
-      text += "<li>" + attr + "<ul>";
-      for (subattr in d[attr]) {
-        text += "<li>" + subattr + ": " + d[attr][subattr] + "</li>";
-      }
-      text += "</ul></li>";
-    }
-    else if (d[attr] != null && d[attr] != "None" && attr != "" & attr != "" && attr != "label" && attr != "id") {
-      text += "<li>" + attr + ": " + d[attr] + "</li>";
-    }
-  }
-  text += "</ul>";
-  status_label.html("<b>Node</b>: " + text);
+  text += data_to_li(d, 0);
+  text = "<b>Node</b>: " + text;
+  return text;
+  //status_label.html(text);
 }
-
-
 
 var path_info = function(d) {
   status_label.html("Path: " + d);
@@ -431,7 +435,9 @@ var link_info = function(d) {
       text += ", " + attr + ": " + d[attr];
     }
   }
-  status_label.html("Link: " + text);
+  text = "Link: " + text;
+  return text;
+  //status_label.html(text);
 }
 
 
@@ -552,10 +558,12 @@ var group_attr = "asn";
 var group_info = function(d) {
   if (overlay_id == "ospf") {
     var data = d.key.split(",");
-    status_label.html("Group: <ul><li>asn: " + data[0] +  "</li><li>area: " + data[1] + "</li></ul>");
+    text = ("Group: <ul><li>asn: " + data[0] +  "</li><li>area: " + data[1] + "</li></ul>");
   } else {
-    status_label.html("Group: " + group_attr + " " + d.key);
+    text = ("Group: " + group_attr + " " + d.key);
   }
+  return text;
+  //status_label.html(text);
 }
 
 var node_group_id = function(d) {
@@ -640,6 +648,17 @@ function redraw() {
     .style("opacity",0)
     .remove();
 
+
+      $('.attr_group').tipsy({ 
+    //based on http://bl.ocks.org/1373263
+        gravity: 'w', 
+        html: true, 
+        title: function() {
+          var d = this.__data__
+          return group_info(d); 
+        }
+      });
+
   //TODO: filter the json data x and y ranges: store in nodes, and use this for the image plotting
 
     var line = chart.selectAll(".link_edge")
@@ -676,6 +695,16 @@ function redraw() {
       .style("opacity",0)
       .remove();
 
+      $('.link_edge').tipsy({ 
+    //based on http://bl.ocks.org/1373263
+        gravity: 'w', 
+        html: true, 
+        title: function() {
+          var d = this.__data__
+          return link_info(d); 
+        }
+      });
+
   var node_id = function(d) {
     return d.label + d.network;
   }
@@ -691,8 +720,7 @@ function redraw() {
     .attr("height", 64)
     .on("mouseover", function(d){
         node_info(d);
-        d3.select(this).attr("xlink:href", icon);
-
+        d3.select(this).attr("xlink:href", icon); //TODO: check why need to do this
         })
   .on("mouseout", function(){
       clear_label();
@@ -711,12 +739,21 @@ function redraw() {
 
 
 
-
-
     image.exit().transition()
     .duration(1000)
     .style("opacity",0)
     .remove();
+
+  $('.device_icon').tipsy({ 
+    //based on http://bl.ocks.org/1373263
+        gravity: 'w', 
+        html: true, 
+        title: function() {
+          var d = this.__data__
+          return node_info(d); 
+        }
+      });
+
 
   device_labels = chart.selectAll(".device_label")
     .data(nodes, node_id)
