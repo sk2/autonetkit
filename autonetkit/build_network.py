@@ -257,9 +257,7 @@ def build_ospf(anm):
 #TOOD: set default area, or warn if no area settings
     for router in G_ospf:
 # and set area on interface
-        print router
         for edge in router.edges():
-            print "\t", edge.dst
             if edge.area:
                 continue # already allocated (from other "direction", as undirected)
             if router.area == edge.dst.area:
