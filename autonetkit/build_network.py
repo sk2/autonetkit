@@ -204,32 +204,25 @@ def build_conn(anm):
 
 #TODO: Add a function to auto-update graphics, if any node present in overlay but not in graphics then add with sensible defaults
 
-
-# testing
-
-
 def build_ospf(anm):
     G_in = anm['input']
     G_ospf = anm.add_overlay("ospf")
     G_ospf.add_nodes_from(G_in.nodes("is_router"), retain=['asn'])
-    #update_pika(anm)
     G_ospf.add_nodes_from(G_in.nodes("is_switch"), retain=['asn'])
-    #update_pika(anm)
     G_ospf.add_edges_from(G_in.edges(), retain = ['edge_id'])
 
-    #update_pika(anm)
-    ank.aggregate_nodes(G_ospf, G_ospf.nodes("is_switch"), retain = "edge_id")
-    #update_pika(anm)
-    ank.explode_nodes(G_ospf, G_ospf.nodes("is_switch"), retain= "edge_id")
-    #update_pika(anm)
+    ank.copy_attr_from(G_in, G_ospf, "ospf_area", dst_attr = "area") #TODO: move this into graphml (and later gml) reader
 
-    #update_pika(anm)
+    ank.aggregate_nodes(G_ospf, G_ospf.nodes("is_switch"), retain = "edge_id")
+    ank.explode_nodes(G_ospf, G_ospf.nodes("is_switch"), retain= "edge_id")
+
+#TOOD: set default area, or warn if no area set
+
+#TODO: need to remove area from links, and use on nodes instead
     G_ospf.remove_edges_from([link for link in G_ospf.edges() if link.src.asn != link.dst.asn])
     for link in G_ospf.edges():
         link.area = 0
         link.cost = 1
-
-    #update_pika(anm)
 
 def ip_to_net_ent_title_ios(ip):
     """ Converts an IP address into an OSI Network Entity Title
