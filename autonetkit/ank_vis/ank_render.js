@@ -1,3 +1,6 @@
+//TODO: see if can use underscore.js for other operations, to simplify mapping, iterationl etc
+//List concat based on http://stackoverflow.com/questions/5080028
+
 var jsondata;
 var socket_url = "ws://" + location.host + "/ws";
 var ws = new WebSocket(socket_url);
@@ -20,6 +23,9 @@ var pathinfo = [];
 
 var graph_history = [];
 var ip_allocations = [];
+
+var node_label_id = "id";
+var edge_group_id;
 
 ws.onmessage = function (evt) {
   var data = jQuery.parseJSON(evt.data);
@@ -59,9 +65,9 @@ ws.onmessage = function (evt) {
       redraw();
       redraw_ip_allocations();
     }
-  }
-  else {
-    console.log("got unknown data", data);
+  } else {
+    //TODO: work out why reaching here if passing the "graph in data" check above
+    //console.log("got unknown data", data);
   }
 }
 
@@ -176,7 +182,8 @@ function redraw_ip_allocations() {
 }
 
 var propagate_overlay_dropdown = function(d) {
-  d.push('ip_allocations');
+  $("#overlay_select").empty();
+  d.push('ip_allocations'); //manually append as not in graph overlay list
   overlay_dropdown
     .selectAll("option")
     .data(d)
@@ -186,7 +193,6 @@ var propagate_overlay_dropdown = function(d) {
 
 //TODO only set the first time around?
     $("#overlay_select option[value=" + overlay_id + "]").attr("selected", "selected")
-  
 }
 
 var propagate_revision_dropdown = function(d) {
@@ -199,6 +205,35 @@ var propagate_revision_dropdown = function(d) {
     .text(String);
 
   $("#revision_select option[value=" + revision_id + "]").attr("selected", "selected")
+}
+
+var propagate_node_label_select = function(d) {
+  $("#node_label_select").empty();
+  node_label_select
+    .selectAll("option")
+    .data(d)
+    .enter().append("option")
+    .attr("value", String)
+    .text(String);
+
+//TODO only set the first time around?
+  console.log(node_label_id);
+    $("#node_label_select option[value=" + node_label_id + "]").attr("selected", "selected")
+}
+
+var propagate_edge_group_select = function(d) {
+  //TODO: make default "none" and don't group?
+  $("#edge_group_select").empty();
+  var dropdown = edge_group_select
+    .selectAll("option")
+    .data(d)
+
+    dropdown.enter().append("option")
+    .attr("value", String)
+    .text(String);
+
+//TODO only set the first time around?
+    $("#edge_group_select option[value=" + edge_group_id + "]").attr("selected", "selected")
 }
 
 var print_each_revision = false;
@@ -359,28 +394,32 @@ var path_y = function(d) {
   return node.y+ 32 + y_offset;
 }
 
+var data_to_li = function(d, depth) {
+  //TODO: may want to limit recursion depth
+  max_depth = 1;
+  text = "<ul>"; //begin the unordered list
+  for (attr in d) {
+    if (typeof d[attr] == 'object' && d[attr] != null && depth < max_depth) {
+      text += data_to_li(d[attr], depth +1); // recurse
+    }
+    else {
+      text += "<li><b>" + attr + ":</b> " + d[attr] + "</li>"; //add the key/val
+    }
+  }
+  text += "<ul>"; //finish the unordered list
+  return text;
+
+}
+
 //TODO: make recursive, if type is object and not null then call, and repeat...
 var node_info = function(d) {
   //TODO: append ul/li like table example on http://christopheviau.com/d3_tutorial/
   text = d.id;
-  text += "<ul>";
-  for (attr in d) {
-    if (typeof d[attr] == 'object' && d[attr] != null) {
-      text += "<li>" + attr + "<ul>";
-      for (subattr in d[attr]) {
-        text += "<li>" + subattr + ": " + d[attr][subattr] + "</li>";
-      }
-      text += "</ul></li>";
-    }
-    else if (d[attr] != null && d[attr] != "None" && attr != "" & attr != "" && attr != "label" && attr != "id") {
-      text += "<li>" + attr + ": " + d[attr] + "</li>";
-    }
-  }
-  text += "</ul>";
-  status_label.html("<b>Node</b>: " + text);
+  text += data_to_li(d, 0);
+  text = "<b>Node</b>: " + text;
+  return text;
+  //status_label.html(text);
 }
-
-
 
 var path_info = function(d) {
   status_label.html("Path: " + d);
@@ -396,7 +435,9 @@ var link_info = function(d) {
       text += ", " + attr + ": " + d[attr];
     }
   }
-  status_label.html("Link: " + text);
+  text = "Link: " + text;
+  return text;
+  //status_label.html(text);
 }
 
 
@@ -514,17 +555,16 @@ $(document).keydown(function(e){
 //
 var group_attr = "asn";
 
-var global;
-
 var group_info = function(d) {
   if (overlay_id == "ospf") {
     var data = d.key.split(",");
-    status_label.html("Group: <ul><li>asn: " + data[0] +  "</li><li>area: " + data[1] + "</li></ul>");
+    text = ("Group: <ul><li>asn: " + data[0] +  "</li><li>area: " + data[1] + "</li></ul>");
   } else {
-    status_label.html("Group: " + group_attr + " " + d.key);
+    text = ("Group: " + group_attr + " " + d.key);
   }
+  return text;
+  //status_label.html(text);
 }
-
 
 var node_group_id = function(d) {
 
@@ -544,19 +584,44 @@ var node_group_id = function(d) {
 
 }
 
-function redraw() {
-  // create the chart here with
-  // the returned data
+var device_label = function(d) {
+  return d[node_label_id];
+}
 
+// Store the attributes used for nodes and edges, to allow user to select
+var node_attributes = [];
+var edge_attributes = [];
+
+function redraw() {
   nodes = jsondata.nodes;
-  //TODO: only update if changed
+
+  node_attributes = []; //reset
   nodes.forEach(function(node) {
-      //todo: should this just be the index mapping?
-      nodes_by_id[node.id] = node;
-      });
+    nodes_by_id[node.id] = node;
+
+    node_attributes.push.apply(node_attributes, _.keys(node));
+  });
+
+  //TODO: add support for color for edge id edge_group_id
+
+
+  //TODO: sort then make unique
+  node_attributes.sort();
+  node_attributes = _.uniq(node_attributes);
+  propagate_node_label_select(node_attributes);
+
+  edge_attributes = []; //reset
+  jsondata.links.forEach(function(link) {
+    node_attributes.push.apply(edge_attributes, _.keys(link));
+  });
+  edge_attributes.sort();
+  edge_attributes = _.uniq(edge_attributes);
+  propagate_edge_group_select(edge_attributes);
 
   node_attr_groups = d3.nest().key( node_group_id ).entries(nodes);
-  edge_attr_groups = d3.nest().key(function(d) { return d.type; }).entries(jsondata.links);
+  edge_attr_groups = d3.nest().key(function(d) { return d[edge_group_id]; }).entries(jsondata.links);
+  console.log(edge_attr_groups);
+  //TODO: use edge attr groups for edge colours
 
   //TODO: make group path change/exit with node data
   groupings = chart.selectAll(".attr_group")
@@ -586,38 +651,62 @@ function redraw() {
     .style("opacity",0)
     .remove();
 
+
+      $('.attr_group').tipsy({ 
+    //based on http://bl.ocks.org/1373263
+        gravity: 'w', 
+        html: true, 
+        title: function() {
+          var d = this.__data__
+          return group_info(d); 
+        }
+      });
+
   //TODO: filter the json data x and y ranges: store in nodes, and use this for the image plotting
 
-  var line = chart.selectAll(".link_edge")
-    .data(jsondata.links, edge_id)
+    var line = chart.selectAll(".link_edge")
+      .data(jsondata.links, edge_id)
 
-    //line.enter().append("line")
-    line.enter().append("svg:path")
-    .attr("class", "link_edge")
-    .attr("d", graph_edge)
-    //.attr("marker-end", marker_end)
-    .style("stroke", "rgb(6,120,155)")
-    .style("fill", "none")
-    .on("mouseover", function(d){
+      //line.enter().append("line")
+      line.enter().append("svg:path")
+      .attr("class", "link_edge")
+      .attr("d", graph_edge)
+      .style("stroke-width", 2)
+      //.attr("marker-end", marker_end)
+      .style("stroke", "rgb(6,120,155)")
+      .style("fill", "none")
+
+      .on("mouseover", function(d){
         d3.select(this).style("stroke", "orange");
         d3.select(this).style("stroke-width", "4");
         d3.select(this).attr("marker-end", "");
         link_info(d);
-        })
-  .on("mouseout", function(){
-      d3.select(this).style("stroke-width", "1");
+      })
+    .on("mouseout", function(){
+      d3.select(this).style("stroke-width", "2");
       d3.select(this).style("stroke", "rgb(6,120,155)");
       //d3.select(this).attr("marker-end", marker_end);
       clear_label();
-      });
-  line.transition()
-    .duration(500)
-    .attr("d", graph_edge)
+    })
 
-    line.exit().transition()
-    .duration(1000)
-    .style("opacity",0)
-    .remove();
+    line.transition()
+      .duration(500)
+      .attr("d", graph_edge)
+
+      line.exit().transition()
+      .duration(1000)
+      .style("opacity",0)
+      .remove();
+
+      $('.link_edge').tipsy({ 
+    //based on http://bl.ocks.org/1373263
+        gravity: 'w', 
+        html: true, 
+        title: function() {
+          var d = this.__data__
+          return link_info(d); 
+        }
+      });
 
   var node_id = function(d) {
     return d.label + d.network;
@@ -634,12 +723,13 @@ function redraw() {
     .attr("height", 64)
     .on("mouseover", function(d){
         node_info(d);
-        d3.select(this).attr("xlink:href", icon);
-
+        d3.select(this).attr("xlink:href", icon); //TODO: check why need to do this
         })
   .on("mouseout", function(){
       clear_label();
-      });
+      })
+  .append("svg:title")
+    .text(function(d) { return d.id; })
 
   image
     .attr("width", 64)
@@ -651,10 +741,22 @@ function redraw() {
     .duration(500)
 
 
+
     image.exit().transition()
     .duration(1000)
     .style("opacity",0)
     .remove();
+
+  $('.device_icon').tipsy({ 
+    //based on http://bl.ocks.org/1373263
+        gravity: 'w', 
+        html: true, 
+        title: function() {
+          var d = this.__data__
+          return node_info(d); 
+        }
+      });
+
 
   device_labels = chart.selectAll(".device_label")
     .data(nodes, node_id)
@@ -671,7 +773,7 @@ function redraw() {
     device_labels 
     .attr("dx", 32) // padding-right
     .attr("dy", 65) // vertical-align: middle
-    .text(function (d) { return d.id; } );
+    .text(device_label);
 
   device_labels.transition()
     .attr("x", function(d) { return d.x + x_offset; })
