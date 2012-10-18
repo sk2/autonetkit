@@ -380,11 +380,7 @@ var node_info = function(d) {
   status_label.html("<b>Node</b>: " + text);
 }
 
-var group_attr = "asn";
 
-var group_info = function(d) {
-  status_label.html("Group: " + group_attr + " " + d.key);
-}
 
 var path_info = function(d) {
   status_label.html("Path: " + d);
@@ -513,6 +509,41 @@ $(document).keydown(function(e){
     e.preventDefault();
 });
 
+
+//TODO: group attr needs to return an index based on the overlay... this could be more than one attribute, eg OSPF is ASN and area.
+//
+var group_attr = "asn";
+
+var global;
+
+var group_info = function(d) {
+  if (overlay_id == "ospf") {
+    var data = d.key.split(",");
+    status_label.html("Group: <ul><li>asn: " + data[0] +  "</li><li>area: " + data[1] + "</li></ul>");
+  } else {
+    status_label.html("Group: " + group_attr + " " + d.key);
+  }
+}
+
+
+var node_group_id = function(d) {
+
+  group_attr = "asn";
+  if (overlay_id == "nidb") {
+    group_attr = "host";
+  }
+  if (overlay_id == "conn") {
+    group_attr = "device";
+  }
+
+  if (overlay_id == "ospf") {
+    return ([d['asn'], d['area']]);
+  }
+
+  return d[group_attr];
+
+}
+
 function redraw() {
   // create the chart here with
   // the returned data
@@ -524,24 +555,12 @@ function redraw() {
       nodes_by_id[node.id] = node;
       });
 
-
-  group_attr = "asn";
-  if (overlay_id == "nidb") {
-    group_attr = "host";
-  }
-  if (overlay_id == "conn") {
-    group_attr = "device";
-  }
-
-
-  node_attr_groups = d3.nest().key(function(d) { return d[group_attr]; }).entries(nodes);
+  node_attr_groups = d3.nest().key( node_group_id ).entries(nodes);
   edge_attr_groups = d3.nest().key(function(d) { return d.type; }).entries(jsondata.links);
 
   //TODO: make group path change/exit with node data
   groupings = chart.selectAll(".attr_group")
     .data(node_attr_groups)
-
-    var test = 0;
 
   groupings.enter().insert("path")
       .attr("class", "attr_group")
