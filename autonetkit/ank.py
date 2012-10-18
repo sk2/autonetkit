@@ -37,6 +37,7 @@ def set_node_default(overlay_graph, nbunch, **kwargs):
 
 #TODO: rename to copy_node_attr_from
 def copy_attr_from(overlay_src, overlay_dst, src_attr, dst_attr = None, nbunch = None):
+    #TODO: add dest format, eg to convert to int
     if not dst_attr:
         dst_attr = src_attr
 
@@ -289,7 +290,6 @@ def neigh_average(overlay_graph, node, attribute, attribute_graph = None):
 def neigh_attr(overlay_graph, node, attribute, attribute_graph = None):
     #TODO: tidy up parameters to take attribute_graph first, and then evaluate if attribute_graph set, if not then use attribute_graph as attribute
 #TODO: explain how overlay_graph and attribute_graph work, eg for G_ip and G_phy
-    """Boolean, True if neighbors in overlay_graph all have same attribute in attribute_graph"""
     graph = unwrap_graph(overlay_graph)
     node = unwrap_nodes(node)
     if attribute_graph:
@@ -303,6 +303,7 @@ def neigh_attr(overlay_graph, node, attribute, attribute_graph = None):
     return (attribute_graph.node[node].get(attribute) for node in valid_nodes)
 
 def neigh_equal(overlay_graph, node, attribute, attribute_graph = None):
+    """Boolean, True if neighbors in overlay_graph all have same attribute in attribute_graph"""
     neigh_attrs = neigh_attr(overlay_graph, node, attribute, attribute_graph)
     return len(set(neigh_attrs)) == 1
 

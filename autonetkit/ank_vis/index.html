@@ -3,6 +3,9 @@
   <head>
     <script type="text/javascript" src="d3.v2.min.js"></script>
     <script type="text/javascript" src="jquery-1.7.2.min.js"></script>
+    <script type="text/javascript" src="underscore-min.js"></script>
+    <script type="text/javascript" src="jquery.tipsy.js"></script>
+    <link href="tipsy.css" rel="stylesheet" type="text/css" />
     <title>AutoNetkit</title>
 
     <link rel="stylesheet" type="text/css" href="default.css" title = "default">
@@ -15,14 +18,17 @@
   </head>
   <body>
 
-    <div class="navbar"><b>AutoNetkit |</b> Select overlay: <select id = "overlay_select"></select>
+    <div class="navbar"><b>AutoNetkit |</b>
+      Select overlay: <select id = "overlay_select"></select>
       Revision: <select id = "revision_select"></select>
       <button onclick="history_start();"><<</button>
       <button onclick="history_back();"><</button>
       <button onclick="history_forward();">></button>
       <button onclick="history_end();">>></button>
       <button onclick="javascript:setActiveStyleSheet('maximised');">Maximise</button>
-      <input type="checkbox" id="enable_zoom" value="enable_zoom" />Zoom
+      <input type="checkbox" id="enable_zoom" value="enable_zoom" />Zoom |
+      Node: <select id = "node_label_select"></select> |
+      Edge: <select id = "edge_group_select"></select>
     </div>
 
     <div class="infobar"></div>
@@ -53,6 +59,18 @@ var revision_dropdown = d3.select("#revision_select")
     load_revision();
     redraw(); //TODO: remove this once using websocket callback for next line
     //ws.send("overlay_id=" + overlay_id); //TODO: call server for history
+    })
+
+var node_label_select = d3.select("#node_label_select")
+.on("change", function() {
+    node_label_id = this.value;
+    redraw();
+    })
+
+var edge_group_select = d3.select("#edge_group_select")
+.on("change", function() {
+    edge_group_id = this.value;
+    redraw();
     })
 
 var enable_zoom = false

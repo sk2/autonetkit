@@ -50,7 +50,7 @@ def build(input_graph_string, timestamp):
         pass
     #nx.write_graphml(input_graph, "output.graphml")
     G_in = anm.add_overlay("input", input_undirected)
-    G_in_directed = anm.add_overlay("input_directed", input_graph, directed = True)
+    #G_in_directed = anm.add_overlay("input_directed", input_graph, directed = True)
 
     import autonetkit.plugins.graph_product as graph_product
     graph_product.expand(G_in) # apply graph products if relevant
@@ -77,7 +77,7 @@ def build(input_graph_string, timestamp):
 
     build_phy(anm)
     #update_pika(anm)
-    build_conn(anm)
+    #build_conn(anm)
     build_ip(anm)
     
     igp = G_in.data.igp or "ospf" #TODO: make default template driven
@@ -205,6 +205,18 @@ def build_conn(anm):
 #TODO: Add a function to auto-update graphics, if any node present in overlay but not in graphics then add with sensible defaults
 
 def build_ospf(anm):
+    """
+    Build OSPF graph.
+    
+    Allowable area combinations:
+    0 -> 0
+    0 -> x (x!= 0)
+    x -> 0 (x!= 0)
+    x -> x (x != 0)
+
+    Not-allowed:
+    x -> x (x != y != 0)
+    """
     G_in = anm['input']
     G_ospf = anm.add_overlay("ospf")
     G_ospf.add_nodes_from(G_in.nodes("is_router"), retain=['asn'])
@@ -215,13 +227,53 @@ def build_ospf(anm):
 
     ank.aggregate_nodes(G_ospf, G_ospf.nodes("is_switch"), retain = "edge_id")
     ank.explode_nodes(G_ospf, G_ospf.nodes("is_switch"), retain= "edge_id")
+    for router in G_ospf:
+        if router.area == "None":
+            #TODO: tidy up this default of None being a string
+            router.area = 0
 
-#TOOD: set default area, or warn if no area set
+        router.area = int(router.area) #TODO: use dst type in copy_attr_from
 
-#TODO: need to remove area from links, and use on nodes instead
+    # list type
+    for router in G_ospf:
+        neigh_areas = set(ank.neigh_attr(G_ospf, router, "area"))
+        if len(neigh_areas) == 1:
+            # All neighbors have same area
+            neigh_area = neigh_areas.pop()
+            if neigh_area != router.area:
+                # router is in own area
+                router.type = "ABR"
+            elif neigh_area == 0:
+# all neighbors are in area 0
+                router.type = "Backbone"
+            else:
+                router.type = "Internal"
+
+        else:
+            router.type = "ABR"
+
+        
+ 
+#TOOD: set default area, or warn if no area settings
+    for router in G_ospf:
+# and set area on interface
+        print router
+        for edge in router.edges():
+            print "\t", edge.dst
+            if edge.area:
+                continue # already allocated (from other "direction", as undirected)
+            if router.area == edge.dst.area:
+                edge.area = router.area # intra-area
+            else:
+                if router.area == 0 or edge.dst.area == 0:
+                    pass
+# 
+
+#TODO: do we want to allocate non-symmetric OSPF costs? do we need a directed OSPF graph?
+# (note this will all change once have proper interface nodes)
+
     G_ospf.remove_edges_from([link for link in G_ospf.edges() if link.src.asn != link.dst.asn])
     for link in G_ospf.edges():
-        link.area = 0
         link.cost = 1
 
 def ip_to_net_ent_title_ios(ip):
