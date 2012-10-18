@@ -67,7 +67,8 @@ def manage_network(input_graph_string, timestamp, build_options, reload_build=Fa
         if build_options['archive']:
             nidb.save()
         #render.remove_dirs(["rendered"])
-        render.render(nidb)
+        if build_options['render']:
+            render.render(nidb)
 
     else:
         import autonetkit.anm
@@ -139,6 +140,7 @@ def main():
 
     build_options = {
             'compile':  options.compile or settings['General']['compile'],
+            'render':  options.render or settings['General']['render'],
             'deploy': options.deploy or settings['General']['deploy'],
             'measure': options.measure or settings['General']['measure'],
             'monitor': options.monitor or settings['General']['monitor'],
