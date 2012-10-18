@@ -229,13 +229,29 @@ def build_ospf(anm):
     ank.explode_nodes(G_ospf, G_ospf.nodes("is_switch"), retain= "edge_id")
     for router in G_ospf:
         router.area = int(router.area) #TODO: use dst type in copy_attr_from
+
+    # list type
+    for router in G_ospf:
+        neigh_areas = set(ank.neigh_attr(G_ospf, router, "area"))
+        if len(neigh_areas) == 1:
+            # All neighbors have same area
+            neigh_area = neigh_areas.pop()
+            if neigh_area != router.area:
+                # router is in own area
+                router.type = "ABR"
+            elif neigh_area == 0:
+# all neighbors are in area 0
+                router.type = "Backbone"
+            else:
+                router.type = "Internal"
+
+        else:
+            router.type = "ABR"
+
+        
  
 #TOOD: set default area, or warn if no area settings
     for router in G_ospf:
-        neigh_areas = set(ank.neigh_attr(G_ospf, router, "area"))
-        if not(len(neigh_areas) == 1 and neigh_areas.pop() == router.area):
-            router.abr = True
-
 # and set area on interface
         print router
         for edge in router.edges():
@@ -245,7 +261,6 @@ def build_ospf(anm):
             if router.area == edge.dst.area:
                 edge.area = router.area # intra-area
             else:
-                router.abr = True # has at least one inter-area link
                 if router.area == 0 or edge.dst.area == 0:
                     pass
 # 
