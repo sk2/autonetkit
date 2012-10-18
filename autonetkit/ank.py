@@ -36,15 +36,21 @@ def set_node_default(overlay_graph, nbunch, **kwargs):
 
 
 #TODO: rename to copy_node_attr_from
-def copy_attr_from(overlay_src, overlay_dst, attr):
+def copy_attr_from(overlay_src, overlay_dst, src_attr, dst_attr = None, nbunch = None):
+    if not dst_attr:
+        dst_attr = src_attr
+
     graph_src = unwrap_graph(overlay_src)
     graph_dst = unwrap_graph(overlay_dst)
-    for n in graph_src:
+    if not nbunch:
+        nbunch = graph_src.nodes()
+
+    for n in nbunch:
         try:
-            graph_dst.node[n][attr] = graph_src.node[n][attr]
+            graph_dst.node[n][dst_attr] = graph_src.node[n][src_attr]
         except KeyError:
             #TODO: check if because node doesn't exist in dest, or because attribute doesn't exist in graph_src
-            log.debug("Unable to copy node attribute %s for %s in %s" % (attr, n, overlay_src))
+            log.debug("Unable to copy node attribute %s for %s in %s" % (src_attr, n, overlay_src))
 
 
 def copy_edge_attr_from(overlay_src, overlay_dst, attr):
