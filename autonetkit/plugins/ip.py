@@ -143,6 +143,10 @@ class IpTree(object):
         """Builds tree from unallocated_nodes,
         groupby is the attribute to build subtrees from"""
         subgraphs = []
+        
+        if not len(self.unallocated_nodes):
+# no nodes to allocate - eg could be no collision domains
+            return
 
         unallocated_nodes = self.unallocated_nodes
         unallocated_nodes = sorted(unallocated_nodes, key = lambda x: x.get(group_attr))
@@ -292,6 +296,12 @@ class IpTree(object):
                         "children": children}
             return {"name": node, "subnet": node.subnet}
 
+        if not self.root_node:
+            log.debug("No root node set")
+            return {"name": str(self.root_ip_block),
+                    "subnet": str(self.root_ip_block),
+                    "children": []}
+            return
         return list_successors(self.root_node)
 
     
