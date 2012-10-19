@@ -217,7 +217,6 @@ var propagate_node_label_select = function(d) {
     .text(String);
 
 //TODO only set the first time around?
-  console.log(node_label_id);
     $("#node_label_select option[value=" + node_label_id + "]").attr("selected", "selected")
 }
 
@@ -239,9 +238,9 @@ var propagate_edge_group_select = function(d) {
 var print_each_revision = false;
 
 var load_revision = function() {
-    update_title();
-    jsondata = graph_history[revision_id];
-    $("#revision_select option[value=" + revision_id + "]").attr("selected", "selected")
+  update_title();
+  jsondata = graph_history[revision_id];
+  $("#revision_select option[value=" + revision_id + "]").attr("selected", "selected")
     if (print_each_revision) {
       window.print();
     }
@@ -249,9 +248,9 @@ var load_revision = function() {
 
 //dropdown.select("phy").text("selected");
 
-  var clear_label = function() {
-    status_label.html("");
-  }
+var clear_label = function() {
+  status_label.html("");
+}
 
 var trace_paths = chart.append("svg:g")
 .attr("id", "path");
@@ -262,7 +261,6 @@ var icon = function(d) {
   var filename = "icons/" + d.device_type;
   if (d.device_subtype != null && d.device_subtype != "None") {
     filename += "_" + d.device_subtype;
-
   }
   filename += ".svg";
   return filename;
@@ -530,24 +528,24 @@ var history_forward = function() {
 
 
 $(document).keydown(function(e){
-    switch(e.which) {
-        case 37: // left
-          history_back();
-        break;
+  switch(e.which) {
+    case 37: // left
+      history_back();
+      break;
 
-        case 38: // up
-        break;
+    case 38: // up
+      break;
 
-        case 39: // right
-        history_forward();
-        break;
+    case 39: // right
+      history_forward();
+      break;
 
-        case 40: // down
-        break;
+    case 40: // down
+      break;
 
-        default: return; // exit this handler for other keys
-    }
-    e.preventDefault();
+    default: return; // exit this handler for other keys
+  }
+  e.preventDefault();
 });
 
 
@@ -708,6 +706,44 @@ function redraw() {
         }
       });
 
+
+      link_labels = chart.selectAll(".link_label")
+    .data(jsondata.links, node_id)
+
+    link_labels.enter().append("text")
+    .attr("x", function(d) { return d.x + x_offset; })
+    .attr("y", function(d) { return d.y + y_offset; } )
+    .attr("class", "link_label")
+    .attr("text-anchor", "middle") 
+    .attr("font-family", "helvetica") 
+    .attr("font-size", "small") 
+
+    //TODO: use a general accessor for x/y of nodes
+    link_labels 
+    .attr("dx", 5) // padding-right
+    .attr("dy", 5) // vertical-align: middle
+    .text(function (d) {
+      return d[edge_group_id];
+    });
+
+  link_labels.transition()
+    .attr("x", function(d) { 
+        var source_x = nodes[d.source].x + x_offset + 32;
+        target_x =  nodes[d.target].x + x_offset + 32;
+        return (source_x + target_x) /2;
+    })
+    .attr("y", function(d) {
+      source_y =  nodes[d.source].y + y_offset + 32;
+      target_y =  nodes[d.target].y + y_offset + 32;
+      return (source_y + target_y) /2;
+    })
+    .duration(500)
+
+    link_labels.exit().transition()
+    .duration(1000)
+    .style("opacity",0)
+    .remove();
+
   var node_id = function(d) {
     return d.label + d.network;
   }
@@ -722,16 +758,16 @@ function redraw() {
     .attr("width", 64)
     .attr("height", 64)
     .on("mouseover", function(d){
-        node_info(d);
-        d3.select(this).attr("xlink:href", icon); //TODO: check why need to do this
-        })
+      node_info(d);
+      d3.select(this).attr("xlink:href", icon); //TODO: check why need to do this
+    })
   .on("mouseout", function(){
-      clear_label();
-      })
+    clear_label();
+  })
   .append("svg:title")
     .text(function(d) { return d.id; })
 
-  image
+    image
     .attr("width", 64)
     .attr("height", 64)
     .transition()
@@ -740,8 +776,6 @@ function redraw() {
     .attr("y", function(d) { return d.y + y_offset; })
     .duration(500)
 
-
-
     image.exit().transition()
     .duration(1000)
     .style("opacity",0)
@@ -749,13 +783,13 @@ function redraw() {
 
   $('.device_icon').tipsy({ 
     //based on http://bl.ocks.org/1373263
-        gravity: 'w', 
-        html: true, 
-        title: function() {
-          var d = this.__data__
-          return node_info(d); 
-        }
-      });
+    gravity: 'w', 
+    html: true, 
+    title: function() {
+      var d = this.__data__
+    return node_info(d); 
+    }
+  });
 
 
   device_labels = chart.selectAll(".device_label")

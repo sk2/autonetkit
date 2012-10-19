@@ -49,7 +49,7 @@ interface ${interface.id}
 % if node.ospf: 
 router ospf ${node.ospf.process_id} 
 # Loopback
-  network ${node.loopback} 0.0.0.0 area 0
+  network ${node.loopback} 0.0.0.0 area ${node.ospf.loopback_area}
   log-adjacency-changes
   passive-interface ${node.ospf.lo_interface}
 % for ospf_link in node.ospf.ospf_links:
