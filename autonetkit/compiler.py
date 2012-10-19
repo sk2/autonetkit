@@ -72,6 +72,9 @@ class RouterCompiler(object):
         """
         G_ospf = self.anm['ospf']
         G_ip = self.anm['ip']
+
+        node.ospf.loopback_area = G_ospf.node(node).area
+
         phy_node = self.anm['phy'].node(node)
         node.ospf.process_id = 1
         node.ospf.lo_interface = self.lo_interface 
@@ -255,22 +258,7 @@ class IosBaseCompiler(RouterCompiler):
                         )
 
 class IosClassicCompiler(IosBaseCompiler):
-    def ospf(self, node):
-        super(Ios2Compiler, self).ospf(node)
-        G_ospf = self.anm['ospf']
-        G_ip = self.anm['ip']
-        ospf_areas = defaultdict(list)
-        for link in G_ospf.edges(node):
-            ip_link = G_ip.edge(link)
-            area = link.area
-            subnet =  ip_link.dst.subnet # netmask comes from collision domain on the link
-            ospf_areas[area].append(subnet)
-
-        for area, data in ospf_areas.items():
-            print area, data
-
-        print
- 
+    pass
 
 class Ios2Compiler(IosBaseCompiler):
     
