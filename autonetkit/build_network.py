@@ -70,7 +70,7 @@ def build(input_graph_string, timestamp):
     G_in.update(G_in.nodes("is_router", platform = "junosphere"), syntax="junos")
     G_in.update(G_in.nodes("is_router", platform = "dynagen"), syntax="ios")
     G_in.update(G_in.nodes("is_router", platform = "netkit"), syntax="quagga")
-    #G_in.update(G_in.nodes("is_router", platform = "cisco"), syntax="ios")
+    G_in.update(G_in.nodes("is_router", platform = "cisco"), syntax="ios2")
 
     G_graphics = anm.add_overlay("graphics") # plotting data
     G_graphics.add_nodes_from(G_in, retain=['x', 'y', 'device_type', 'device_subtype', 'pop', 'asn'])
@@ -227,6 +227,9 @@ def build_ospf(anm):
 
     ank.aggregate_nodes(G_ospf, G_ospf.nodes("is_switch"), retain = "edge_id")
     ank.explode_nodes(G_ospf, G_ospf.nodes("is_switch"), retain= "edge_id")
+
+    G_ospf.remove_edges_from([link for link in G_ospf.edges() if link.src.asn != link.dst.asn]) # remove inter-AS links
+
     for router in G_ospf:
         if router.area == "None":
             #TODO: tidy up this default of None being a string
@@ -242,7 +245,10 @@ def build_ospf(anm):
             neigh_area = neigh_areas.pop()
             if neigh_area != router.area:
                 # router is in own area
-                router.type = "ABR"
+                if router.area == 0:
+                    router.type = "Backbone ABR" # case of single backbone ABR
+                else:
+                    router.type = "ABR"
             elif neigh_area == 0:
 # all neighbors are in area 0
                 router.type = "Backbone"
@@ -250,9 +256,10 @@ def build_ospf(anm):
                 router.type = "Internal"
 
         else:
-            router.type = "ABR"
-
-        
+            if router.area == 0:
+                router.type = "Backbone ABR"
+            else:
+                router.type = "ABR"
  
 #TOOD: set default area, or warn if no area settings
     for router in G_ospf:
@@ -264,13 +271,17 @@ def build_ospf(anm):
                 edge.area = router.area # intra-area
             else:
                 if router.area == 0 or edge.dst.area == 0:
-                    pass
+# backbone to other area
+                    if router.area == 0:
+                        edge.area = edge.dst.area # router in backbone, use other area
+                    else:
+                        edge.area = router.area # router not in backbone, use its area
+
 # 
 
 #TODO: do we want to allocate non-symmetric OSPF costs? do we need a directed OSPF graph?
 # (note this will all change once have proper interface nodes)
 
-    G_ospf.remove_edges_from([link for link in G_ospf.edges() if link.src.asn != link.dst.asn])
     for link in G_ospf.edges():
         link.cost = 1
 
