@@ -3,6 +3,7 @@ import itertools
 import netaddr
 import os
 import pprint
+from collections import defaultdict
 import string
 from datetime import datetime
 import autonetkit.log as log
@@ -71,6 +72,9 @@ class RouterCompiler(object):
         """
         G_ospf = self.anm['ospf']
         G_ip = self.anm['ip']
+
+        node.ospf.loopback_area = G_ospf.node(node).area
+
         phy_node = self.anm['phy'].node(node)
         node.ospf.process_id = 1
         node.ospf.lo_interface = self.lo_interface 
@@ -253,14 +257,40 @@ class IosBaseCompiler(RouterCompiler):
                         metric = isis_link.metric,
                         )
 
-
-
 class IosClassicCompiler(IosBaseCompiler):
     pass
 
 class Ios2Compiler(IosBaseCompiler):
-    pass
+    
+    def ospf(self, node):
+#need to aggregate areas
+        super(Ios2Compiler, self).ospf(node)
+        G_ospf = self.anm['ospf']
 
+        interfaces_by_area = defaultdict(list)
+
+        for interface in node.interfaces:
+            ospf_link = G_ospf.edge(interface._edge_id) # find link in OSPF with this ID
+            if ospf_link:
+                area = ospf_link.area
+                interfaces_by_area[area].append( {
+                    'id': interface.id,
+                    'cost': ospf_link.cost,
+                    'passive': False,
+                    }) #TODO: make this use the same parameter format as other appends... (in nidb API)
+
+
+        router_area = G_ospf.node(node).area
+        interfaces_by_area[router_area].append( {
+            'id': self.lo_interface,
+            'cost': 0,
+            'passive': True,
+            })
+
+
+    # and add Loopback with this router's area
+
+        node.ospf.interfaces = dict(interfaces_by_area)# TODO: workaround for limited wrapping depth, make node.ospf.interfaces grouped by area
 
 # Platform compilers
 class PlatformCompiler(object):
@@ -429,13 +459,17 @@ class CiscoCompiler(PlatformCompiler):
         def edge_id_numeric(edge):
             """ Used for sorting
             assumes format xx_src_dst -> return the xx component"""
-            return int(edge.edge_id.split("_")[0])
+            try:
+                return int(edge.edge_id.split("_")[0])
+            except ValueError:
+                return edge.edge_id # not numeric
 
         log.info("Compiling Cisco for %s" % self.host)
         G_phy = self.anm.overlay.phy
         ios_compiler = IosClassicCompiler(self.nidb, self.anm)
         now = datetime.now()
         timestamp = now.strftime("%Y%m%d_%H%M%S_%f")
+        timestamp = ""
         dst_folder = "rendered/%s_%s/%s" % (self.host, timestamp, "cisco")
 #TODO: merge common router code, so end up with three loops: routers, ios routers, ios2 routers
         for phy_node in G_phy.nodes('is_router', host = self.host, syntax='ios'):
