@@ -300,7 +300,7 @@ class AnkAccessor():
             fh = open(os.path.join(www_dir, "default.json"), "r")
             data = json.load(fh)
             #data = json.loads(loaded)
-            self.anm = data.get("anm")
+            self.anm = data
         except IOError, e:
             print e
             pass # use default blank anm
