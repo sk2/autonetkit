@@ -50,11 +50,14 @@ class TreeNode(object):
             return self.host < other.host
         return self.node < other.node
 
+
+#TODO: restore function that truncated subnets
+
     def __repr__(self):
         if self.host:
-            return "%s %s" % (self.node, self.host)
+            return "%s %s" % (self.subnet, self.host)
         if self.loopback_group:
-            return "Lo Grp %s" % (self.group_attr)
+            return "Lo Gr %s: %s" % (self.group_attr, self.subnet)
         if self.group_attr:
             return "%s: %s" % (self.group_attr, self.subnet)
         if self.subnet:
@@ -271,18 +274,17 @@ class IpTree(object):
                     sub_children = child.children()
                     for sub_child in sub_children:
                         sub_child.subnet = iterhosts.next()
-                        #print "alloc sub_child to", sub_child, iterhosts.next()
+                        log.debug( "alloc sub_child to", sub_child, sub_child.subnet)
                 elif child.is_host():
                     child.subnet = subnet.next()
                 elif child.is_loopback_group():
-                    print "loopback group"
                     child.subnet = subnet.next()
-                    print "lo subnet", child.subnet
+                    log.debug("lo group is", child.group_attr, child.subnet)
                     iterhosts = child.subnet.iter_hosts() # ensures start at .1 rather than .0
                     sub_children = child.children()
                     for sub_child in sub_children:
                         sub_child.subnet = iterhosts.next()
-                        print "allocated", sub_child.subnet, "to", sub_child
+                        log.debug("host allocate", sub_child.subnet, sub_child.host)
 
                 else:
                     child.subnet = subnet.next()
@@ -347,17 +349,19 @@ class IpTree(object):
             #print "edge subnet", edge.subnet
             edge.host.ip_address = edge.subnet
 
-        loopback_groups = [n for n in self if n.is_loopback_group()]
-        for loopback_group in loopback_groups:
-            print loopback_group
 
+#TODO: do we need to store loopback groups into advertise addresses?
+
+        #loopback_groups = [n for n in self if n.is_loopback_group()]
+        #for loopback_group in loopback_groups:
+            #print loopback_group
     
         # don't look at host nodes now - use loopback_groups
-        #host_tree_nodes = [n for n in self if n.is_host() and n.host.is_l3device]
+        host_tree_nodes = [n for n in self if n.is_host() and n.host.is_l3device]
         #for host_tree_node in host_tree_nodes:
             #print host_tree_node, host_tree_node.subnet
-        #for host_tree_node in host_tree_nodes:
-            #host_tree_node.host.loopback = host_tree_node.subnet.ip
+        for host_tree_node in host_tree_nodes:
+            host_tree_node.host.loopback = host_tree_node.subnet
 
         cds = [n for n in self if n.is_collision_domain()]
         for cd in cds:
