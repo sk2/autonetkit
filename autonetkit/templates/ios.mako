@@ -34,6 +34,7 @@ interface ${interface.id}
   description ${interface.description}
   ip address ${interface.ip_address} ${interface.subnet.netmask}   
 	% if interface.ospf_cost:
+  ip ospf network point-to-point
   ip ospf cost ${interface.ospf_cost}
 	% endif
 	% if interface.isis:
