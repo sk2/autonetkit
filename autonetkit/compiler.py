@@ -446,7 +446,7 @@ class CiscoCompiler(PlatformCompiler):
 
     """Cisco Platform Compiler"""
     def interface_ids_ios(self):
-        id_pairs = ( (slot, port) for (slot, port) in itertools.product(range(17), range(5))) 
+        id_pairs = ( (slot, 0) for slot in itertools.count(0)) 
         for (slot, port) in id_pairs:
             yield "Ethernet%s/%s" % (slot, port)
 
