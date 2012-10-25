@@ -53,6 +53,8 @@ class TreeNode(object):
     def __repr__(self):
         if self.host:
             return "%s %s" % (self.node, self.host)
+        if self.loopback_group:
+            return "Lo Grp %s" % (self.group_attr)
         if self.group_attr:
             return "%s: %s" % (self.group_attr, self.subnet)
         if self.subnet:
@@ -61,6 +63,9 @@ class TreeNode(object):
 
     def is_collision_domain(self):
         return (self.host and self.host.collision_domain)
+
+    def is_loopback_group(self):
+        return self.loopback_group
 
     def is_host(self):
         return self.host
@@ -143,7 +148,9 @@ class IpTree(object):
         """Builds tree from unallocated_nodes,
         groupby is the attribute to build subtrees from"""
         subgraphs = []
-        
+
+# if network final octet is .0 eg 10.0.0.0 or 192.168.0.0, then add extra "dummy" node, so don't have a loopback of 10.0.0.0
+# Change strategy: if just hosts (ie loopbacks), then allocate as a large collision domain
         if not len(self.unallocated_nodes):
 # no nodes to allocate - eg could be no collision domains
             return
@@ -154,6 +161,24 @@ class IpTree(object):
 # make subtree for each attr
             items = list(items)
             subgraph = nx.DiGraph()
+            if all(item.is_l3device for item in items): 
+                # Note: only l3 devices are added for loopbacks: cds allocate to edges not devices (for now) - will be fixed when move to proper interface model 
+                parent_id = self.next_node_id
+                prefixlen = 32 - subnet_size(len(items)) # group all loopbacks into single subnet
+                subgraph.add_node(parent_id, prefixlen = prefixlen, loopback_group = True)
+                for item in items:
+                #subgraph.add_edge(node, child_a)
+                    item_id = self.next_node_id
+                    subgraph.add_node(item_id, prefixlen = 32, host = item)
+                    subgraph.add_edge(parent_id, item_id)
+
+
+                root_node = parent_id
+                subgraphs.append(subgraph)
+                subgraph.graph['root'] = root_node
+                subgraph.node[root_node]['group_attr'] = attr_value
+                continue # finished for loopbacks, continue only for collision domains
+
             for item in items:
                 if item.collision_domain:
                     subgraph.add_node(self.next_node_id, prefixlen = 32 - subnet_size(item.degree()), host = item)
@@ -242,13 +267,23 @@ class IpTree(object):
             for child in children:
                 if child.is_collision_domain():
                     child.subnet = subnet.next()
-                    iterhosts = child.subnet.iter_hosts()
+                    iterhosts = child.subnet.iter_hosts() # ensures start at .1 rather than .0
                     sub_children = child.children()
                     for sub_child in sub_children:
                         sub_child.subnet = iterhosts.next()
                         #print "alloc sub_child to", sub_child, iterhosts.next()
                 elif child.is_host():
                     child.subnet = subnet.next()
+                elif child.is_loopback_group():
+                    print "loopback group"
+                    child.subnet = subnet.next()
+                    print "lo subnet", child.subnet
+                    iterhosts = child.subnet.iter_hosts() # ensures start at .1 rather than .0
+                    sub_children = child.children()
+                    for sub_child in sub_children:
+                        sub_child.subnet = iterhosts.next()
+                        print "allocated", sub_child.subnet, "to", sub_child
+
                 else:
                     child.subnet = subnet.next()
                     allocate(child) # continue down the tree
@@ -312,11 +347,17 @@ class IpTree(object):
             #print "edge subnet", edge.subnet
             edge.host.ip_address = edge.subnet
 
-        host_tree_nodes = [n for n in self if n.is_host() and n.host.is_l3device]
+        loopback_groups = [n for n in self if n.is_loopback_group()]
+        for loopback_group in loopback_groups:
+            print loopback_group
+
+    
+        # don't look at host nodes now - use loopback_groups
+        #host_tree_nodes = [n for n in self if n.is_host() and n.host.is_l3device]
         #for host_tree_node in host_tree_nodes:
             #print host_tree_node, host_tree_node.subnet
-        for host_tree_node in host_tree_nodes:
-            host_tree_node.host.loopback = host_tree_node.subnet.ip
+        #for host_tree_node in host_tree_nodes:
+            #host_tree_node.host.loopback = host_tree_node.subnet.ip
 
         cds = [n for n in self if n.is_collision_domain()]
         for cd in cds:
@@ -355,6 +396,7 @@ def allocate_ips(G_ip):
             'name': "ip",
             'children': 
                 [loopback_tree, cd_tree],
+                #[loopback_tree],
             }
     jsontree = json.dumps(total_tree, cls=autonetkit.ank_json.AnkEncoder, indent = 4)
 
