@@ -45,8 +45,12 @@ class AnkPika(object):
                 log.debug("Not using Rabbitmq or telnet")
                 self.publish = self.publish_blank_stub
                 self.publish_compressed = self.publish_blank_stub
-        except socket.timeout:
+        except socket.timeout: #TODO: check if these should move up to the use_rabbitmq block
             log.warning("Socket Timeout: not using Rabbitmq")
+            self.publish = self.publish_blank_stub
+            self.publish_compressed = self.publish_blank_stub
+        except socket.error:
+            log.warning("Socket Error: not using Rabbitmq")
             self.publish = self.publish_blank_stub
             self.publish_compressed = self.publish_blank_stub
     
