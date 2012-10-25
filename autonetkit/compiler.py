@@ -468,9 +468,11 @@ class CiscoCompiler(PlatformCompiler):
         G_phy = self.anm.overlay.phy
         ios_compiler = IosClassicCompiler(self.nidb, self.anm)
         now = datetime.now()
-        timestamp = now.strftime("%Y%m%d_%H%M%S_%f")
-        timestamp = ""
-        dst_folder = "rendered/%s_%s/%s" % (self.host, timestamp, "cisco")
+        if settings['Compiler']['Cisco']['timestamp']:
+            timestamp = now.strftime("%Y%m%d_%H%M%S_%f")
+            dst_folder = "rendered/%s_%s/%s" % (self.host, timestamp, "cisco") #TODO: use os.path.join
+        else:
+            dst_folder = "rendered/%s/%s" % (self.host,"cisco")
 #TODO: merge common router code, so end up with three loops: routers, ios routers, ios2 routers
         for phy_node in G_phy.nodes('is_router', host = self.host, syntax='ios'):
             nidb_node = self.nidb.node(phy_node)
