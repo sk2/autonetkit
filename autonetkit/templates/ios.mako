@@ -59,8 +59,9 @@ router ospf ${node.ospf.process_id}
 % endif           
 ## ISIS
 % if node.isis: 
-router isis
+router isis ${node.isis.process_id}
   net ${node.isis.net}
+  metric-style wide
 % endif  
 % if node.eigrp: 
 router eigrp ${node.eigrp.process_id}       
