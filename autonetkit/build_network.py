@@ -237,31 +237,7 @@ def build_ospf(anm):
 
         router.area = int(router.area) #TODO: use dst type in copy_attr_from
 
-    # list type
-    for router in G_ospf:
-        neigh_areas = set(ank.neigh_attr(G_ospf, router, "area"))
-        if len(neigh_areas) == 1:
-            # All neighbors have same area
-            neigh_area = neigh_areas.pop()
-            if neigh_area != router.area:
-                # router is in own area
-                if router.area == 0:
-                    router.type = "Backbone ABR" # case of single backbone ABR
-                else:
-                    router.type = "ABR"
-            elif neigh_area == 0:
-# all neighbors are in area 0
-                router.type = "Backbone"
-            else:
-                router.type = "Internal"
-
-        else:
-            if router.area == 0:
-                router.type = "Backbone ABR"
-            else:
-                router.type = "ABR"
  
-#TOOD: set default area, or warn if no area settings
     for router in G_ospf:
 # and set area on interface
         for edge in router.edges():
@@ -276,6 +252,28 @@ def build_ospf(anm):
                         edge.area = edge.dst.area # router in backbone, use other area
                     else:
                         edge.area = router.area # router not in backbone, use its area
+
+
+    for router in G_ospf:
+        areas = set(edge.area for edge in router.edges())
+        if len(areas) == 0:
+            router.type = "backbone" # no ospf edges (such as single node in AS)
+        elif len(areas) == 1:
+            # single area: either backbone (all 0) or internal (all nonzero)
+            if 0 in areas:
+                router.type = "backbone"
+            else:
+                router.type = "internal"
+
+        else:
+            # multiple areas
+            if 0 in areas:
+                router.type = "backbone ABR"
+            else:
+                log.warning("%s spans multiple areas but is not a member of area 0" % router)
+                router.type = "INVALID"
+                
+
 
 # 
 
