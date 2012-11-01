@@ -272,10 +272,6 @@ def build_ospf(anm):
             else:
                 log.warning("%s spans multiple areas but is not a member of area 0" % router)
                 router.type = "INVALID"
-                
-
-
-# 
 
 #TODO: do we want to allocate non-symmetric OSPF costs? do we need a directed OSPF graph?
 # (note this will all change once have proper interface nodes)
