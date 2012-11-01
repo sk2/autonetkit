@@ -63,6 +63,7 @@ class RouterCompiler(object):
                     description = "%s to %s" % (link.src, link.dst),
                     ip_address = link.overlay.ip.ip_address,
                     subnet = subnet,
+                    physical = True,
                     )
 
         node.interfaces.sort("id")
@@ -225,13 +226,17 @@ class IosBaseCompiler(RouterCompiler):
                 interface['isis'] = True
                 isis_node = G_isis.node(node)
                 interface['isis_process_id'] = isis_node.process_id  #TODO: should this be from the interface?
+                interface['isis_metric'] = isis_link.metric  #TODO: should this be from the interface?
 
 #TODO: update this to new format
+        is_isis_node = bool(G_isis.node(node)) # if node is in ISIS graph
         node.interfaces.append(
             id = self.lo_interface,
             description = "Loopback",
             ip_address = ip_node.loopback,
             subnet = loopback_subnet,
+            isis = is_isis_node,
+            physical = False,
             )
 
     def bgp(self, node):
