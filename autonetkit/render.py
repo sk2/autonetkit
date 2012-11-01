@@ -44,6 +44,8 @@ template_cache_dir = "cache"
 
 #disable cache for cleaner folder structure
 
+#TODO: Also try for Cisco build here
+
 lookup = TemplateLookup(directories=[resource_path("")],
                         #module_directory= template_cache_dir,
                         cache_type='memory',
