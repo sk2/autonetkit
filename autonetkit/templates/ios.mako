@@ -33,13 +33,18 @@ line con 0
 interface ${interface.id}
   description ${interface.description}
   ip address ${interface.ip_address} ${interface.subnet.netmask}   
-	% if interface.ospf_cost:
+  % if interface.ospf_cost:
   ip ospf network point-to-point
   ip ospf cost ${interface.ospf_cost}
-	% endif
-	% if interface.isis:
+  % endif
+  % if interface.isis:
   ip router isis
-	% endif
+    % if interface.physical:
+  isis circuit-type level-2-only
+  isis network point-to-point
+  isis metric ${interface.isis_metric}
+    % endif
+  % endif
   duplex auto
   speed auto
   no shutdown
