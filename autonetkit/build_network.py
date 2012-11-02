@@ -41,7 +41,6 @@ def build(input_graph_string, timestamp):
                     },
                 }
 
-
     #TODO: make this more explicit than overloading add_overlay - make it load_graph or something similar
     input_undirected = nx.Graph(input_graph)
     for node in input_graph:
