@@ -82,7 +82,7 @@ var ip_node_info = function(d) {
     child = d.children[index];
     children += "(" + child.name + ", " + child.subnet + ") ";
   }
-  status_label.html(d.name + ": " + d.subnet + " children: " + children);
+  return d.name + ": " + d.subnet + " children: " + children;
 }
 
 function redraw_ip_allocations() {
@@ -109,15 +109,24 @@ function redraw_ip_allocations() {
     .attr("transform", function(d) { return "translate(" + (d.y + 80) + "," + d.x +  ")"; });
 
   nodeEnter.append("svg:circle")
+    .attr("class", "ip_node")
     .attr("r", 1e-6)
     .attr("fill", "steelblue")
     .on("mouseover", function(d){
       d3.select(this).style("fill", "orange");
-      ip_node_info(d);
     })
   .on("mouseout", function(){
     d3.select(this).style("fill", "steelblue");
-    clear_label();
+  });
+
+  $('.ip_node').tipsy({ 
+    //based on http://bl.ocks.org/1373263
+    gravity: 'w', 
+    html: true, 
+    title: function() {
+      var d = this.__data__
+    return ip_node_info(d); 
+    }
   });
 
 
