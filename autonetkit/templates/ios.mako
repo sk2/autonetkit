@@ -79,7 +79,7 @@ router eigrp ${node.eigrp.process_id}
   bgp router-id ${node.loopback}
   no synchronization
 % for subnet in node.bgp.advertise_subnets:
-  network ${subnet.cidr}
+  network ${subnet.network} mask ${subnet.netmask}
 % endfor 
 ! ibgp
 % for client in node.bgp.ibgp_rr_clients:   
