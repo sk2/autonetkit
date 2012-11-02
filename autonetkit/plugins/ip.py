@@ -175,7 +175,6 @@ class IpTree(object):
                     subgraph.add_node(item_id, prefixlen = 32, host = item)
                     subgraph.add_edge(parent_id, item_id)
 
-
                 root_node = parent_id
                 subgraphs.append(subgraph)
                 subgraph.graph['root'] = root_node
@@ -267,6 +266,17 @@ class IpTree(object):
             children = sorted(node.children())
             prefixlen = node.prefixlen
             subnet = node.subnet.subnet(prefixlen+1)
+
+            if node.is_loopback_group(): # special case of single AS -> root is loopback_group
+                #TODO: generalise this rather than repeated code with below
+                #node.subnet = subnet.next() # Note: don't break into smaller subnets if single-AS
+                iterhosts = node.subnet.iter_hosts() # ensures start at .1 rather than .0
+                sub_children = node.children()
+                for sub_child in sub_children:
+                    sub_child.subnet = iterhosts.next()
+
+                return
+
             for child in children:
                 if child.is_collision_domain():
                     child.subnet = subnet.next()
@@ -279,13 +289,10 @@ class IpTree(object):
                     child.subnet = subnet.next()
                 elif child.is_loopback_group():
                     child.subnet = subnet.next()
-                    log.debug("lo group is", child.group_attr, child.subnet)
                     iterhosts = child.subnet.iter_hosts() # ensures start at .1 rather than .0
                     sub_children = child.children()
                     for sub_child in sub_children:
                         sub_child.subnet = iterhosts.next()
-                        log.debug("host allocate", sub_child.subnet, sub_child.host)
-
                 else:
                     child.subnet = subnet.next()
                     allocate(child) # continue down the tree
@@ -380,6 +387,7 @@ def assign_asn_to_interasn_cds(G_ip):
     return
 
 def allocate_ips(G_ip):
+    log.info("Allocating Host loopback IPs")
     ip_tree = IpTree("10.0.0.0")
     ip_tree.add_nodes(G_ip.nodes("is_l3device"))
     ip_tree.build()
@@ -388,6 +396,8 @@ def allocate_ips(G_ip):
     #body = json.dumps({"ip_allocations": jsontree})
     #pika_channel.publish_compressed("www", "client", body)
     ip_tree.assign()
+
+    log.info("Allocating Collision Domain IPs")
 
     ip_tree = IpTree("192.168.1.0")
     assign_asn_to_interasn_cds(G_ip)
