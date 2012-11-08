@@ -82,6 +82,7 @@ router eigrp ${node.eigrp.process_id}
   network ${subnet.network} mask ${subnet.netmask}
 % endfor 
 ! ibgp
+## iBGP Route Reflector Clients
 % for client in node.bgp.ibgp_rr_clients:   
 % if loop.first:
   ! ibgp clients
@@ -90,6 +91,7 @@ router eigrp ${node.eigrp.process_id}
   neighbor ${client.loopback} update-source ${node.bgp.lo_interface} 
   neighbor ${client.loopback} route-reflector-client                                                   
 % endfor            
+## iBGP Route Reflectors (Parents)
 % for parent in node.bgp.ibgp_rr_parents:   
 % if loop.first:
   ! ibgp route reflector servers
@@ -98,6 +100,7 @@ router eigrp ${node.eigrp.process_id}
   neighbor ${parent.loopback} remote-as ${parent.asn}
   neighbor ${parent.loopback} update-source ${node.bgp.lo_interface} 
 % endfor
+## iBGP peers
 % for neigh in node.bgp.ibgp_neighbors:      
 % if loop.first:
   ! ibgp peers
@@ -107,6 +110,7 @@ router eigrp ${node.eigrp.process_id}
   neighbor ${neigh.loopback} update-source ${node.bgp.lo_interface}
   neighbor ${neigh.loopback} next-hop-self
 % endfor
+## eBGP peers
 % for neigh in node.bgp.ebgp_neighbors:      
 % if loop.first:
 ! ebgp
