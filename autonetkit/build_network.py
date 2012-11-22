@@ -94,6 +94,27 @@ def build(input_graph_string, timestamp):
     return anm
 
 
+def boundary_nodes(G, nodes):
+    #TODO: move to utils
+    """ returns nodes at boundary of G
+    TODO: check works for both directed and undirected graphs
+    based on edge_boundary from networkx """
+    import autonetkit.ank as ank_utils
+    graph = ank_utils.unwrap_graph(G)
+    #print graph_phy.nodes()
+    nodes = list(nodes)
+    nbunch = list(ank_utils.unwrap_nodes(nodes))
+    # find boundary
+    b_edges = nx.edge_boundary(graph, nbunch) # boundary edges
+    internal_nodes = [s for (s, t) in b_edges]
+    assert(all(n in nbunch for n in internal_nodes)) # check internal 
+
+    return ank_utils.wrap_nodes(G, internal_nodes)
+#TODO: catch AssertionError, handle through logging/warning
+# Node boundary returns external nodes connected to nodes in nbunch
+# for now use edge boundary, and find any node in nbunch connected to these edges
+
+
 def build_bgp(anm):
     # eBGP
     G_phy = anm['phy']
@@ -104,7 +125,45 @@ def build_bgp(anm):
     G_bgp.add_edges_from(ebgp_edges, bidirectional = True, type = 'ebgp')
 
 # now iBGP
-    if len(G_phy) < 500:
+#TODO: add flag for three iBGP types: full-mesh, algorithmic, custom
+    if True:
+        #TODO: need to allow manually set ibgp_level2 and ibgp_level1 groups, fallback is region/asn
+        ank.copy_attr_from(G_in, G_phy, "region") 
+        for asn, devices in G_phy.groupby("asn").items():
+            as_graph = G_phy.subgraph(devices)
+# want to group by asn, then group by region
+            for region, region_devices in as_graph.groupby("region").items():
+                b_nodes = boundary_nodes(as_graph, region_devices)
+                route_reflectors = list(b_nodes) #TODO: may want to limit number if boundary nodes to set as route reflector
+# eg could sort, choose most connected, most central, etc
+                for n in route_reflectors:
+                    log.debug("Setting rr for %s" % n)
+                    G_bgp.node(n).route_reflector = True
+
+                rr_clients = set(region_devices) - set(route_reflectors)
+
+                # now connect region devices
+                # rr to rr (over)
+                over_links = [(rr1, rr2) for (rr1, rr2) in itertools.product(route_reflectors, route_reflectors)]
+                G_bgp.add_edges_from(over_links, type = 'ibgp', direction = 'over')
+                
+
+                # rr to rrc (down)
+                down_links = [(rr, client) for (rr, client) in itertools.product(route_reflectors, rr_clients)]
+                G_bgp.add_edges_from(down_links, type = 'ibgp', direction = 'down')
+
+                # rrc to rr (up)
+                up_links = [(client, rr) for (client, rr) in itertools.product(rr_clients, route_reflectors)]
+                G_bgp.add_edges_from(up_links, type = 'ibgp', direction = 'up')
+
+            # and connect all Route-reflectors in the same AS
+            asn_rrs = list(G_bgp.nodes(asn=asn, route_reflector = True))
+            over_links = [(rr1, rr2) for (rr1, rr2) in itertools.product(asn_rrs, asn_rrs)]
+            G_bgp.add_edges_from(over_links, type = 'ibgp', direction = 'over')
+                
+
+        
+    elif len(G_phy) < 5:
 # full mesh
         for asn, devices in G_phy.groupby("asn").items():
             routers = [d for d in devices if d.is_router]

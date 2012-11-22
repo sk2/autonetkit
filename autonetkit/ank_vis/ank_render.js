@@ -336,9 +336,10 @@ var y_offset = 30;
 // based on http://bl.ocks.org/2920551
 var fill = d3.scale.category10();
 
-
+var edge_stroke_colors = d3.scale.ordinal();
 
 var groupFill = function(d, i) { return fill(i); };
+var edgeStroke = function(d, i) { return fill(d); };
 var groupPath = function(d) {
   if (d.values.length  == 1) {
     node = d.values[0];
@@ -490,6 +491,34 @@ var graph_edge = function(d) {
   }
 }
 
+var link_label_x = function(d) {
+
+    var source_x = nodes[d.source].x + x_offset + 32;
+  source_y =  nodes[d.source].y + y_offset + 32;
+  target_x =  nodes[d.target].x + x_offset + 32;
+  target_y =  nodes[d.target].y + y_offset + 32;
+
+  if (jsondata.directed) {
+    var dx = target_x - source_x,
+        dy = target_y - source_y,
+        dr = Math.sqrt(dx * dx + dy * dy);
+
+
+  } else {
+    //TODO: look at join for here
+  }
+
+
+
+   return 5;
+}
+
+var link_label_y = function(d) {
+
+  return 5;
+}
+
+
 var node_attr_groups;
 var edge_attr_groups;
 var revision_id = 0;
@@ -627,7 +656,6 @@ function redraw() {
 
   node_attr_groups = d3.nest().key( node_group_id ).entries(nodes);
   edge_attr_groups = d3.nest().key(function(d) { return d[edge_group_id]; }).entries(jsondata.links);
-  console.log(edge_attr_groups);
   //TODO: use edge attr groups for edge colours
 
   //TODO: make group path change/exit with node data
@@ -677,6 +705,10 @@ function redraw() {
       //line.enter().append("line")
       line.enter().append("svg:path")
       .attr("class", "link_edge")
+      .attr("id", 
+          function(d) { 
+            return "path"+d.source+"_"+d.target; 
+          }) 
       .attr("d", graph_edge)
       .style("stroke-width", 2)
       //.attr("marker-end", marker_end)
@@ -715,25 +747,43 @@ function redraw() {
         }
       });
 
+      //var path_labels = chart.selectAll(".link_label_path") 
+        //.data(jsondata.links) 
+        //.enter().append("svg:text") 
+        //.attr("font-size", 40) 
+        //.attr("class", "link_label_path")
+        //.append("svg:textPath") 
+        //.attr("text-anchor", "middle")
+        //.attr("xlink:href", 
+            //function(d) { 
+              //return "#path"+d.source+"_"+d.target; 
+            //}) 
+//
+      ////TODO: these need to update with change of edge_group_id
+      //path_labels
+        //.text(function (d) {
+          //return d['direction'];
+        //});
+
 
       link_labels = chart.selectAll(".link_label")
-    .data(jsondata.links, node_id)
+        .data(jsondata.links, node_id)
 
-    link_labels.enter().append("text")
-    .attr("x", function(d) { return d.x + x_offset; })
-    .attr("y", function(d) { return d.y + y_offset; } )
-    .attr("class", "link_label")
-    .attr("text-anchor", "middle") 
-    .attr("font-family", "helvetica") 
-    .attr("font-size", "small") 
+        link_labels.enter().append("text")
+        .attr("x", function(d) { return d.x + x_offset; })
+        .attr("y", function(d) { return d.y + y_offset; } )
+        .attr("class", "link_label")
+        .attr("text-anchor", "middle") 
+        .attr("font-family", "helvetica") 
+        .attr("font-size", "small") 
 
-    //TODO: use a general accessor for x/y of nodes
-    link_labels 
-    .attr("dx", 5) // padding-right
-    .attr("dy", 5) // vertical-align: middle
-    .text(function (d) {
-      return d[edge_group_id];
-    });
+        //TODO: use a general accessor for x/y of nodes
+        link_labels 
+        .attr("dx", link_label_x) // padding-right
+        .attr("dy", link_label_y) // vertical-align: middle
+        .text(function (d) {
+          return d[edge_group_id];
+        });
 
   link_labels.transition()
     .attr("x", function(d) { 
