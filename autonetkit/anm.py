@@ -577,7 +577,7 @@ class overlay_subgraph(OverlayBase):
         self._subgraph_name = name
 
     def __repr__(self):
-        return self._subgraph_name
+        return self._subgraph_name or "subgraph"
 
 class overlay_graph(OverlayBase):
     """API to interact with an overlay graph in ANM"""
