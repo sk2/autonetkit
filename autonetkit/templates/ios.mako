@@ -47,6 +47,7 @@ interface ${interface.id}
   % endif
   duplex auto
   speed auto
+  ##TODO: don't set speed/duplex for loopback interfaces
   no shutdown
 !
 % endfor 
@@ -75,7 +76,7 @@ router eigrp ${node.eigrp.process_id}
 !                
 ## BGP
 % if node.bgp: 
-  router bgp ${node.asn}   
+router bgp ${node.asn}   
   bgp router-id ${node.loopback}
   no synchronization
 % for subnet in node.bgp.advertise_subnets:
@@ -88,6 +89,7 @@ router eigrp ${node.eigrp.process_id}
   ! ibgp clients
 % endif    
   ! ${client.neighbor}
+  neighbor ${client.loopback} description rr client ${client.neighbor}
   neighbor ${client.loopback} update-source ${node.bgp.lo_interface} 
   neighbor ${client.loopback} route-reflector-client                                                   
 % endfor            
@@ -97,6 +99,7 @@ router eigrp ${node.eigrp.process_id}
   ! ibgp route reflector servers
 % endif    
   ! ${parent.neighbor}
+  neighbor ${parent.loopback} description rr parent ${parent.neighbor}
   neighbor ${parent.loopback} remote-as ${parent.asn}
   neighbor ${parent.loopback} update-source ${node.bgp.lo_interface} 
 % endfor
@@ -106,9 +109,9 @@ router eigrp ${node.eigrp.process_id}
   ! ibgp peers
 % endif 
   ! ${neigh.neighbor}
+  neighbor ${neigh.loopback} description iBGP peer ${neigh.neighbor}
   neighbor ${neigh.loopback} remote-as ${neigh.asn}
   neighbor ${neigh.loopback} update-source ${node.bgp.lo_interface}
-  neighbor ${neigh.loopback} next-hop-self
 % endfor
 ## eBGP peers
 % for neigh in node.bgp.ebgp_neighbors:      
@@ -116,7 +119,9 @@ router eigrp ${node.eigrp.process_id}
 ! ebgp
 % endif
   ! ${neigh.neighbor} 
+  neighbor ${neigh.dst_int_ip} description eBGP to ${neigh.neighbor}
   neighbor ${neigh.dst_int_ip} remote-as ${neigh.asn}
   neighbor ${neigh.dst_int_ip} send-community
+  neighbor ${neigh.dst_int_ip} next-hop-self
 % endfor    
 % endif 
