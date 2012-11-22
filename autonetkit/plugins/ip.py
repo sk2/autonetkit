@@ -313,6 +313,7 @@ class IpTree(object):
         allocs = {}
         for node in self:
             if node.group_attr:
+                #TODO: Also need to store the type
                 allocs[node.group_attr] = [node.subnet]
 
         return allocs
@@ -396,6 +397,7 @@ def allocate_ips(G_ip):
     #body = json.dumps({"ip_allocations": jsontree})
     #pika_channel.publish_compressed("www", "client", body)
     ip_tree.assign()
+    G_ip.data.loopback_blocks = ip_tree.group_allocations()
 
     log.info("Allocating Collision Domain IPs")
 
@@ -418,6 +420,6 @@ def allocate_ips(G_ip):
     pika_channel.publish_compressed("www", "client", body)
 
 #TODO: need to update with loopbacks if wish to advertise also - or subdivide blocks?
-    G_ip.data.asn_blocks = ip_tree.group_allocations()
+    G_ip.data.infra_blocks = ip_tree.group_allocations()
 
     #ip_tree.save()

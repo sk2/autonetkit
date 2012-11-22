@@ -2,6 +2,9 @@
 AutoNetkit Utilities
 """
 
+#from anm import overlay_node, overlay_edge
+import autonetkit
+
 def unwrap_nodes(nodes):
     """Unwrap nodes"""
     try:
@@ -26,3 +29,9 @@ def alphabetical_sort( l ):
     convert = lambda text: int(text) if text.isdigit() else text 
     alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ] 
     return sorted(l, key = alphanum_key)
+
+def wrap_nodes(overlay_graph, nodes):
+    """ wraps node id into node overlay """
+#TODO: remove duplicate of this in ank.py
+    return ( autonetkit.anm.overlay_node(overlay_graph._anm, overlay_graph._overlay_id, node)
+            for node in nodes)
