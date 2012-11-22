@@ -141,7 +141,6 @@ def build_bgp(anm):
                     G_bgp.node(n).route_reflector = True
 
                 rr_clients = set(region_devices) - set(route_reflectors)
-                print "clients", rr_clients
 
                 # now connect region devices
                 # rr to rr (over)
