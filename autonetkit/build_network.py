@@ -211,7 +211,7 @@ def build_bgp(anm):
 
             if max_level == 2:
                 l1_l2_up_links = [ (s, t) for (s, t) in all_pairs if s.ibgp_level == 1 and t.ibgp_level == 2
-                        and s.ibgp_l2_cluster == t.ibgp_l2_cluster]
+                        and s.ibgp_l3_cluster == t.ibgp_l2_cluster]
                 l1_l2_down_links = [ (t, s) for (s, t) in l1_l2_up_links] # the reverse
                 G_bgp.add_edges_from(l1_l2_up_links, type = 'ibgp', direction = 'up')
                 G_bgp.add_edges_from(l1_l2_down_links, type = 'ibgp', direction = 'down')
