@@ -93,7 +93,7 @@ router bgp ${node.asn}
   neighbor ${client.loopback} update-source ${node.bgp.lo_interface} 
   neighbor ${client.loopback} route-reflector-client                                                   
   % if node.bgp.ebgp_neighbors: 
-    neighbor ${client.loopback} next-hop-self
+  neighbor ${client.loopback} next-hop-self
   % endif
 % endfor            
 ## iBGP Route Reflectors (Parents)
@@ -106,7 +106,7 @@ router bgp ${node.asn}
   neighbor ${parent.loopback} remote-as ${parent.asn}
   neighbor ${parent.loopback} update-source ${node.bgp.lo_interface} 
   % if node.bgp.ebgp_neighbors: 
-    neighbor ${parent.loopback} next-hop-self
+  neighbor ${parent.loopback} next-hop-self
   % endif
 % endfor
 ## iBGP peers
@@ -119,7 +119,7 @@ router bgp ${node.asn}
   neighbor ${neigh.loopback} remote-as ${neigh.asn}
   neighbor ${neigh.loopback} update-source ${node.bgp.lo_interface}
   % if node.bgp.ebgp_neighbors: 
-    neighbor ${neigh.loopback} next-hop-self
+  neighbor ${neigh.loopback} next-hop-self
   % endif
 % endfor
 ## eBGP peers
