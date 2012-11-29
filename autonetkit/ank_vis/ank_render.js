@@ -520,20 +520,15 @@ function drawTaperedEdge(d) {
 }
 
 var graph_edge = function(d) {
-  var source_x = nodes[d.source].x + x_offset + 32;
-  source_y =  nodes[d.source].y + y_offset + 32;
-  target_x =  nodes[d.target].x + x_offset + 32;
-  target_y =  nodes[d.target].y + y_offset + 32;
 
   if (jsondata.directed) {
-    var dx = target_x - source_x,
-        dy = target_y - source_y,
-        dr = Math.sqrt(dx * dx + dy * dy);
-
     return drawTaperedEdge(d);
-    //return "M" + source_x + "," + source_y + "A" + dr + "," + dr + " 0 0,1 " + target_x + "," + target_y;
   } else {
     //TODO: look at join for here
+    var source_x = nodes[d.source].x + x_offset + 32;
+    source_y =  nodes[d.source].y + y_offset + 32;
+    target_x =  nodes[d.target].x + x_offset + 32;
+    target_y =  nodes[d.target].y + y_offset + 32;
     return  "M" + source_x + "," + source_y + "L" + target_x + "," + target_y;
   }
 }
@@ -760,14 +755,15 @@ function redraw() {
             return "path"+d.source+"_"+d.target; 
           }) 
       .attr("d", graph_edge)
-        .style("stroke-width", 0.5)
-        .attr("marker-end", marker_end)
+        .style("stroke-width", 2.5)
+        //.attr("marker-end", marker_end)
         .style("stroke", "rgb(6,120,155)")
-        .style("fill", "rgb(6,120,155)")
+        .style("fill", "rgb(26,140,175)")
         //.style("fill", "none")
 
       .on("mouseover", function(d){
         d3.select(this).style("stroke", "orange");
+        d3.select(this).style("fill", "orange");
         d3.select(this).style("stroke-width", "4");
         d3.select(this).attr("marker-end", "");
         link_info(d);
