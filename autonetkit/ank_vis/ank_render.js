@@ -15,6 +15,8 @@ ws.onclose = function () {
 };
 
 
+
+
 //TODO: make "phy" default selected
 
 var nodes_by_id = {};
@@ -457,11 +459,12 @@ chart.append("svg:defs").selectAll("marker")
 .data(["link_edge"])
 .enter().append("svg:marker")
 .attr("id", String)
-.attr("viewBox", "0 -5 10 10")
-.attr("refX", 40)
-.attr("refY", -5)
-.attr("markerWidth", 10)
-.attr("markerHeight", 10)
+.attr("viewBox", "0 0 12 12")
+.attr("refX", 35)
+.attr("refY", -4.5)
+.attr("overflow", "visible")
+.attr("markerWidth", 7)
+.attr("markerHeight", 7)
 .attr("orient", "auto")
 .append("svg:path")
 .attr("d", "M0,-5L10,0L0,5");
@@ -474,6 +477,48 @@ var marker_end  = function(d) {
   return "";
 }
 
+
+var d3LineBasis = d3.svg.line().interpolate("basis");
+var offsetScale = 0.2; /* percentage of line line to offset curves */
+var radius = 5;
+
+
+function drawTaperedEdge(d) {
+  //Adapted from http://bl.ocks.org/2942559
+
+  var sourceX = nodes[d.source].x + x_offset + 32;
+  sourceY =  nodes[d.source].y + y_offset + 32;
+  targetX =  nodes[d.target].x + x_offset + 32;
+  targetY =  nodes[d.target].y + y_offset + 32;
+
+  // Changed from example: replaced repeated code with sourceX, targetY, etc variables
+  var slope = Math.atan2((+targetY - sourceY), (+targetX - sourceX));
+  var slopePlus90 = Math.atan2((+targetY - sourceY), (+targetX - sourceX)) + (Math.PI/2);
+
+
+  var halfX = (sourceX + targetX)/2;
+  var halfY = (sourceY + targetY)/2;
+
+  var lineLength = Math.sqrt(Math.pow(targetX - sourceX, 2) + Math.pow(targetY - sourceY, 2));
+
+  strength = 3; //fixed strength
+
+  var MP1X = halfX + (offsetScale * lineLength + strength/4) * Math.cos(slopePlus90);
+  var MP1Y = halfY + (offsetScale * lineLength + strength/4) * Math.sin(slopePlus90);
+  var MP2X = halfX + (offsetScale * lineLength - strength/4) * Math.cos(slopePlus90);
+  var MP2Y = halfY + (offsetScale * lineLength - strength/4) * Math.sin(slopePlus90);
+
+  var points = [];
+  points.push([(sourceX - strength*2 * Math.cos(slopePlus90)),(sourceY - strength * Math.sin(slopePlus90))]);
+  points.push([MP2X,MP2Y]);
+  points.push(([(targetX  + radius * Math.cos(slope)), (targetY + radius * Math.sin(slope))]));
+  points.push(([(targetX  + radius * Math.cos(slope)), (targetY + radius * Math.sin(slope))]));
+  points.push([MP1X, MP1Y]);
+  points.push([(sourceX + strength*2 * Math.cos(slopePlus90)),(sourceY + strength * Math.sin(slopePlus90))]);
+
+  return d3LineBasis(points) + "Z";
+}
+
 var graph_edge = function(d) {
   var source_x = nodes[d.source].x + x_offset + 32;
   source_y =  nodes[d.source].y + y_offset + 32;
@@ -484,7 +529,9 @@ var graph_edge = function(d) {
     var dx = target_x - source_x,
         dy = target_y - source_y,
         dr = Math.sqrt(dx * dx + dy * dy);
-    return "M" + source_x + "," + source_y + "A" + dr + "," + dr + " 0 0,1 " + target_x + "," + target_y;
+
+    return drawTaperedEdge(d);
+    //return "M" + source_x + "," + source_y + "A" + dr + "," + dr + " 0 0,1 " + target_x + "," + target_y;
   } else {
     //TODO: look at join for here
     return  "M" + source_x + "," + source_y + "L" + target_x + "," + target_y;
@@ -615,6 +662,9 @@ var node_group_id = function(d) {
   if (overlay_id == "ospf") {
     return ([d['asn'], d['area']]);
   }
+  if (overlay_id == "bgp") {
+    return ([d['asn'], d['ibgp_l2_cluster']]);
+  }
 
   return d[group_attr];
 
@@ -710,10 +760,11 @@ function redraw() {
             return "path"+d.source+"_"+d.target; 
           }) 
       .attr("d", graph_edge)
-      .style("stroke-width", 2)
-      //.attr("marker-end", marker_end)
-      .style("stroke", "rgb(6,120,155)")
-      .style("fill", "none")
+        .style("stroke-width", 0.5)
+        .attr("marker-end", marker_end)
+        .style("stroke", "rgb(6,120,155)")
+        .style("fill", "rgb(6,120,155)")
+        //.style("fill", "none")
 
       .on("mouseover", function(d){
         d3.select(this).style("stroke", "orange");
