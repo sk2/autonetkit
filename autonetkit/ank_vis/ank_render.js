@@ -495,13 +495,12 @@ function drawTaperedEdge(d) {
   var slope = Math.atan2((+targetY - sourceY), (+targetX - sourceX));
   var slopePlus90 = Math.atan2((+targetY - sourceY), (+targetX - sourceX)) + (Math.PI/2);
 
-
   var halfX = (sourceX + targetX)/2;
   var halfY = (sourceY + targetY)/2;
 
   var lineLength = Math.sqrt(Math.pow(targetX - sourceX, 2) + Math.pow(targetY - sourceY, 2));
 
-  strength = 3; //fixed strength
+  strength = 2; //fixed strength
 
   var MP1X = halfX + (offsetScale * lineLength + strength/4) * Math.cos(slopePlus90);
   var MP1Y = halfY + (offsetScale * lineLength + strength/4) * Math.sin(slopePlus90);
@@ -545,12 +544,9 @@ var link_label_x = function(d) {
         dy = target_y - source_y,
         dr = Math.sqrt(dx * dx + dy * dy);
 
-
   } else {
     //TODO: look at join for here
   }
-
-
 
    return 5;
 }
@@ -755,22 +751,23 @@ function redraw() {
             return "path"+d.source+"_"+d.target; 
           }) 
       .attr("d", graph_edge)
-        .style("stroke-width", 2.5)
+        .style("stroke-width", 2)
         //.attr("marker-end", marker_end)
         .style("stroke", "rgb(6,120,155)")
-        .style("fill", "rgb(26,140,175)")
+        .style("fill", "rgb(36,150,175)")
         //.style("fill", "none")
 
       .on("mouseover", function(d){
         d3.select(this).style("stroke", "orange");
-        d3.select(this).style("fill", "orange");
-        d3.select(this).style("stroke-width", "4");
+        d3.select(this).style("fill", "yellow");
+        d3.select(this).style("stroke-width", "2");
         d3.select(this).attr("marker-end", "");
         link_info(d);
       })
     .on("mouseout", function(){
       d3.select(this).style("stroke-width", "2");
       d3.select(this).style("stroke", "rgb(6,120,155)");
+      d3.select(this).style("fill", "rgb(36,150,175)");
       //d3.select(this).attr("marker-end", marker_end);
       clear_label();
     })
