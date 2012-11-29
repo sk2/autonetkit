@@ -88,37 +88,46 @@ router bgp ${node.asn}
 % if loop.first:
   ! ibgp clients
 % endif    
-  ! ${client.neighbor}
+  !
   neighbor ${client.loopback} description rr client ${client.neighbor}
   neighbor ${client.loopback} update-source ${node.bgp.lo_interface} 
   neighbor ${client.loopback} route-reflector-client                                                   
+  % if node.bgp.ebgp_neighbors: 
+    neighbor ${client.loopback} next-hop-self
+  % endif
 % endfor            
 ## iBGP Route Reflectors (Parents)
 % for parent in node.bgp.ibgp_rr_parents:   
 % if loop.first:
   ! ibgp route reflector servers
 % endif    
-  ! ${parent.neighbor}
+  !
   neighbor ${parent.loopback} description rr parent ${parent.neighbor}
   neighbor ${parent.loopback} remote-as ${parent.asn}
   neighbor ${parent.loopback} update-source ${node.bgp.lo_interface} 
+  % if node.bgp.ebgp_neighbors: 
+    neighbor ${parent.loopback} next-hop-self
+  % endif
 % endfor
 ## iBGP peers
 % for neigh in node.bgp.ibgp_neighbors:      
 % if loop.first:
   ! ibgp peers
 % endif 
-  ! ${neigh.neighbor}
+  !
   neighbor ${neigh.loopback} description iBGP peer ${neigh.neighbor}
   neighbor ${neigh.loopback} remote-as ${neigh.asn}
   neighbor ${neigh.loopback} update-source ${node.bgp.lo_interface}
+  % if node.bgp.ebgp_neighbors: 
+    neighbor ${neigh.loopback} next-hop-self
+  % endif
 % endfor
 ## eBGP peers
 % for neigh in node.bgp.ebgp_neighbors:      
 % if loop.first:
 ! ebgp
 % endif
-  ! ${neigh.neighbor} 
+  !
   neighbor ${neigh.dst_int_ip} description eBGP to ${neigh.neighbor}
   neighbor ${neigh.dst_int_ip} remote-as ${neigh.asn}
   neighbor ${neigh.dst_int_ip} send-community
