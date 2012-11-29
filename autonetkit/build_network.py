@@ -126,7 +126,7 @@ def build_bgp(anm):
 
 # now iBGP
 #TODO: add flag for three iBGP types: full-mesh, algorithmic, custom
-    if True:
+    if False:
         #TODO: need to allow manually set ibgp_level2 and ibgp_level1 groups, fallback is region/asn
         ank.copy_attr_from(G_in, G_phy, "region") 
         for asn, devices in G_phy.groupby("asn").items():
@@ -160,9 +160,66 @@ def build_bgp(anm):
             asn_rrs = list(G_bgp.nodes(asn=asn, route_reflector = True))
             over_links = [(rr1, rr2) for (rr1, rr2) in itertools.product(asn_rrs, asn_rrs)]
             G_bgp.add_edges_from(over_links, type = 'ibgp', direction = 'over')
-                
 
-        
+    if True:
+        ank.copy_attr_from(G_in, G_bgp, "ibgp_level") 
+        ank.copy_attr_from(G_in, G_bgp, "ibgp_l2_cluster") 
+        ank.copy_attr_from(G_in, G_bgp, "ibgp_l3_cluster") 
+        for node in G_bgp:
+            #set defaults
+#TODO: map "None" string to None for attributes from Graphml
+            if not node.ibgp_level or node.ibgp_level == "None":
+                node.ibgp_level = 1
+
+            node.ibgp_level = int(node.ibgp_level) # ensure is numeric
+
+            if not node.ibgp_l2_cluster or node.ibgp_l2_cluster == "None":
+                pass
+                node.ibgp_l2_cluster = node.region # ibgp_l2_cluster defaults to region
+                #TODO: check region exists
+            if not node.ibgp_l3_cluster or node.ibgp_l3_cluster == "None":
+                node.ibgp_l3_cluster = node.asn # ibgp_l3_cluster defaults to ASN
+
+        for asn, devices in G_phy.groupby("asn").items():
+            as_graph = G_phy.subgraph(devices)
+            routers = list(n for n in as_graph if n.is_router)
+#TODO: catch integer cast exception
+            ibgp_levels = set(int(G_bgp.node(r).ibgp_level) for r in routers)
+            max_level = max(ibgp_levels)
+            all_pairs = [ (G_bgp.node(s), G_bgp.node(t)) for s in routers for t in routers if s != t]
+            if max_level == 3:
+                l1_l2_up_links = [ (s, t) for (s, t) in all_pairs if s.ibgp_level == 1 and t.ibgp_level == 2
+                        and s.ibgp_l2_cluster == t.ibgp_l2_cluster]
+                l1_l2_down_links = [ (t, s) for (s, t) in l1_l2_up_links] # the reverse
+                G_bgp.add_edges_from(l1_l2_up_links, type = 'ibgp', direction = 'up')
+                G_bgp.add_edges_from(l1_l2_down_links, type = 'ibgp', direction = 'down')
+
+
+                l2_peer_links = [ (s, t) for (s, t) in all_pairs 
+                        if s.ibgp_level == t.ibgp_level == 2 and s.ibgp_l2_cluster == t.ibgp_l2_cluster ]
+                G_bgp.add_edges_from(l2_peer_links, type = 'ibgp', direction = 'over')
+
+
+                l2_l3_up_links = [ (s, t) for (s, t) in all_pairs if s.ibgp_level == 2 and t.ibgp_level == 3
+                        and s.ibgp_l3_cluster == t.ibgp_l3_cluster]
+                l2_l3_down_links = [ (t, s) for (s, t) in l2_l3_up_links] # the reverse
+                G_bgp.add_edges_from(l2_l3_up_links, type = 'ibgp', direction = 'up')
+                G_bgp.add_edges_from(l2_l3_down_links, type = 'ibgp', direction = 'down')
+
+                l3_peer_links = [ (s, t) for (s, t) in all_pairs if s.ibgp_level == t.ibgp_level == 3]
+                G_bgp.add_edges_from(l3_peer_links, type = 'ibgp', direction = 'over')
+
+            if max_level == 2:
+                l1_l2_up_links = [ (s, t) for (s, t) in all_pairs if s.ibgp_level == 1 and t.ibgp_level == 2
+                        and s.ibgp_l2_cluster == t.ibgp_l2_cluster]
+                l1_l2_down_links = [ (t, s) for (s, t) in l1_l2_up_links] # the reverse
+                G_bgp.add_edges_from(l1_l2_up_links, type = 'ibgp', direction = 'up')
+                G_bgp.add_edges_from(l1_l2_down_links, type = 'ibgp', direction = 'down')
+
+                l2_peer_links = [ (s, t) for (s, t) in all_pairs 
+                        if s.ibgp_level == t.ibgp_level == 2 and s.ibgp_l3_cluster == t.ibgp_l3_cluster ]
+                G_bgp.add_edges_from(l2_peer_links, type = 'ibgp', direction = 'over')
+
     elif len(G_phy) < 5:
 # full mesh
         for asn, devices in G_phy.groupby("asn").items():
@@ -289,7 +346,7 @@ def build_ospf(anm):
     G_ospf.remove_edges_from([link for link in G_ospf.edges() if link.src.asn != link.dst.asn]) # remove inter-AS links
 
     for router in G_ospf:
-        if router.area == "None":
+        if not router.area or router.area == "None":
             #TODO: tidy up this default of None being a string
             router.area = 0
 
