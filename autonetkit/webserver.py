@@ -14,7 +14,6 @@ import pkg_resources
 www_dir = pkg_resources.resource_filename(__name__, "ank_vis")
 
 class EchoServer(TCPServer):
-
     def __init__(self, io_loop=None, ssl_options=None, ank_accessor = None, **kwargs):
         logging.info('a echo tcp server is started')
         self.event_listeners = set([])
@@ -35,10 +34,9 @@ class EchoServer(TCPServer):
         print('PikaClient: listener %s removed' % repr(listener))
 
 class EchoConnection(object):
-
     stream_set = set([])
-
     def __init__(self, stream, address, event_listeners, ank_accessor):
+        #TODO: look if can use initialize to remove internal params (boilerplate)
         logging.info('receive a new connection from %s', address)
         self.stream = stream
         self.address = address
@@ -88,9 +86,51 @@ class EchoConnection(object):
             #listener.write_message(body)
 
 class MyWebHandler(tornado.web.RequestHandler):
+
+    def initialize(self, ank_accessor):
+        self.ank_accessor = ank_accessor
+    
     def get(self):
         self.write("Hello, world")
 
+    def post(self):
+        data = self.get_argument('body', 'No data received')
+        #self.write(data)
+        try:
+            body_parsed = json.loads(data)
+        except ValueError:
+            print "Unable to parse JSON for ", data
+            return
+
+        if body_parsed.has_key("anm"):
+            print "Received new anm"
+            try:
+                self.ank_accessor.anm = body_parsed['anm']
+                #TODO: could process diff and only update client if data has changed -> more efficient client side
+                self.update_listeners("overlays")
+                # TODO: find better way to replace object not just local reference, as need to replace for RequestHandler too
+            except Exception, e:
+                print "Exception is", e
+        elif body_parsed.has_key("ip_allocations"):
+            alloc = json.loads(body_parsed['ip_allocations'])
+            self.ank_accessor.ip_allocation = alloc
+            self.update_listeners("ip_allocations")
+        elif "path" in body_parsed:
+            self.notify_listeners(data) # could do extra processing here
+        else:
+            self.notify_listeners(data)
+
+        for listener in self.application.socket_listeners:
+            listener.write_message(data) 
+
+    def update_listeners(self, index):
+        for listener in self.application.socket_listeners:
+            if index == "overlays":
+                listener.update_overlay()
+            elif index == "ip_allocations":
+                listener.update_ip_allocation()
+
+    
 class OverlayHandler(tornado.web.RequestHandler):
     def initialize(self, ank_accessor):
         self.ank_accessor = ank_accessor
@@ -114,6 +154,8 @@ class MyWebSocketHandler(websocket.WebSocketHandler):
         return True
 
     def open(self, *args, **kwargs):
+        self.application.socket_listeners.add(self) 
+
         try:
             self.application.echo_server.add_event_listener(self)
         except AttributeError:
@@ -126,6 +168,7 @@ class MyWebSocketHandler(websocket.WebSocketHandler):
 
     def on_close(self):
         pika.log.info("WebSocket closed")
+        self.application.socket_listeners.remove(self) 
         try:
             self.application.pc.remove_event_listener(self)
         except AttributeError:
@@ -292,6 +335,7 @@ class PikaClient(object):
             pass
 
 class AnkAccessor():
+    """ Used to store published topologies"""
     def __init__(self):
         self.anm = {}
         self.ip_allocation = {}
@@ -328,11 +372,16 @@ def main():
             'debug': False,
             }
 
+
     application = tornado.web.Application([
         (r'/ws', MyWebSocketHandler, {"ank_accessor": ank_accessor, "overlay_id": "phy"}),
+        (r'/publish', MyWebHandler, {"ank_accessor": ank_accessor}),
         (r'/overlay', OverlayHandler, {'ank_accessor': ank_accessor}),
         ("/(.*)", tornado.web.StaticFileHandler, {"path":settings['static_path'], "default_filename":"index.html"} )
         ], **settings)
+
+    application.socket_listeners = set() # TODO: see if tornado provides access to listeners
+
     pika.log.setup(pika.log.WARNING, color=True)
     io_loop = tornado.ioloop.IOLoop.instance()
     # PikaClient is our rabbitmq consumer
