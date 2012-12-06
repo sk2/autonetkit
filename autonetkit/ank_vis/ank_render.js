@@ -15,6 +15,10 @@ ws.onclose = function () {
 };
 
 
+var icon_width = 55;
+var icon_height = 55;
+
+
 //TODO: make "phy" default selected
 
 var nodes_by_id = {};
@@ -276,17 +280,17 @@ var icon = function(d) {
 }
 
 var source_x = function(d) {
-  return nodes[d.source].x + x_offset + 32;
+  return nodes[d.source].x + x_offset + icon_width/2;
 }
 var source_y = function(d) {
-  return nodes[d.source].y  + y_offset+ 32;
+  return nodes[d.source].y  + y_offset+ icon_height/2;
 }
 
 var target_x = function(d) {
-  return nodes[d.target].x + x_offset + 32;
+  return nodes[d.target].x + x_offset + icon_width/2;
 }
 var target_y = function(d) {
-  return nodes[d.target].y  + y_offset+ 32;
+  return nodes[d.target].y  + y_offset+ icon_height/2;
 }
 
 var label = function(d) {
@@ -328,7 +332,7 @@ var clear_graph_history = function() {
 
 
 //TODO: replace all 32 magic numbers with icon_offset
-var icon_offset = 32;
+var icon_offset = icon_width/2;
 
 var x_offset = 10;
 var y_offset = 30;
@@ -384,7 +388,7 @@ var groupPath = function(d) {
     return retval;
   }
   retval = "M" + 
-    d3.geom.hull(d.values.map(function(i) { return [i.x + x_offset + 32, i.y + y_offset + 32]; }))
+    d3.geom.hull(d.values.map(function(i) { return [i.x + x_offset + icon_width/2, i.y + y_offset + icon_height/2]; }))
     .join("L")
     + "Z";
   return retval;
@@ -392,14 +396,12 @@ var groupPath = function(d) {
 
 var path_x = function(d) {
   node = nodes_by_id[d];
-  //return nodes[index].x + 32;
-  return node.x+ 32 + x_offset;
+  return node.x+ icon_width/2 + x_offset;
 }
 
 var path_y = function(d) {
   node = nodes_by_id[d];
-  //return nodes[index].y+ 32;
-  return node.y+ 32 + y_offset;
+  return node.y+ icon_height/2 + y_offset;
 }
 
 var data_to_li = function(d, depth) {
@@ -457,11 +459,12 @@ chart.append("svg:defs").selectAll("marker")
 .data(["link_edge"])
 .enter().append("svg:marker")
 .attr("id", String)
-.attr("viewBox", "0 -5 10 10")
-.attr("refX", 40)
-.attr("refY", -5)
-.attr("markerWidth", 10)
-.attr("markerHeight", 10)
+.attr("viewBox", "0 0 12 12")
+.attr("refX", 35)
+.attr("refY", -4.5)
+.attr("overflow", "visible")
+.attr("markerWidth", 7)
+.attr("markerHeight", 7)
 .attr("orient", "auto")
 .append("svg:path")
 .attr("d", "M0,-5L10,0L0,5");
@@ -474,41 +477,76 @@ var marker_end  = function(d) {
   return "";
 }
 
+
+var d3LineBasis = d3.svg.line().interpolate("basis");
+var offsetScale = 0.15; /* percentage of line line to offset curves */
+var radius = 20;
+
+
+function drawTaperedEdge(d) {
+  //Adapted from http://bl.ocks.org/2942559
+
+  var sourceX = nodes[d.source].x + x_offset + icon_width/2;
+  sourceY =  nodes[d.source].y + y_offset + icon_height/2;
+  targetX =  nodes[d.target].x + x_offset + icon_width/2;
+  targetY =  nodes[d.target].y + y_offset + icon_height/2;
+
+  // Changed from example: replaced repeated code with sourceX, targetY, etc variables
+  var slope = Math.atan2((+targetY - sourceY), (+targetX - sourceX));
+  var slopePlus90 = Math.atan2((+targetY - sourceY), (+targetX - sourceX)) + (Math.PI/2);
+
+  var halfX = (sourceX + targetX)/2;
+  var halfY = (sourceY + targetY)/2;
+
+  var lineLength = Math.sqrt(Math.pow(targetX - sourceX, 2) + Math.pow(targetY - sourceY, 2));
+
+  strength = 2.5; //fixed strength
+
+  var MP1X = halfX + (offsetScale * lineLength + strength/3) * Math.cos(slopePlus90);
+  var MP1Y = halfY + (offsetScale * lineLength + strength/3) * Math.sin(slopePlus90);
+  var MP2X = halfX + (offsetScale * lineLength - strength/3) * Math.cos(slopePlus90);
+  var MP2Y = halfY + (offsetScale * lineLength - strength/3) * Math.sin(slopePlus90);
+
+  var points = [];
+  points.push([(sourceX - strength*2 * Math.cos(slopePlus90)),(sourceY - strength * Math.sin(slopePlus90))]);
+  points.push([MP2X,MP2Y]);
+  points.push(([(targetX  + radius * Math.cos(slope)), (targetY + radius * Math.sin(slope))]));
+  points.push(([(targetX  + radius * Math.cos(slope)), (targetY + radius * Math.sin(slope))]));
+  points.push([MP1X, MP1Y]);
+  points.push([(sourceX + strength*2 * Math.cos(slopePlus90)),(sourceY + strength * Math.sin(slopePlus90))]);
+
+  return d3LineBasis(points) + "Z";
+}
+
 var graph_edge = function(d) {
-  var source_x = nodes[d.source].x + x_offset + 32;
-  source_y =  nodes[d.source].y + y_offset + 32;
-  target_x =  nodes[d.target].x + x_offset + 32;
-  target_y =  nodes[d.target].y + y_offset + 32;
 
   if (jsondata.directed) {
-    var dx = target_x - source_x,
-        dy = target_y - source_y,
-        dr = Math.sqrt(dx * dx + dy * dy);
-    return "M" + source_x + "," + source_y + "A" + dr + "," + dr + " 0 0,1 " + target_x + "," + target_y;
+    return drawTaperedEdge(d);
   } else {
     //TODO: look at join for here
+    var source_x = nodes[d.source].x + x_offset + icon_width/2;
+    source_y =  nodes[d.source].y + y_offset + icon_height/2;
+    target_x =  nodes[d.target].x + x_offset + icon_width/2;
+    target_y =  nodes[d.target].y + y_offset + icon_height/2;
     return  "M" + source_x + "," + source_y + "L" + target_x + "," + target_y;
   }
 }
 
 var link_label_x = function(d) {
 
-    var source_x = nodes[d.source].x + x_offset + 32;
-  source_y =  nodes[d.source].y + y_offset + 32;
-  target_x =  nodes[d.target].x + x_offset + 32;
-  target_y =  nodes[d.target].y + y_offset + 32;
+    var source_x = nodes[d.source].x + x_offset + icon_width/2;
+  source_y =  nodes[d.source].y + y_offset + icon_height/2;
+  target_x =  nodes[d.target].x + x_offset + icon_width/2;
+  target_y =  nodes[d.target].y + y_offset + icon_height/2;
 
   if (jsondata.directed) {
     var dx = target_x - source_x,
         dy = target_y - source_y,
         dr = Math.sqrt(dx * dx + dy * dy);
 
-
   } else {
     //TODO: look at join for here
   }
-
-
 
    return 5;
 }
@@ -615,6 +653,9 @@ var node_group_id = function(d) {
   if (overlay_id == "ospf") {
     return ([d['asn'], d['area']]);
   }
+  if (overlay_id == "bgp") {
+    return ([d['asn'], d['ibgp_l2_cluster']]);
+  }
 
   return d[group_attr];
 
@@ -709,21 +750,30 @@ function redraw() {
           function(d) { 
             return "path"+d.source+"_"+d.target; 
           }) 
-      .attr("d", graph_edge)
-      .style("stroke-width", 2)
-      //.attr("marker-end", marker_end)
-      .style("stroke", "rgb(6,120,155)")
-      .style("fill", "none")
+    .attr("d", graph_edge)
+      .style("stroke-width", function() {
+        //TODO: use this stroke-width function on mouseout too
+        if (jsondata.directed) {
+          return 1;
+        } 
+        return 2;
+      })
+    //.attr("marker-end", marker_end)
+    .style("stroke", "rgb(6,120,155)")
+      .style("fill", "rgb(26,140,165)")
+      //.style("fill", "none")
 
       .on("mouseover", function(d){
         d3.select(this).style("stroke", "orange");
-        d3.select(this).style("stroke-width", "4");
+        d3.select(this).style("fill", "yellow");
+        d3.select(this).style("stroke-width", "2");
         d3.select(this).attr("marker-end", "");
         link_info(d);
       })
     .on("mouseout", function(){
       d3.select(this).style("stroke-width", "2");
       d3.select(this).style("stroke", "rgb(6,120,155)");
+      d3.select(this).style("fill", "rgb(36,150,175)");
       //d3.select(this).attr("marker-end", marker_end);
       clear_label();
     })
@@ -787,13 +837,13 @@ function redraw() {
 
   link_labels.transition()
     .attr("x", function(d) { 
-        var source_x = nodes[d.source].x + x_offset + 32;
-        target_x =  nodes[d.target].x + x_offset + 32;
+        var source_x = nodes[d.source].x + x_offset + icon_width/2;
+        target_x =  nodes[d.target].x + x_offset + icon_width/2;
         return (source_x + target_x) /2;
     })
     .attr("y", function(d) {
-      source_y =  nodes[d.source].y + y_offset + 32;
-      target_y =  nodes[d.target].y + y_offset + 32;
+      source_y =  nodes[d.source].y + y_offset + icon_height/2;
+      target_y =  nodes[d.target].y + y_offset + icon_height/2;
       return (source_y + target_y) /2;
     })
     .duration(500)
@@ -814,8 +864,8 @@ function redraw() {
     .attr("class", "device_icon")
     .attr("x", function(d) { return d.x + x_offset; })
     .attr("y", function(d) { return d.y + y_offset; })
-    .attr("width", 64)
-    .attr("height", 64)
+    .attr("width", icon_width)
+    .attr("height", icon_height)
     .on("mouseover", function(d){
       node_info(d);
       d3.select(this).attr("xlink:href", icon); //TODO: check why need to do this
@@ -827,8 +877,8 @@ function redraw() {
     .text(function(d) { return d.id; })
 
     image
-    .attr("width", 64)
-    .attr("height", 64)
+    .attr("width", icon_width)
+    .attr("height", icon_height)
     .transition()
     .attr("xlink:href", icon)
     .attr("x", function(d) { return d.x + x_offset; })
@@ -864,8 +914,8 @@ function redraw() {
 
     //TODO: use a general accessor for x/y of nodes
     device_labels 
-    .attr("dx", 32) // padding-right
-    .attr("dy", 65) // vertical-align: middle
+    .attr("dx", icon_width/2) // padding-right
+    .attr("dy", icon_height + 1) // vertical-align: middle
     .text(device_label);
 
   device_labels.transition()
