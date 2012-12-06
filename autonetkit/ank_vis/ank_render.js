@@ -479,7 +479,7 @@ var marker_end  = function(d) {
 
 
 var d3LineBasis = d3.svg.line().interpolate("basis");
-var offsetScale = 0.2; /* percentage of line line to offset curves */
+var offsetScale = 0.15; /* percentage of line line to offset curves */
 var radius = 20;
 
 
