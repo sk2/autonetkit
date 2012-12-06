@@ -10,6 +10,10 @@ use_message_pipe = config.settings['Message Pipe']['active']
 if use_message_pipe:
     import telnetlib
 
+use_http_post = config.settings['Http Post']['active']
+if use_http_post:
+    import urllib
+
 #TODO: tidy this to be a try/except ImportError
 
 #import pika.log
@@ -40,8 +44,15 @@ class AnkPika(object):
                 self.publish_compressed = self.publish_telnet
 #TODO: support use of both at once....
 
+            if use_http_post:
+                host = config.settings['Http Post']['server']
+                port = config.settings['Http Post']['port']
+                self.http_url = "http://%s:%s/publish" % (host, port)
+                print self.http_url
+                self.publish = self.publish_http_post
+                self.publish_compressed = self.publish_http_post
 
-            if not (use_rabbitmq or use_message_pipe):
+            if not (use_rabbitmq or use_message_pipe or use_http_post):
                 log.debug("Not using Rabbitmq or telnet")
                 self.publish = self.publish_blank_stub
                 self.publish_compressed = self.publish_blank_stub
@@ -91,5 +102,14 @@ class AnkPika(object):
         """use if not using rabbitmq, simplifies calls elsewhere (publish does nothing)"""
 #TODO: log that not sending for debug purposes
         return
+
+
+    def publish_http_post(self, exchange, routing_key, body):
+        params = urllib.urlencode({
+            'body': body
+            })
+        data = urllib.urlopen(self.http_url, params).read()
+        print data
+        
 
 
