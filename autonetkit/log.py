@@ -1,4 +1,5 @@
 import logging
+import autonetkit.config as config
 
 #colors based on http://stackoverflow.com/questions/384076
 
@@ -56,8 +57,8 @@ class ColoredLogger(logging.Logger):
 
 
 import logging.handlers
-#TODO: make this toggle on/off
-if False:
+file_logging = config.settings['Logging']['file']
+if file_logging:
     LOG_FILENAME =  "autonetkit.log"
     LOG_SIZE = 2097152 # 2 MB
     fh = logging.handlers.RotatingFileHandler(
@@ -72,8 +73,7 @@ if False:
 
 logging.setLoggerClass(ColoredLogger)
 logger = logging.getLogger("ANK")
-logger.setLevel(logging.INFO)
-
+logger.setLevel(logging.WARN)
 
 # Use approach of Pika, allows for autonetkit.log.debug("message")
 debug = logger.debug
