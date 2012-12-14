@@ -42,6 +42,9 @@ def build(input_graph_string, timestamp):
                 }
 
     #TODO: make this more explicit than overloading add_overlay - make it load_graph or something similar
+
+#TODO: may need to revisit the collapse to a single directed graph: may need to consider link type, eg physical, when reducing directed to undirected graph
+#Note: this may also require stripping edge specific information, such as IP addressing that only applies in one direction for a directed edge
     input_undirected = nx.Graph(input_graph)
     for node in input_graph:
         #del input_graph.node[node]['router config']
@@ -49,7 +52,7 @@ def build(input_graph_string, timestamp):
         pass
     #nx.write_graphml(input_graph, "output.graphml")
     G_in = anm.add_overlay("input", input_undirected)
-    #G_in_directed = anm.add_overlay("input_directed", input_graph, directed = True)
+    G_in_directed = anm.add_overlay("input_directed", input_graph, directed = True)
 
     import autonetkit.plugins.graph_product as graph_product
     graph_product.expand(G_in) # apply graph products if relevant
@@ -174,8 +177,7 @@ def build_bgp(anm):
             node.ibgp_level = int(node.ibgp_level) # ensure is numeric
 
             if not node.ibgp_l2_cluster or node.ibgp_l2_cluster == "None":
-                pass
-                node.ibgp_l2_cluster = node.region # ibgp_l2_cluster defaults to region
+                node.ibgp_l2_cluster = node.region or "default_l2_cluster" # ibgp_l2_cluster defaults to region
                 #TODO: check region exists
             if not node.ibgp_l3_cluster or node.ibgp_l3_cluster == "None":
                 node.ibgp_l3_cluster = node.asn # ibgp_l3_cluster defaults to ASN
@@ -210,8 +212,9 @@ def build_bgp(anm):
                 G_bgp.add_edges_from(l3_peer_links, type = 'ibgp', direction = 'over')
 
             if max_level == 2:
-                l1_l2_up_links = [ (s, t) for (s, t) in all_pairs if s.ibgp_level == 1 and t.ibgp_level == 2
-                        and s.ibgp_l3_cluster == t.ibgp_l2_cluster]
+                l1_l2_up_links = [ (s, t) for (s, t) in all_pairs 
+                        if s.ibgp_level == 1 and t.ibgp_level == 2
+                        and s.ibgp_l3_cluster == t.ibgp_l3_cluster]
                 l1_l2_down_links = [ (t, s) for (s, t) in l1_l2_up_links] # the reverse
                 G_bgp.add_edges_from(l1_l2_up_links, type = 'ibgp', direction = 'up')
                 G_bgp.add_edges_from(l1_l2_down_links, type = 'ibgp', direction = 'down')
@@ -219,6 +222,12 @@ def build_bgp(anm):
                 l2_peer_links = [ (s, t) for (s, t) in all_pairs 
                         if s.ibgp_level == t.ibgp_level == 2 and s.ibgp_l3_cluster == t.ibgp_l3_cluster ]
                 G_bgp.add_edges_from(l2_peer_links, type = 'ibgp', direction = 'over')
+
+            elif max_level == 1:
+# full mesh
+                l1_peer_links = [ (s, t) for (s, t) in all_pairs 
+                if s.ibgp_l3_cluster == t.ibgp_l3_cluster ]
+                G_bgp.add_edges_from(l1_peer_links, type = 'ibgp', direction = 'over')
 
     elif len(G_phy) < 5:
 # full mesh
@@ -253,7 +262,10 @@ def build_ip(anm):
     for node in split_created_nodes:
         node['graphics'].x = ank.neigh_average(G_ip, node, "x", G_graphics)
         node['graphics'].y = ank.neigh_average(G_ip, node, "y", G_graphics)
-        node['graphics'].asn = ank.neigh_most_frequent(G_ip, node, "asn", G_phy) # arbitrary choice
+        asn = ank.neigh_most_frequent(G_ip, node, "asn", G_phy) # arbitrary choice
+        node['graphics'].asn = asn
+# need to use asn in IP overlay for aggregating subnets
+        node.asn = asn
 #TODO: could choose largest ASN if tie break
 #TODO: see if need G_phy - should auto fall through to phy for ASN
 
@@ -281,8 +293,50 @@ def build_ip(anm):
             node.cd_id = cd_label
             graphics_node.label = cd_label
 
-    ip.allocate_ips(G_ip)
-    ank.save(G_ip)
+    if G_in.data.allocate_ipv4 == False:
+        import netaddr
+        G_in_directed = anm['input_directed']
+
+        for l3_device in G_ip.nodes("is_l3device"):
+            directed_node = G_in_directed.node(l3_device)
+            l3_device.loopback = directed_node.ipv4loopback
+            for edge in l3_device.edges():
+                # find edge in G_in_directed
+                directed_edge = G_in_directed.edge(edge)
+                edge.ip_address = netaddr.IPAddress(directed_edge.ipv4)
+
+                # set subnet onto collision domain (can come from either direction) 
+                collision_domain = edge.dst
+                if not collision_domain.subnet:
+                    #TODO: see if direct method in netaddr to deduce network
+                    prefixlen = directed_edge.netPrefixLenV4
+                    cidr_string = "%s/%s" % (edge.ip_address, prefixlen)
+                    intermediate_subnet = netaddr.IPNetwork(cidr_string)
+                    cidr_string = "%s/%s" % (intermediate_subnet.network, prefixlen)
+                    subnet = netaddr.IPNetwork(cidr_string)
+                    collision_domain.subnet = subnet
+
+
+        # also need to form aggregated IP blocks (used for e.g. routing prefix advertisement)
+        loopback_blocks = {}
+        infra_blocks = {}
+        for asn, devices in G_ip.groupby("asn").items():
+            routers = [d for d in devices if d.is_router]
+            loopbacks = [r.loopback for r in routers]
+            loopback_blocks[asn] = netaddr.cidr_merge(loopbacks)
+
+            collision_domains = [d for d in devices if d.collision_domain]
+            subnets = [cd.subnet for cd in collision_domains]
+            infra_blocks[asn] = netaddr.cidr_merge(subnets)
+
+        G_ip.data.loopback_blocks = loopback_blocks
+        G_ip.data.infra_blocks = infra_blocks
+
+        
+    else:
+        ip.allocate_ips(G_ip)
+        ank.save(G_ip)
+    update_pika(anm)
 
 def build_phy(anm):
     G_in = anm['input']
@@ -350,6 +404,8 @@ def build_ospf(anm):
             #TODO: tidy up this default of None being a string
             router.area = 0
 
+
+#TODO: make this either an int or an Ip address
         router.area = int(router.area) #TODO: use dst type in copy_attr_from
 
  
