@@ -27,6 +27,7 @@ class AnkPika(object):
     def __init__(self, host):
         try:
             if use_rabbitmq:
+		print "HERE"
                 log.debug("Using Rabbitmq with server %s " % host)
                 self.connection = pika.BlockingConnection(pika.ConnectionParameters(
                     host = host))
@@ -48,7 +49,6 @@ class AnkPika(object):
                 host = config.settings['Http Post']['server']
                 port = config.settings['Http Post']['port']
                 self.http_url = "http://%s:%s/publish" % (host, port)
-                print self.http_url
                 self.publish = self.publish_http_post
                 self.publish_compressed = self.publish_http_post
 
@@ -109,7 +109,7 @@ class AnkPika(object):
             'body': body
             })
         data = urllib.urlopen(self.http_url, params).read()
-        print data
+        #print data # can log response
         
 
 

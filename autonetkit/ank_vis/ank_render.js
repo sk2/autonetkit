@@ -858,6 +858,7 @@ function redraw() {
   }
 
   var image = chart.selectAll(".device_icon")
+    .attr("xlink:href", icon)
     .data(nodes, node_id);
 
   image.enter().append("image")
