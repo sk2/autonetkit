@@ -104,11 +104,10 @@ var chart = d3.select(".visualisation")
 .call(d3.behavior.zoom().on("zoom", redraw))
 .append('svg:g');
 
-
 chart.append('svg:rect')
+.attr("class", "chart_rect")
 .attr('width', w)
-.attr('height', h)
-.attr('fill', 'white');
+.attr('height', h);
 
 
 function redraw() {

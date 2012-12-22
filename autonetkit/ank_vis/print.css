@@ -24,3 +24,7 @@
   background-color: white;
   border: none;
 }
+
+.chart_rect {
+  fill: white;
+}
