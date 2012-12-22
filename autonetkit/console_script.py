@@ -9,7 +9,7 @@ import time
 import compiler
 import pkg_resources
 import autonetkit.log as log
-import autonetkit.ank_pika as ank_pika
+import autonetkit.ank_messaging as ank_messaging
 import autonetkit.config as config
 
 #import autonetkit.bgp_pol as bgp_pol
@@ -52,7 +52,7 @@ def manage_network(input_graph_string, timestamp, build_options, reload_build=Fa
     settings = config.settings
 
     rabbitmq_server = settings['Rabbitmq']['server']
-    pika_channel = ank_pika.AnkPika(rabbitmq_server)
+    messaging = ank_messaging.AnkMessaging(rabbitmq_server)
 
     if build_options['compile']:
         anm = build_network.build(input_graph_string, timestamp)
@@ -62,7 +62,7 @@ def manage_network(input_graph_string, timestamp, build_options, reload_build=Fa
         nidb = compile_network(anm)
         import autonetkit.ank_json
         body = autonetkit.ank_json.dumps(anm, nidb)
-        pika_channel.publish_compressed("www", "client", body)
+        messaging.publish_compressed("www", "client", body)
         log.debug("Sent ANM to web server")
         if build_options['archive']:
             nidb.save()
@@ -77,7 +77,7 @@ def manage_network(input_graph_string, timestamp, build_options, reload_build=Fa
         nidb = NIDB()
         nidb.restore_latest()
         body = autonetkit.ank_json.dumps(anm, nidb)
-        pika_channel.publish_compressed("www", "client", body)
+        messaging.publish_compressed("www", "client", body)
 
     if build_options['diff']:
         import autonetkit.diff

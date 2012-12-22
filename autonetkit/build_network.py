@@ -2,7 +2,7 @@ import autonetkit
 import autonetkit.anm
 import autonetkit.ank as ank
 import itertools
-import autonetkit.ank_pika
+import autonetkit.ank_messaging as ank_messaging
 import autonetkit.config
 settings = autonetkit.config.settings
 import autonetkit.log as log
@@ -14,8 +14,9 @@ import os
 
 __all__ = ['build']
 
+
 rabbitmq_server = settings['Rabbitmq']['server']
-pika_channel = autonetkit.ank_pika.AnkPika(rabbitmq_server)
+messaging = ank_messaging.AnkMessaging(rabbitmq_server)
 
 #TODO: seperate out load and build - build should take a ready made nx graph and work from there.... load should do file handling error checking etc
 # Also makes automated testing easier!
@@ -78,7 +79,7 @@ def build(input_graph_string, timestamp):
     G_graphics.add_nodes_from(G_in, retain=['x', 'y', 'device_type', 'device_subtype', 'pop', 'asn'])
 
     build_phy(anm)
-    #update_pika(anm)
+    #update_messaging(anm)
     #build_conn(anm)
     build_ip(anm)
     
@@ -336,7 +337,7 @@ def build_ip(anm):
     else:
         ip.allocate_ips(G_ip)
         ank.save(G_ip)
-    update_pika(anm)
+    #update_messaging(anm)
 
 def build_phy(anm):
     G_in = anm['input']
@@ -492,7 +493,7 @@ def build_isis(anm):
     for link in G_isis.edges():
         link.metric = 1 # default
 
-def update_pika(anm):
-    log.debug("Sending anm to pika")
+def update_messaging(anm):
+    log.debug("Sending anm to messaging")
     body = autonetkit.ank_json.dumps(anm, None)
-    pika_channel.publish_compressed("www", "client", body)
+    messaging.publish_compressed("www", "client", body)
