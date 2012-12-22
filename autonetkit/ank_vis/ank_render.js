@@ -15,8 +15,8 @@ ws.onclose = function () {
 };
 
 
-var icon_width = 55;
-var icon_height = 55;
+var icon_width = 45;
+var icon_height = 45;
 
 
 //TODO: make "phy" default selected
@@ -759,9 +759,9 @@ function redraw() {
         return 2;
       })
     //.attr("marker-end", marker_end)
-    .style("stroke", "rgb(6,120,155)")
-      .style("fill", "rgb(26,140,165)")
-      //.style("fill", "none")
+    .style("stroke", "rgb(103,109,244)")
+        .style("fill", "rgb(113,119,254)")
+        //.style("fill", "none")
 
       .on("mouseover", function(d){
         d3.select(this).style("stroke", "orange");
@@ -772,8 +772,8 @@ function redraw() {
       })
     .on("mouseout", function(){
       d3.select(this).style("stroke-width", "2");
-      d3.select(this).style("stroke", "rgb(6,120,155)");
-      d3.select(this).style("fill", "rgb(36,150,175)");
+      d3.select(this).style("stroke", "rgb(103,109,244)");
+      d3.select(this).style("fill", "rgb(113,119,254)");
       //d3.select(this).attr("marker-end", marker_end);
       clear_label();
     })
@@ -858,6 +858,7 @@ function redraw() {
   }
 
   var image = chart.selectAll(".device_icon")
+    .attr("xlink:href", icon)
     .data(nodes, node_id);
 
   image.enter().append("image")
@@ -920,7 +921,7 @@ function redraw() {
 
   device_labels.transition()
     .attr("x", function(d) { return d.x + x_offset; })
-    .attr("y", function(d) { return d.y + y_offset; })
+    .attr("y", function(d) { return d.y + y_offset + 2; })
     .duration(500)
 
     device_labels.exit().transition()
