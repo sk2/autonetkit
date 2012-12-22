@@ -284,7 +284,7 @@ class IpTree(object):
                     sub_children = child.children()
                     for sub_child in sub_children:
                         sub_child.subnet = iterhosts.next()
-                        log.debug( "alloc sub_child to", sub_child, sub_child.subnet)
+                        log.debug( "Allocate sub_child to %s %s" % ( sub_child, sub_child.subnet))
                 elif child.is_host():
                     child.subnet = subnet.next()
                 elif child.is_loopback_group():
@@ -302,7 +302,6 @@ class IpTree(object):
         global_root_id = global_root.node
         global_root = TreeNode(global_graph, global_root_id)
         allocate(global_root)
-
 
 # check for parentless nodes
 
