@@ -478,6 +478,8 @@ class CiscoCompiler(PlatformCompiler):
 
         G_in = self.anm['input']
         G_in_directed = self.anm['input_directed']
+        specified_int_names = G_in.data.specified_int_names
+
         log.info("Compiling Cisco for %s" % self.host)
         G_phy = self.anm.overlay.phy
         ios_compiler = IosClassicCompiler(self.nidb, self.anm)
@@ -500,7 +502,6 @@ class CiscoCompiler(PlatformCompiler):
             # Assign interfaces
             int_ids = self.interface_ids_ios()
             for edge in sorted(self.nidb.edges(nidb_node), key = edge_id_numeric):
-                edge.id = int_ids.next()
                 if specified_int_names:
                     directed_edge = G_in_directed.edge(edge)
                     edge.id = directed_edge.name
@@ -528,6 +529,7 @@ class CiscoCompiler(PlatformCompiler):
                     directed_edge = G_in_directed.edge(edge)
                     edge.id = directed_edge.name
                 else:
+                    edge.id = int_ids.next()
 
             ios2_compiler.compile(nidb_node)
 
