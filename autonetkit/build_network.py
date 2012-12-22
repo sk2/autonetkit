@@ -93,7 +93,10 @@ def build(input_graph_string, timestamp):
 # Add overlays even if not used: simplifies compiler where can check for presence in overlay (if blank not present, don't configure ospf etc)
     anm.add_overlay("ospf")
     anm.add_overlay("isis")
-    
+
+    G_phy = anm['phy']
+    ank.copy_attr_from(G_in, G_phy, "include_csr") #TODO: find more elegant passing method from input to compiler
+
     if igp == "ospf":
         build_ospf(anm)
     if igp == "isis":
