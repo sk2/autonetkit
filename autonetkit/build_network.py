@@ -95,6 +95,7 @@ def build(input_graph_string, timestamp):
     if igp == "isis":
         build_isis(anm)
     build_bgp(anm)
+
     return anm
 
 
@@ -317,7 +318,6 @@ def build_ip(anm):
                     subnet = netaddr.IPNetwork(cidr_string)
                     collision_domain.subnet = subnet
 
-
         # also need to form aggregated IP blocks (used for e.g. routing prefix advertisement)
         loopback_blocks = {}
         infra_blocks = {}
@@ -333,7 +333,6 @@ def build_ip(anm):
         G_ip.data.loopback_blocks = loopback_blocks
         G_ip.data.infra_blocks = infra_blocks
 
-        
     else:
         ip.allocate_ips(G_ip)
         ank.save(G_ip)
@@ -408,7 +407,6 @@ def build_ospf(anm):
 
 #TODO: make this either an int or an Ip address
         router.area = int(router.area) #TODO: use dst type in copy_attr_from
-
  
     for router in G_ospf:
 # and set area on interface
