@@ -455,6 +455,9 @@ class CiscoCompiler(PlatformCompiler):
     to_memory = settings['Compiler']['Cisco']['to memory']
 
     """Cisco Platform Compiler"""
+    #def __init__(self, nidb, anm, host):
+#TODO: setup to remap allocate interface id function here
+        #super(CiscoCompiler, self).__init__(nidb, anm, host)
     def interface_ids_ios(self):
         id_pairs = ( (slot, 0) for slot in itertools.count(0)) 
         for (slot, port) in id_pairs:
@@ -475,6 +478,8 @@ class CiscoCompiler(PlatformCompiler):
             except ValueError:
                 return edge.edge_id # not numeric
 
+        G_in = self.anm['input']
+        G_in_directed = self.anm['input_directed']
         log.info("Compiling Cisco for %s" % self.host)
         G_phy = self.anm.overlay.phy
         ios_compiler = IosClassicCompiler(self.nidb, self.anm)
@@ -498,6 +503,11 @@ class CiscoCompiler(PlatformCompiler):
             int_ids = self.interface_ids_ios()
             for edge in sorted(self.nidb.edges(nidb_node), key = edge_id_numeric):
                 edge.id = int_ids.next()
+                if specified_int_names:
+                    directed_edge = G_in_directed.edge(edge)
+                    edge.id = directed_edge.name
+                else:
+                    edge.id = int_ids.next()
 
             ios_compiler.compile(nidb_node)
 
@@ -516,7 +526,10 @@ class CiscoCompiler(PlatformCompiler):
             # Assign interfaces
             int_ids = self.interface_ids_ios2()
             for edge in sorted(self.nidb.edges(nidb_node), key = edge_id_numeric):
-                edge.id = int_ids.next()
+                if specified_int_names:
+                    directed_edge = G_in_directed.edge(edge)
+                    edge.id = directed_edge.name
+                else:
 
             ios2_compiler.compile(nidb_node)
 
