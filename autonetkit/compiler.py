@@ -168,7 +168,6 @@ class QuaggaCompiler(RouterCompiler):
                     subnet = node.loopback_subnet
                     )
 
-
     def ospf(self, node):
         super(QuaggaCompiler, self).ospf(node)
 
@@ -192,8 +191,6 @@ class QuaggaCompiler(RouterCompiler):
                     network = ip_link.dst.subnet,
                     area = default_ebgp_area,
                     )
-
-
 
 #TODO: Don't render netkit lab topology if no netkit hosts
 
@@ -263,10 +260,15 @@ class IosBaseCompiler(RouterCompiler):
                         )
 
 class IosClassicCompiler(IosBaseCompiler):
-    pass
+    def compile(self, node):
+        super(IosClassicCompiler, self).compile(node)
 
+        phy_node = self.anm.overlay.phy.node(node)
+        if phy_node.include_csr:
+            node.include_csr = True
+        
 class Ios2Compiler(IosBaseCompiler):
-    
+
     def ospf(self, node):
 #need to aggregate areas
         super(Ios2Compiler, self).ospf(node)
@@ -450,6 +452,10 @@ class CiscoCompiler(PlatformCompiler):
     to_memory = settings['Compiler']['Cisco']['to memory']
 
     """Cisco Platform Compiler"""
+    #def __init__(self, nidb, anm, host):
+#TODO: setup to remap allocate interface id function here
+        #super(CiscoCompiler, self).__init__(nidb, anm, host)
+
     def interface_ids_ios(self):
         id_pairs = ( (slot, 0) for slot in itertools.count(0)) 
         for (slot, port) in id_pairs:
@@ -469,6 +475,10 @@ class CiscoCompiler(PlatformCompiler):
                 return int(edge.edge_id.split("_")[0])
             except ValueError:
                 return edge.edge_id # not numeric
+
+        G_in = self.anm['input']
+        G_in_directed = self.anm['input_directed']
+        specified_int_names = G_in.data.specified_int_names
 
         log.info("Compiling Cisco for %s" % self.host)
         G_phy = self.anm.overlay.phy
@@ -492,7 +502,11 @@ class CiscoCompiler(PlatformCompiler):
             # Assign interfaces
             int_ids = self.interface_ids_ios()
             for edge in sorted(self.nidb.edges(nidb_node), key = edge_id_numeric):
-                edge.id = int_ids.next()
+                if specified_int_names:
+                    directed_edge = G_in_directed.edge(edge)
+                    edge.id = directed_edge.name
+                else:
+                    edge.id = int_ids.next()
 
             ios_compiler.compile(nidb_node)
 
@@ -511,9 +525,20 @@ class CiscoCompiler(PlatformCompiler):
             # Assign interfaces
             int_ids = self.interface_ids_ios2()
             for edge in sorted(self.nidb.edges(nidb_node), key = edge_id_numeric):
-                edge.id = int_ids.next()
+                if specified_int_names:
+                    directed_edge = G_in_directed.edge(edge)
+                    edge.id = directed_edge.name
+                else:
+                    edge.id = int_ids.next()
 
             ios2_compiler.compile(nidb_node)
+
+        other_nodes = [phy_node for phy_node in G_phy.nodes('is_router', host = self.host)
+                if phy_node.syntax not in ("ios", "ios2")]
+        for node in other_nodes:
+            phy_node = G_phy.node(node)
+            nidb_node = self.nidb.node(phy_node)
+            nidb_node.input_label = phy_node.id # set specifically for now for other variants
 
 class DynagenCompiler(PlatformCompiler):
     """Dynagen Platform Compiler"""

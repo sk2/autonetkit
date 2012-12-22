@@ -270,7 +270,10 @@ class nidb_node_category(object):
 
     @property
     def _category_data(self):
-        return self._node_data[self.category_id]
+        try:
+            return self._node_data[self.category_id]
+        except KeyError:
+            log.debug("No category_id %s in node %s" % (self.category_id, self.node_id))
 
     def __getitem__(self, key):
         """Used to access the data directly. calling node.key returns wrapped data for templates"""

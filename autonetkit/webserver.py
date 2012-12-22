@@ -164,10 +164,10 @@ class MyWebSocketHandler(websocket.WebSocketHandler):
             self.application.pc.add_event_listener(self)
         except AttributeError:
             pass # no RabbitMQ server
-        pika.log.info("WebSocket opened")
+        #pika.log.info("WebSocket opened")
 
     def on_close(self):
-        pika.log.info("WebSocket closed")
+        #pika.log.info("WebSocket closed")
         self.application.socket_listeners.remove(self) 
         try:
             self.application.pc.remove_event_listener(self)
@@ -206,7 +206,7 @@ class MyWebSocketHandler(websocket.WebSocketHandler):
 
 class PikaClient(object):
     def __init__(self, io_loop, ank_accessor, host_address):
-        pika.log.info('PikaClient: __init__')
+        #pika.log.info('PikaClient: __init__')
         self.io_loop = io_loop
         self.connected = False
         self.connecting = False
@@ -219,10 +219,10 @@ class PikaClient(object):
  
     def connect(self):
         if self.connecting:
-            pika.log.info('PikaClient: Already connecting to RabbitMQ')
+            #pika.log.info('PikaClient: Already connecting to RabbitMQ')
             return
  
-        pika.log.info('PikaClient: Connecting to RabbitMQ')
+        #pika.log.info('PikaClient: Connecting to RabbitMQ')
         self.connecting = True
  
         #cred = pika.PlainCredentials('guest', 'guest')
@@ -238,13 +238,13 @@ class PikaClient(object):
         self.connection.add_on_close_callback(self.on_closed)
  
     def on_connected(self, connection):
-        pika.log.info('PikaClient: connected to RabbitMQ')
+        #pika.log.info('PikaClient: connected to RabbitMQ')
         self.connected = True
         self.connection = connection
         self.connection.channel(self.on_channel_open)
  
     def on_channel_open(self, channel):
-        pika.log.info('PikaClient: Channel open, Declaring exchange')
+        #pika.log.info('PikaClient: Channel open, Declaring exchange')
 
         self.channel = channel
         self.channel.exchange_declare(exchange='www',
@@ -254,7 +254,7 @@ class PikaClient(object):
         return
 
     def on_exchange_declared(self, frame):
-        pika.log.info('PikaClient: Exchange Declared, Declaring Queue')
+        #pika.log.info('PikaClient: Exchange Declared, Declaring Queue')
         self.channel.queue_declare(queue=self.queue_name,
                                    auto_delete=True,
                                    durable=False,
@@ -263,24 +263,24 @@ class PikaClient(object):
         return
 
     def on_queue_declared(self, frame):
-        pika.log.info('PikaClient: Queue Declared, Binding Queue')
+        #pika.log.info('PikaClient: Queue Declared, Binding Queue')
         self.channel.queue_bind(exchange='www',
                                 queue=self.queue_name,
                                 routing_key='client',
                                 callback=self.on_queue_bound)
 
     def on_queue_bound(self, frame):
-        pika.log.info('PikaClient: Queue Bound, Issuing Basic Consume')
+        #pika.log.info('PikaClient: Queue Bound, Issuing Basic Consume')
         self.channel.basic_consume(consumer_callback=self.on_message,
                                    queue=self.queue_name,
                                    no_ack=True)
  
     def on_closed(self, connection):
-        pika.log.info('PikaClient: rabbit connection closed')
+        #pika.log.info('PikaClient: rabbit connection closed')
         self.io_loop.stop()
  
     def on_message(self, channel, method, header, body):
-        pika.log.info('PikaClient: message received: %s' % body)
+        #pika.log.info('PikaClient: message received: %s' % body)
         import zlib
         try:
             body = zlib.decompress(body)
@@ -313,7 +313,7 @@ class PikaClient(object):
     def notify_listeners(self, body):
         for listener in self.event_listeners:
             listener.write_message(body)
-            pika.log.info('PikaClient: notified %s' % repr(listener))
+            #pika.log.info('PikaClient: notified %s' % repr(listener))
 
     def update_listeners(self, index):
         for listener in self.event_listeners:
@@ -325,12 +325,12 @@ class PikaClient(object):
 
     def add_event_listener(self, listener):
         self.event_listeners.add(listener)
-        pika.log.info('PikaClient: listener %s added' % repr(listener))
+        #pika.log.info('PikaClient: listener %s added' % repr(listener))
  
     def remove_event_listener(self, listener):
         try:
             self.event_listeners.remove(listener)
-            pika.log.info('PikaClient: listener %s removed' % repr(listener))
+            #pika.log.info('PikaClient: listener %s removed' % repr(listener))
         except KeyError:
             pass
 
@@ -382,7 +382,7 @@ def main():
 
     application.socket_listeners = set() # TODO: see if tornado provides access to listeners
 
-    pika.log.setup(pika.log.WARNING, color=True)
+    #pika.log.setup(pika.log.WARNING, color=True)
     io_loop = tornado.ioloop.IOLoop.instance()
     # PikaClient is our rabbitmq consumer
     use_rabbitmq = ank_config.settings['Rabbitmq']['active']

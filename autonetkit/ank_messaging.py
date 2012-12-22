@@ -14,15 +14,7 @@ use_http_post = config.settings['Http Post']['active']
 if use_http_post:
     import urllib
 
-#TODO: tidy this to be a try/except ImportError
-
-#import pika.log
-#pika.log.setup(pika.log.DEBUG, color=True)
-
-
-#TODO: rename to messaging
-
-class AnkPika(object):
+class AnkMessaging(object):
 
     def __init__(self, host):
         try:
@@ -48,7 +40,6 @@ class AnkPika(object):
                 host = config.settings['Http Post']['server']
                 port = config.settings['Http Post']['port']
                 self.http_url = "http://%s:%s/publish" % (host, port)
-                print self.http_url
                 self.publish = self.publish_http_post
                 self.publish_compressed = self.publish_http_post
 
@@ -81,7 +72,6 @@ class AnkPika(object):
 
     def publish_compressed_telnet(self, exchange, routing_key, body):
         import zlib
-        print "sending", body
 #TODO: note don't compress - no upper bound if telnet sockets
         #body = zlib.compress(body, 9)
         self.tn.write(body + "__end__")
@@ -108,8 +98,9 @@ class AnkPika(object):
         params = urllib.urlencode({
             'body': body
             })
-        data = urllib.urlopen(self.http_url, params).read()
-        print data
-        
+        try:
+            data = urllib.urlopen(self.http_url, params).read()
+        except IOError, e:
+            log.info("Unable to connect to HTTP Server %s" % self.http_url)
 
-
+        #print data # can log response
