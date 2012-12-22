@@ -533,6 +533,13 @@ class CiscoCompiler(PlatformCompiler):
 
             ios2_compiler.compile(nidb_node)
 
+        other_nodes = [phy_node for phy_node in G_phy.nodes('is_router', host = self.host)
+                if phy_node.syntax not in ("ios", "ios2")]
+        for node in other_nodes:
+            phy_node = G_phy.node(node)
+            nidb_node = self.nidb.node(phy_node)
+            nidb_node.input_label = phy_node.id # set specifically for now for other variants
+
 class DynagenCompiler(PlatformCompiler):
     """Dynagen Platform Compiler"""
     def interface_ids(self):
