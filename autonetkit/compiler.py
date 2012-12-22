@@ -263,10 +263,15 @@ class IosBaseCompiler(RouterCompiler):
                         )
 
 class IosClassicCompiler(IosBaseCompiler):
-    pass
+    def compile(self, node):
+        super(IosClassicCompiler, self).compile(node)
 
+        phy_node = self.anm.overlay.phy.node(node)
+        if phy_node.include_csr:
+            node.include_csr = True
+        
 class Ios2Compiler(IosBaseCompiler):
-    
+
     def ospf(self, node):
 #need to aggregate areas
         super(Ios2Compiler, self).ospf(node)
