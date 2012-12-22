@@ -55,6 +55,10 @@ def build(input_graph_string, timestamp):
     G_in = anm.add_overlay("input", input_undirected)
     G_in_directed = anm.add_overlay("input_directed", input_graph, directed = True)
 
+# set defaults
+    if not G_in.data.specified_int_names:
+        G_in.data.specified_int_names = False # if not specified then automatically assign interface names
+
     import autonetkit.plugins.graph_product as graph_product
     graph_product.expand(G_in) # apply graph products if relevant
     
