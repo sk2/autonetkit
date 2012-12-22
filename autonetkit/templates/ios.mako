@@ -135,3 +135,5 @@ router bgp ${node.asn}
   neighbor ${neigh.dst_int_ip} next-hop-self
 % endfor    
 % endif 
+!
+end
