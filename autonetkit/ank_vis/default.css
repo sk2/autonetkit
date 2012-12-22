@@ -67,7 +67,11 @@ marker {
   padding: 5px;
   width: 98%;
   height: 90%;
-  background-color: white;
+  background-color: rgb(240, 239, 255);
+}
+
+.chart_rect {
+  fill: rgb(240, 239, 255);
 }
 
 .size_box {

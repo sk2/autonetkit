@@ -7,7 +7,7 @@ import math
 import os
 import autonetkit.ank as ank_utils
 import autonetkit.log as log
-import autonetkit.ank_pika
+import autonetkit.messaging
 import autonetkit.ank_json
 import networkx as nx
 from collections import defaultdict
@@ -16,7 +16,7 @@ import functools
 
 settings = autonetkit.config.settings
 rabbitmq_server = settings['Rabbitmq']['server']
-pika_channel = autonetkit.ank_pika.AnkPika(rabbitmq_server)
+messaging = autonetkit.ank_messaging.AnkMessaging(rabbitmq_server)
 
 #TODO: allow slack in allocations: both for ASN (group level), and for collision domains to allow new nodes to be easily added
 
@@ -284,7 +284,7 @@ class IpTree(object):
                     sub_children = child.children()
                     for sub_child in sub_children:
                         sub_child.subnet = iterhosts.next()
-                        log.debug( "alloc sub_child to", sub_child, sub_child.subnet)
+                        log.debug( "Allocate sub_child to %s %s" % ( sub_child, sub_child.subnet))
                 elif child.is_host():
                     child.subnet = subnet.next()
                 elif child.is_loopback_group():
@@ -302,7 +302,6 @@ class IpTree(object):
         global_root_id = global_root.node
         global_root = TreeNode(global_graph, global_root_id)
         allocate(global_root)
-
 
 # check for parentless nodes
 
@@ -395,7 +394,7 @@ def allocate_ips(G_ip):
     loopback_tree = ip_tree.json()
    # json.dumps(ip_tree.json(), cls=autonetkit.ank_json.AnkEncoder, indent = 4)
     #body = json.dumps({"ip_allocations": jsontree})
-    #pika_channel.publish_compressed("www", "client", body)
+    #messaging.publish_compressed("www", "client", body)
     ip_tree.assign()
     G_ip.data.loopback_blocks = ip_tree.group_allocations()
 
@@ -417,7 +416,7 @@ def allocate_ips(G_ip):
     jsontree = json.dumps(total_tree, cls=autonetkit.ank_json.AnkEncoder, indent = 4)
 
     body = json.dumps({"ip_allocations": jsontree})
-    pika_channel.publish_compressed("www", "client", body)
+    messaging.publish_compressed("www", "client", body)
 
 #TODO: need to update with loopbacks if wish to advertise also - or subdivide blocks?
     G_ip.data.infra_blocks = ip_tree.group_allocations()
