@@ -168,7 +168,6 @@ class QuaggaCompiler(RouterCompiler):
                     subnet = node.loopback_subnet
                     )
 
-
     def ospf(self, node):
         super(QuaggaCompiler, self).ospf(node)
 
@@ -192,8 +191,6 @@ class QuaggaCompiler(RouterCompiler):
                     network = ip_link.dst.subnet,
                     area = default_ebgp_area,
                     )
-
-
 
 #TODO: Don't render netkit lab topology if no netkit hosts
 
@@ -458,6 +455,7 @@ class CiscoCompiler(PlatformCompiler):
     #def __init__(self, nidb, anm, host):
 #TODO: setup to remap allocate interface id function here
         #super(CiscoCompiler, self).__init__(nidb, anm, host)
+
     def interface_ids_ios(self):
         id_pairs = ( (slot, 0) for slot in itertools.count(0)) 
         for (slot, port) in id_pairs:
