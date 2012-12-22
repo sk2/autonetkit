@@ -4,10 +4,12 @@ hostname ${node}
 boot-start-marker
 boot-end-marker
 !
+% if node.include_csr:
 ip routing
 license feature csr
 !
 !
+% endif
 no aaa new-model
 !
 !
@@ -72,7 +74,6 @@ router isis ${node.isis.process_id}
 % if node.eigrp: 
 router eigrp ${node.eigrp.process_id}       
 % endif   
-!
 !                
 ## BGP
 % if node.bgp: 
