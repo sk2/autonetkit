@@ -5,7 +5,7 @@ from setuptools import setup
 
 setup (
      name = "autonetkit-v3-dev",
-     version = "0.1.14",
+     version = "0.1.15",
      description = 'Automated configuration generator',
      long_description = 'Automated configuration generator',
 
@@ -31,7 +31,7 @@ setup (
      download_url = ("http://pypi.python.org/pypi/AutoNetkit"),
 
      install_requires = ['netaddr', 'mako', 'networkx>=1.7', 
-         'configobj', 
+         'configobj', 'tornado',
          #'textfsm', 
         #'pika',
         ],
