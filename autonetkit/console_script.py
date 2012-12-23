@@ -156,11 +156,14 @@ def main():
         with open(options.file, "r") as fh:
             input_string = fh.read()
         timestamp =  os.stat(options.file).st_mtime
-    if options.stdin:
+    elif options.stdin:
         import sys
         input_string = sys.stdin
         now = datetime.now()
         timestamp = now.strftime("%Y%m%d_%H%M%S_%f")
+    else:
+        log.info("No input file specified. Exiting")
+        raise SystemExit
 
     manage_network(input_string, timestamp, build_options = build_options)
 
