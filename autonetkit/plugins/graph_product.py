@@ -25,7 +25,11 @@ def expand(G_in):
     templates = {}
     for template in template_names:
         template_filename = os.path.join("pop_templates", "%s.graphml" % template)
-        pop_graph = autonetkit.load.graphml.load_graphml(template_filename) #TODO: pass in properties eg edge type = physical
+        try:
+            pop_graph = autonetkit.load.graphml.load_graphml(template_filename) #TODO: pass in properties eg edge type = physical
+        except Exception, e:
+            log.warning("Unable to load pop template %s: %s" % (template, e))
+            return
         pop_graph = pop_graph.to_undirected() # Undirected for now TODO: document this
         templates[template] = pop_graph
 
