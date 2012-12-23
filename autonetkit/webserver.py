@@ -51,7 +51,7 @@ class EchoConnection(object):
         #TODO: check this is called
         body_parsed = json.loads(data)
         if body_parsed.has_key("anm"):
-            print "Received new anm"
+            print "Received updated network topology"
             try:
                 self.ank_accessor.anm = body_parsed['anm']
                 #TODO: could process diff and only update client if data has changed -> more efficient client side
@@ -103,7 +103,7 @@ class MyWebHandler(tornado.web.RequestHandler):
             return
 
         if body_parsed.has_key("anm"):
-            print "Received new anm"
+            print "Received updated network topology"
             try:
                 self.ank_accessor.anm = body_parsed['anm']
                 #TODO: could process diff and only update client if data has changed -> more efficient client side
@@ -288,7 +288,7 @@ class PikaClient(object):
             pass # likely not compressed body
         body_parsed = json.loads(body)
         if body_parsed.has_key("anm"):
-            print "Received new anm"
+            print "Received updated network topology"
             try:
                 self.ank_accessor.anm = body_parsed['anm']
                 #TODO: could process diff and only update client if data has changed -> more efficient client side
