@@ -33,8 +33,8 @@ setup (
      install_requires = ['netaddr', 'mako', 'networkx>=1.7', 
          'configobj', 
          #'textfsm', 
-'pika',
-],
+        #'pika',
+        ],
 
      classifiers = [
          "Programming Language :: Python",
