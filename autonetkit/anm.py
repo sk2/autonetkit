@@ -383,7 +383,6 @@ class overlay_graph_data(object):
     def dump(self):
         print str(self._graph.graph) 
 
-
     @property
     def _graph(self):
         #access underlying graph for this overlay_node
