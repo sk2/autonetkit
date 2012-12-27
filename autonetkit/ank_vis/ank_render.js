@@ -1,6 +1,8 @@
 //TODO: see if can use underscore.js for other operations, to simplify mapping, iterationl etc
 //List concat based on http://stackoverflow.com/questions/5080028
 
+var display_interfaces = false;
+
 var jsondata;
 var socket_url = "ws://" + location.host + "/ws";
 var ws = new WebSocket(socket_url);
@@ -859,21 +861,26 @@ function redraw() {
     //
 
     //If undirected graph, then need two interfaces per edge: one at each end
-    if (jsondata.directed) {
-        console.log("Interfaces currently unsupported for directed graphs");
 
+
+    if (display_interfaces) {
+        if (jsondata.directed) {
+            console.log("Interfaces currently unsupported for directed graphs");
+        } else {
+            //Undirected, need to handle for both src and dst
+            interface_data = _.map(jsondata.links, function(link) {
+                return [ 
+            {'node': nodes[link.source], 'interface': link.src_int_id, 'target': nodes[link.target], 'link': link},
+                           {'node': nodes[link.target], 'interface': link.dst_int_id, 'target': nodes[link.source], 'link': link},
+                           ];
+            });
+
+        }
+        interface_data = _.flatten(interface_data); //collapse from hierarchical nested structure
     } else {
-    //Undirected, need to handle for both src and dst
-        interface_data = _.map(jsondata.links, function(link) {
-            return [ 
-                {'node': nodes[link.source], 'interface': link.src_int_id, 'target': nodes[link.target], 'link': link},
-                {'node': nodes[link.target], 'interface': link.dst_int_id, 'target': nodes[link.source], 'link': link},
-            ];
-        });
-
+        interface_data = {}; //reset 
     }
-    interface_data = _.flatten(interface_data); //collapse from hierarchical nested structure
-    console.log(interface_data);
+
 
     //TODO: handling if no interface id specified
 
