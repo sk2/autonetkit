@@ -103,6 +103,8 @@ def build(input_graph_string, timestamp):
         build_isis(anm)
     build_bgp(anm)
 
+    #TODO: provide an ANM wide function that allocates interfaces
+
     return anm
 
 
@@ -353,9 +355,10 @@ def build_phy(anm):
         ank.copy_attr_from(G_in, G_phy, "Network") #TODO: move this into graphml (and later gml) reader
 
     G_phy.add_edges_from(G_in.edges(type="physical"))
-
+    G_phy.allocate_interfaces() #TODO: make this automatic if adding to the physical graph?
 
 def build_conn(anm):
+    #TODO: see if this is still required
     G_in = anm['input']
     G_phy = anm['phy']
     G_conn = anm.add_overlay("conn", directed = True)
@@ -366,6 +369,8 @@ def build_conn(anm):
         #ank.copy_edge_attr_from(G_in, G_conn, "index")
 
     return
+
+#TODO: clean this bit out
 
     import autonetkit.allocate_hardware
     autonetkit.allocate_hardware.allocate(anm)
