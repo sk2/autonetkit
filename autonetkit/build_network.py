@@ -104,6 +104,12 @@ def build(input_graph_string, timestamp):
     build_bgp(anm)
 
     #TODO: provide an ANM wide function that allocates interfaces
+    for node in G_phy:
+        for interface in node:
+            print node, interface, "desc:", interface.description
+            print interface.edges()
+
+        print
 
     return anm
 

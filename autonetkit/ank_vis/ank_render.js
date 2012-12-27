@@ -458,6 +458,19 @@ var link_info = function(d) {
     //status_label.html(text);
 }
 
+var interface_info = function(d) {
+    int_data = d.node._interfaces[d.interface];
+
+    text = "<ul>"; //begin the unordered list
+    for (attr in int_data) {
+        text += "<li><b>" + attr + ":</b> " + int_data[attr] + "</li>"; //add the key/val
+    }
+    text += "<ul>"; //finish the unordered list
+    text = "<b>Interface</b>: " + text;
+    return text;
+
+}
+
 
 
 //Markers from http://bl.ocks.org/1153292
@@ -860,56 +873,57 @@ function redraw() {
 
     }
     interface_data = _.flatten(interface_data); //collapse from hierarchical nested structure
-    console.log(interface_data)
+    console.log(interface_data);
+
+    //TODO: handling if no interface id specified
 
     interface_icons = chart.selectAll(".interface_icon")
         .data(interface_data) //TODO: check if need to provide an index
-        
+
         var interface_width = 10;
         var interface_height = 10;
-        var interface_x = function(d) {
+
+        var interface_angle = function(d){
+            //common to interface_x and interface_y
             s_x = node_x(d.node);
             s_y = node_y(d.node);
             t_x = node_x(d.target);
             t_y = node_y(d.target);
 
             angle = Math.atan2( (t_x - s_x), (t_y - s_y));
-            h = (icon_width + icon_height)/2.9; //length of hypotenuse: ie offset from centre of node
-            offset_x = h * Math.sin(angle);
+            return angle;
+        }
+
+        var interface_hypotenuse = (icon_width + icon_height)/2.9;
+
+        var interface_x = function(d) {
+            angle = interface_angle(d);
+            offset_x = interface_hypotenuse * Math.sin(angle);
             return node_x(d.node) + offset_x - interface_width/2;
         }
         var interface_y = function(d) {
-            s_x = node_x(d.node);
-            s_y = node_y(d.node);
-            t_x = node_x(d.target);
-            t_y = node_y(d.target);
-
-            angle = Math.atan2( (t_x - s_x), (t_y - s_y));
-            h = (icon_width + icon_height)/2.9; //length of hypotenuse: ie offset from centre of node
-            offset_y = h * Math.cos(angle);
+            angle = interface_angle(d);
+            offset_y =interface_hypotenuse * Math.cos(angle);
             return node_y(d.node) + offset_y - interface_height/2;
         }
 
         interface_icons.enter().append("svg:rect")
-        .attr("class", "interface_icon")
-        .attr("width", interface_width)
-        .attr("height", interface_height)
-        .attr("x", interface_x)
-        .attr("y", interface_y)
+            .attr("class", "interface_icon")
+            .attr("width", interface_width)
+            .attr("height", interface_height)
+            .attr("x", interface_x)
+            .attr("y", interface_y)
 
-        interface_icons
-        //TODO: look if can return multiple attributes, ie x and y, from the same function, ie calculation
-        .attr("fill", "steelblue")
+            interface_icons
+            //TODO: look if can return multiple attributes, ie x and y, from the same function, ie calculation
+            .attr("fill", "steelblue")
 
-        .on("mouseover", function(d){
-            d3.select(this).style("stroke", "orange");
-            d3.select(this).style("fill", "yellow");
-            d3.select(this).style("stroke-width", "2");
-            d3.select(this).attr("marker-end", "");
-            console.log(d);
-            int_data = d.node._interfaces[d.interface];
-            console.log(int_data);
-        })
+            .on("mouseover", function(d){
+                d3.select(this).style("stroke", "orange");
+                d3.select(this).style("fill", "yellow");
+                d3.select(this).style("stroke-width", "2");
+                d3.select(this).attr("marker-end", "");
+            })
         .on("mouseout", function(){
             d3.select(this).style("stroke-width", "2");
             d3.select(this).style("stroke", "rgb(103,109,244)");
@@ -917,13 +931,28 @@ function redraw() {
             //d3.select(this).attr("marker-end", marker_end);
         })
 
+        $('.interface_icon').tipsy({ 
+            //based on http://bl.ocks.org/1373263
+            gravity: 'w', 
+        html: true, 
+        title: function() {
+            var d = this.__data__
+            return interface_info(d); 
+        }
+        });
+
         interface_icons.transition()
             .attr("x", interface_x)
             .attr("y", interface_y)
-            .duration(500)
+            .duration(500);
+
+        interface_icons.exit().transition()
+            .duration(1000)
+            .style("opacity",0)
+            .remove();
 
 
-    link_labels = chart.selectAll(".link_label")
+        link_labels = chart.selectAll(".link_label")
         .data(jsondata.links, edge_id)
 
         link_labels.enter().append("text")
