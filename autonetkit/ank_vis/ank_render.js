@@ -337,6 +337,14 @@ var icon_offset = icon_width/2;
 var x_offset = 10;
 var y_offset = 30;
 
+var node_x = function(d) {
+    return d.x + x_offset + icon_width/2;
+}
+
+var node_y = function(d) {
+    return d.y + y_offset + icon_height/2;
+}
+
 // based on http://bl.ocks.org/2920551
 var fill = d3.scale.category10();
 
@@ -838,9 +846,74 @@ function redraw() {
     //
 
     //If undirected graph, then need two interfaces per edge: one at each end
+    if (jsondata.directed) {
+        console.log("Interfaces currently unsupported for directed graphs");
 
-    interfaces = chart.selectAll(".interface")
-        .data(jsondata.links, edge_id)
+    } else {
+    //Undirected, need to handle for both src and dst
+        interface_data = _.map(jsondata.links, function(link) {
+            return [ 
+                {'node': nodes[link.source], 'interface': link.interface_id, 'target': nodes[link.target], 'link': link},
+                {'node': nodes[link.target], 'interface': link.interface_id, 'target': nodes[link.source], 'link': link},
+            ];
+        });
+
+    }
+    interface_data = _.flatten(interface_data); //collapse from hierarchical nested structure
+    console.log(interface_data)
+
+    interface_icons = chart.selectAll(".interface_icon")
+        .data(interface_data) //TODO: check if need to provide an index
+
+        
+        var interface_width = 10;
+        var interface_height = 10;
+
+        interface_icons.enter().append("svg:rect")
+        .attr("class", "interface_icon")
+        .attr("width", interface_width)
+        .attr("height", interface_height)
+
+        interface_icons
+        //TODO: look if can return multiple attributes, ie x and y, from the same function, ie calculation
+        .attr("x", function(d) {
+            s_x = node_x(d.node);
+            s_y = node_y(d.node);
+            t_x = node_x(d.target);
+            t_y = node_y(d.target);
+
+            angle = Math.atan2( (t_x - s_x), (t_y - s_y));
+            h = (icon_width + icon_height)/2.9; //length of hypotenuse: ie offset from centre of node
+            offset_x = h * Math.sin(angle);
+            return node_x(d.node) + offset_x - interface_width/2;
+        })
+    .attr("y", function(d) {
+            s_x = node_x(d.node);
+            s_y = node_y(d.node);
+            t_x = node_x(d.target);
+            t_y = node_y(d.target);
+
+            angle = Math.atan2( (t_x - s_x), (t_y - s_y));
+            h = (icon_width + icon_height)/2.9; //length of hypotenuse: ie offset from centre of node
+            offset_y = h * Math.cos(angle);
+            return node_y(d.node) + offset_y - interface_height/2;
+    })
+    .attr("fill", "steelblue")
+
+        .on("mouseover", function(d){
+            d3.select(this).style("stroke", "orange");
+            d3.select(this).style("fill", "yellow");
+            d3.select(this).style("stroke-width", "2");
+            d3.select(this).attr("marker-end", "");
+            console.log(d);
+        })
+    .on("mouseout", function(){
+        d3.select(this).style("stroke-width", "2");
+        d3.select(this).style("stroke", "rgb(103,109,244)");
+        d3.select(this).style("fill", "rgb(113,119,254)");
+        //d3.select(this).attr("marker-end", marker_end);
+    })
+
 
     link_labels = chart.selectAll(".link_label")
         .data(jsondata.links, edge_id)
