@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <script type="text/javascript" src="d3.v2.min.js"></script>
+    <script type="text/javascript" src="d3.v3.min.js"></script>
     <script type="text/javascript" src="jquery-1.7.2.min.js"></script>
     <script type="text/javascript" src="underscore-min.js"></script>
     <script type="text/javascript" src="jquery.tipsy.js"></script>
@@ -19,13 +19,14 @@
   <body>
 
     <div class="navbar"><b>AutoNetkit |</b>
-      Select overlay: <select id = "overlay_select"></select>
-      Revision: <select id = "revision_select"></select>
-      <button onclick="history_start();"><<</button>
+      Overlay: <select id = "overlay_select"></select>
+      Rev: <select id = "revision_select"></select>
+      <!--- <button onclick="history_start();"><<</button>
       <button onclick="history_back();"><</button>
       <button onclick="history_forward();">></button>
       <button onclick="history_end();">>></button>
-      <button onclick="javascript:setActiveStyleSheet('maximised');">Maximise</button>
+      !-->
+      <button onclick="javascript:setActiveStyleSheet('maximised');">Max</button>
       <input type="checkbox" id="enable_zoom" value="enable_zoom" />Zoom |
       Node: <select id = "node_label_select"></select> |
       Edge: <select id = "edge_group_select"></select>
