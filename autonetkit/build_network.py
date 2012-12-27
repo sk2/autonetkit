@@ -433,6 +433,9 @@ def build_ospf(anm):
 
     for router in G_ospf:
         areas = set(edge.area for edge in router.edges())
+
+        router.areas = list(areas) # store all the edges a router participates in
+
         if len(areas) == 0:
             router.type = "backbone" # no ospf edges (such as single node in AS)
         elif len(areas) == 1:
