@@ -853,8 +853,8 @@ function redraw() {
     //Undirected, need to handle for both src and dst
         interface_data = _.map(jsondata.links, function(link) {
             return [ 
-                {'node': nodes[link.source], 'interface': link.interface_id, 'target': nodes[link.target], 'link': link},
-                {'node': nodes[link.target], 'interface': link.interface_id, 'target': nodes[link.source], 'link': link},
+                {'node': nodes[link.source], 'interface': link.src_int_id, 'target': nodes[link.target], 'link': link},
+                {'node': nodes[link.target], 'interface': link.dst_int_id, 'target': nodes[link.source], 'link': link},
             ];
         });
 
@@ -864,19 +864,10 @@ function redraw() {
 
     interface_icons = chart.selectAll(".interface_icon")
         .data(interface_data) //TODO: check if need to provide an index
-
         
         var interface_width = 10;
         var interface_height = 10;
-
-        interface_icons.enter().append("svg:rect")
-        .attr("class", "interface_icon")
-        .attr("width", interface_width)
-        .attr("height", interface_height)
-
-        interface_icons
-        //TODO: look if can return multiple attributes, ie x and y, from the same function, ie calculation
-        .attr("x", function(d) {
+        var interface_x = function(d) {
             s_x = node_x(d.node);
             s_y = node_y(d.node);
             t_x = node_x(d.target);
@@ -886,8 +877,8 @@ function redraw() {
             h = (icon_width + icon_height)/2.9; //length of hypotenuse: ie offset from centre of node
             offset_x = h * Math.sin(angle);
             return node_x(d.node) + offset_x - interface_width/2;
-        })
-    .attr("y", function(d) {
+        }
+        var interface_y = function(d) {
             s_x = node_x(d.node);
             s_y = node_y(d.node);
             t_x = node_x(d.target);
@@ -897,8 +888,18 @@ function redraw() {
             h = (icon_width + icon_height)/2.9; //length of hypotenuse: ie offset from centre of node
             offset_y = h * Math.cos(angle);
             return node_y(d.node) + offset_y - interface_height/2;
-    })
-    .attr("fill", "steelblue")
+        }
+
+        interface_icons.enter().append("svg:rect")
+        .attr("class", "interface_icon")
+        .attr("width", interface_width)
+        .attr("height", interface_height)
+        .attr("x", interface_x)
+        .attr("y", interface_y)
+
+        interface_icons
+        //TODO: look if can return multiple attributes, ie x and y, from the same function, ie calculation
+        .attr("fill", "steelblue")
 
         .on("mouseover", function(d){
             d3.select(this).style("stroke", "orange");
@@ -906,13 +907,20 @@ function redraw() {
             d3.select(this).style("stroke-width", "2");
             d3.select(this).attr("marker-end", "");
             console.log(d);
+            int_data = d.node._interfaces[d.interface];
+            console.log(int_data);
         })
-    .on("mouseout", function(){
-        d3.select(this).style("stroke-width", "2");
-        d3.select(this).style("stroke", "rgb(103,109,244)");
-        d3.select(this).style("fill", "rgb(113,119,254)");
-        //d3.select(this).attr("marker-end", marker_end);
-    })
+        .on("mouseout", function(){
+            d3.select(this).style("stroke-width", "2");
+            d3.select(this).style("stroke", "rgb(103,109,244)");
+            d3.select(this).style("fill", "rgb(113,119,254)");
+            //d3.select(this).attr("marker-end", marker_end);
+        })
+
+        interface_icons.transition()
+            .attr("x", interface_x)
+            .attr("y", interface_y)
+            .duration(500)
 
 
     link_labels = chart.selectAll(".link_label")
