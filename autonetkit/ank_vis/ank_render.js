@@ -1059,6 +1059,7 @@ function redraw() {
 
         device_labels.enter().append("text")
         .attr("x", function(d) { return d.x + x_offset; })
+        .attr("y", function(d) { return d.y + y_offset + 3; } )
         .attr("class", "device_label")
         .attr("text-anchor", "middle") 
         .attr("font-family", "helvetica") 
