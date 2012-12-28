@@ -189,19 +189,13 @@ rendered/
               <div class="span10">
           <h3>Setting up Webserver for Visualisation</h3>
             <ol>
-              <li>You will need to create a file <tt>autonetkit.cfg</tt> in the same folder that you run AutoNetkit in.
-              This configuration file will activate the telnet messaging used to send the data from AutoNetkit to the visualisation server. Inside <tt>autonetkit.cfg</tt>, put the following:
-              <pre>
-[Message Pipe]
-active = 1</pre>
-              </li>
               <li>
-              You will then need to start the webserver for AutoNetkit to connect to. This can be run as the normal user (sudo is not required).
+              You will need to start the webserver for AutoNetkit to connect to. This can be run as the normal user (sudo is not required).
               <pre>
 $ ank_webserver</pre>
               This will start the webserver on port 8000. You can choose a different port such as <tt>8080</tt>:
               <pre>
-$ ank_webserver 8080</pre>
+$ ank_webserver 8080</pre> however this will require a configuration file update to specify the alternate port.
               </li>
 
               <li> You should now be able to connect in a web browser to the site <tt>localhost:8000</tt>. A modern browser such as Chrome, Safari or Firefox should work fine. The visualisations has been tested most in Google Chrome.
