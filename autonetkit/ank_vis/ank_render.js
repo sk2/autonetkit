@@ -1,7 +1,7 @@
 //TODO: see if can use underscore.js for other operations, to simplify mapping, iterationl etc
 //List concat based on http://stackoverflow.com/questions/5080028
 
-var display_interfaces = false;
+var display_interfaces = true;
 
 var jsondata;
 var socket_url = "ws://" + location.host + "/ws";
@@ -419,7 +419,13 @@ var data_to_li = function(d, depth) {
     max_depth = 1;
     text = "<ul>"; //begin the unordered list
     for (attr in d) {
-        if (typeof d[attr] == 'object' && d[attr] != null && depth < max_depth) {
+        if(_.isArray(d[attr])) {
+            text += "<li><b>" + attr + ":</b> ";
+            text += d[attr].join(", ");
+
+            + d[attr] + "</li>"; //add the key/val
+        }
+        else if (typeof d[attr] == 'object' && d[attr] != null && depth < max_depth) {
             text += data_to_li(d[attr], depth +1); // recurse
         }
         else {
