@@ -11,9 +11,7 @@ import autonetkit.exception
 import networkx as nx
 import os
 
-
 __all__ = ['build']
-
 
 rabbitmq_server = settings['Rabbitmq']['server']
 messaging = ank_messaging.AnkMessaging(rabbitmq_server)
@@ -444,7 +442,6 @@ def build_ospf(anm):
                     router.area = default_area
 
 
-
     for router in G_ospf:
 # and set area on interface
         for edge in router.edges():
@@ -459,7 +456,6 @@ def build_ospf(anm):
                         edge.area = edge.dst.area # router in backbone, use other area
                     else:
                         edge.area = router.area # router not in backbone, use its area
-
 
     for router in G_ospf:
         areas = set(edge.area for edge in router.edges())
@@ -493,6 +489,11 @@ def build_ospf(anm):
 # (note this will all change once have proper interface nodes)
     for link in G_ospf.edges():
         link.cost = 1
+
+    for router in G_ospf:
+        print router
+        for interface in router:
+            print "interface", interface
 
 def ip_to_net_ent_title_ios(ip):
     """ Converts an IP address into an OSI Network Entity Title

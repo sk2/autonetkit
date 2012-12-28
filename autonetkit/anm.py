@@ -693,6 +693,7 @@ class overlay_graph(OverlayBase):
     # these work similar to their nx counterparts: just need to strip the node_id
     def add_nodes_from(self, nbunch, retain=[], update = False, **kwargs):
         """Update won't append data (which could clobber) if node exists"""
+        #Can't just append _interfaces or won't work for copying from G_in
         try:
             retain.lower()
             retain = [retain] # was a string, put into list
@@ -708,10 +709,13 @@ class overlay_graph(OverlayBase):
         else:
             nbunch = (n.node_id for n in nbunch) # only store the id in overlay
 
+#TODO: need to copy across _interfaces keys
+
         if not update:
 # filter out existing nodes
             nbunch = (n for n in nbunch if n not in self._graph)
         nbunch = list(nbunch)
+        print "nbunch", nbunch
         self._graph.add_nodes_from(nbunch, **kwargs)
         self._init_interfaces()
 
@@ -745,6 +749,7 @@ class overlay_graph(OverlayBase):
         """allocates edges to interfaces"""
 #TODO: only allocate if not allocated
         #int_counter = (n for n in itertools.count() if n not in 
+        self._init_interfaces()
 
 #TODO: take in nbunch of nodes to allocate for
         ebunch = (e for e in self.edges())
@@ -933,7 +938,9 @@ class AbstractNetworkModel(object):
         elif directed and not multi_edge:
             graph = nx.MultiDiGraph()
         self._overlays[name] = graph
-        return overlay_graph(self, name)
+        overlay =  overlay_graph(self, name)
+        overlay.allocate_interfaces()
+        return overlay
 
     @property
     def overlay(self):
