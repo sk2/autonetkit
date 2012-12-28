@@ -702,8 +702,20 @@ var node_attributes = [];
 var edge_attributes = [];
 
 function redraw() {
+    //TODO: tidy this up, not all functions need to be in here, move out those that do, and only pass required params. also avoid repeated calculations.
+    
     nodes = jsondata.nodes;
+    node_x_max = _.max(nodes, function(node){ return node.x}).x + 20;
+    node_y_max = _.max(nodes, function(node){ return node.y}).y + 20;
 
+    p =  Math.max((chart_width/node_x_max)/2, (chart_height/node_y_max)/2);
+    
+    var zoom_box = d3.select(".zoom_box")
+
+    zoom_box.transition()
+        .attr("transform", "scale(" + p + ")")
+        .duration(500)
+        
     node_attributes = []; //reset
     nodes.forEach(function(node) {
         nodes_by_id[node.id] = node;
