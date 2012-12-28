@@ -1034,7 +1034,6 @@ function redraw() {
             .attr("class", "link_label")
             .attr("text-anchor", "middle") 
             .attr("font-family", "helvetica") 
-            .attr("font-size", "small") 
 
             //TODO: use a general accessor for x/y of nodes
             link_labels 
