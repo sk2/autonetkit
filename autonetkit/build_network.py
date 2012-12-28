@@ -62,8 +62,10 @@ def build(input_graph_string, timestamp):
     import autonetkit.plugins.graph_product as graph_product
     graph_product.expand(G_in) # apply graph products if relevant
     
-    if len(ank.unique_attr(G_in, "asn")) > 1:
+    expand_fqdn = False #TODO: make this set from config and also in the input file
+    if expand_fqdn and len(ank.unique_attr(G_in, "asn")) > 1:
         # Multiple ASNs set, use label format device.asn 
+        print "set label"
         anm.set_node_label(".",  ['label', 'pop', 'asn'])
 
 #TODO: remove, used for demo on nectar
