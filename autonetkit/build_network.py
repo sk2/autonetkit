@@ -419,9 +419,11 @@ def build_ospf(anm):
 
     G_ospf.remove_edges_from([link for link in G_ospf.edges() if link.src.asn != link.dst.asn]) # remove inter-AS links
 
-    default_area = 0
     area_zero_ip = netaddr.IPAddress("0.0.0.0")
-    if any(router.area == "0.0.0.0"  for router in G_ospf):
+    area_zero_int = 0
+    area_zero_ids = set([area_zero_ip, area_zero_int])
+    default_area = area_zero_int
+    if any(router.area == "0.0.0.0"  for router in G_ospf): # string comparison as hasn't yet been cast to IPAddress
         default_area = area_zero_ip
 
     for router in G_ospf:
@@ -440,7 +442,6 @@ def build_ospf(anm):
                     router.area = default_area
 
 
-    area_zero_ids = set([area_zero_ip, 0])
 
     for router in G_ospf:
 # and set area on interface
@@ -481,7 +482,7 @@ def build_ospf(anm):
                 router.type = "INVALID"
 
 
-    if (any(0 in router.areas for router in G_ospf) and 
+    if (any(area_zero_int in router.areas for router in G_ospf) and 
             any(area_zero_ip in router.areas for router in G_ospf)): 
         log.warning("Using both area 0 and area 0.0.0.0")
 
