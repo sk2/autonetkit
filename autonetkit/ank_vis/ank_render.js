@@ -238,6 +238,10 @@ var propagate_node_label_select = function(d) {
 var propagate_edge_group_select = function(d) {
     //TODO: make default "none" and don't group?
     $("#edge_group_select").empty();
+    edge_group_select.append("option")
+        .attr("value", "")
+        .text("None");
+
     var dropdown = edge_group_select
         .selectAll("option")
         .data(d)
@@ -245,6 +249,8 @@ var propagate_edge_group_select = function(d) {
         dropdown.enter().append("option")
         .attr("value", String)
         .text(String);
+
+
 
     //TODO only set the first time around?
     $("#edge_group_select option[value=" + edge_group_id + "]").attr("selected", "selected")
