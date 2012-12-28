@@ -177,10 +177,6 @@ sudo pip install git+https://github.com/sk2/ank_v3_dev</pre>
             Draw a graph in yED, save as .graphml format, and pass this to AutoNetkit:
             <pre>
 autonetkit -f backbone.graphml --compile</pre>                           
-            To use the web visualisations, you will need to enable the telnet message passing, by setting the following option in a file called <tt>autonetkit.cfg</tt> in the same directory that you run autonetkit in:
-            <pre>
-[Message Pipe]
-active = 1</pre>                   
             The webserver uses Tornado, so install this:
             <pre>
 sudo pip install tornado</pre>
