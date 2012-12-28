@@ -16,10 +16,8 @@ ws.onclose = function () {
     status_label.html("Warning: WebSocket disconnected");
 };
 
-
 var icon_width = 45;
 var icon_height = 45;
-
 
 //TODO: make "phy" default selected
 
@@ -428,8 +426,10 @@ var data_to_li = function(d, depth) {
         if(_.isArray(d[attr])) {
             text += "<li><b>" + attr + ":</b> ";
             text += d[attr].join(", ");
-
-            + d[attr] + "</li>"; //add the key/val
+        }
+        else if (attr == "_interfaces") {
+            //text += "<li><b>Interfaces: </b> ";
+            //text += _.keys(d[attr]).join(", ");
         }
         else if (typeof d[attr] == 'object' && d[attr] != null && depth < max_depth) {
             text += data_to_li(d[attr], depth +1); // recurse
