@@ -712,9 +712,11 @@ function redraw() {
     
     var zoom_box = d3.select(".zoom_box")
 
-    zoom_box.transition()
-        .attr("transform", "scale(" + p + ")")
-        .duration(500)
+
+        //Disable zoom for now
+    //zoom_box.transition()
+//        .attr("transform", "scale(" + p + ")")
+//       .duration(500)
         
     node_attributes = []; //reset
     nodes.forEach(function(node) {
@@ -861,29 +863,7 @@ function redraw() {
         }
     });
 
-    //var path_labels = chart.selectAll(".link_label_path") 
-    //.data(jsondata.links) 
-    //.enter().append("svg:text") 
-    //.attr("font-size", 40) 
-    //.attr("class", "link_label_path")
-    //.append("svg:textPath") 
-    //.attr("text-anchor", "middle")
-    //.attr("xlink:href", 
-    //function(d) { 
-    //return "#path"+d.source+"_"+d.target; 
-    //}) 
-    //
-    ////TODO: these need to update with change of edge_group_id
-    //path_labels
-    //.text(function (d) {
-    //return d['direction'];
-    //});
-    //
-    //
-
     //If undirected graph, then need two interfaces per edge: one at each end
-
-
     if (display_interfaces) {
         if (jsondata.directed) {
             console.log("Interfaces currently unsupported for directed graphs");
