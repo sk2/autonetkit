@@ -81,7 +81,6 @@ var zoom_select = d3.select("#enable_zoom")
     enable_zoom = d3.select(this).property("checked");
     })
 
-
 var status_label = d3.select("navbar").append("text")
 .attr("class", "status label")
 .attr("y", 15)
@@ -90,26 +89,36 @@ var status_label = d3.select("navbar").append("text")
 .text("")
 ;
 
+var zoom = d3.behavior.zoom()
+    .scale(1)
+    .scaleExtent([0.4, 8])
+    .on("zoom", redraw);
 
-//TODO: make these scale, rather than fixed
-var h = 1000;
-var w = 1200;
+//Arbitrary scalings, nodes are adjusted to these
+var chart_width = 1200;
+var chart_height = 1000;
+
+d3.select(".visualisation");
+
+p = 1;
 
 var chart = d3.select(".visualisation")
 .append("svg:svg")
 .attr("width", "100%")
 .attr("height", "100%")
 .attr("pointer-events", "all")
-.attr("viewBox", "0 0 " + w * 0.7 + " " + h * 0.7)
+.attr("viewBox", "0 0 " + chart_width * 0.7 + " " + chart_height * 0.7)
 .append('svg:g')
-.call(d3.behavior.zoom().on("zoom", redraw))
+.attr("class", "zoom_box")
+//.call(d3.behavior.zoom().on("zoom", redraw))
+//.attr("transform", "translate(" + p + "," + p + ")")
+.call(zoom)
 .append('svg:g');
 
 chart.append('svg:rect')
 .attr("class", "chart_rect")
-.attr('width', w)
-.attr('height', h);
-
+.attr('width', chart_width)
+.attr('height', chart_height);
 
 function redraw() {
   if (enable_zoom == true) {
@@ -118,11 +127,6 @@ function redraw() {
         + " scale(" + d3.event.scale + ")");
   }
 }
-
-//TODO: set title with AutoNetkit overlay_id revision
-//so then can print directly from chrome in kiosk mode to pdf with this filename
-
-//TODO: set hover to display properties
 
 </script>
 <script type="text/javascript" src="ank_render.js"></script>
