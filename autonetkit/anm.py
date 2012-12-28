@@ -95,6 +95,80 @@ class overlay_edge_accessor(object):
         edge = overlay.edge(self.edge)
         return edge
 
+class overlay_interface(object):
+    def __init__(self, anm, overlay_id, node_id, interface_id):
+        object.__setattr__(self, 'anm', anm)
+        object.__setattr__(self, 'overlay_id', overlay_id)
+        object.__setattr__(self, 'node_id', node_id)
+        object.__setattr__(self, 'interface_id', interface_id)
+
+    @property
+    def _graph(self):
+        """Return graph the node belongs to"""
+        return self.anm._overlays[self.overlay_id]
+
+    @property
+    def _node(self):
+        """Return graph the node belongs to"""
+        return self._graph.node[self.node_id]
+    
+    @property
+    def _interface(self):
+        """Return graph the node belongs to"""
+        return self._node["_interfaces"][self.interface_id]
+
+
+    @property
+    def node(self):
+        """Returns parent node of this interface"""
+        return overlay_node(self.anm, self.overlay_id, self.node_id)
+
+    def __str__(self):
+        return "Interface: " + str(self.interface_id)
+
+    def dump(self):
+        return str(self._interface.items())
+
+    def __getattr__(self, key):
+        """Returns interface property"""
+#TODO: make this log to debug on a miss, ie if key not found: do a try/except for KeyError for this
+        try:
+            return self._interface.get(key)
+        except KeyError:
+            return
+
+    def get(self, key):
+        """For consistency, node.get(key) is neater than getattr(interface, key)"""
+        return getattr(self, key)
+
+    def __setattr__(self, key, val):
+        """Sets interface property"""
+        try:
+            self._interface[key] = val
+        except KeyError:
+            #TODO: check if this is reachable for a dict
+            self.set(key, val)
+
+    def set(self, key, val):
+        """For consistency, node.set(key, value) is neater than setattr(interface, key, value)"""
+        return self.__setattr__(key, val)
+
+    def edges(self):
+        """Returns all edges from node that have this interface ID
+        This is the convention for binding an edge to an interface"""
+        all_edges = [edge for edge in self.node.edges()]
+        if self._graph.is_directed():
+            valid_edges = [ e for e in all_edges if e.int_id == self.interface_id]
+        else:
+# undirected, need to check both the source and destination interface_id values
+#TODO: work out the combinations: if iterating over a node's edges then .src and .dst can be reversed?
+            valid_edges = [e for e in all_edges
+                    if (e.src == self.node_id and e.src_int_id == self.interface_id)
+                    or (e.src == self.node_id and e.dst_int_id == self.interface_id)]
+        return valid_edges
+
+
+
 @functools.total_ordering
 class overlay_node(object):
     def __init__(self, anm, overlay_id, node_id):
@@ -119,6 +193,10 @@ class overlay_node(object):
             return True
         except KeyError:
             return False
+
+    def __iter__(self):
+        return iter(overlay_interface(self.anm, self.overlay_id, self.node_id, interface_id)
+                for interface_id in self._interfaces)
 
     def __getnewargs__(self):
         return ()
@@ -161,6 +239,24 @@ class overlay_node(object):
 
         return ((self.asn, self_node_id) < (other.asn, other_node_id))
 
+    @property
+    def _next_int_id(self):
+# returns next free interface ID 
+        for int_id in itertools.count():
+            if int_id not in self._interfaces:
+                return int_id
+
+    def _add_interface(self, description = None):
+        next_id = self._next_int_id
+        self._interfaces[next_id] = {
+                'description': description,
+                }
+        return next_id
+
+
+    @property
+    def _interfaces(self):
+        return self._graph.node[self.node_id]["_interfaces"]
 
     @property
     def _graph(self):
@@ -382,7 +478,6 @@ class overlay_graph_data(object):
 
     def dump(self):
         print str(self._graph.graph) 
-
 
     @property
     def _graph(self):
@@ -616,7 +711,9 @@ class overlay_graph(OverlayBase):
         if not update:
 # filter out existing nodes
             nbunch = (n for n in nbunch if n not in self._graph)
+        nbunch = list(nbunch)
         self._graph.add_nodes_from(nbunch, **kwargs)
+        self._init_interfaces()
 
     def add_node(self, node, retain=[], **kwargs):
         try:
@@ -635,7 +732,30 @@ class overlay_graph(OverlayBase):
             data = dict( (key, node.get(key)) for key in retain)
             kwargs.update(data) # also use the retained data
         self._graph.add_node(node_id, kwargs)
-    
+        self._init_interfaces()
+
+    def _init_interfaces(self):
+        #TODO: make this more efficient by taking in the newly added node ids as a parameter
+        for node, data in self._graph.nodes(data=True):
+            if not '_interfaces' in data:
+                self._graph.node[node]['_interfaces'] = {}
+
+    def allocate_interfaces(self):
+        #TODO: take in a list of edges to use to map
+        """allocates edges to interfaces"""
+#TODO: only allocate if not allocated
+        #int_counter = (n for n in itertools.count() if n not in 
+
+#TODO: take in nbunch of nodes to allocate for
+        ebunch = (e for e in self.edges())
+        for edge in ebunch:
+            src = edge.src
+            dst = edge.dst
+            src_int_id = src._add_interface('link to %s' % dst)
+            dst_int_id = dst._add_interface('link to %s' % src)
+            edge.src_int_id = src_int_id
+            edge.dst_int_id = dst_int_id
+
     def remove_node(self, node, **kwargs):
         try:
             node_id = node.node_id
@@ -677,6 +797,7 @@ class overlay_graph(OverlayBase):
             pass # already a list
 
         retain.append("edge_id")
+        retain.append("interface_id")
         try:
             if len(retain):
                 #TODO: cleanup this logic: will always at least retain edge_id
