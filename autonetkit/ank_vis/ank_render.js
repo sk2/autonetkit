@@ -247,8 +247,6 @@ var propagate_edge_group_select = function(d) {
         .attr("value", String)
         .text(String);
 
-
-
     //TODO only set the first time around?
     $("#edge_group_select option[value=" + edge_group_id + "]").attr("selected", "selected")
 }
