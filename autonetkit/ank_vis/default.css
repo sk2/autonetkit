@@ -19,6 +19,9 @@ marker {
   fill: rgb(6,120,155);
 }
 
+.interface_icon {
+}
+
 .chart div {
   font: 10px sans-serif;
   background-color: steelblue;

@@ -132,7 +132,7 @@ def save(overlay_graph):
 
 #TODO: make edges own module
 def wrap_edges(overlay_graph, edges):
-    """ wraps node ids into edge overlay """
+    """ wraps edge ids into edge overlay """
     return ( overlay_edge(overlay_graph._anm, overlay_graph._overlay_id, src, dst)
             for src, dst in edges)
 
