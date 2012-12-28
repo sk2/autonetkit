@@ -1,7 +1,7 @@
 //TODO: see if can use underscore.js for other operations, to simplify mapping, iterationl etc
 //List concat based on http://stackoverflow.com/questions/5080028
 
-var display_interfaces = false;
+var display_interfaces = true;
 
 var jsondata;
 var socket_url = "ws://" + location.host + "/ws";
@@ -29,7 +29,7 @@ var graph_history = [];
 var ip_allocations = [];
 
 var node_label_id = "id";
-var edge_group_id;
+var edge_group_id = "direction";
 
 ws.onmessage = function (evt) {
     var data = jQuery.parseJSON(evt.data);
@@ -479,7 +479,6 @@ var interface_info = function(d) {
     text += "<ul>"; //finish the unordered list
     text = "<b>Interface</b>: " + text;
     return text;
-
 }
 
 
@@ -516,6 +515,7 @@ var radius = 20;
 
 
 function drawTaperedEdge(d) {
+    //Note: not currently used
     //Adapted from http://bl.ocks.org/2942559
 
     var sourceX = nodes[d.source].x + x_offset + icon_width/2;
@@ -551,15 +551,34 @@ function drawTaperedEdge(d) {
 }
 
 var graph_edge = function(d) {
+    var source_x = nodes[d.source].x + x_offset + icon_width/2;
+    source_y =  nodes[d.source].y + y_offset + icon_height/2;
+    target_x =  nodes[d.target].x + x_offset + icon_width/2;
+    target_y =  nodes[d.target].y + y_offset + icon_height/2; 
 
     if (jsondata.directed) {
-        return drawTaperedEdge(d);
+        var dx = target_x - source_x,
+            dy = target_y - source_y,
+            dr = Math.sqrt(dx * dx + dy * dy);
+        dr = 1.2 * dr;
+        //return "M" + source_x + "," + source_y + "A" + dr + "," + dr + " 0 0,1 " + target_x + "," + target_y;
+        var points = [];
+        points.push([source_x, source_y]);
+
+        dr = dr/2; //want to place point halfway
+
+        angle = Math.atan2( (target_x - source_x), (target_y - source_y));
+        angle = angle + 0.25;
+        offset_x = dr * Math.sin(angle);
+        offset_y = dr * Math.cos(angle);
+        console.log(source_x + offset_x, source_y + offset_y);
+
+        points.push([source_x + offset_x, source_y + offset_y]);
+
+        points.push([target_x, target_y]);
+        return d3LineBasis(points) ;
     } else {
         //TODO: look at join for here
-        var source_x = nodes[d.source].x + x_offset + icon_width/2;
-        source_y =  nodes[d.source].y + y_offset + icon_height/2;
-        target_x =  nodes[d.target].x + x_offset + icon_width/2;
-        target_y =  nodes[d.target].y + y_offset + icon_height/2;
         return  "M" + source_x + "," + source_y + "L" + target_x + "," + target_y;
     }
 }
@@ -570,22 +589,55 @@ var link_label_x = function(d) {
     source_y =  nodes[d.source].y + y_offset + icon_height/2;
     target_x =  nodes[d.target].x + x_offset + icon_width/2;
     target_y =  nodes[d.target].y + y_offset + icon_height/2;
+    //TODO: update undirected case to use node_x and node_y
+    //
+    source = nodes[d.source];
+    target = nodes[d.target];
 
     if (jsondata.directed) {
-        var dx = target_x - source_x,
-            dy = target_y - source_y,
-               dr = Math.sqrt(dx * dx + dy * dy);
+
+        s_x = node_x(source);
+        s_y = node_y(source);
+        t_x = node_x(target);
+        t_y = node_y(target);
+
+        angle = Math.atan2( (t_x - s_x), (t_y - s_y));
+        angle = angle + 0.24906585;
+        var hypotenuse = (icon_width + icon_height)/1.4;
+        offset_x = hypotenuse * Math.sin(angle);
+        return s_x + offset_x;
 
     } else {
-        //TODO: look at join for here
+        var source_x = nodes[d.source].x + x_offset + icon_width/2;
+        target_x =  nodes[d.target].x + x_offset + icon_width/2;
+        return (source_x + target_x) /2;
     }
 
-    return 5;
 }
 
 var link_label_y = function(d) {
 
-    return 5;
+    source = nodes[d.source];
+    target = nodes[d.target];
+
+    if (jsondata.directed) {
+        s_x = node_x(source);
+        s_y = node_y(source);
+        t_x = node_x(target);
+        t_y = node_y(target);
+
+        angle = Math.atan2( (t_x - s_x), (t_y - s_y));
+        angle = angle + 0.24906585;
+        var hypotenuse = (icon_width + icon_height)/1.4;
+        offset_y = hypotenuse * Math.cos(angle);
+        return s_y + offset_y;
+    }  else {
+        source_y =  nodes[d.source].y + y_offset + icon_height/2;
+        target_y =  nodes[d.target].y + y_offset + icon_height/2;
+        return (source_y + target_y) /2;
+
+
+    }
 }
 
 
@@ -820,18 +872,18 @@ function redraw() {
         .style("stroke-width", function() {
             //TODO: use this stroke-width function on mouseout too
             if (jsondata.directed) {
-                return 1;
+                return 2;
             } 
             return 2;
         })
     //.attr("marker-end", marker_end)
     .style("stroke", "rgb(103,109,244)")
-        .style("fill", "rgb(113,119,254)")
-        //.style("fill", "none")
+        //.style("fill", "rgb(113,119,254)")
+        .style("fill", "none")
 
         .on("mouseover", function(d){
             d3.select(this).style("stroke", "orange");
-            d3.select(this).style("fill", "yellow");
+            d3.select(this).style("fill", "none");
             d3.select(this).style("stroke-width", "2");
             d3.select(this).attr("marker-end", "");
             link_info(d);
@@ -839,10 +891,12 @@ function redraw() {
     .on("mouseout", function(){
         d3.select(this).style("stroke-width", "2");
         d3.select(this).style("stroke", "rgb(103,109,244)");
-        d3.select(this).style("fill", "rgb(113,119,254)");
+        d3.select(this).style("fill", "none");
         //d3.select(this).attr("marker-end", marker_end);
         clear_label();
     })
+
+    console.log("-----");
 
     line.transition()
         .duration(500)
@@ -867,6 +921,7 @@ function redraw() {
     if (display_interfaces) {
         if (jsondata.directed) {
             console.log("Interfaces currently unsupported for directed graphs");
+            interface_data = {};
         } else {
             //Undirected, need to handle for both src and dst
             interface_data = _.map(jsondata.links, function(link) {
@@ -959,45 +1014,38 @@ function redraw() {
             .style("opacity",0)
             .remove();
 
+        //Link labels
 
         link_labels = chart.selectAll(".link_label")
-        .data(jsondata.links, edge_id)
+            .data(jsondata.links, edge_id)
 
-        link_labels.enter().append("text")
-        .attr("x", function(d) { return d.x + x_offset; })
-        .attr("y", function(d) { return d.y + y_offset; } )
-        .attr("class", "link_label")
-        .attr("text-anchor", "middle") 
-        .attr("font-family", "helvetica") 
-        .attr("font-size", "small") 
+            link_labels.enter().append("text")
+            .attr("x",link_label_x)
+            .attr("y", link_label_y )
+            .attr("class", "link_label")
+            .attr("text-anchor", "middle") 
+            .attr("font-family", "helvetica") 
+            .attr("font-size", "small") 
 
-        //TODO: use a general accessor for x/y of nodes
-        link_labels 
-        .attr("dx", link_label_x) // padding-right
-        .attr("dy", link_label_y) // vertical-align: middle
-        .text(function (d) {
-            return d[edge_group_id];
-        });
+            //TODO: use a general accessor for x/y of nodes
+            link_labels 
+            .attr("dx", 0) // padding-right
+            .attr("dy", 0) // vertical-align: middle
+            .text(function (d) {
+                return d[edge_group_id];
+            });
 
-    link_labels.transition()
-        .attr("x", function(d) { 
-            var source_x = nodes[d.source].x + x_offset + icon_width/2;
-            target_x =  nodes[d.target].x + x_offset + icon_width/2;
-            return (source_x + target_x) /2;
-        })
-    .attr("y", function(d) {
-        source_y =  nodes[d.source].y + y_offset + icon_height/2;
-        target_y =  nodes[d.target].y + y_offset + icon_height/2;
-        return (source_y + target_y) /2;
-    })
-    .duration(500)
+        link_labels.transition()
+            .attr("x",link_label_x)
+            .attr("y", link_label_y )
+            .duration(500)
 
-        link_labels.exit().transition()
-        .duration(1000)
-        .style("opacity",0)
-        .remove();
+            link_labels.exit().transition()
+            .duration(1000)
+            .style("opacity",0)
+            .remove();
 
-    var node_id = function(d) {
+        var node_id = function(d) {
         return d.label + d.network;
     }
 
@@ -1044,7 +1092,6 @@ function redraw() {
         return node_info(d); 
         }
     });
-
 
     device_labels = chart.selectAll(".device_label")
         .data(nodes, node_id)
