@@ -106,10 +106,11 @@ def build(input_graph_string, timestamp):
     #TODO: provide an ANM wide function that allocates interfaces
     for node in G_phy:
         for interface in node:
-            print node, interface, "desc:", interface.description
-            print interface.edges()
+            #print node, interface, "desc:", interface.description
+            interface.speed = 102
+            #print interface.edges()
 
-        print
+        #print
 
     return anm
 
@@ -404,6 +405,7 @@ def build_ospf(anm):
     Not-allowed:
     x -> x (x != y != 0)
     """
+    import netaddr
     G_in = anm['input']
     G_ospf = anm.add_overlay("ospf")
     G_ospf.add_nodes_from(G_in.nodes("is_router"), retain=['asn'])
@@ -417,15 +419,29 @@ def build_ospf(anm):
 
     G_ospf.remove_edges_from([link for link in G_ospf.edges() if link.src.asn != link.dst.asn]) # remove inter-AS links
 
+    default_area = 0
+    area_zero_ip = netaddr.IPAddress("0.0.0.0")
+    if any(router.area == "0.0.0.0"  for router in G_ospf):
+        default_area = area_zero_ip
+
     for router in G_ospf:
         if not router.area or router.area == "None":
             #TODO: tidy up this default of None being a string
-            router.area = 0
+            router.area = default_area #TODO: could check if 0.0.0.0 used anywhere, if so then use 0.0.0.0 as base format
+        else:
+            try:
+                router.area = int(router.area)
+            except ValueError:
+                try:
+                    router.area = netaddr.IPAddress(router.area) 
+                except netaddr.core.AddrFormatError:
+                    log.warning("Invalid OSPF area %s for %s. Using default of %s" %
+                            (router.area, router, default_area))
+                    router.area = default_area
 
 
-#TODO: make this either an int or an Ip address
-        router.area = int(router.area) #TODO: use dst type in copy_attr_from
- 
+    area_zero_ids = set([area_zero_ip, 0])
+
     for router in G_ospf:
 # and set area on interface
         for edge in router.edges():
@@ -434,9 +450,9 @@ def build_ospf(anm):
             if router.area == edge.dst.area:
                 edge.area = router.area # intra-area
             else:
-                if router.area == 0 or edge.dst.area == 0:
+                if router.area in area_zero_ids or edge.dst.area in area_zero_ids:
 # backbone to other area
-                    if router.area == 0:
+                    if router.area in area_zero_ids:
                         edge.area = edge.dst.area # router in backbone, use other area
                     else:
                         edge.area = router.area # router not in backbone, use its area
@@ -447,26 +463,31 @@ def build_ospf(anm):
 
         router.areas = list(areas) # store all the edges a router participates in
 
-        if len(areas) == 0:
+        if len(areas) in area_zero_ids:
             router.type = "backbone" # no ospf edges (such as single node in AS)
         elif len(areas) == 1:
             # single area: either backbone (all 0) or internal (all nonzero)
-            if 0 in areas:
+            if len(areas & area_zero_ids): # intersection has at least one element -> router has area zero 
                 router.type = "backbone"
             else:
                 router.type = "internal"
 
         else:
             # multiple areas
-            if 0 in areas:
+            if len(areas & area_zero_ids): # intersection has at least one element -> router has area zero 
                 router.type = "backbone ABR"
             else:
                 log.warning("%s spans multiple areas but is not a member of area 0" % router)
                 router.type = "INVALID"
 
+
+    if (any(0 in router.areas for router in G_ospf) and 
+            any(area_zero_ip in router.areas for router in G_ospf)): 
+        log.warning("Using both area 0 and area 0.0.0.0")
+
+
 #TODO: do we want to allocate non-symmetric OSPF costs? do we need a directed OSPF graph?
 # (note this will all change once have proper interface nodes)
-
     for link in G_ospf.edges():
         link.cost = 1
 
