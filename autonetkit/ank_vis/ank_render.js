@@ -236,7 +236,6 @@ var propagate_node_label_select = function(d) {
 var propagate_edge_group_select = function(d) {
     //TODO: make default "none" and don't group?
     $("#edge_group_select").empty();
-        .text("None");
 
     d.unshift("None"); //Add option to clear edge labels
 
