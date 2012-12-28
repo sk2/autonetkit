@@ -550,6 +550,8 @@ function drawTaperedEdge(d) {
     return d3LineBasis(points) + "Z";
 }
 
+var alpha = 0.2;
+
 var graph_edge = function(d) {
     var source_x = nodes[d.source].x + x_offset + icon_width/2;
     source_y =  nodes[d.source].y + y_offset + icon_height/2;
@@ -560,7 +562,7 @@ var graph_edge = function(d) {
         var dx = target_x - source_x,
             dy = target_y - source_y,
             dr = Math.sqrt(dx * dx + dy * dy);
-        dr = 1.2 * dr;
+        //dr = 1.2 * dr;
         //return "M" + source_x + "," + source_y + "A" + dr + "," + dr + " 0 0,1 " + target_x + "," + target_y;
         var points = [];
         points.push([source_x, source_y]);
@@ -568,10 +570,10 @@ var graph_edge = function(d) {
         dr = dr/2; //want to place point halfway
 
         angle = Math.atan2( (target_x - source_x), (target_y - source_y));
-        angle = angle + 0.25;
-        offset_x = dr * Math.sin(angle);
-        offset_y = dr * Math.cos(angle);
-        console.log(source_x + offset_x, source_y + offset_y);
+        angle = angle + alpha;
+        h2 = dr / Math.cos(alpha);
+        offset_x = h2 * Math.sin(angle);
+        offset_y = h2 * Math.cos(angle);
 
         points.push([source_x + offset_x, source_y + offset_y]);
 
@@ -601,9 +603,13 @@ var link_label_x = function(d) {
         t_x = node_x(target);
         t_y = node_y(target);
 
+        dx = t_x - s_x;
+        dy = t_y - s_y;
+        dr = Math.sqrt(dx * dx + dy * dy);
+
         angle = Math.atan2( (t_x - s_x), (t_y - s_y));
-        angle = angle + 0.24906585;
-        var hypotenuse = (icon_width + icon_height)/1.4;
+        angle = angle + alpha;
+        hypotenuse = dr/6;
         offset_x = hypotenuse * Math.sin(angle);
         return s_x + offset_x;
 
@@ -626,9 +632,14 @@ var link_label_y = function(d) {
         t_x = node_x(target);
         t_y = node_y(target);
 
+        dx = t_x - s_x;
+        dy = t_y - s_y;
+        dr = Math.sqrt(dx * dx + dy * dy);
+        var hypotenuse = dr/6;
+        
+
         angle = Math.atan2( (t_x - s_x), (t_y - s_y));
-        angle = angle + 0.24906585;
-        var hypotenuse = (icon_width + icon_height)/1.4;
+        angle = angle + alpha;
         offset_y = hypotenuse * Math.cos(angle);
         return s_y + offset_y;
     }  else {
@@ -895,8 +906,6 @@ function redraw() {
         //d3.select(this).attr("marker-end", marker_end);
         clear_label();
     })
-
-    console.log("-----");
 
     line.transition()
         .duration(500)
