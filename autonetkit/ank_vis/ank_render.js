@@ -1,7 +1,7 @@
 //TODO: see if can use underscore.js for other operations, to simplify mapping, iterationl etc
 //List concat based on http://stackoverflow.com/questions/5080028
 
-var display_interfaces = true;
+var display_interfaces = false;
 
 var jsondata;
 var socket_url = "ws://" + location.host + "/ws";
