@@ -115,6 +115,9 @@ var chart = d3.select(".visualisation")
 .call(zoom)
 .append('svg:g');
 
+
+//TODO: create an svg:g to contain nodes, another the edges, to avoid overlap
+
 chart.append('svg:rect')
 .attr("class", "chart_rect")
 .attr('width', chart_width)
