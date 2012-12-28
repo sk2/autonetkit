@@ -1059,7 +1059,6 @@ function redraw() {
 
         device_labels.enter().append("text")
         .attr("x", function(d) { return d.x + x_offset; })
-        .attr("y", function(d) { return d.y + y_offset; } )
         .attr("class", "device_label")
         .attr("text-anchor", "middle") 
         .attr("font-family", "helvetica") 
@@ -1068,12 +1067,12 @@ function redraw() {
         //TODO: use a general accessor for x/y of nodes
         device_labels 
         .attr("dx", icon_width/2) // padding-right
-        .attr("dy", icon_height + 1) // vertical-align: middle
+        .attr("dy", icon_height + 3) // vertical-align: middle
         .text(device_label);
 
     device_labels.transition()
         .attr("x", function(d) { return d.x + x_offset; })
-        .attr("y", function(d) { return d.y + y_offset + 2; })
+        .attr("y", function(d) { return d.y + y_offset + 3; })
         .duration(500)
 
         device_labels.exit().transition()
