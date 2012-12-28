@@ -226,7 +226,7 @@ bgp_pol << Group(Group(Suppress("if") + match_clauses + then_clause + Optional(e
 
 
 class BgpPolEncoder(json.JSONEncoder):
-    """Handles netaddr objects by converting to string form"""
+    """Recursive handling and formatting for BGP Policy export in JSON format"""
     def default(self, obj):
         if isinstance(obj, pol_clause):
             #TODO: add documentation about serializing anm nodes
@@ -269,3 +269,6 @@ for my_policy in policies:
 # end up with lists of named tuples for tokens: (match, value), and (action, value) that can then format inside the template - that way slight differences between syntaxes are able to be handles in templates rather than back up in the parser
 
 #TODO: implement both visitors and transformers
+
+#TODO: map the prefix_list and tags to lists for allocation, same as in old version
+#TODO: could this be done by a variation of the BgpPolEncoder visitor, in that any instances of prefix_list or tag types are returned recursively and then flattened at the end?
