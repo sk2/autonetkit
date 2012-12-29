@@ -569,6 +569,10 @@ var graph_edge = function(d) {
 
         dr = dr/2; //want to place point halfway
 
+
+        //TODO: experiment with alpha being based on node distance
+        //alpha = alpha + alpha * dr/8000;
+
         angle = Math.atan2( (target_x - source_x), (target_y - source_y));
         angle = angle + alpha;
         h2 = dr / Math.cos(alpha);
@@ -585,6 +589,50 @@ var graph_edge = function(d) {
     }
 }
 
+var directed_edge_offset_x = function(source, target, hypotenuse) {
+    //multiplier is how far out to return, ie the hypotenuse. Used as don't want interfaces co-incident with link labels
+    //TODO: want interfaces to be fixed distance out, regardless of dr
+
+    s_x = node_x(source);
+    s_y = node_y(source);
+    t_x = node_x(target);
+    t_y = node_y(target);
+
+    hypotenuse
+
+    dx = t_x - s_x;
+    dy = t_y - s_y;
+    dr = Math.sqrt(dx * dx + dy * dy);
+
+    hypotenuse = typeof hypotenuse !== 'undefined' ? hypotenuse : dr/4; //defaults to dr/4
+    console.log("hypot", hypotenuse);
+    
+    angle = Math.atan2( (t_x - s_x), (t_y - s_y));
+    angle = angle + alpha;
+    offset_x = hypotenuse * Math.sin(angle);
+    return s_x + offset_x;
+}
+
+var directed_edge_offset_y = function(source, target, hypotenuse) {
+    //multiplier is how far out to return, ie the hypotenuse. Used as don't want interfaces co-incident with link labels
+
+    s_x = node_x(source);
+    s_y = node_y(source);
+    t_x = node_x(target);
+    t_y = node_y(target);
+
+    dx = t_x - s_x;
+    dy = t_y - s_y;
+    dr = Math.sqrt(dx * dx + dy * dy);
+
+    hypotenuse = typeof hypotenuse !== 'undefined' ? hypotenuse : dr/4; //defaults to dr/4
+
+    angle = Math.atan2( (t_x - s_x), (t_y - s_y));
+    angle = angle + alpha;
+    offset_y = hypotenuse * Math.cos(angle);
+    return s_y + offset_y;
+}
+
 var link_label_x = function(d) {
 
     var source_x = nodes[d.source].x + x_offset + icon_width/2;
@@ -593,32 +641,15 @@ var link_label_x = function(d) {
     target_y =  nodes[d.target].y + y_offset + icon_height/2;
     //TODO: update undirected case to use node_x and node_y
     //
-    source = nodes[d.source];
-    target = nodes[d.target];
-
     if (jsondata.directed) {
-
-        s_x = node_x(source);
-        s_y = node_y(source);
-        t_x = node_x(target);
-        t_y = node_y(target);
-
-        dx = t_x - s_x;
-        dy = t_y - s_y;
-        dr = Math.sqrt(dx * dx + dy * dy);
-
-        angle = Math.atan2( (t_x - s_x), (t_y - s_y));
-        angle = angle + alpha;
-        hypotenuse = dr/6;
-        offset_x = hypotenuse * Math.sin(angle);
-        return s_x + offset_x;
-
+        source = nodes[d.source];
+        target = nodes[d.target];
+        return directed_edge_offset_x(source, target);
     } else {
         var source_x = nodes[d.source].x + x_offset + icon_width/2;
         target_x =  nodes[d.target].x + x_offset + icon_width/2;
         return (source_x + target_x) /2;
     }
-
 }
 
 var link_label_y = function(d) {
@@ -627,27 +658,13 @@ var link_label_y = function(d) {
     target = nodes[d.target];
 
     if (jsondata.directed) {
-        s_x = node_x(source);
-        s_y = node_y(source);
-        t_x = node_x(target);
-        t_y = node_y(target);
-
-        dx = t_x - s_x;
-        dy = t_y - s_y;
-        dr = Math.sqrt(dx * dx + dy * dy);
-        var hypotenuse = dr/6;
-        
-
-        angle = Math.atan2( (t_x - s_x), (t_y - s_y));
-        angle = angle + alpha;
-        offset_y = hypotenuse * Math.cos(angle);
-        return s_y + offset_y;
+        source = nodes[d.source];
+        target = nodes[d.target];
+        return directed_edge_offset_y(source, target);
     }  else {
         source_y =  nodes[d.source].y + y_offset + icon_height/2;
         target_y =  nodes[d.target].y + y_offset + icon_height/2;
         return (source_y + target_y) /2;
-
-
     }
 }
 
@@ -768,18 +785,21 @@ function redraw() {
     //TODO: tidy this up, not all functions need to be in here, move out those that do, and only pass required params. also avoid repeated calculations.
     
     nodes = jsondata.nodes;
-    node_x_max = _.max(nodes, function(node){ return node.x}).x + 20;
-    node_y_max = _.max(nodes, function(node){ return node.y}).y + 20;
+    if (nodes.length) {
+        //rescale if showing nodes, rather than the ip allocs, etc
+        node_x_max = _.max(nodes, function(node){ return node.x}).x + 20;
+        node_y_max = _.max(nodes, function(node){ return node.y}).y + 20;
 
-    p =  Math.max((chart_width/node_x_max)/2, (chart_height/node_y_max)/2);
-    
-    var zoom_box = d3.select(".zoom_box")
+        p =  Math.max((chart_width/node_x_max)/2, (chart_height/node_y_max)/2);
+
+        var zoom_box = d3.select(".zoom_box")
 
 
-        //Disable zoom for now
-    //zoom_box.transition()
-//        .attr("transform", "scale(" + p + ")")
-//       .duration(500)
+            //Disable zoom for now
+            //zoom_box.transition()
+            //        .attr("transform", "scale(" + p + ")")
+            //       .duration(500)
+    }
         
     node_attributes = []; //reset
     nodes.forEach(function(node) {
@@ -928,19 +948,14 @@ function redraw() {
 
     //If undirected graph, then need two interfaces per edge: one at each end
     if (display_interfaces) {
-        if (jsondata.directed) {
-            console.log("Interfaces currently unsupported for directed graphs");
-            interface_data = {};
-        } else {
-            //Undirected, need to handle for both src and dst
-            interface_data = _.map(jsondata.links, function(link) {
-                return [ 
-            {'node': nodes[link.source], 'interface': link.src_int_id, 'target': nodes[link.target], 'link': link},
-                           {'node': nodes[link.target], 'interface': link.dst_int_id, 'target': nodes[link.source], 'link': link},
-                           ];
-            });
+        //Undirected, need to handle for both src and dst
+        interface_data = _.map(jsondata.links, function(link) {
+            return [ 
+        {'node': nodes[link.source], 'interface': link.src_int_id, 'target': nodes[link.target], 'link': link},
+                       {'node': nodes[link.target], 'interface': link.dst_int_id, 'target': nodes[link.source], 'link': link},
+                       ];
+        });
 
-        }
         interface_data = _.flatten(interface_data); //collapse from hierarchical nested structure
     } else {
         interface_data = {}; //reset 
@@ -969,11 +984,21 @@ function redraw() {
         var interface_hypotenuse = (icon_width + icon_height)/2.9;
 
         var interface_x = function(d) {
+
+            if (jsondata.directed) {
+                return directed_edge_offset_x(d.node, d.target, interface_hypotenuse) - interface_width/2;
+            }
+    
             angle = interface_angle(d);
             offset_x = interface_hypotenuse * Math.sin(angle);
             return node_x(d.node) + offset_x - interface_width/2;
         }
         var interface_y = function(d) {
+
+            if (jsondata.directed) {
+                return directed_edge_offset_y(d.node, d.target, interface_hypotenuse) - interface_height/2;
+            }
+
             angle = interface_angle(d);
             offset_y =interface_hypotenuse * Math.cos(angle);
             return node_y(d.node) + offset_y - interface_height/2;
