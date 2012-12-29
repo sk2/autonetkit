@@ -425,8 +425,8 @@ var data_to_li = function(d, depth) {
             text += d[attr].join(", ");
         }
         else if (attr == "_interfaces") {
-            //text += "<li><b>Interfaces: </b> ";
-            //text += _.keys(d[attr]).join(", ");
+            text += "<li><b>Interfaces: </b> ";
+            text += _.keys(d[attr]).join(", ");
         }
         else if (typeof d[attr] == 'object' && d[attr] != null && depth < max_depth) {
             text += data_to_li(d[attr], depth +1); // recurse
@@ -481,8 +481,6 @@ var interface_info = function(d) {
     return text;
 }
 
-
-
 //Markers from http://bl.ocks.org/1153292
 // Used for arrow-heads
 // Per-type markers, as they don't inherit styles.
@@ -500,14 +498,12 @@ chart.append("svg:defs").selectAll("marker")
 .append("svg:path")
 .attr("d", "M0,-5L10,0L0,5");
 
-
 var marker_end  = function(d) {
     if (jsondata.directed) {
         return "url(#link_edge)";
     }
     return "";
 }
-
 
 var d3LineBasis = d3.svg.line().interpolate("basis");
 var offsetScale = 0.15; /* percentage of line line to offset curves */
@@ -598,14 +594,11 @@ var directed_edge_offset_x = function(source, target, hypotenuse) {
     t_x = node_x(target);
     t_y = node_y(target);
 
-    hypotenuse
-
     dx = t_x - s_x;
     dy = t_y - s_y;
     dr = Math.sqrt(dx * dx + dy * dy);
 
     hypotenuse = typeof hypotenuse !== 'undefined' ? hypotenuse : dr/4; //defaults to dr/4
-    console.log("hypot", hypotenuse);
     
     angle = Math.atan2( (t_x - s_x), (t_y - s_y));
     angle = angle + alpha;
@@ -950,10 +943,25 @@ function redraw() {
     if (display_interfaces) {
         //Undirected, need to handle for both src and dst
         interface_data = _.map(jsondata.links, function(link) {
-            return [ 
-        {'node': nodes[link.source], 'interface': link.src_int_id, 'target': nodes[link.target], 'link': link},
-                       {'node': nodes[link.target], 'interface': link.dst_int_id, 'target': nodes[link.source], 'link': link},
-                       ];
+            interface_data = link._interfaces;
+            console.log(interface_data);
+            src_node = nodes[link.source];
+            dst_node = nodes[link.target];
+            src_int_id = interface_data[src_node.id]; //interface id is indexed by the node id
+            dst_int_id = interface_data[dst_node.id]; //interface id is indexed by the node id
+
+            //TODO: if a directed link, only return for source
+            //
+            retval = [];
+            retval.push( { 'node': src_node, 'interface':  src_int_id, 'target': dst_node, 'link': link });
+
+            if (!jsondata.directed) {
+                //undirected, also include data for other interface
+                retval.push( { 'node': dst_node, 'interface':  dst_int_id, 'target': src_node, 'link': link });
+                }
+
+            return retval;
+
         });
 
         interface_data = _.flatten(interface_data); //collapse from hierarchical nested structure
@@ -1013,7 +1021,7 @@ function redraw() {
 
             interface_icons
             //TODO: look if can return multiple attributes, ie x and y, from the same function, ie calculation
-            .attr("fill", "steelblue")
+            .attr("fill", "rgb(6,120,155)")
 
             .on("mouseover", function(d){
                 d3.select(this).style("stroke", "orange");
@@ -1023,8 +1031,8 @@ function redraw() {
             })
         .on("mouseout", function(){
             d3.select(this).style("stroke-width", "2");
-            d3.select(this).style("stroke", "rgb(103,109,244)");
-            d3.select(this).style("fill", "rgb(113,119,254)");
+            d3.select(this).style("stroke", "none");
+            d3.select(this).style("fill", "rgb(6,120,155)");
             //d3.select(this).attr("marker-end", marker_end);
         })
 
@@ -1059,6 +1067,7 @@ function redraw() {
             .attr("class", "link_label")
             .attr("text-anchor", "middle") 
             .attr("font-family", "helvetica") 
+            .attr("font-size", "small") 
 
             //TODO: use a general accessor for x/y of nodes
             link_labels 
