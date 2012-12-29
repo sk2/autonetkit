@@ -156,18 +156,8 @@ class overlay_interface(object):
     def edges(self):
         """Returns all edges from node that have this interface ID
         This is the convention for binding an edge to an interface"""
-        all_edges = [edge for edge in self.node.edges()]
-        if self._graph.is_directed():
-            valid_edges = [ e for e in all_edges if e.int_id == self.interface_id]
-        else:
-# undirected, need to check both the source and destination interface_id values
-#TODO: work out the combinations: if iterating over a node's edges then .src and .dst can be reversed?
-            valid_edges = [e for e in all_edges
-                    if (e.src == self.node_id and e.src_int_id == self.interface_id)
-                    or (e.src == self.node_id and e.dst_int_id == self.interface_id)]
+        valid_edges = [ e for e in self.node.edges() if self.interface_id in e._interfaces]
         return valid_edges
-
-
 
 @functools.total_ordering
 class overlay_node(object):
@@ -751,8 +741,18 @@ class overlay_graph(OverlayBase):
         except AttributeError:
             pass # don't need to unwrap
 
+        phy_graph = self._anm._overlays["phy"]
+        
         for node in nbunch:
-            self._graph.node[node]['_interfaces'] = {}
+            #TODO: tidy up this hardcoded logic
+            try:
+                phy_interfaces = phy_graph.node[node]["_interfaces"]
+                data = dict( (key, {}) for key in phy_interfaces)
+                self._graph.node[node]['_interfaces'] = data
+            except KeyError:
+# no counterpart in physical graph, initialise
+                self._graph.node[node]['_interfaces'] = {}
+
 
     def allocate_interfaces(self):
         #TODO: take in a list of edges to use to map
@@ -771,7 +771,6 @@ class overlay_graph(OverlayBase):
             edge._interfaces = {}
             edge._interfaces[src.id] = src_int_id
             edge._interfaces[dst.id] = dst_int_id
-            print edge._interfaces
 
     def remove_node(self, node, **kwargs):
         try:
