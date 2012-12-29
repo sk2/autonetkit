@@ -63,7 +63,6 @@ def build(input_graph_string, timestamp):
     expand_fqdn = False #TODO: make this set from config and also in the input file
     if expand_fqdn and len(ank.unique_attr(G_in, "asn")) > 1:
         # Multiple ASNs set, use label format device.asn 
-        print "set label"
         anm.set_node_label(".",  ['label', 'pop', 'asn'])
 
 #TODO: remove, used for demo on nectar
@@ -146,13 +145,8 @@ def build_bgp(anm):
     G_bgp.add_edges_from(ebgp_edges, bidirectional = True, type = 'ebgp')
 
     for node in G_bgp:
-        print node
         for interface in node:
             interface.speed = 100
-            print interface.dump()
-            print interface.speed
-
-        print
 
 # now iBGP
 #TODO: add flag for three iBGP types: full-mesh, algorithmic, custom
