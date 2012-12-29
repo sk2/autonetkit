@@ -1,7 +1,6 @@
 //TODO: see if can use underscore.js for other operations, to simplify mapping, iterationl etc
 //List concat based on http://stackoverflow.com/questions/5080028
 
-var display_interfaces = true;
 
 var jsondata;
 var socket_url = "ws://" + location.host + "/ws";
@@ -29,7 +28,7 @@ var graph_history = [];
 var ip_allocations = [];
 
 var node_label_id = "id";
-var edge_group_id = "direction";
+var edge_group_id = "";
 
 ws.onmessage = function (evt) {
     var data = jQuery.parseJSON(evt.data);
@@ -425,8 +424,8 @@ var data_to_li = function(d, depth) {
             text += d[attr].join(", ");
         }
         else if (attr == "_interfaces") {
-            text += "<li><b>Interfaces: </b> ";
-            text += _.keys(d[attr]).join(", ");
+            //text += "<li><b>Interfaces: </b> ";
+            //text += _.keys(d[attr]).join(", ");
         }
         else if (typeof d[attr] == 'object' && d[attr] != null && depth < max_depth) {
             text += data_to_li(d[attr], depth +1); // recurse
@@ -944,7 +943,6 @@ function redraw() {
         //Undirected, need to handle for both src and dst
         interface_data = _.map(jsondata.links, function(link) {
             interface_data = link._interfaces;
-            console.log(interface_data);
             src_node = nodes[link.source];
             dst_node = nodes[link.target];
             src_int_id = interface_data[src_node.id]; //interface id is indexed by the node id
@@ -969,13 +967,14 @@ function redraw() {
         interface_data = {}; //reset 
     }
 
+    //TODO: handle removing of interfaces
 
     //TODO: handling if no interface id specified
 
     interface_icons = chart.selectAll(".interface_icon")
         .data(interface_data) //TODO: check if need to provide an index
 
-        var interface_width = 10;
+        var interface_width = 15;
         var interface_height = 10;
 
         var interface_angle = function(d){
@@ -989,7 +988,7 @@ function redraw() {
             return angle;
         }
 
-        var interface_hypotenuse = (icon_width + icon_height)/2.9;
+        var interface_hypotenuse = (icon_width + icon_height)/2;
 
         var interface_x = function(d) {
 
@@ -1042,6 +1041,7 @@ function redraw() {
         html: true, 
         title: function() {
             var d = this.__data__
+            console.log(d);
             return interface_info(d); 
         }
         });

@@ -27,7 +27,9 @@
       <button onclick="history_end();">>></button>
       !-->
       <button onclick="javascript:setActiveStyleSheet('maximised');">Max</button>
-      <input type="checkbox" id="enable_zoom" value="enable_zoom" />Zoom |
+      <label for="enable_zoom">Zoom</label><input type="checkbox" id="enable_zoom" value="enable_zoom" />
+      <label for="display_interfaces">Interfaces</label><input type="checkbox" id="display_interfaces" value="display_interfaces" />
+      
       Node: <select id = "node_label_select"></select> |
       Edge: <select id = "edge_group_select"></select>
     </div>
@@ -52,6 +54,8 @@
         }
 
 
+//TODO: use icons that are updated for the zoom and Interfaces selectors
+
 var overlay_id = "phy";
 
 var revision_dropdown = d3.select("#revision_select")
@@ -75,11 +79,19 @@ var edge_group_select = d3.select("#edge_group_select")
     })
 
 var enable_zoom = false
+var display_interfaces = false
 
-var zoom_select = d3.select("#enable_zoom")
+ d3.select("#enable_zoom")
 .on("change", function() {
-    enable_zoom = d3.select(this).property("checked");
-    })
+        enable_zoom = d3.select(this).property("checked");
+        })
+
+d3.select("#display_interfaces")
+.on("change", function() {
+        display_interfaces = d3.select(this).property("checked");
+        console.log(display_interfaces);
+        redraw();
+        })
 
 var status_label = d3.select("navbar").append("text")
 .attr("class", "status label")
