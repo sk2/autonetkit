@@ -145,6 +145,15 @@ def build_bgp(anm):
     ebgp_edges = [edge for edge in G_in.edges() if not edge.attr_equal("asn")]
     G_bgp.add_edges_from(ebgp_edges, bidirectional = True, type = 'ebgp')
 
+    for node in G_bgp:
+        print node
+        for interface in node:
+            interface.speed = 100
+            print interface.dump()
+            print interface.speed
+
+        print
+
 # now iBGP
 #TODO: add flag for three iBGP types: full-mesh, algorithmic, custom
     if False:
@@ -167,7 +176,6 @@ def build_bgp(anm):
                 # rr to rr (over)
                 over_links = [(rr1, rr2) for (rr1, rr2) in itertools.product(route_reflectors, route_reflectors)]
                 G_bgp.add_edges_from(over_links, type = 'ibgp', direction = 'over')
-                
 
                 # rr to rrc (down)
                 down_links = [(rr, client) for (rr, client) in itertools.product(route_reflectors, rr_clients)]
@@ -214,11 +222,9 @@ def build_bgp(anm):
                 G_bgp.add_edges_from(l1_l2_up_links, type = 'ibgp', direction = 'up')
                 G_bgp.add_edges_from(l1_l2_down_links, type = 'ibgp', direction = 'down')
 
-
                 l2_peer_links = [ (s, t) for (s, t) in all_pairs 
                         if s.ibgp_level == t.ibgp_level == 2 and s.ibgp_l2_cluster == t.ibgp_l2_cluster ]
                 G_bgp.add_edges_from(l2_peer_links, type = 'ibgp', direction = 'over')
-
 
                 l2_l3_up_links = [ (s, t) for (s, t) in all_pairs if s.ibgp_level == 2 and t.ibgp_level == 3
                         and s.ibgp_l3_cluster == t.ibgp_l3_cluster]
@@ -489,11 +495,6 @@ def build_ospf(anm):
 # (note this will all change once have proper interface nodes)
     for link in G_ospf.edges():
         link.cost = 1
-
-    for router in G_ospf:
-        print router
-        for interface in router:
-            print "interface", interface
 
 def ip_to_net_ent_title_ios(ip):
     """ Converts an IP address into an OSI Network Entity Title
