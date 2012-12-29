@@ -70,7 +70,6 @@ ws.onmessage = function (evt) {
         }
     } else {
         //TODO: work out why reaching here if passing the "graph in data" check above
-        //console.log("got unknown data", data);
     }
 }
 
@@ -1041,7 +1040,6 @@ function redraw() {
         html: true, 
         title: function() {
             var d = this.__data__
-            console.log(d);
             return interface_info(d); 
         }
         });

@@ -540,7 +540,7 @@ class OverlayBase(object):
             for node in self:
                 if str(node) == key:
                     return node
-            print "Unable to find node", key, "in", self
+            log.warning( "Unable to find node %s in %s " % (key, self))
             return None
 
 #TODO: Allow overlay data to be set/get, ie graph.graph eg for asn subnet allocations
@@ -756,6 +756,7 @@ class overlay_graph(OverlayBase):
                 self._graph.node[node]['_interfaces'] = data
             except KeyError:
 # no counterpart in physical graph, initialise
+                log.debug("Initialise interfaces for %s in %s" % (node, self._overlay_id))
                 self._graph.node[node]['_interfaces'] = {0: {'description': 'loopback'}}
 
 

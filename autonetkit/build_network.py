@@ -106,11 +106,8 @@ def build(input_graph_string, timestamp):
     #TODO: work out why some interfaces in bgp graph in vis have node data....
     for node in G_phy:
         for interface in node:
-            #print node, interface, "desc:", interface.description
             interface.speed = 102
-            #print interface.edges()
 
-        #print
 
     return anm
 
@@ -122,7 +119,6 @@ def boundary_nodes(G, nodes):
     based on edge_boundary from networkx """
     import autonetkit.ank as ank_utils
     graph = ank_utils.unwrap_graph(G)
-    #print graph_phy.nodes()
     nodes = list(nodes)
     nbunch = list(ank_utils.unwrap_nodes(nodes))
     # find boundary
@@ -149,7 +145,6 @@ def build_bgp(anm):
 #TODO: here we want to map to lo0
     for node in G_bgp:
         for interface in node:
-            print node, interface
             interface.speed = 100
 
 # now iBGP
@@ -306,6 +301,8 @@ def build_ip(anm):
         if ank.neigh_equal(G_ip, node, "host", G_phy):
             node.host = ank.neigh_attr(G_ip, node, "host", G_phy).next() # first attribute
 
+    #TODO: Need to allocate interfaces or appropriate bypass for collision domain nodes
+
 # set collision domain IPs
 #TODO: trim next line
     collision_domain_id = itertools.count(0)
@@ -399,7 +396,6 @@ def build_conn(anm):
     #G_graphics.add_nodes_from(new_nodes, retain = ['x', 'y', 'asn', "device_type", "device_subtype"])
     for node in new_nodes:
         G_graphics.add_node(node, retain = ['x', 'y', 'asn', "device_type", "device_subtype"])
-        #print node['graphics'].dump()
 
 #TODO: Add a function to auto-update graphics, if any node present in overlay but not in graphics then add with sensible defaults
 
