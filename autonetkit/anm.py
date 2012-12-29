@@ -433,6 +433,11 @@ class overlay_edge(object):
             return True
         except KeyError:
             return False
+        
+    def bind_interface(self, node, interface):
+        #TODO: need to handle both nodes and node ids
+        #TODO: need to handle both interfaces and interface ids
+        self._interfaces[node.id] = interface
 
     @property
     def overlay(self):
@@ -751,7 +756,7 @@ class overlay_graph(OverlayBase):
                 self._graph.node[node]['_interfaces'] = data
             except KeyError:
 # no counterpart in physical graph, initialise
-                self._graph.node[node]['_interfaces'] = {}
+                self._graph.node[node]['_interfaces'] = {0: {'description': 'loopback'}}
 
 
     def allocate_interfaces(self):

@@ -103,6 +103,7 @@ def build(input_graph_string, timestamp):
     build_bgp(anm)
 
     #TODO: provide an ANM wide function that allocates interfaces
+    #TODO: work out why some interfaces in bgp graph in vis have node data....
     for node in G_phy:
         for interface in node:
             #print node, interface, "desc:", interface.description
@@ -144,8 +145,11 @@ def build_bgp(anm):
     ebgp_edges = [edge for edge in G_in.edges() if not edge.attr_equal("asn")]
     G_bgp.add_edges_from(ebgp_edges, bidirectional = True, type = 'ebgp')
 
+
+#TODO: here we want to map to lo0
     for node in G_bgp:
         for interface in node:
+            print node, interface
             interface.speed = 100
 
 # now iBGP
@@ -261,6 +265,13 @@ def build_bgp(anm):
 
     ebgp_nodes = [d for d in G_bgp if any(edge.type == 'ebgp' for edge in d.edges())]
     G_bgp.update(ebgp_nodes, ebgp=True)
+
+    for edge in G_bgp.edges(type = 'ibgp'):
+        #TODO: need interface querying/selection. rather than hard-coded ids
+        edge.bind_interface(edge.src, 0)
+
+    for node in G_bgp:
+        node._interfaces[0]['description'] = "loopback0"
 
 def build_ip(anm):
     import autonetkit.plugins.ip as ip
