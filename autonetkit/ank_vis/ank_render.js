@@ -29,6 +29,7 @@ var ip_allocations = [];
 
 var node_label_id = "id";
 var edge_group_id = "";
+var interface_label_id = "";
 
 ws.onmessage = function (evt) {
     var data = jQuery.parseJSON(evt.data);
@@ -229,6 +230,22 @@ var propagate_node_label_select = function(d) {
 
     //TODO only set the first time around?
     $("#node_label_select option[value=" + node_label_id + "]").attr("selected", "selected")
+}
+
+var propagate_interface_label_select = function(d) {
+    $("#interface_label_select").empty();
+
+    d.unshift("None"); //Add option to clear edge labels
+
+    interface_label_select
+        .selectAll("option")
+        .data(d)
+        .enter().append("option")
+        .attr("value", String)
+        .text(String);
+
+    //TODO only set the first time around?
+    $("#interface_label_select option[value=" + interface_label_id + "]").attr("selected", "selected")
 }
 
 var propagate_edge_group_select = function(d) {
@@ -768,6 +785,11 @@ var device_label = function(d) {
     return d[node_label_id];
 }
 
+var interface_label = function(d) {
+    int_data = d.node._interfaces[d.interface];
+    return int_data[interface_label_id];
+}
+
 // Store the attributes used for nodes and edges, to allow user to select
 var node_attributes = [];
 var edge_attributes = [];
@@ -814,6 +836,19 @@ function redraw() {
     edge_attributes.sort();
     edge_attributes = _.uniq(edge_attributes);
     propagate_edge_group_select(edge_attributes);
+
+    display_interfaces = true;
+    interface_attributes = [];
+
+    //TODO: make this a memoized function to save computation
+    interface_attributes = _.map(nodes, function(node) {
+        return _.map(node._interfaces, function(interface){ 
+            return _.keys(interface);
+        });
+    });
+    interface_attributes = _.flatten(interface_attributes); //collapse from hierarchical nested structure
+    interface_attributes = _.uniq(interface_attributes);
+    propagate_interface_label_select(interface_attributes);
 
     if (overlay_id == "ospf") {
 
@@ -1053,6 +1088,34 @@ function redraw() {
             .duration(1000)
             .style("opacity",0)
             .remove();
+
+        console.log(interface_data);
+        interface_labels = chart.selectAll(".interface_label")
+        .data(interface_data)
+
+        interface_labels.enter().append("text")
+        .attr("x", interface_x)
+        .attr("y", interface_y)
+        .attr("class", "interface_label")
+        .attr("text-anchor", "middle") 
+        .attr("font-family", "helvetica") 
+        .attr("font-size", "small") 
+
+        //TODO: use a general accessor for x/y of nodes
+        interface_labels 
+        .attr("dx", interface_width/2) // padding-right
+        .attr("dy", -interface_height + 3) // vertical-align: middle
+        .text(interface_label);
+
+        interface_labels.transition()
+        .attr("x", interface_x)
+        .attr("y", interface_y)
+        .duration(500)
+
+        interface_labels.exit().transition()
+        .duration(1000)
+        .style("opacity",0)
+        .remove();
 
         //Link labels
 
