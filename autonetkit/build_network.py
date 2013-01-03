@@ -375,29 +375,12 @@ def build_phy(anm):
 def build_conn(anm):
     #TODO: see if this is still required
     G_in = anm['input']
-    G_phy = anm['phy']
     G_conn = anm.add_overlay("conn", directed = True)
     G_conn.add_nodes_from(G_in, retain=['label'])
     G_conn.add_edges_from(G_in.edges(type="physical"))
 
-    #if G_in.data.Creator == "Maestro":
-        #ank.copy_edge_attr_from(G_in, G_conn, "index")
-
     return
 
-#TODO: clean this bit out
-
-    import autonetkit.allocate_hardware
-    autonetkit.allocate_hardware.allocate(anm)
-
-    G_graphics = anm['graphics']
-
-    new_nodes = set(G_conn) - set(G_phy)
-    #G_graphics.add_nodes_from(new_nodes, retain = ['x', 'y', 'asn', "device_type", "device_subtype"])
-    for node in new_nodes:
-        G_graphics.add_node(node, retain = ['x', 'y', 'asn', "device_type", "device_subtype"])
-
-#TODO: Add a function to auto-update graphics, if any node present in overlay but not in graphics then add with sensible defaults
 
 def build_ospf(anm):
     """
