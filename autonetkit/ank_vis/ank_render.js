@@ -221,6 +221,7 @@ var propagate_revision_dropdown = function(d) {
 
 var propagate_node_label_select = function(d) {
     $("#node_label_select").empty();
+    d.unshift("None"); //Add option to clear edge labels
     node_label_select
         .selectAll("option")
         .data(d)
@@ -837,7 +838,6 @@ function redraw() {
     edge_attributes = _.uniq(edge_attributes);
     propagate_edge_group_select(edge_attributes);
 
-    display_interfaces = true;
     interface_attributes = [];
 
     //TODO: make this a memoized function to save computation
@@ -1044,6 +1044,20 @@ function redraw() {
             offset_y =interface_hypotenuse * Math.cos(angle);
             return node_y(d.node) + offset_y - interface_height/2;
         }
+        
+        var highlight_interfaces = function(d) {
+            console.log(d);
+            interfaces = d3.selectAll(".interface_icon");
+            //interfaces.filter(
+            console.log("data", interfaces);
+
+            //console.log(interfaces);
+            //for (interface in interfaces) {
+                //console.log(interface, interface.__data__);
+            //}
+            //
+            console.log("");
+        }
 
         interface_icons.enter().append("svg:rect")
             .attr("class", "interface_icon")
@@ -1057,6 +1071,8 @@ function redraw() {
             .attr("fill", "rgb(6,120,155)")
 
             .on("mouseover", function(d){
+                highlight_interfaces(d);
+                console.log(this);
                 d3.select(this).style("stroke", "orange");
                 d3.select(this).style("fill", "yellow");
                 d3.select(this).style("stroke-width", "2");
