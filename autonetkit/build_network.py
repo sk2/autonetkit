@@ -381,7 +381,6 @@ def build_conn(anm):
 
     return
 
-
 def build_ospf(anm):
     """
     Build OSPF graph.
