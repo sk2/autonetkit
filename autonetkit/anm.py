@@ -7,7 +7,6 @@ import autonetkit.log as log
 import functools
 import string
 
-
 try:
     import cPickle as pickle
 except ImportError:
