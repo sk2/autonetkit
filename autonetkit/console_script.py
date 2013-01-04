@@ -243,7 +243,10 @@ def compile_network(anm):
 
 def deploy_network(nidb, input_graph_string):
     import autonetkit.deploy.netkit as netkit_deploy
-    import autonetkit.deploy.cisco as cisco_deploy
+    try:
+        from autonetkit_cisco import deploy as cisco_deploy
+    except ImportError:
+        pass # development module, may not be available
     #TODO: make this driven from config file
     log.info("Deploying network")
 
@@ -260,13 +263,7 @@ def deploy_network(nidb, input_graph_string):
 
             if hostname == "internal":
                 if platform == "cisco":
-                    try:
-                        import autonetkit.deploy.worm as worm_deploy
-                    except ImportError:
-                        continue # development module, may not be available
-
-                    worm_deploy.package(nidb, config_path, input_graph_string)
-
+                    cisco_deploy.package(nidb, config_path, input_graph_string)
                 continue
 
             username = platform_data['username']

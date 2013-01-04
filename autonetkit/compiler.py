@@ -279,7 +279,7 @@ class Ios2Compiler(IosBaseCompiler):
         for interface in node.interfaces:
             ospf_link = G_ospf.edge(interface._edge_id) # find link in OSPF with this ID
             if ospf_link:
-                area = ospf_link.area
+                area = str(ospf_link.area)
                 interfaces_by_area[area].append( {
                     'id': interface.id,
                     'cost': ospf_link.cost,
@@ -287,7 +287,7 @@ class Ios2Compiler(IosBaseCompiler):
                     }) #TODO: make this use the same parameter format as other appends... (in nidb API)
 
 
-        router_area = G_ospf.node(node).area
+        router_area = str(G_ospf.node(node).area)
         interfaces_by_area[router_area].append( {
             'id': self.lo_interface,
             'cost': 0,
