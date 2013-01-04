@@ -1,10 +1,7 @@
 import time
-from collections import defaultdict
 import json
 import itertools
-import pprint
 import math
-import os
 import autonetkit.ank as ank_utils
 import autonetkit.log as log
 import autonetkit.messaging
@@ -14,9 +11,7 @@ from collections import defaultdict
 import netaddr
 import functools
 
-settings = autonetkit.config.settings
-rabbitmq_server = settings['Rabbitmq']['server']
-messaging = autonetkit.ank_messaging.AnkMessaging(rabbitmq_server)
+messaging = autonetkit.ank_messaging.AnkMessaging()
 
 #TODO: allow slack in allocations: both for ASN (group level), and for collision domains to allow new nodes to be easily added
 

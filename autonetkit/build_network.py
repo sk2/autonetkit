@@ -11,9 +11,7 @@ import autonetkit.exception
 import networkx as nx
 import os
 
-
 __all__ = ['build']
-
 
 rabbitmq_server = settings['Rabbitmq']['server']
 messaging = ank_messaging.AnkMessaging(rabbitmq_server)
@@ -30,10 +28,10 @@ def build(input_graph_string, timestamp):
     except autonetkit.exception.AnkIncorrectFileFormat:
 # try a different reader
         try:
-            import autonetkit.load.worm as worm
+            from autonetkit_cisco import load as cisco_load
         except ImportError:
             return # module not present (development module)
-        input_graph = worm.load(input_graph_string)
+        input_graph = cisco_load.load(input_graph_string)
 # add local deployment host
         settings['General']['deploy'] = True
         settings['Deploy Hosts']['internal'] = {
@@ -65,7 +63,6 @@ def build(input_graph_string, timestamp):
     expand_fqdn = False #TODO: make this set from config and also in the input file
     if expand_fqdn and len(ank.unique_attr(G_in, "asn")) > 1:
         # Multiple ASNs set, use label format device.asn 
-        print "set label"
         anm.set_node_label(".",  ['label', 'pop', 'asn'])
 
 #TODO: remove, used for demo on nectar
@@ -88,6 +85,7 @@ def build(input_graph_string, timestamp):
     #update_messaging(anm)
     #build_conn(anm)
     build_ip(anm)
+    build_ip6(anm)
     
     igp = G_in.data.igp or "ospf" #TODO: make default template driven
 #TODO: make the global igp be set on each node - this way can also support different IGPs per router
@@ -106,13 +104,11 @@ def build(input_graph_string, timestamp):
     build_bgp(anm)
 
     #TODO: provide an ANM wide function that allocates interfaces
+    #TODO: work out why some interfaces in bgp graph in vis have node data....
     for node in G_phy:
         for interface in node:
-            #print node, interface, "desc:", interface.description
             interface.speed = 102
-            #print interface.edges()
 
-        #print
 
     return anm
 
@@ -124,7 +120,6 @@ def boundary_nodes(G, nodes):
     based on edge_boundary from networkx """
     import autonetkit.ank as ank_utils
     graph = ank_utils.unwrap_graph(G)
-    #print graph_phy.nodes()
     nodes = list(nodes)
     nbunch = list(ank_utils.unwrap_nodes(nodes))
     # find boundary
@@ -146,6 +141,12 @@ def build_bgp(anm):
     G_bgp.add_nodes_from(G_in.nodes("is_router"))
     ebgp_edges = [edge for edge in G_in.edges() if not edge.attr_equal("asn")]
     G_bgp.add_edges_from(ebgp_edges, bidirectional = True, type = 'ebgp')
+
+
+#TODO: here we want to map to lo0
+    for node in G_bgp:
+        for interface in node:
+            interface.speed = 100
 
 # now iBGP
 #TODO: add flag for three iBGP types: full-mesh, algorithmic, custom
@@ -169,7 +170,6 @@ def build_bgp(anm):
                 # rr to rr (over)
                 over_links = [(rr1, rr2) for (rr1, rr2) in itertools.product(route_reflectors, route_reflectors)]
                 G_bgp.add_edges_from(over_links, type = 'ibgp', direction = 'over')
-                
 
                 # rr to rrc (down)
                 down_links = [(rr, client) for (rr, client) in itertools.product(route_reflectors, rr_clients)]
@@ -216,11 +216,9 @@ def build_bgp(anm):
                 G_bgp.add_edges_from(l1_l2_up_links, type = 'ibgp', direction = 'up')
                 G_bgp.add_edges_from(l1_l2_down_links, type = 'ibgp', direction = 'down')
 
-
                 l2_peer_links = [ (s, t) for (s, t) in all_pairs 
                         if s.ibgp_level == t.ibgp_level == 2 and s.ibgp_l2_cluster == t.ibgp_l2_cluster ]
                 G_bgp.add_edges_from(l2_peer_links, type = 'ibgp', direction = 'over')
-
 
                 l2_l3_up_links = [ (s, t) for (s, t) in all_pairs if s.ibgp_level == 2 and t.ibgp_level == 3
                         and s.ibgp_l3_cluster == t.ibgp_l3_cluster]
@@ -264,6 +262,25 @@ def build_bgp(anm):
     ebgp_nodes = [d for d in G_bgp if any(edge.type == 'ebgp' for edge in d.edges())]
     G_bgp.update(ebgp_nodes, ebgp=True)
 
+    for edge in G_bgp.edges(type = 'ibgp'):
+        #TODO: need interface querying/selection. rather than hard-coded ids
+        edge.bind_interface(edge.src, 0)
+
+    for node in G_bgp:
+        node._interfaces[0]['description'] = "loopback0"
+def build_ip6(anm):
+    import autonetkit.plugins.ip6 as ip6
+    # uses the nodes and edges from ipv4
+#TODO: make the nodes/edges common for IP, and then allocate after these
+#TODO: globally replace ip with ip4
+    G_ip6 = anm.add_overlay("ip6")
+    G_in = anm['input']
+    G_ip4 = anm['ip']
+    G_ip6.add_nodes_from(G_ip4, retain="collision_domain") # retain if collision domain or not
+    G_ip6.add_edges_from(G_ip4.edges())
+    ip6.allocate_ips(G_ip6) 
+
+
 def build_ip(anm):
     import autonetkit.plugins.ip as ip
     G_ip = anm.add_overlay("ip")
@@ -273,6 +290,8 @@ def build_ip(anm):
 
     G_ip.add_nodes_from(G_in)
     G_ip.add_edges_from(G_in.edges(type="physical"))
+
+#TODO: need to look at if allocate_v6 is specified: ie manually set
 
     ank.aggregate_nodes(G_ip, G_ip.nodes("is_switch"), retain = "edge_id")
 #TODO: add function to update edge properties: can overload node update?
@@ -296,6 +315,8 @@ def build_ip(anm):
     for node in split_created_nodes:
         if ank.neigh_equal(G_ip, node, "host", G_phy):
             node.host = ank.neigh_attr(G_ip, node, "host", G_phy).next() # first attribute
+
+    #TODO: Need to allocate interfaces or appropriate bypass for collision domain nodes
 
 # set collision domain IPs
 #TODO: trim next line
@@ -369,30 +390,11 @@ def build_phy(anm):
 def build_conn(anm):
     #TODO: see if this is still required
     G_in = anm['input']
-    G_phy = anm['phy']
     G_conn = anm.add_overlay("conn", directed = True)
     G_conn.add_nodes_from(G_in, retain=['label'])
     G_conn.add_edges_from(G_in.edges(type="physical"))
 
-    #if G_in.data.Creator == "Maestro":
-        #ank.copy_edge_attr_from(G_in, G_conn, "index")
-
     return
-
-#TODO: clean this bit out
-
-    import autonetkit.allocate_hardware
-    autonetkit.allocate_hardware.allocate(anm)
-
-    G_graphics = anm['graphics']
-
-    new_nodes = set(G_conn) - set(G_phy)
-    #G_graphics.add_nodes_from(new_nodes, retain = ['x', 'y', 'asn', "device_type", "device_subtype"])
-    for node in new_nodes:
-        G_graphics.add_node(node, retain = ['x', 'y', 'asn', "device_type", "device_subtype"])
-        #print node['graphics'].dump()
-
-#TODO: Add a function to auto-update graphics, if any node present in overlay but not in graphics then add with sensible defaults
 
 def build_ospf(anm):
     """
@@ -444,7 +446,6 @@ def build_ospf(anm):
                     router.area = default_area
 
 
-
     for router in G_ospf:
 # and set area on interface
         for edge in router.edges():
@@ -459,7 +460,6 @@ def build_ospf(anm):
                         edge.area = edge.dst.area # router in backbone, use other area
                     else:
                         edge.area = router.area # router not in backbone, use its area
-
 
     for router in G_ospf:
         areas = set(edge.area for edge in router.edges())
