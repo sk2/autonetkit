@@ -16,7 +16,7 @@ if use_http_post:
 
 class AnkMessaging(object):
 
-    def __init__(self, host):
+    def __init__(self, host = None):
         try:
             if use_rabbitmq:
                 log.debug("Using Rabbitmq with server %s " % host)
