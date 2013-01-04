@@ -34,6 +34,7 @@ var interface_label_id = "";
 ws.onmessage = function (evt) {
     var data = jQuery.parseJSON(evt.data);
     //TODO: parse to see if valid traceroute path or other data
+    console.log(data);
     if ("graph" in data) {
         if (overlay_id != "ip_allocations") {
             jsondata = data;
@@ -95,7 +96,7 @@ function redraw_ip_allocations() {
         //.projection(function(d) { return [d.y + 100, d.x]; });
         .projection(function(d) { return [d.y + 80, d.x]; });
 
-    var layout = d3.layout.tree().size([700,700]);
+    var layout = d3.layout.tree().size([700,500]);
 
     var nodes = layout.nodes(ip_allocations);
     if (ip_allocations.length == 0) {

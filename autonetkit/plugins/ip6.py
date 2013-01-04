@@ -46,8 +46,8 @@ def allocate_ips(G_ip):
     loopback_pool = global_pool.next().subnet(80)
     infra_pool = global_pool.next().subnet(80)
 
-    loopback_pool.next() # network address
-    infra_pool.next() # network address
+    loopback_network = loopback_pool.next() # network address
+    infra_network = infra_pool.next() # network address
 
     unique_asns = set(n.asn for n in G_ip)
     for asn in sorted(unique_asns):
@@ -85,20 +85,63 @@ def allocate_ips(G_ip):
         loopback_hosts = loopback_blocks[asn].iter_hosts()
         loopback_hosts.next() # drop .0 as a host address (valid but can be confusing)
         l3hosts = set(d for d in devices if d.is_l3device)
-        for host in l3hosts:
+        for host in sorted(l3hosts):
             host.loopback = loopback_hosts.next()
 
     # Store allocations for routing advertisement
     G_ip.data.infra_blocks = infra_blocks
     G_ip.data.loopback_blocks = loopback_blocks
 
-    print "done"
+    jsontree = {}
+    infra_tree = []
+    loopback_tree = []
 
-    jsontree = {} 
+    for asn in unique_asns:
+        children = []
+        for cd in G_ip.nodes('collision_domain', asn = asn):
+            cd_children = []
+            for edge in cd.edges():
+                cd_children.append( {
+                    'name': "%s %s" % (edge.ip, edge.dst),
+                    'subnet': edge.ip,
+                    })
+            children.append({
+                    'name': "%s %s" % (cd.subnet, cd.id),
+                    'subnet': cd.subnet,
+                    'children': cd_children,
+                    })
+        asn_infra_tree = {'subnet': infra_blocks[asn], 'name': "AS%s" % asn, 'children': children}
+        infra_tree.append( asn_infra_tree)
+
+
+        children = []
+        for host in sorted(G_ip.nodes("is_l3device", asn = asn)):
+            children.append({
+                'name': "%s %s" % (host.loopback, host.id),
+                'subnet': host.loopback,
+                })
+        loopback_tree.append({
+            'name': 'AS%s' % asn,
+            'subnet': loopback_blocks[asn],
+            'children': children,
+            })
+
+
+
+    infra_tree = {'name': "infra %s" % infra_network, 'children': infra_tree}
+    loopback_tree = {'name': "loopback %s" % loopback_network, 'subnet': '1.2.3.4', 'children': loopback_tree}
+
+    total_tree = {
+            'name': "IPv6",
+            'children': 
+            [loopback_tree, infra_tree],
+            #[infra_tree],
+            }
+
+    jsontree = json.dumps(total_tree, cls=autonetkit.ank_json.AnkEncoder, indent = 4)
+    
     body = json.dumps({"ip_allocations": jsontree})
     messaging.publish_compressed("www", "client", body)
-
-
 
 
 #TODO: need to update with loopbacks if wish to advertise also - or subdivide blocks?
