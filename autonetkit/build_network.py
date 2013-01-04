@@ -85,6 +85,7 @@ def build(input_graph_string, timestamp):
     #update_messaging(anm)
     #build_conn(anm)
     build_ip(anm)
+    build_ip6(anm)
     
     igp = G_in.data.igp or "ospf" #TODO: make default template driven
 #TODO: make the global igp be set on each node - this way can also support different IGPs per router
@@ -267,6 +268,18 @@ def build_bgp(anm):
 
     for node in G_bgp:
         node._interfaces[0]['description'] = "loopback0"
+def build_ip6(anm):
+    import autonetkit.plugins.ip6 as ip6
+    # uses the nodes and edges from ipv4
+#TODO: make the nodes/edges common for IP, and then allocate after these
+#TODO: globally replace ip with ip4
+    G_ip6 = anm.add_overlay("ip6")
+    G_in = anm['input']
+    G_ip4 = anm['ip']
+    G_ip6.add_nodes_from(G_ip4, retain="collision_domain") # retain if collision domain or not
+    G_ip6.add_edges_from(G_ip4.edges())
+    ip6.allocate_ips(G_ip6) 
+
 
 def build_ip(anm):
     import autonetkit.plugins.ip as ip
@@ -277,6 +290,8 @@ def build_ip(anm):
 
     G_ip.add_nodes_from(G_in)
     G_ip.add_edges_from(G_in.edges(type="physical"))
+
+#TODO: need to look at if allocate_v6 is specified: ie manually set
 
     ank.aggregate_nodes(G_ip, G_ip.nodes("is_switch"), retain = "edge_id")
 #TODO: add function to update edge properties: can overload node update?
