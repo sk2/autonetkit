@@ -1,22 +1,11 @@
-import time
-from collections import defaultdict
 import json
-import itertools
-import pprint
-import math
-import os
 import autonetkit.ank as ank_utils
 import autonetkit.log as log
 import autonetkit.messaging
 import autonetkit.ank_json
-import networkx as nx
-from collections import defaultdict
 import netaddr
-import functools
 
-settings = autonetkit.config.settings
-rabbitmq_server = settings['Rabbitmq']['server']
-messaging = autonetkit.ank_messaging.AnkMessaging(rabbitmq_server)
+messaging = autonetkit.ank_messaging.AnkMessaging()
 
 #TODO: allow slack in allocations: both for ASN (group level), and for collision domains to allow new nodes to be easily added
 
@@ -104,6 +93,10 @@ def allocate_ips(G_ip):
     G_ip.data.loopback_blocks = loopback_blocks
 
     print "done"
+
+    jsontree = {} 
+    body = json.dumps({"ip_allocations": jsontree})
+    messaging.publish_compressed("www", "client", body)
 
 
 
