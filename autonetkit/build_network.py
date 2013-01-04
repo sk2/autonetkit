@@ -28,10 +28,10 @@ def build(input_graph_string, timestamp):
     except autonetkit.exception.AnkIncorrectFileFormat:
 # try a different reader
         try:
-            import autonetkit.load.worm as worm
+            from autonetkit_cisco import load as cisco_load
         except ImportError:
             return # module not present (development module)
-        input_graph = worm.load(input_graph_string)
+        input_graph = cisco_load.load(input_graph_string)
 # add local deployment host
         settings['General']['deploy'] = True
         settings['Deploy Hosts']['internal'] = {
