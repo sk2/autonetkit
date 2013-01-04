@@ -52,6 +52,13 @@ lookup = TemplateLookup(directories=[resource_path("")],
                         cache_enabled=True,
                        )
 
+try:
+    import autonetkit_cisco # test if can import, if not present will fail and not add to template path
+    cisco_templates = pkg_resources.resource_filename("autonetkit_cisco", "")
+    lookup.directories.append(cisco_templates)
+except ImportError:
+    pass # Cisco ANK not present
+
 #TODO: make a render class, that caches traversed folders for speed
 
 #TODO: Add support for both src template and src folder (eg for quagga, servers)

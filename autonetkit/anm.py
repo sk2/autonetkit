@@ -2,11 +2,10 @@ import networkx as nx
 import itertools
 import pprint
 import time
-from ank_utils import unwrap_edges
+from ank_utils import unwrap_edges, unwrap_nodes
 import autonetkit.log as log
 import functools
 import string
-
 
 try:
     import cPickle as pickle
@@ -156,18 +155,8 @@ class overlay_interface(object):
     def edges(self):
         """Returns all edges from node that have this interface ID
         This is the convention for binding an edge to an interface"""
-        all_edges = [edge for edge in self.node.edges()]
-        if self._graph.is_directed():
-            valid_edges = [ e for e in all_edges if e.int_id == self.interface_id]
-        else:
-# undirected, need to check both the source and destination interface_id values
-#TODO: work out the combinations: if iterating over a node's edges then .src and .dst can be reversed?
-            valid_edges = [e for e in all_edges
-                    if (e.src == self.node_id and e.src_int_id == self.interface_id)
-                    or (e.src == self.node_id and e.dst_int_id == self.interface_id)]
+        valid_edges = [ e for e in self.node.edges() if self.interface_id in e._interfaces]
         return valid_edges
-
-
 
 @functools.total_ordering
 class overlay_node(object):
@@ -242,7 +231,7 @@ class overlay_node(object):
     @property
     def _next_int_id(self):
 # returns next free interface ID 
-        for int_id in itertools.count():
+        for int_id in itertools.count(1): # start at 1 as 0 is loopback
             if int_id not in self._interfaces:
                 return int_id
 
@@ -443,6 +432,11 @@ class overlay_edge(object):
             return True
         except KeyError:
             return False
+        
+    def bind_interface(self, node, interface):
+        #TODO: need to handle both nodes and node ids
+        #TODO: need to handle both interfaces and interface ids
+        self._interfaces[node.id] = interface
 
     @property
     def overlay(self):
@@ -545,7 +539,7 @@ class OverlayBase(object):
             for node in self:
                 if str(node) == key:
                     return node
-            print "Unable to find node", key, "in", self
+            log.warning( "Unable to find node %s in %s " % (key, self))
             return None
 
 #TODO: Allow overlay data to be set/get, ie graph.graph eg for asn subnet allocations
@@ -693,11 +687,19 @@ class overlay_graph(OverlayBase):
     # these work similar to their nx counterparts: just need to strip the node_id
     def add_nodes_from(self, nbunch, retain=[], update = False, **kwargs):
         """Update won't append data (which could clobber) if node exists"""
+        #Can't just append _interfaces or won't work for copying from G_in
         try:
             retain.lower()
             retain = [retain] # was a string, put into list
         except AttributeError:
             pass # already a list
+
+        if not update:
+# filter out existing nodes
+            nbunch = (n for n in nbunch if n not in self._graph)
+
+        nbunch = list(nbunch);
+        node_ids = list(nbunch) # before appending retain data
 
         if len(retain):
             add_nodes = []
@@ -708,12 +710,11 @@ class overlay_graph(OverlayBase):
         else:
             nbunch = (n.node_id for n in nbunch) # only store the id in overlay
 
-        if not update:
-# filter out existing nodes
-            nbunch = (n for n in nbunch if n not in self._graph)
+#TODO: need to copy across _interfaces keys
+
         nbunch = list(nbunch)
         self._graph.add_nodes_from(nbunch, **kwargs)
-        self._init_interfaces()
+        self._init_interfaces(node_ids)
 
     def add_node(self, node, retain=[], **kwargs):
         try:
@@ -732,19 +733,38 @@ class overlay_graph(OverlayBase):
             data = dict( (key, node.get(key)) for key in retain)
             kwargs.update(data) # also use the retained data
         self._graph.add_node(node_id, kwargs)
-        self._init_interfaces()
+        self._init_interfaces([node_id])
 
-    def _init_interfaces(self):
+    def _init_interfaces(self, nbunch = None):
         #TODO: make this more efficient by taking in the newly added node ids as a parameter
-        for node, data in self._graph.nodes(data=True):
-            if not '_interfaces' in data:
-                self._graph.node[node]['_interfaces'] = {}
+        if not nbunch:
+            nbunch = [n for n in self._graph.nodes()]
+
+        try:
+            nbunch = list(unwrap_nodes(nbunch))
+        except AttributeError:
+            pass # don't need to unwrap
+
+        phy_graph = self._anm._overlays["phy"]
+        
+        for node in nbunch:
+            #TODO: tidy up this hardcoded logic
+            try:
+                phy_interfaces = phy_graph.node[node]["_interfaces"]
+                data = dict( (key, {}) for key in phy_interfaces)
+                self._graph.node[node]['_interfaces'] = data
+            except KeyError:
+# no counterpart in physical graph, initialise
+                log.debug("Initialise interfaces for %s in %s" % (node, self._overlay_id))
+                self._graph.node[node]['_interfaces'] = {0: {'description': 'loopback'}}
+
 
     def allocate_interfaces(self):
         #TODO: take in a list of edges to use to map
         """allocates edges to interfaces"""
 #TODO: only allocate if not allocated
         #int_counter = (n for n in itertools.count() if n not in 
+        self._init_interfaces()
 
 #TODO: take in nbunch of nodes to allocate for
         ebunch = (e for e in self.edges())
@@ -753,8 +773,9 @@ class overlay_graph(OverlayBase):
             dst = edge.dst
             src_int_id = src._add_interface('link to %s' % dst)
             dst_int_id = dst._add_interface('link to %s' % src)
-            edge.src_int_id = src_int_id
-            edge.dst_int_id = dst_int_id
+            edge._interfaces = {}
+            edge._interfaces[src.id] = src_int_id
+            edge._interfaces[dst.id] = dst_int_id
 
     def remove_node(self, node, **kwargs):
         try:
@@ -797,7 +818,7 @@ class overlay_graph(OverlayBase):
             pass # already a list
 
         retain.append("edge_id")
-        retain.append("interface_id")
+        retain.append("_interfaces")
         try:
             if len(retain):
                 #TODO: cleanup this logic: will always at least retain edge_id
@@ -809,15 +830,16 @@ class overlay_graph(OverlayBase):
             else:
                 ebunch = [(e.src.node_id, e.dst.node_id, {}) for e in ebunch]
         except AttributeError:
-            ebunch = [(src.node_id, dst.node_id, {}) for src, dst in ebunch]
+            data = {"_interfaces": {}} #TODO: bind this to a default interface on both
+            ebunch = [(src.node_id, dst.node_id, data) for src, dst in ebunch]
 
         ebunch = [(src, dst, data) for (src, dst, data) in ebunch if src in self._graph and dst in self._graph]
         if bidirectional:
+            #TODO: need to filter out the other interface for bi-directional inks
             ebunch += [(dst, src, data) for (src, dst, data) in ebunch if src in self._graph and dst in self._graph]
 #TODO: log to debug any filtered out nodes... if if lengths not the same
 
         #TODO: decide if want to allow nodes to be created when adding edge if not already in graph
-        ebunch = list(ebunch)
         self._graph.add_edges_from(ebunch, **kwargs)
 
     def update(self, nbunch, **kwargs):
@@ -855,7 +877,6 @@ class AbstractNetworkModel(object):
         self.label_attrs = ['label']
         self._build_node_label()
         self.timestamp =  time.strftime("%Y%m%d_%H%M%S", time.localtime())
-        
         
     def __getnewargs__(self):
         return ()
@@ -933,7 +954,9 @@ class AbstractNetworkModel(object):
         elif directed and not multi_edge:
             graph = nx.MultiDiGraph()
         self._overlays[name] = graph
-        return overlay_graph(self, name)
+        overlay =  overlay_graph(self, name)
+        overlay.allocate_interfaces()
+        return overlay
 
     @property
     def overlay(self):
