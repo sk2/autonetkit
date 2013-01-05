@@ -55,7 +55,6 @@ def allocate_ips(G_ip):
         infra_blocks[asn] = infra_pool.next()
 
     for asn, devices in G_ip.groupby("asn").items():
-        print asn, infra_blocks[asn]
         subnets = infra_blocks[asn].subnet(96)
         subnets.next() # network address
         ptp_subnet = subnets.next().subnet(126)
@@ -126,8 +125,6 @@ def allocate_ips(G_ip):
             'children': children,
             })
 
-
-
     infra_tree = {'name': "infra %s" % infra_network, 'children': infra_tree}
     loopback_tree = {'name': "loopback %s" % loopback_network, 'subnet': '1.2.3.4', 'children': loopback_tree}
 
@@ -141,7 +138,7 @@ def allocate_ips(G_ip):
     jsontree = json.dumps(total_tree, cls=autonetkit.ank_json.AnkEncoder, indent = 4)
     
     body = json.dumps({"ip_allocations": jsontree})
-    messaging.publish_compressed("www", "client", body)
+    #messaging.publish_compressed("www", "client", body)
 
 
 #TODO: need to update with loopbacks if wish to advertise also - or subdivide blocks?
