@@ -28,8 +28,11 @@ def build(input_data, timestamp):
 
     # hierarchical
     G_ibgp = anm.add_overlay("ibgp_rr", G_in.nodes("is_router"), retain = "route_reflector", directed = True)
-    #G_ibgp.add_edges_from(((s, t) for s in routers for t in routers if s.asn == t.asn), bidirectional = True)
-    route_reflectors = [r for r in G_ibgp if r.route_reflector]
-    print route_reflectors
+    rrs = set(r for r in G_ibgp if r.route_reflector)
+    clients = set(G_ibgp) - rrs
+    G_ibgp.add_edges_from(((s, t) for s in clients for t in rrs), direction = "up")
+    G_ibgp.add_edges_from(((s, t) for s in rrs for t in clients), direction = "down")
+    G_ibgp.add_edges_from(((s, t) for s in rrs for t in rrs), direction = "over")
+
     
     return anm
