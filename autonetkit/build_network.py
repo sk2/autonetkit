@@ -50,8 +50,8 @@ def build(input_graph_string, timestamp):
         #del input_graph.node[node]['device_subtype']
         pass
     #nx.write_graphml(input_graph, "output.graphml")
-    G_in = anm.add_overlay("input", input_undirected)
-    G_in_directed = anm.add_overlay("input_directed", input_graph, directed = True)
+    G_in = anm.add_overlay("input", graph = input_undirected)
+    G_in_directed = anm.add_overlay("input_directed", graph = input_graph, directed = True)
 
 # set defaults
     if not G_in.data.specified_int_names:
@@ -108,7 +108,6 @@ def build(input_graph_string, timestamp):
     for node in G_phy:
         for interface in node:
             interface.speed = 102
-
 
     return anm
 
