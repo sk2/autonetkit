@@ -941,7 +941,7 @@ class AbstractNetworkModel(object):
     def _phy(self):
         return overlay_graph(self, "phy")
 
-    def add_overlay(self, name, nodes = None, graph = None, directed=False, multi_edge=False, ):
+    def add_overlay(self, name, nodes = None, graph = None, directed=False, multi_edge=False, retain = None ):
         """Adds overlay graph of name name"""
 #TODO: allow retain to be specified and passed through to the add_nodes_from call
         if graph:
@@ -964,7 +964,8 @@ class AbstractNetworkModel(object):
         overlay =  overlay_graph(self, name)
         overlay.allocate_interfaces()
         if nodes:
-            overlay.add_nodes_from(nodes)
+            retain = retain or [] # default is an empty list
+            overlay.add_nodes_from(nodes, retain)
         return overlay
 
     @property
