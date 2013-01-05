@@ -943,16 +943,23 @@ class AbstractNetworkModel(object):
 
     def add_overlay(self, name, nodes = None, graph = None, directed=False, multi_edge=False, ):
         """Adds overlay graph of name name"""
+#TODO: allow retain to be specified and passed through to the add_nodes_from call
         if graph:
-            pass
-        elif not directed and not multi_edge:
-            graph = nx.Graph()
-        elif directed and not multi_edge:
-            graph = nx.DiGraph()
-        elif not directed and multi_edge:
-            graph = nx.MultiGraph()
-        elif directed and not multi_edge:
-            graph = nx.MultiDiGraph()
+            if not directed and graph.is_directed():
+                log.info("Converting graph %s to undirected")
+                graph = nx.Graph(graph)
+
+        elif directed:
+            if multi_edge:
+                graph = nx.MultiDiGraph()
+            else:
+                graph = nx.DiGraph()
+        else:
+            if multi_edge:
+                graph = nx.MultiGraph()
+            else:
+                graph = nx.Graph()
+
         self._overlays[name] = graph
         overlay =  overlay_graph(self, name)
         overlay.allocate_interfaces()
