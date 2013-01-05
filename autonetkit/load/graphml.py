@@ -23,6 +23,7 @@ def load_graphml(input_graph_string):
 
     # remove selfloops
     graph.remove_edges_from(edge for edge in graph.selfloop_edges())
+#TODO: if selfloops then log that are removing
 
     letters_single = (c for c in string.lowercase) # a, b, c, ... z
     letters_double = ("%s%s" % (a, b) for (a, b) in itertools.product(string.lowercase, string.lowercase)) # aa, ab, ... zz
@@ -46,6 +47,21 @@ def load_graphml(input_graph_string):
         if key not in graph.graph:
             graph.graph[key] = val
 
+    # handle yEd exported booleans: if a boolean is set, then only the nodes marked true have the attribute. need to map the remainder to be false to allow ANK logic 
+    #for node in graph.nodes(data=True):
+        #print node
+
+    boolean_attributes = set( k for n, d in graph.nodes(data=True)
+            for k, v in d.items()
+            if isinstance(v, bool)
+            )
+
+    for node in graph:
+        for attr in boolean_attributes:
+            if attr not in graph.node[node]:
+                graph.node[node][attr] = False
+
+
 #TODO: store these in config file
     ank_node_defaults = settings['Graphml']['Node Defaults']
     node_defaults = graph.graph['node_default'] # update with defaults from graphml
@@ -63,6 +79,7 @@ def load_graphml(input_graph_string):
         for key, val in node_defaults.items():
             if key not in graph.node[node]:
                 graph.node[node][key] = val
+
 
     # map lat/lon from zoo to crude x/y approximation
     if graph.graph.get('Creator') == "Topology Zoo Toolset":
@@ -137,6 +154,8 @@ def load_graphml(input_graph_string):
     mapping = dict( (n, d['label']) for n, d in graph.nodes(data=True))
     if not all( key == val for key, val in mapping.items()):
         nx.relabel_nodes(graph, mapping, copy=False) # Networkx wipes data if remap with same labels
+
+
     return graph
 
 
