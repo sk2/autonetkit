@@ -48,3 +48,6 @@ autonetkit_v3_dev.egg-info/*
 *.virl
 
 example.graphml3
+*.graphml
+*.pickle
+*.gml
