@@ -9,6 +9,7 @@ import autonetkit.log as log
 import autonetkit.exception
 #TODO: fallback to python if cStringIO version is not available
 from cStringIO import StringIO
+from collections import defaultdict
 
 def load_graphml(input_graph_string):
     #TODO: allow default properties to be passed in as dicts
@@ -50,6 +51,22 @@ def load_graphml(input_graph_string):
     # handle yEd exported booleans: if a boolean is set, then only the nodes marked true have the attribute. need to map the remainder to be false to allow ANK logic 
     #for node in graph.nodes(data=True):
         #print node
+
+    all_labels = dict((n, d.get('label')) for n, d in graph.nodes(data=True))
+    label_counts = defaultdict(list)
+    for (node, label) in all_labels.items():
+        label_counts[label].append(node)
+
+    # set default name for blank labels to ensure unique
+    blank_labels = [v for k, v in label_counts.items() if not k].pop() # strip outer list
+    for index, node in enumerate(blank_labels):
+        #TODO: log message that no label set, so setting default
+        graph.node[node]['label'] = "none___%s" % index
+
+    duplicates = [(k, v) for k, v in label_counts.items() if k and len(v) > 1]
+    for label, nodes in duplicates:
+        for node in nodes:
+            graph.node[node]['label'] = "%s_%s" % (graph.node[node]['label'], graph.node[node]['asn'])
 
     boolean_attributes = set( k for n, d in graph.nodes(data=True)
             for k, v in d.items()
@@ -150,16 +167,13 @@ def load_graphml(input_graph_string):
 # relabel nodes
 #other handling... split this into seperate module!
 # relabel based on label: assume unique by now!
-    if graph.graph.get("Network") == "European NRENs":
+    #if graph.graph.get("Network") == "European NRENs":
+        #TODO: test if non-unique labels, if so then warn and proceed with this logic
         # we need to map node ids to contain network to ensure unique labels
-        mapping = dict( (n, "%s__%s" % (d['label'], d['asn'])) for n, d in graph.nodes(data=True))
-    else:
-        mapping = dict( (n, d['label']) for n, d in graph.nodes(data=True))
+        #mapping = dict( (n, "%s__%s" % (d['label'], d['asn'])) for n, d in graph.nodes(data=True))
+
+    mapping = dict( (n, d['label']) for n, d in graph.nodes(data=True))
     if not all( key == val for key, val in mapping.items()):
         nx.relabel_nodes(graph, mapping, copy=False) # Networkx wipes data if remap with same labels
 
-    print len(graph)
-
     return graph
-
-
