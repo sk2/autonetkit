@@ -80,7 +80,6 @@ def load_graphml(input_graph_string):
             if key not in graph.node[node]:
                 graph.node[node][key] = val
 
-
     # map lat/lon from zoo to crude x/y approximation
     if graph.graph.get('Creator') == "Topology Zoo Toolset":
         all_lat = [graph.node[n].get('Latitude') for n in graph
@@ -151,10 +150,15 @@ def load_graphml(input_graph_string):
 # relabel nodes
 #other handling... split this into seperate module!
 # relabel based on label: assume unique by now!
-    mapping = dict( (n, d['label']) for n, d in graph.nodes(data=True))
+    if graph.graph.get("Network") == "European NRENs":
+        # we need to map node ids to contain network to ensure unique labels
+        mapping = dict( (n, "%s__%s" % (d['label'], d['asn'])) for n, d in graph.nodes(data=True))
+    else:
+        mapping = dict( (n, d['label']) for n, d in graph.nodes(data=True))
     if not all( key == val for key, val in mapping.items()):
         nx.relabel_nodes(graph, mapping, copy=False) # Networkx wipes data if remap with same labels
 
+    print len(graph)
 
     return graph
 
