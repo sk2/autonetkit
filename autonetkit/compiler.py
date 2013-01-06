@@ -139,7 +139,6 @@ class RouterCompiler(object):
                 })
 
         node.bgp.ebgp_neighbors.sort("asn")
-        #pprint.pprint(node.bgp.ebgp_neighbors.dump())
 
         return
 
@@ -532,6 +531,7 @@ class CiscoCompiler(PlatformCompiler):
                     edge.id = int_ids.next()
 
             ios2_compiler.compile(nidb_node)
+
 
         other_nodes = [phy_node for phy_node in G_phy.nodes('is_router', host = self.host)
                 if phy_node.syntax not in ("ios", "ios2")]
