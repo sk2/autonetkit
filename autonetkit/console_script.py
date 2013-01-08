@@ -45,7 +45,7 @@ class FileMonitor(object):
         return False
 
 def manage_network(input_graph_string, timestamp, build_options, reload_build=False):
-    import build_network
+    import build_network_simple as build_network
     if reload_build:
 # remap?
         build_network = reload(build_network)
@@ -54,9 +54,15 @@ def manage_network(input_graph_string, timestamp, build_options, reload_build=Fa
     rabbitmq_server = settings['Rabbitmq']['server']
     messaging = ank_messaging.AnkMessaging(rabbitmq_server)
 
-    if build_options['compile']:
+    if build_options['build']:
         anm = build_network.build(input_graph_string, timestamp)
+        if not build_options['compile']:
+            # publish without nidb
+            import autonetkit.ank_json
+            body = autonetkit.ank_json.dumps(anm)
+            messaging.publish_compressed("www", "client", body)
 
+    if build_options['compile']:
         if build_options['archive']:
             anm.save()
         nidb = compile_network(anm)
@@ -70,7 +76,8 @@ def manage_network(input_graph_string, timestamp, build_options, reload_build=Fa
         if build_options['render']:
             render.render(nidb)
 
-    else:
+    if not(build_options['build'] or build_options['compile']):
+        # Load from last run
         import autonetkit.anm
         anm = autonetkit.anm.AbstractNetworkModel()
         anm.restore_latest()
@@ -116,6 +123,7 @@ def parse_options():
     parser.add_argument('--debug',  action="store_true", default= False, help="Debug mode")        
     parser.add_argument('--diff',  action="store_true", default= False, help="Diff NIDB")        
     parser.add_argument('--compile',  action="store_true", default= False, help="Compile")        
+    parser.add_argument('--build',  action="store_true", default= False, help="Build")        
     parser.add_argument('--render',  action="store_true", default= False, help="Compile")        
     parser.add_argument('--deploy',  action="store_true", default= False, help="Deploy")        
     parser.add_argument('--archive',  action="store_true", default= False, help="Archive ANM, NIDB, and IP allocations")        
@@ -141,6 +149,7 @@ def main():
     build_options = {
             'compile':  options.compile or settings['General']['compile'],
             'render':  options.render or settings['General']['render'],
+            'build':  options.build or settings['General']['build'],
             'deploy': options.deploy or settings['General']['deploy'],
             'measure': options.measure or settings['General']['measure'],
             'monitor': options.monitor or settings['General']['monitor'],

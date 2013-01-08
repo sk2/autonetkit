@@ -5,6 +5,7 @@ import pprint
 import itertools
 import autonetkit.log as log
 
+#TODO: need to handle case of switches along path.... won't work for just router connectivity path lengths
 def allocate(G_phy, G_bgp):
     log.info("Allocating route reflectors")
     graph_phy = G_phy._graph

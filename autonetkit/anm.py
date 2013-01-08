@@ -801,6 +801,9 @@ class overlay_graph(OverlayBase):
         self._graph.remove_edges_from(ebunch)
 
 
+    def add_edges(self, *args, **kwargs):
+        self.add_edges_from(args, kwargs)
+
     def add_edges_from(self, ebunch, bidirectional = False, retain=[], **kwargs):
         """Add edges. Unlike NetworkX, can only add an edge if both src and dst in graph already.
         If they are not, then they will not be added (silently ignored)
@@ -941,21 +944,31 @@ class AbstractNetworkModel(object):
     def _phy(self):
         return overlay_graph(self, "phy")
 
-    def add_overlay(self, name, graph = None, directed=False, multi_edge=False):
+    def add_overlay(self, name, nodes = None, graph = None, directed=False, multi_edge=False, retain = None ):
         """Adds overlay graph of name name"""
+#TODO: allow retain to be specified and passed through to the add_nodes_from call
         if graph:
-            pass
-        elif not directed and not multi_edge:
-            graph = nx.Graph()
-        elif directed and not multi_edge:
-            graph = nx.DiGraph()
-        elif not directed and multi_edge:
-            graph = nx.MultiGraph()
-        elif directed and not multi_edge:
-            graph = nx.MultiDiGraph()
+            if not directed and graph.is_directed():
+                log.info("Converting graph %s to undirected")
+                graph = nx.Graph(graph)
+
+        elif directed:
+            if multi_edge:
+                graph = nx.MultiDiGraph()
+            else:
+                graph = nx.DiGraph()
+        else:
+            if multi_edge:
+                graph = nx.MultiGraph()
+            else:
+                graph = nx.Graph()
+
         self._overlays[name] = graph
         overlay =  overlay_graph(self, name)
         overlay.allocate_interfaces()
+        if nodes:
+            retain = retain or [] # default is an empty list
+            overlay.add_nodes_from(nodes, retain)
         return overlay
 
     @property
