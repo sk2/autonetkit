@@ -319,7 +319,7 @@ def build_ip(anm):
 
 # set collision domain IPs
 #TODO: trim next line
-    collision_domain_id = itertools.count(0)
+    collision_domain_id = itertools.count(0) # TODO: remove this, as isn't needed as set id to be based on neighbors
     for node in G_ip.nodes("collision_domain"):
         graphics_node = G_graphics.node(node)
         graphics_node.device_type = "collision_domain"
