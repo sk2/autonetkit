@@ -1,7 +1,7 @@
 body
 {
   font-family:"Palatino Linotype", "Book Antiqua", Palatino, serif;
-  background-color: #eee;
+  background-color: rgb(240, 239, 255);
   color: #333;
 }
 
@@ -26,7 +26,6 @@ marker {
   font: 10px sans-serif;
   background-color: steelblue;
   text-align: right;
-  padding: 3px;
   margin: 1px;
   color: white;
 }
@@ -38,7 +37,6 @@ marker {
   width:15%;
   top: 10px;
   border: 1px solid steelblue;
-  border-radius: 10px;
   height: 90%;
   padding: 5px;
   background-color: white;
@@ -55,20 +53,14 @@ marker {
   position:absolute;
   top: 10px;
   height: 30px;
-  width: 98%;
-  border: 1px solid steelblue;
-  border-radius: 10px;
-  padding: 5px;
-  background-color: white;
+  width: 99%;
+  border-bottom: 1px solid #333;
 }
 
 .visualisation {
   position:absolute;
-  top: 60px;
-  border: 1px solid steelblue;
-  border-radius: 10px;
-  padding: 5px;
-  width: 98%;
+  top: 45px;
+  width: 99%;
   height: 90%;
   background-color: rgb(240, 239, 255);
 }
@@ -82,5 +74,3 @@ marker {
 }
 
 
-label {}
-input[type="checkbox"] { display: none; }
