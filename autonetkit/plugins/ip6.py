@@ -1,7 +1,6 @@
 import json
 import autonetkit.ank as ank_utils
 import autonetkit.log as log
-import autonetkit.messaging
 import autonetkit.ank_json
 import netaddr
 
