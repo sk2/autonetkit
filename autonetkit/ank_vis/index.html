@@ -5,6 +5,8 @@
     <script type="text/javascript" src="jquery-1.7.2.min.js"></script>
     <script type="text/javascript" src="underscore-min.js"></script>
     <script type="text/javascript" src="jquery.tipsy.js"></script>
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css" />
+    <script src="http://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
     <link href="tipsy.css" rel="stylesheet" type="text/css" />
     <title>AutoNetkit</title>
 
@@ -20,7 +22,7 @@
 
     <div class="navbar"><b>AutoNetkit |</b>
       Overlay: <select id = "overlay_select"></select>
-      Rev: <select id = "revision_select"></select>
+      <select id = "revision_select"></select>
       <!--- <button onclick="history_start();"><<</button>
       <button onclick="history_back();"><</button>
       <button onclick="history_forward();">></button>
@@ -30,9 +32,9 @@
       <label for="enable_zoom">Zoom</label><input type="checkbox" id="enable_zoom" value="enable_zoom" />
       <label for="display_interfaces">Interfaces</label><input type="checkbox" id="display_interfaces" value="display_interfaces" />
       
-      | N: <select id = "node_label_select"></select>
-      E: <select id = "edge_group_select"></select>
-      I: <select id = "interface_label_select"></select>
+      |<select id = "node_label_select"></select>
+      <select id = "edge_group_select"></select>
+      <select id = "interface_label_select"></select>
     </div>
 
     <div class="infobar"></div>
@@ -54,20 +56,40 @@
           }
         }
 
-
+   
 //TODO: use icons that are updated for the zoom and Interfaces selectors
 
 var overlay_id = "phy";
 
+var overlay_dropdown = d3.select("#overlay_select")
+.attr("title", "Overlay graph")
+.on("change", function() {
+    overlay_id = this.value;
+    if (overlay_id == "ip_allocations") {
+        ws.send("ip_allocations");
+    }
+    else {
+        ws.send("overlay_id=" + overlay_id);
+    }
+update_title();
+clear_graph_history();
+});
+
 var revision_dropdown = d3.select("#revision_select")
+.attr("title", "Revision")
+.attr("style.display", "none")
 .on("change", function() {
     revision_id = this.value;
     load_revision();
     redraw(); //TODO: remove this once using websocket callback for next line
     //ws.send("overlay_id=" + overlay_id); //TODO: call server for history
-    })
+    });
+
+$('#revision_select').hide();
+
 
 var node_label_select = d3.select("#node_label_select")
+.attr("title", "Node Label")
 .on("change", function() {
     node_label_id = this.value;
     redraw();
@@ -76,12 +98,14 @@ var node_label_select = d3.select("#node_label_select")
 
 
 var edge_group_select = d3.select("#edge_group_select")
+.attr("title", "Edge Label")
 .on("change", function() {
     edge_group_id = this.value;
     redraw();
     })
 
 var interface_label_select = d3.select("#interface_label_select")
+.attr("title", "Interface Label")
 .on("change", function() {
     interface_label_id = this.value;
     console.log(interface_label_id);
