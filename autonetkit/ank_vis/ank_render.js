@@ -34,7 +34,6 @@ var interface_label_id = "";
 ws.onmessage = function (evt) {
     var data = jQuery.parseJSON(evt.data);
     //TODO: parse to see if valid traceroute path or other data
-    console.log(data);
     if ("graph" in data) {
         if (overlay_id != "ip_allocations"){
             jsondata = data;
@@ -788,15 +787,8 @@ var interface_label = function(d) {
     return int_data[interface_label_id];
 }
 
-// Store the attributes used for nodes and edges, to allow user to select
-var node_attributes = [];
-var edge_attributes = [];
-
-function redraw() {
-    //TODO: tidy this up, not all functions need to be in here, move out those that do, and only pass required params. also avoid repeated calculations.
-    
-    nodes = jsondata.nodes;
-    if (nodes.length) {
+var zoom_fit = function() {
+    if (jsondata.nodes.length) {
         //rescale if showing nodes, rather than the ip allocs, etc
         node_x_max = _.max(nodes, function(node){ return node.x}).x + 20;
         node_y_max = _.max(nodes, function(node){ return node.y}).y + 20;
@@ -805,12 +797,22 @@ function redraw() {
 
         var zoom_box = d3.select(".zoom_box")
 
-
-            //Disable zoom for now
-            //zoom_box.transition()
-            //        .attr("transform", "scale(" + p + ")")
-            //       .duration(500)
+            zoom_box.transition()
+                    .attr("transform", "scale(" + p + ")")
+                   .duration(500)
+        //redraw();
     }
+}
+
+// Store the attributes used for nodes and edges, to allow user to select
+var node_attributes = [];
+var edge_attributes = [];
+
+function redraw() {
+    //TODO: tidy this up, not all functions need to be in here, move out those that do, and only pass required params. also avoid repeated calculations.
+    
+    nodes = jsondata.nodes;
+
         
     node_attributes = []; //reset
     nodes.forEach(function(node) {
@@ -1001,7 +1003,6 @@ function redraw() {
     //TODO: handle removing of interfaces
 
     //TODO: handling if no interface id specified
-    console.log(interface_data);
 
     interface_icons = chart.selectAll(".interface_icon")
         //.data(interface_data) //TODO: check if need to provide an index
@@ -1045,17 +1046,9 @@ function redraw() {
         }
         
         var highlight_interfaces = function(d) {
-            console.log(d);
             interfaces = d3.selectAll(".interface_icon");
             //interfaces.filter(
-            console.log("data", interfaces);
 
-            //console.log(interfaces);
-            //for (interface in interfaces) {
-                //console.log(interface, interface.__data__);
-            //}
-            //
-            console.log("");
         }
 
         interface_icons.enter().append("svg:rect")
@@ -1071,7 +1064,6 @@ function redraw() {
 
             .on("mouseover", function(d){
                 highlight_interfaces(d);
-                console.log(this);
                 d3.select(this).style("stroke", "orange");
                 d3.select(this).style("fill", "yellow");
                 d3.select(this).style("stroke-width", "2");
@@ -1100,14 +1092,13 @@ function redraw() {
             .duration(500);
 
         interface_icons.exit().transition()
-            .duration(1000)
+            .duration(500)
             .style("opacity",0)
             .remove();
 
-        console.log(interface_data);
         interface_labels = chart.selectAll(".interface_label")
-        .data(interface_data)
-
+        .data(interface_data, function(d) { return d.interface;})
+        
         interface_labels.enter().append("text")
         .attr("x", interface_x)
         .attr("y", interface_y)
@@ -1128,7 +1119,7 @@ function redraw() {
         .duration(500)
 
         interface_labels.exit().transition()
-        .duration(1000)
+        .duration(500)
         .style("opacity",0)
         .remove();
 
