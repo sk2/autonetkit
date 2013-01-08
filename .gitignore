@@ -9,7 +9,7 @@ versions/*
 *.pyc
 
 doc/build
-doc/
+
 *.graphml
 
 *.graphml
