@@ -4,7 +4,6 @@ import itertools
 import math
 import autonetkit.ank as ank_utils
 import autonetkit.log as log
-import autonetkit.messaging
 import autonetkit.ank_json
 import networkx as nx
 from collections import defaultdict
