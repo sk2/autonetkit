@@ -36,7 +36,7 @@ ws.onmessage = function (evt) {
     //TODO: parse to see if valid traceroute path or other data
     console.log(data);
     if ("graph" in data) {
-        if (overlay_id != "ip_allocations") {
+        if (overlay_id != "ip_allocations"){
             jsondata = data;
             graph_history.push(data);
             update_title();
@@ -210,6 +210,13 @@ var propagate_overlay_dropdown = function(d) {
 
 var propagate_revision_dropdown = function(d) {
     revisions = d3.range(graph_history.length);
+
+    if (revisions.length > 1) {
+        $('#revision_select').show();
+    } else {
+        $('#revision_select').hide();
+    }        
+        
     revision_dropdown
         .selectAll("option")
         .data(revisions)
@@ -329,17 +336,6 @@ var edge_id = function(d) {
     return d.edge_id;
 }
 
-var overlay_dropdown = d3.select("#overlay_select").on("change", function() {
-    overlay_id = this.value;
-    if (overlay_id == "ip_allocations") {
-        ws.send("ip_allocations");
-    }
-    else {
-        ws.send("overlay_id=" + overlay_id);
-    }
-update_title();
-clear_graph_history();
-});
 
 var update_title = function() {
     document.title = "AutoNetkit - " + overlay_id + " r" + revision_id;
@@ -1005,9 +1001,11 @@ function redraw() {
     //TODO: handle removing of interfaces
 
     //TODO: handling if no interface id specified
+    console.log(interface_data);
 
     interface_icons = chart.selectAll(".interface_icon")
-        .data(interface_data) //TODO: check if need to provide an index
+        //.data(interface_data) //TODO: check if need to provide an index
+        .data(interface_data, function(d) { return d.interface;})
 
         var interface_width = 15;
         var interface_height = 10;
