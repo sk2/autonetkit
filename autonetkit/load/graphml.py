@@ -58,7 +58,10 @@ def load_graphml(input_graph_string):
         label_counts[label].append(node)
 
     # set default name for blank labels to ensure unique
-    blank_labels = [v for k, v in label_counts.items() if not k].pop() # strip outer list
+    try:
+        blank_labels = [v for k, v in label_counts.items() if not k].pop() # strip outer list
+    except IndexError:
+        blank_labels = [] # no blank labels
     for index, node in enumerate(blank_labels):
         #TODO: log message that no label set, so setting default
         graph.node[node]['label'] = "none___%s" % index
@@ -66,6 +69,7 @@ def load_graphml(input_graph_string):
     duplicates = [(k, v) for k, v in label_counts.items() if k and len(v) > 1]
     for label, nodes in duplicates:
         for node in nodes:
+            #TODO: need to check they don't all have same ASN... if so then warn
             graph.node[node]['label'] = "%s_%s" % (graph.node[node]['label'], graph.node[node]['asn'])
 
     boolean_attributes = set( k for n, d in graph.nodes(data=True)
