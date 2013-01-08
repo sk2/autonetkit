@@ -21,7 +21,7 @@ setup (
      author_email = "simon.knight@gmail.com",
      url = "http://www.autonetkit.org",
      packages = ['autonetkit', 'autonetkit.deploy',
-     'autonetkit.load', 'autonetkit.messaging', 'autonetkit.plugins'],
+     'autonetkit.load', 'autonetkit.plugins'],
 
      include_package_data = True, # include data from MANIFEST.in
 
