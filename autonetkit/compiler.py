@@ -128,10 +128,6 @@ class RouterCompiler(object):
             else:
                 #TODO: fix this: this is a workaround for Quagga next-hop denied for loopback (even with static route)
                 ip_link = G_ip.edge(session)
-                print "session", session, session.src.id, session.dst.id, neigh.id
-                print "ip link", ip_link.src.id, ip_link.dst.id, neigh.id
-                print "edges", list(G_ip.edges(ip_link.dst))
-                print "edges", list(G_ip.edges(ip_link.dst, neigh))
                 dst_int_ip = G_ip.edges(ip_link.dst, neigh).next().ip_address #TODO: split this to a helper function
                 node.bgp.ebgp_neighbors.append( {
                     'neighbor': neigh.label,
