@@ -45,7 +45,8 @@ class FileMonitor(object):
         return False
 
 def manage_network(input_graph_string, timestamp, build_options, reload_build=False):
-    import build_network_simple as build_network
+    #import build_network_simple as build_network
+    import build_network
     if reload_build:
 # remap?
         build_network = reload(build_network)
