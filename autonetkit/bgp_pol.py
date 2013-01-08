@@ -249,9 +249,11 @@ class BgpPolEncoder(json.JSONEncoder):
 
 policies = [
 "if (tags contain aaa and prefix_list is zyx and tags contain bbb) then (reject and setLP 100)",
+"if (tags contain aaa and prefix_list is zyx and tags contain bbb) then (reject and setLP 100) else (setLP 200)",
 "if (prefix_list is ccc) then (reject and setLP 100) else (reject and setMED 240 and setLP 210)",
 ("if (prefix_list is ccc) then (reject and setLP 100) else "
 "(if (prefix_list is ccc) then (setLP 120) else (setMED 230))"),
+"if (prefix_list is ccc) then (setLP 120) else (setMED 230))",
 "reject and setLP 200",
 ]
 

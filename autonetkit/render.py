@@ -131,6 +131,9 @@ def render_node(node):
 
             mako_tmp_dir = "cache"
 
+
+#TODO: rather than checking every time for .mako files, create a tmp folder with these stripped out, then copy this across to each rendered node
+
             #print("Copying fs for node %s" % (node))
 #TODO: make sure render_base_output_dir is subdir of this one.. and abspath....
             try:
