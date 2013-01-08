@@ -801,6 +801,9 @@ class overlay_graph(OverlayBase):
         self._graph.remove_edges_from(ebunch)
 
 
+    def add_edges(self, *args, **kwargs):
+        self.add_edges_from(args, kwargs)
+
     def add_edges_from(self, ebunch, bidirectional = False, retain=[], **kwargs):
         """Add edges. Unlike NetworkX, can only add an edge if both src and dst in graph already.
         If they are not, then they will not be added (silently ignored)
