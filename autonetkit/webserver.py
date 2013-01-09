@@ -11,7 +11,7 @@ import sys
 import autonetkit.config as ank_config
 import logging
 import pkg_resources
-www_dir = pkg_resources.resource_filename(__name__, "ank_vis")
+www_dir = pkg_resources.resource_filename(__name__, "www_vis")
 
 class EchoServer(TCPServer):
     def __init__(self, io_loop=None, ssl_options=None, ank_accessor = None, **kwargs):
@@ -104,6 +104,10 @@ class MyWebHandler(tornado.web.RequestHandler):
 
         if body_parsed.has_key("anm"):
             print "Received updated network topology"
+            if False: # use to save the default.json
+                with open(os.path.join(www_dir, "default.json"), "w") as fh:
+                    json.dump(body_parsed['anm'], fh)
+            self.anm = data
             try:
                 self.ank_accessor.anm = body_parsed['anm']
                 #TODO: could process diff and only update client if data has changed -> more efficient client side
@@ -154,6 +158,7 @@ class MyWebSocketHandler(websocket.WebSocketHandler):
         return True
 
     def open(self, *args, **kwargs):
+        print "New client connected"
         self.application.socket_listeners.add(self) 
 
         try:
@@ -412,6 +417,7 @@ def main():
         port = 8000
     application.listen(port)
 
+    print "Visualisation server started"
     io_loop.start()
 
     #TODO: run main web server here too for HTTP
