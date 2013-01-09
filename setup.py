@@ -31,9 +31,7 @@ setup (
      download_url = ("http://pypi.python.org/pypi/AutoNetkit"),
 
      install_requires = ['netaddr', 'mako', 'networkx>=1.7', 
-         'configobj', 'tornado',
-         #'textfsm', 
-        #'pika',
+         'configobj', 'tornado', 'textfsm', 'pika',
         ],
 
      classifiers = [
