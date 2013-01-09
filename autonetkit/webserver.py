@@ -120,9 +120,9 @@ class MyWebHandler(tornado.web.RequestHandler):
             self.ank_accessor.ip_allocation = alloc
             self.update_listeners("ip_allocations")
         elif "path" in body_parsed:
-            self.notify_listeners(data) # could do extra processing here
+            self.update_listeners(data) # could do extra processing here
         else:
-            self.notify_listeners(data)
+            self.update_listeners(data)
 
         for listener in self.application.socket_listeners:
             listener.write_message(data) 
@@ -391,6 +391,7 @@ def main():
     io_loop = tornado.ioloop.IOLoop.instance()
     # PikaClient is our rabbitmq consumer
     use_rabbitmq = ank_config.settings['Rabbitmq']['active']
+    use_rabbitmq = True
     if use_rabbitmq:
         host_address = ank_config.settings['Rabbitmq']['server']
         pc = PikaClient(io_loop, ank_accessor, host_address)
