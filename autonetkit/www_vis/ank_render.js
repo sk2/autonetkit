@@ -1016,8 +1016,6 @@ function redraw() {
     //TODO: handle removing of interfaces
 
     //TODO: handling if no interface id specified
-    console.log("circle are", starting_hosts);
-
     starting_circles = chart.selectAll(".starting_circle")
         .data(starting_hosts, function(d) { return d.id;})
 
