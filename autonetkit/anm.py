@@ -949,7 +949,7 @@ class AbstractNetworkModel(object):
 #TODO: allow retain to be specified and passed through to the add_nodes_from call
         if graph:
             if not directed and graph.is_directed():
-                log.info("Converting graph %s to undirected")
+                log.info("Converting graph %s to undirected" %  name)
                 graph = nx.Graph(graph)
 
         elif directed:
