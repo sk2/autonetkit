@@ -58,7 +58,7 @@ def main():
         netkit_deploy.transfer(host, username, tar_file)
         netkit_deploy.extract(host, username, tar_file, config_path, timeout = 60, verbosity = 1)
     
-    if 1: # measure
+    if 0: # measure
         #NOTE: Measure requires a remote host to be setup, and rabbitmq running, (by default ank will look on localhost)
 # http://www.rabbitmq.com/install-debian.html
 
