@@ -28,16 +28,12 @@ erl_crash.dump
 autonetkit_v3.egg-info/*
 
 nectar1/*
-autonetkit/load/worm.py
 
-autonetkit/deploy/worm.py
-
-autonetkit/templates/ios2/*
 test.xml
 
 output.xml
 
-testenv/*
+envtest/*
 dist/*
 
 
@@ -51,3 +47,4 @@ example.graphml3
 *.graphml
 *.pickle
 *.gml
+envtest/.Python
