@@ -4,9 +4,16 @@ import pprint
 import sys
 
 def main():
-    server = sys.argv[1]
+    import argparse
+    usage = "ank_measure_client"
+    parser = argparse.ArgumentParser(description = usage)
+    parser.add_argument('--hostname', '-h',  default= "measure_client", help="Hostname for messaging")   
+    parser.add_argument('--server', '-s',  default= None, help="RabbitMQ server")   
+    arguments = parser.parse_args()
+
+    server = arguments.hostname
     try:
-        pika_host = sys.argv[2] # test if manually specified
+        pika_host = arguments.server # test if manually specified
     except IndexError:
         import autonetkit.config as config
         pika_host = config.settings['Rabbitmq']['server']
