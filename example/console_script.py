@@ -1,17 +1,9 @@
-from autonetkit.nidb import NIDB
 import autonetkit.render as render
 import random
 import sys
-import pprint
-import traceback
-from datetime import datetime
 import os
-import time
-import compiler
-import pkg_resources
 import autonetkit.log as log
 import autonetkit.ank_messaging as ank_messaging
-import autonetkit.config as config
 
 debug = 0
 if debug:
@@ -25,12 +17,12 @@ def main():
         print "Please specify a filename"
 
     with open(filename, "r") as fh:
-        input_string = fh.read()
+        input_string = fh.read() # we pass in as a string to the overlay builder
     timestamp =  os.stat(filename).st_mtime
 
-    import build
+    import build # grabs build.py from example
     anm = build.build_overlays(input_string, timestamp)
-    import compile
+    import compile # grabs compile.py from example
 
     messaging = ank_messaging.AnkMessaging()
     nidb = build.build_nidb(anm)
