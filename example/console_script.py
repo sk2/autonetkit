@@ -13,7 +13,7 @@ import autonetkit.log as log
 import autonetkit.ank_messaging as ank_messaging
 import autonetkit.config as config
 
-debug = 1
+debug = 0
 if debug:
     import logging
     log.logger.setLevel(logging.DEBUG)
@@ -56,10 +56,20 @@ def main():
         #NOTE: Measure requires a remote host to be setup, and rabbitmq running, (by default ank will look on localhost)
 # http://www.rabbitmq.com/install-debian.html
 
+# or for OS X: http://superuser.com/questions/464311/open-port-5672-tcp-for-access-to-rabbitmq-on-mac
+
 # and
 # pip install pika
+# pip install https://github.com/knipknap/exscript/tarball/master
+# note this needs paramiko... which needs to compile. if you don't have python headers, eg in ubuntu: sudo apt-get install python-dev
 # wget https://raw.github.com/sk2/autonetkit/master/autonetkit/measure_client.py
-# python measure_client.py
+# sk2@ubuntu:~$ python measure_client.py --server 192.168.255.1
+# where --server specifies the rabbitmq server
+# can also use through ANK package:
+# install ank through github, then install Exscript
+# can then don
+# ank_measure_client --server 192.168.255.1
+
         import autonetkit.measure as measure
         log.info("Measuring network")
         remote_hosts = [node.tap.ip for node in nidb.nodes("is_router") ]
@@ -71,9 +81,9 @@ def main():
 
         # abort after 10 fails, proceed on any success, 0.1 second timeout (quite aggressive)
         #command = 'vtysh -c "show ip route"'
-        measure.send(nidb, command, remote_hosts)
         remote_hosts = [node.tap.ip for node in nidb.nodes("is_router") if node.bgp.ebgp_neighbors]
         command = "cat /var/log/zebra/bgpd.log"
+        measure.send(nidb, command, remote_hosts)
 
 
 
