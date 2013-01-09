@@ -55,6 +55,7 @@ def manage_network(input_graph_string, timestamp, build_options, reload_build=Fa
     rabbitmq_server = settings['Rabbitmq']['server']
     messaging = ank_messaging.AnkMessaging(rabbitmq_server)
 
+
     if build_options['build']:
         anm = build_network.build(input_graph_string, timestamp)
         if not build_options['compile']:
