@@ -6,7 +6,7 @@ import pprint
 import autonetkit.plugins.process_data as process_data
 import autonetkit.config as config
 
-def send(nidb, server, command, hosts, threads = 3):
+def send(nidb, command, hosts, server = "measure_client", threads = 3):
 # netaddr IP addresses not JSON serializable
     hosts = [str(h) for h in hosts]
 

@@ -52,7 +52,7 @@ def main():
         netkit_deploy.transfer(host, username, tar_file)
         netkit_deploy.extract(host, username, tar_file, config_path, timeout = 60, verbosity = 1)
     
-    if False: # measure
+    if True: # measure
         #NOTE: Measure requires a remote host to be setup, and rabbitmq running, (by default ank will look on localhost)
 # http://www.rabbitmq.com/install-debian.html
 
@@ -66,11 +66,12 @@ def main():
         dest_node = random.choice([n for n in nidb.nodes("is_l3device")])
         log.info("Tracing to randomly selected node: %s" % dest_node)
         dest_ip = dest_node.interfaces[0].ip_address # choose random interface on this node
-
         command = "traceroute -n -a -U -w 0.5 %s" % dest_ip 
+        measure.send(nidb, command, remote_hosts)
+
         # abort after 10 fails, proceed on any success, 0.1 second timeout (quite aggressive)
         #command = 'vtysh -c "show ip route"'
-        measure.send(nidb, host, command, remote_hosts)
+        measure.send(nidb, command, remote_hosts)
         remote_hosts = [node.tap.ip for node in nidb.nodes("is_router") if node.bgp.ebgp_neighbors]
         command = "cat /var/log/zebra/bgpd.log"
 
