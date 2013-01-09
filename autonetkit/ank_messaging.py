@@ -71,6 +71,13 @@ class AnkMessaging(object):
             body = autonetkit.ank_json.dumps(anm)
         self.publish_compressed("www", "client", body)
 
+    def publish_json(self, body):
+        import json
+        data = json.dumps(body, cls=autonetkit.ank_json.AnkEncoder, indent = 4)
+        
+        self.publish(None, None, data)
+
+
     def publish_telnet(self, exchange, routing_key, body):
         try:
             tn = telnetlib.Telnet("localhost", self.telnet_port)
