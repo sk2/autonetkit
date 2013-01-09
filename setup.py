@@ -14,6 +14,7 @@ setup (
          'console_scripts': [
              'autonetkit = autonetkit.console_script:main',
              'ank_webserver = autonetkit.webserver:main',
+             'ank_measure_client = autonetkit.measure_client:main',
          ],
      },
 
