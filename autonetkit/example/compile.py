@@ -1,4 +1,4 @@
-import ank
+import autonetkit.ank
 import itertools
 import netaddr
 import os
@@ -10,7 +10,7 @@ import autonetkit.log as log
 import autonetkit.plugins.naming as naming
 import autonetkit.config
 settings = autonetkit.config.settings
-from ank_utils import alphabetical_sort as alpha_sort
+from autonetkit.ank_utils import alphabetical_sort as alpha_sort
 
 #TODO: rename compiler to build
 

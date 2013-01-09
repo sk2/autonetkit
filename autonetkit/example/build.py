@@ -6,7 +6,7 @@ import autonetkit.ank as ank_utils
 import autonetkit.ank as ank
 import networkx as nx
 
-def build(input_data, timestamp):
+def build_overlays(input_data, timestamp):
     anm = autonetkit.anm.AbstractNetworkModel()
     input_graph = graphml.load_graphml(input_data)
     G_in = anm.add_overlay("input", graph = input_graph)
@@ -85,3 +85,22 @@ def build_ip(anm):
         graphics_node.label = cd_label
 
     ip.allocate_ips(G_ip)
+
+def build_nidb(anm):
+    nidb = autonetkit.nidb.NIDB() 
+    G_phy = anm.overlay.phy
+    G_ip = anm.overlay.ip
+    G_graphics = anm.overlay.graphics
+#TODO: build this on a platform by platform basis
+    nidb.add_nodes_from(G_phy, retain=['label', 'host', 'platform', 'Network', 'update'])
+
+    cd_nodes = [n for n in G_ip.nodes("collision_domain") if not n.is_switch] # Only add created cds - otherwise overwrite host of switched
+    nidb.add_nodes_from(cd_nodes, retain=['label', 'host'], collision_domain = True)
+# add edges to switches
+    edges_to_add = [edge for edge in G_phy.edges() if edge.src.is_switch or edge.dst.is_switch]
+    edges_to_add += [edge for edge in G_ip.edges() if edge.src.collision_domain or edge.dst.collision_domain]
+    nidb.add_edges_from(edges_to_add, retain='edge_id')
+
+    nidb.copy_graphics(G_graphics)
+    return nidb
+    
