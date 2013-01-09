@@ -51,3 +51,5 @@ envtest/.Python
 
 autonetkit.egg-info/*
 autonetkit.egg-info/SOURCES.txt
+
+autonetkit/example/rendered/*

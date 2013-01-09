@@ -1,6 +1,7 @@
 import autonetkit.config as config
 import autonetkit.log as log
 import socket
+import autonetkit.ank_json
 
 use_rabbitmq = config.settings['Rabbitmq']['active']
 if use_rabbitmq:
@@ -61,6 +62,14 @@ class AnkMessaging(object):
 
     def publish_compressed(self):
         pass # will be replaced at init
+
+    def publish_anm(self, anm, nidb = None):
+        """JSON-ifies the anm and sends it"""
+        if nidb:
+            body = autonetkit.ank_json.dumps(anm, nidb)
+        else:
+            body = autonetkit.ank_json.dumps(anm)
+        self.publish_compressed("www", "client", body)
 
     def publish_telnet(self, exchange, routing_key, body):
         try:

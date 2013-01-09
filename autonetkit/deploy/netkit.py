@@ -3,6 +3,12 @@ import time
 import re
 import autonetkit.config as config
 
+try:
+    import Exscript
+except ImportError:
+    log.warning("Deployment requires Exscript: "
+    "pip install https://github.com/knipknap/exscript/tarball/master")
+
 def package(src_dir, target):
     log.info("Packaging %s" % src_dir)
     import tarfile
@@ -14,22 +20,23 @@ def package(src_dir, target):
     tar.close()
     return tar_filename
 
-def transfer(host, username, local, remote, key_filename = None):
+def transfer(host, username, local, remote = None, key_filename = None):
     log.debug("Transferring lab to %s" % host)
     log.info("Transferring Netkit lab")
+    if not remote:
+        remote = local # same filename
     import paramiko
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(
         paramiko.AutoAddPolicy())
 # handle key_filename of '' (empty string)
-    if not len(key_filename):
+    if key_filename and not len(key_filename): # TODO: See if this is needed
         key_filename = None
     if key_filename:
         log.debug("Connecting to %s with %s and key %s" % (host, username, key_filename))
         ssh.connect(host, username = username, key_filename = key_filename)
     else:
-        log.debug("Connecting to %s with %s" % (host, username))
-        ssh.connect(host, username = username, key_filename = key_filename)
+        log.info("Connecting to %s with %s" % (host, username))
         ssh.connect(host, username = username)
     log.debug("Opening SSH for SFTP")
     ftp = ssh.open_sftp()
@@ -38,7 +45,7 @@ def transfer(host, username, local, remote, key_filename = None):
     log.debug("Put file %s to %s" % (local, remote))
     ftp.close()
 
-def extract(host, username, tar_file, cd_dir, timeout = 30, key_filename = None):
+def extract(host, username, tar_file, cd_dir, timeout = 30, key_filename = None, verbosity = 1):
     """Extract and start lab"""
     log.debug("Extracting and starting lab on %s" % (host))
     log.info("Extracting and starting Netkit lab")
@@ -47,7 +54,6 @@ def extract(host, username, tar_file, cd_dir, timeout = 30, key_filename = None)
     from Exscript.util.match import first_match
     from Exscript import PrivateKey
     from Exscript.protocols.Exception import InvalidCommandException
-
 
     use_rabbitmq = config.settings['Rabbitmq']['active']
     if use_rabbitmq:
@@ -80,10 +86,16 @@ def extract(host, username, tar_file, cd_dir, timeout = 30, key_filename = None)
                     routing_key = "client",
                     body= json.dumps(body))
 
+    def make_not_found(protocol, index, data):
+        log.warning("Make not installed on remote host %s. Please install make and retry." % host)
+#TODO: raise exception here, catch in the start script
+        return
+
     def do_something(thread, host, conn):
         conn.set_timeout(timeout)
         conn.add_monitor(r'Starting (\S+)', starting_host)
         conn.add_monitor(r'The lab has been started', lab_started)
+        conn.add_monitor(r'make: not found', make_not_found)
         #conn.data_received_event.connect(data_received)
         conn.execute('cd %s' % cd_dir)
         conn.execute('lcrash -k')
@@ -120,4 +132,4 @@ def extract(host, username, tar_file, cd_dir, timeout = 30, key_filename = None)
         accounts = [Account(username)] 
 
     hosts = ['ssh://%s' % host]
-    start(accounts, hosts, do_something, verbose = 0)
+    start(accounts, hosts, do_something, verbose = verbosity)
