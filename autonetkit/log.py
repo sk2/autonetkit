@@ -73,7 +73,7 @@ if file_logging:
 
 logging.setLoggerClass(ColoredLogger)
 logger = logging.getLogger("ANK")
-logger.setLevel(logging.WARN)
+logger.setLevel(logging.INFO)
 
 # Use approach of Pika, allows for autonetkit.log.debug("message")
 debug = logger.debug
