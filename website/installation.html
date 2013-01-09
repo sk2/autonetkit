@@ -96,31 +96,31 @@
             <div class="row">
               <div class="span10">
             <p>
-            AutoNetkit requires either Python 2.6 or Python 2.7
+            AutoNetkit requires Python 2.7
             <br>
-            AutoNetkit is available on the <a href="http://pypi.python.org/pypi/AutoNetkit">Python Package Index</a>. You can install it using either the easy_install
+            AutoNetkit is available on the <a href="http://pypi.python.org/pypi/autonetkit">Python Package Index</a>. You can install it using either the easy_install
             </p>
             <pre>
-            easy_install AutoNetkit</pre>
+            easy_install autonetkit</pre>
             <p> or pip Python package management tools</p>
             <pre>
-            pip install AutoNetkit</pre>
+            pip install autonetkit</pre>
             <h3>Mac OS X</h3>
             <p>
             Note: depending on your system, you may need to use sudo with pip or easy_install.   
             </p>
             <pre>
-            sudo easy_install AutoNetkit</pre>
+            sudo easy_install autonetkit</pre>
             <p> or </p>
             <pre>
-            sudo pip install AutoNetkit</pre>      
+            sudo pip install autonetkit</pre>      
 
             <h3>Linux</h3>
             <p>
             First install Python, and easy_install or pip using your package manager:
             <pre>
             sknight@trc1:~$ sudo apt-get install python-pip
-            sknight@trc1:~$ pip install AutoNetkit</pre>    
+            sknight@trc1:~$ pip install autonetkit</pre>    
 
             <h3>Windows</h3>
             <ol>
@@ -154,7 +154,7 @@
               <li>
               Once complete, install AutoNetkit as follows:
 
-<pre>pip.exe install AutoNetkit</pre>
+<pre>pip.exe install autonetkit</pre>
               AutoNetkit is now installed in the ‘scripts’ directory
               </li>
               </ol>
@@ -175,16 +175,13 @@ sudo sh ./setuptools-0.6c11-py2.6.egg
 sudo easy_install pip</pre>      
             You can now install the development branch of AutoNetkit (note this is in alpha stage!)
             <pre>
-sudo pip install git+https://github.com/sk2/ank_v3_dev</pre>                                                   
+sudo pip install git+https://github.com/sk2/autonetkit</pre>                                                   
             Draw a graph in yED, save as .graphml format, and pass this to AutoNetkit:
             <pre>
 autonetkit -f backbone.graphml --compile</pre>                           
-            The webserver uses Tornado, so install this:
-            <pre>
-sudo pip install tornado</pre>
-            You can now start the webserver:
+            You can also start the webserver:
             <pre>ank_webserver</pre>
-            And should be able to connect in a browser at 127.0.0.1:8080
+            And should be able to connect in a browser at 127.0.0.1:8000
             If you now run autonetkit -f as before, the output will update in your web browser.
 
 

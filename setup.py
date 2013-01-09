@@ -4,10 +4,10 @@ from setuptools import setup
 #from setuptools import setup, find_packages
 
 setup (
-     name = "autonetkit-v3-dev",
-     version = "0.1.21",
-     description = 'Automated configuration generator',
-     long_description = 'Automated configuration generator',
+     name = "autonetkit",
+     version = "0.2.0",
+     description = 'Automatic configuration generation for emulated networks',
+     long_description = 'Automatic configuration generation for emulated networks',
 
      # simple to run 
      entry_points = {
@@ -25,14 +25,11 @@ setup (
 
      include_package_data = True, # include data from MANIFEST.in
 
-     package_data = {'': ['settings.cfg', 
-         'config/configspec.cfg',
-                          ]},
+     package_data = {'': ['settings.cfg', 'config/configspec.cfg', ]},
      download_url = ("http://pypi.python.org/pypi/AutoNetkit"),
 
      install_requires = ['netaddr', 'mako', 'networkx>=1.7', 
-         'configobj', 'tornado', 'textfsm', 'pika',
-        ],
+         'configobj', 'tornado', 'textfsm', 'pika', ],
 
      classifiers = [
          "Programming Language :: Python",
@@ -47,5 +44,7 @@ setup (
          "Topic :: System :: Software Distribution",
          "Topic :: Scientific/Engineering :: Mathematics",
          ],     
+     
  
 )
+
