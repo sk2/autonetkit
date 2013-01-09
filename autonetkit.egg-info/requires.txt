@@ -1,0 +1,7 @@
+netaddr
+mako
+networkx>=1.7
+configobj
+tornado
+textfsm
+pika
