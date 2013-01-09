@@ -2,13 +2,13 @@ import pika
 import json
 import pprint
 import sys
-import autonetkit.config as config
 
 def main():
     server = sys.argv[1]
     try:
         pika_host = sys.argv[2] # test if manually specified
     except IndexError:
+        import autonetkit.config as config
         pika_host = config.settings['Rabbitmq']['server']
 
     connection = pika.BlockingConnection(pika.ConnectionParameters(
