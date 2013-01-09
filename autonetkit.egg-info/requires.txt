@@ -1,8 +1,0 @@
-netaddr
-mako
-networkx>=1.7
-configobj
-tornado
-textfsm
-pika
-exscript==0.0.1

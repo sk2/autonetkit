@@ -48,3 +48,6 @@ example.graphml3
 *.pickle
 *.gml
 envtest/.Python
+
+autonetkit.egg-info/*
+autonetkit.egg-info/SOURCES.txt
