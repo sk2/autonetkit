@@ -33,9 +33,11 @@ var node_label_id = "id";
 var edge_group_id = "";
 var interface_label_id = "";
 
+
+starting_hosts = [];
+
 ws.onmessage = function (evt) {
     var data = jQuery.parseJSON(evt.data);
-    console.log(data);
     //TODO: parse to see if valid traceroute path or other data
     if ("graph" in data) {
         if (overlay_id != "ip_allocations"){
@@ -59,6 +61,14 @@ ws.onmessage = function (evt) {
     }
     else if("starting" in data) {
         status_label.html("Starting: " + data['starting']);
+        node_id = data['starting']; 
+        node = nodes_by_id[node_id];
+        if (node != null) {
+            starting_hosts = [node];
+            //starting_hosts.push(node);
+        }
+
+        redraw();
     }
     else if("lab started" in data) {
         status_label.html("Lab started on: " + data['lab started']);
@@ -1006,6 +1016,25 @@ function redraw() {
     //TODO: handle removing of interfaces
 
     //TODO: handling if no interface id specified
+    console.log("circle are", starting_hosts);
+
+    starting_circles = chart.selectAll(".starting_circle")
+        .data(starting_hosts, function(d) { return d.id;})
+
+        starting_circles.enter().append("svg:circle")
+        .attr("class", "starting_circle")
+        .attr("r", 30)
+        .style("opacity",40)
+        .attr("cx", function(d) { return d.x + x_offset + icon_width/2 ; })
+        .attr("cy", function(d) { return d.y + y_offset + icon_height/2; })
+
+
+    starting_circles.transition()
+        .attr("r", 60)
+        .style("opacity",0)
+        .duration(4000);
+
+
 
     interface_icons = chart.selectAll(".interface_icon")
         //.data(interface_data) //TODO: check if need to provide an index
