@@ -408,11 +408,11 @@
 					<key>Color</key>
 					<dict>
 						<key>b</key>
-						<string>0.8</string>
+						<string>0.498039</string>
 						<key>g</key>
-						<string>0.8</string>
+						<string>0.498039</string>
 						<key>r</key>
-						<string>0.8</string>
+						<string>0.498039</string>
 					</dict>
 					<key>Width</key>
 					<real>25</real>
@@ -469,11 +469,11 @@
 					<key>Color</key>
 					<dict>
 						<key>b</key>
-						<string>0.210403</string>
+						<string>0.298039</string>
 						<key>g</key>
-						<string>0.144299</string>
+						<string>0.298039</string>
 						<key>r</key>
-						<string>0.0702573</string>
+						<string>0.298039</string>
 					</dict>
 				</dict>
 				<key>shadow</key>
@@ -488,11 +488,11 @@
 					<key>Color</key>
 					<dict>
 						<key>b</key>
-						<string>0.210403</string>
+						<string>0.298039</string>
 						<key>g</key>
-						<string>0.144299</string>
+						<string>0.298039</string>
 						<key>r</key>
-						<string>0.0702573</string>
+						<string>0.298039</string>
 					</dict>
 					<key>CornerRadius</key>
 					<real>30</real>
@@ -1621,7 +1621,7 @@
 	<key>MasterSheets</key>
 	<array/>
 	<key>ModificationDate</key>
-	<string>2013-01-09 04:56:28 +0000</string>
+	<string>2013-01-09 05:35:48 +0000</string>
 	<key>Modifier</key>
 	<string>Simon Knight</string>
 	<key>NotesVisible</key>
