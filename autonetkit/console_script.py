@@ -298,7 +298,7 @@ def measure_network(nidb):
     command = "traceroute -n -a -U -w 0.5 %s" % dest_ip 
     # abort after 10 fails, proceed on any success, 0.1 second timeout (quite aggressive)
     #command = 'vtysh -c "show ip route"'
-    measure.send(nidb, "nectar1", command, remote_hosts)
+    measure.send(nidb, "measure_client", command, remote_hosts)
     remote_hosts = [node.tap.ip for node in nidb.nodes("is_router") if node.bgp.ebgp_neighbors]
     command = "cat /var/log/zebra/bgpd.log"
 

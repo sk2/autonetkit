@@ -2,11 +2,22 @@ import pika
 import json
 import pprint
 import sys
-import autonetkit.config as config
 
 def main():
-    server = sys.argv[1]
-    pika_host = config.settings['Rabbitmq']['server']
+    import argparse
+    usage = "ank_measure_client"
+    parser = argparse.ArgumentParser(description = usage)
+    parser.add_argument('--hostname',  default= "measure_client", help="Hostname for messaging")   
+    parser.add_argument('--server', '-s',  default= None, help="RabbitMQ server")   
+    arguments = parser.parse_args()
+
+    server = arguments.hostname
+    try:
+        pika_host = arguments.server # test if manually specified
+    except IndexError:
+        import autonetkit.config as config
+        pika_host = config.settings['Rabbitmq']['server']
+
     connection = pika.BlockingConnection(pika.ConnectionParameters(
             host = pika_host))
     channel = connection.channel()
