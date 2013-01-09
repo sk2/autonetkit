@@ -1,4 +1,5 @@
 import autonetkit.render as render
+import autonetkit.nidb
 import random
 import sys
 import os
@@ -11,32 +12,50 @@ if debug:
     log.logger.setLevel(logging.DEBUG)
 
 def main():
+    filename = None
     try:
         filename = sys.argv[1]
     except IndexError:
-        print "Please specify a filename"
+        print "No input file specified, attempting to load previously compiled network"
 
     with open(filename, "r") as fh:
         input_string = fh.read() # we pass in as a string to the overlay builder
     timestamp =  os.stat(filename).st_mtime
 
-    import build # grabs build.py from example
-    anm = build.build_overlays(input_string, timestamp)
-    import compile # grabs compile.py from example
+    if filename:
+        import build # grabs build.py from example
+        anm = build.build_overlays(input_string, timestamp)
+        anm.save()
 
-    messaging = ank_messaging.AnkMessaging()
-    nidb = build.build_nidb(anm)
-    messaging.publish_anm(anm, nidb)
+        
+        import compile # grabs compile.py from example
 
-    host = "localhost"
-    nk_compiler = compile.NetkitCompiler(nidb, anm, host)
-    nk_compiler.compile()
+        nidb = build.build_nidb(anm)
+        nidb.save()
+        messaging = ank_messaging.AnkMessaging()
+        messaging.publish_anm(anm, nidb)
 
-    render.render(nidb)
+        hostname = "abc"
+        body = {"starting": hostname}
+        messaging.publish_json(body)
+        raise SystemExit
+
+        host = "localhost"
+        nk_compiler = compile.NetkitCompiler(nidb, anm, host)
+        nk_compiler.compile()
+
+        render.render(nidb)
+    else:
+        # loading
+        anm = autonetkit.anm.AbstractNetworkModel()
+        anm.restore_latest()
+        nidb = autonetkit.nidb.NIDB()
+        nidb.restore_latest()
+
 
     username = "sk2"
     host = "192.168.255.129"
-    if False: # deploy
+    if 1: # deploy
         import autonetkit.deploy.netkit as netkit_deploy
         config_path = os.path.join("rendered", "localhost", "netkit")
 
@@ -44,7 +63,7 @@ def main():
         netkit_deploy.transfer(host, username, tar_file)
         netkit_deploy.extract(host, username, tar_file, config_path, timeout = 60, verbosity = 1)
     
-    if True: # measure
+    if 1: # measure
         #NOTE: Measure requires a remote host to be setup, and rabbitmq running, (by default ank will look on localhost)
 # http://www.rabbitmq.com/install-debian.html
 
@@ -65,6 +84,7 @@ def main():
         import autonetkit.measure as measure
         log.info("Measuring network")
         remote_hosts = [node.tap.ip for node in nidb.nodes("is_router") ]
+        #remote_hosts = remote_hosts[:3] # truncate for testing
         dest_node = random.choice([n for n in nidb.nodes("is_l3device")])
         log.info("Tracing to randomly selected node: %s" % dest_node)
         dest_ip = dest_node.interfaces[0].ip_address # choose random interface on this node
@@ -75,7 +95,7 @@ def main():
         #command = 'vtysh -c "show ip route"'
         remote_hosts = [node.tap.ip for node in nidb.nodes("is_router") if node.bgp.ebgp_neighbors]
         command = "cat /var/log/zebra/bgpd.log"
-        measure.send(nidb, command, remote_hosts)
+        #measure.send(nidb, command, remote_hosts)
 
 
 
