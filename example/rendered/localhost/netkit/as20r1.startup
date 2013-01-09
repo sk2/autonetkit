@@ -1,0 +1,15 @@
+/sbin/ifconfig eth0 192.168.1.30 netmask 255.255.255.252 broadcast 192.168.1.31 up
+/sbin/ifconfig eth1 192.168.1.77 netmask 255.255.255.252 broadcast 192.168.1.79 up
+/sbin/ifconfig eth2 192.168.1.66 netmask 255.255.255.252 broadcast 192.168.1.67 up
+/sbin/ifconfig eth3 192.168.1.22 netmask 255.255.255.252 broadcast 192.168.1.23 up
+/sbin/ifconfig eth4 192.168.1.10 netmask 255.255.255.252 broadcast 192.168.1.11 up
+/sbin/ifconfig lo0:1 10.0.0.35 netmask 255.255.255.255 broadcast 10.0.0.35 up
+route del default
+/sbin/ifconfig lo 127.0.0.1 up
+/etc/init.d/ssh start
+/etc/init.d/hostname.sh 
+/etc/init.d/zebra start
+chown -R root:root /root     
+chmod 755 /root
+chmod 755 /root/.ssh
+chmod 644 /root/.ssh/authorized_keys
