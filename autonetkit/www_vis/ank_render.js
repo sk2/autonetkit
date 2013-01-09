@@ -10,9 +10,11 @@ ws.onopen = function() {
     ws.send("overlay_id=" + overlay_id);
     ws.send("ip_allocations");
     status_label.html("WebSocket connected");
+    $("#websocket_icon").html(' <i class="icon-circle " title="WebSocket Connected. Reload page to reconnect."></i>');
 };
 ws.onclose = function () {
     status_label.html("Warning: WebSocket disconnected");
+    $("#websocket_icon").html(' <i class="icon-remove-sign " title="WebSocket Disconnected"></i>');
 };
 
 var icon_width = 45;
