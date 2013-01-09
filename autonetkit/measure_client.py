@@ -6,7 +6,11 @@ import autonetkit.config as config
 
 def main():
     server = sys.argv[1]
-    pika_host = config.settings['Rabbitmq']['server']
+    try:
+        pika_host = sys.argv[2] # test if manually specified
+    except IndexError:
+        pika_host = config.settings['Rabbitmq']['server']
+
     connection = pika.BlockingConnection(pika.ConnectionParameters(
             host = pika_host))
     channel = connection.channel()
