@@ -41,7 +41,7 @@ class RouterCompiler(object):
         if node in self.anm['ospf']:
             self.ospf(node)
 
-        if node in self.anm['bgp']:
+        if node in self.anm['ibgp'] or node in self.anm['ebgp']:
             self.bgp(node)
 
     def interfaces(self, node):
@@ -50,7 +50,6 @@ class RouterCompiler(object):
         node.interfaces = []
         for link in phy_node.edges():
             ip_link = G_ip.edge(link)
-            print "link is", link, link.dump()
             nidb_edge = self.nidb.edge(link)
             #TODO: what if multiple ospf costs for this link
             if not ip_link:
@@ -98,7 +97,8 @@ class RouterCompiler(object):
 
     def bgp(self, node):
         phy_node = self.anm['phy'].node(node)
-        G_bgp = self.anm['bgp']
+        G_ibgp = self.anm['ibgp']
+        G_ebgp = self.anm['ebgp']
         G_ip = self.anm['ip']
         asn = phy_node.asn # easy reference for cleaner code
         node.asn = asn
@@ -109,35 +109,37 @@ class RouterCompiler(object):
         node.bgp.ibgp_rr_parents = []
         node.bgp.ebgp_neighbors = []
 
-        for session in G_bgp.edges(phy_node):
+        for session in G_ibgp.edges(phy_node):
             neigh = session.dst
             neigh_ip = G_ip.node(neigh)
-            if session.type == "ibgp":
-                data = {
-                    'neighbor': neigh.label,
-                    'asn': neigh.asn,
-                    'loopback': neigh_ip.loopback,
-                    'update_source': "loopback 0", #TODO: this is platform dependent???
-                    }
-                if session.direction == 'down':
-                    #ibgp_rr_clients[key] = data
-                    node.bgp.ibgp_rr_clients.append(data)
-                elif session.direction == 'up':
-                    node.bgp.ibgp_rr_parents.append(data)
-                else:
-                    node.bgp.ibgp_neighbors.append(data)
+            data = {
+                'neighbor': neigh.label,
+                'asn': neigh.asn,
+                'loopback': neigh_ip.loopback,
+                'update_source': "loopback 0", #TODO: this is platform dependent???
+                }
+            if session.direction == 'down':
+                #ibgp_rr_clients[key] = data
+                node.bgp.ibgp_rr_clients.append(data)
+            elif session.direction == 'up':
+                node.bgp.ibgp_rr_parents.append(data)
             else:
-                #TODO: fix this: this is a workaround for Quagga next-hop denied for loopback (even with static route)
-                ip_link = G_ip.edge(session)
-                dst_int_ip = G_ip.edges(ip_link.dst, neigh).next().ip_address #TODO: split this to a helper function
-                node.bgp.ebgp_neighbors.append( {
-                    'neighbor': neigh.label,
-                    'asn': neigh.asn,
-                    'loopback': neigh_ip.loopback,
-                    'local_int_ip': ip_link.ip_address,
-                    'dst_int_ip': dst_int_ip,
-                    'update_source': self.lo_interface, # TODO: change templates to access this from node.bgp.lo_interface
-                })
+                node.bgp.ibgp_neighbors.append(data)
+
+        for session in G_ebgp.edges(phy_node):
+            neigh = session.dst
+            neigh_ip = G_ip.node(neigh)
+            #TODO: fix this: this is a workaround for Quagga next-hop denied for loopback (even with static route)
+            ip_link = G_ip.edge(session)
+            dst_int_ip = G_ip.edges(ip_link.dst, neigh).next().ip_address #TODO: split this to a helper function
+            node.bgp.ebgp_neighbors.append( {
+                'neighbor': neigh.label,
+                'asn': neigh.asn,
+                'loopback': neigh_ip.loopback,
+                'local_int_ip': ip_link.ip_address,
+                'dst_int_ip': dst_int_ip,
+                'update_source': self.lo_interface, # TODO: change templates to access this from node.bgp.lo_interface
+            })
 
         node.bgp.ebgp_neighbors.sort("asn")
         #pprint.pprint(node.bgp.ebgp_neighbors.dump())
@@ -174,10 +176,10 @@ class QuaggaCompiler(RouterCompiler):
 
         # add eBGP link subnets
         G_ip = self.anm['ip']
-        G_bgp = self.anm['bgp']
+        G_ebgp = self.anm['ebgp']
         node.ospf.passive_interfaces = []
         
-        for link in G_bgp.edges(node, type = "ebgp"):
+        for link in G_ebgp.edges(node):
             nidb_edge = self.nidb.edge(link)
             node.ospf.passive_interfaces.append(
                     id = nidb_edge.id,

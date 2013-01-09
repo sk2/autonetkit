@@ -1,5 +1,5 @@
 from autonetkit.nidb import NIDB
-import autonetkit.render
+import autonetkit.render as render
 import random
 import sys
 import pprint
@@ -13,20 +13,10 @@ import autonetkit.log as log
 import autonetkit.ank_messaging as ank_messaging
 import autonetkit.config as config
 
-import logging
-log.logger.setLevel(logging.INFO)
-
-
-#import autonetkit.bgp_pol as bgp_pol
-#raise SystemExit
-
-#TODO: make if measure set, then not compile - or warn if both set, as don't want to regen topology when measuring
-
-try:
-    ank_version = pkg_resources.get_distribution("autonetkit-v3-dev").version
-except pkg_resources.DistributionNotFound:
-    ank_version = "dev"
-
+debug = 1
+if debug:
+    import logging
+    log.logger.setLevel(logging.DEBUG)
 
 def main():
     try:
@@ -50,31 +40,16 @@ def main():
     nk_compiler = compile.NetkitCompiler(nidb, anm, host)
     nk_compiler.compile()
 
-    raise SystemExit
+    render.render(nidb)
 
-
-#TO
-def compile_network(anm):
-
-
-#TODO: boundaries is still a work in progress...
-
-    for target, target_data in config.settings['Compile Targets'].items():
-        host = target_data['host']
-        platform = target_data['platform']
-        if platform == "netkit":
-            platform_compiler = compiler.NetkitCompiler(nidb, anm, host)
-        elif platform == "cisco":
-            platform_compiler = compiler.CiscoCompiler(nidb, anm, host)
-
-        if any(G_phy.nodes(host = host, platform = platform)):
-            log.info("Compile for %s on %s" % (platform, host))
-            platform_compiler.compile() # only compile if hosts set
-        else:
-            log.debug("No devices set for %s on %s" % (platform, host))
-
-    return nidb
-
+    import autonetkit.deploy.netkit as netkit_deploy
+    config_path = os.path.join("rendered", host, "netkit")
+    username = "sk2"
+    host = "192.168.255.129"
+    tar_file = netkit_deploy.package(config_path, "nklab")
+    netkit_deploy.transfer(host, username, tar_file)
+    netkit_deploy.extract(host, username, tar_file, config_path, timeout = 60, verbosity = 1)
+    
 def deploy_network(nidb, input_graph_string):
     import autonetkit.deploy.netkit as netkit_deploy
     try:

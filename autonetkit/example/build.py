@@ -17,6 +17,7 @@ def build_overlays(input_data, timestamp):
     G_phy = anm['phy']
     G_phy.add_nodes_from(G_in, retain=['label', 'device_type', 'asn', 'platform', 'host', 'syntax'])
     G_phy.add_edges_from(G_in.edges(type="physical"))
+    G_phy.update(G_phy, syntax="quagga")
 
     routers = list(G_in.nodes("is_router"))
     G_ospf = anm.add_overlay("ospf", G_in.nodes("is_router"))
@@ -92,7 +93,7 @@ def build_nidb(anm):
     G_ip = anm.overlay.ip
     G_graphics = anm.overlay.graphics
 #TODO: build this on a platform by platform basis
-    nidb.add_nodes_from(G_phy, retain=['label', 'host', 'platform', 'Network', 'update'])
+    nidb.add_nodes_from(G_phy, retain=['label', 'host', 'platform', 'syntax', 'Network', 'update'])
 
     cd_nodes = [n for n in G_ip.nodes("collision_domain") if not n.is_switch] # Only add created cds - otherwise overwrite host of switched
     nidb.add_nodes_from(cd_nodes, retain=['label', 'host'], collision_domain = True)
