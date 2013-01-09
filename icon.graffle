@@ -191,8 +191,8 @@
 			<integer>46</integer>
 			<key>Points</key>
 			<array>
-				<string>{215.32833455666929, 517.53808427922331}</string>
-				<string>{287.327884319936, 441.18942650585029}</string>
+				<string>{215.09541533045086, 517.31920607184304}</string>
+				<string>{286.7429556875162, 440.62901365915144}</string>
 			</array>
 			<key>Style</key>
 			<dict>
@@ -227,7 +227,7 @@
 		</dict>
 		<dict>
 			<key>Bounds</key>
-			<string>{{414.2857023460715, 498.90112144390531}, {136.80000305175781, 136.80000305175781}}</string>
+			<string>{{396.2857023460715, 498.90112144390531}, {136.80000305175781, 136.80000305175781}}</string>
 			<key>Class</key>
 			<string>ShapedGraphic</string>
 			<key>HFlip</key>
@@ -362,8 +362,8 @@
 			<integer>16</integer>
 			<key>Points</key>
 			<array>
-				<string>{378.44906406136062, 443.77759539968872}</string>
-				<string>{438.57069960635374, 515.02352695788898}</string>
+				<string>{236.80003436977563, 567.30111079096832}</string>
+				<string>{396.28566814607285, 567.30111079096832}</string>
 			</array>
 			<key>Style</key>
 			<dict>
@@ -393,7 +393,7 @@
 			<key>Tail</key>
 			<dict>
 				<key>ID</key>
-				<integer>45</integer>
+				<integer>12</integer>
 			</dict>
 		</dict>
 		<dict>
@@ -432,6 +432,23 @@
 				<dict>
 					<key>Color</key>
 					<dict>
+						<key>b</key>
+						<string>0.4</string>
+						<key>g</key>
+						<string>0.4</string>
+						<key>r</key>
+						<string>0.4</string>
+					</dict>
+				</dict>
+				<key>shadow</key>
+				<dict>
+					<key>Draws</key>
+					<string>NO</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
 						<key>archive</key>
 						<data>
 						YnBsaXN0MDDUAQIDBAUGFRZYJHZl
@@ -455,25 +472,8 @@
 						<key>r</key>
 						<string>0.110804</string>
 					</dict>
-				</dict>
-				<key>shadow</key>
-				<dict>
-					<key>Draws</key>
-					<string>NO</string>
-				</dict>
-				<key>stroke</key>
-				<dict>
-					<key>Color</key>
-					<dict>
-						<key>b</key>
-						<string>0.2</string>
-						<key>g</key>
-						<string>0.2</string>
-						<key>r</key>
-						<string>0.2</string>
-					</dict>
 					<key>Width</key>
-					<real>20</real>
+					<real>30</real>
 				</dict>
 			</dict>
 		</dict>
@@ -548,7 +548,7 @@
 	<key>MasterSheets</key>
 	<array/>
 	<key>ModificationDate</key>
-	<string>2013-01-09 03:47:19 +0000</string>
+	<string>2013-01-09 03:51:46 +0000</string>
 	<key>Modifier</key>
 	<string>Simon Knight</string>
 	<key>NotesVisible</key>
