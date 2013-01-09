@@ -35,11 +35,6 @@ def main():
         messaging = ank_messaging.AnkMessaging()
         messaging.publish_anm(anm, nidb)
 
-        hostname = "abc"
-        body = {"starting": hostname}
-        messaging.publish_json(body)
-        raise SystemExit
-
         host = "localhost"
         nk_compiler = compile.NetkitCompiler(nidb, anm, host)
         nk_compiler.compile()
