@@ -2,6 +2,7 @@ import autonetkit.log as log
 import time
 import re
 import autonetkit.config as config
+import autonetkit.ank_messaging as ank_messaging
 
 try:
     import Exscript
@@ -45,7 +46,7 @@ def transfer(host, username, local, remote = None, key_filename = None):
     log.debug("Put file %s to %s" % (local, remote))
     ftp.close()
 
-def extract(host, username, tar_file, cd_dir, timeout = 30, key_filename = None, verbosity = 1):
+def extract(host, username, tar_file, cd_dir, timeout = 30, key_filename = None, verbosity = 0):
     """Extract and start lab"""
     log.debug("Extracting and starting lab on %s" % (host))
     log.info("Extracting and starting Netkit lab")
@@ -54,6 +55,8 @@ def extract(host, username, tar_file, cd_dir, timeout = 30, key_filename = None,
     from Exscript.util.match import first_match
     from Exscript import PrivateKey
     from Exscript.protocols.Exception import InvalidCommandException
+
+    messaging = ank_messaging.AnkMessaging()
 
     use_rabbitmq = config.settings['Rabbitmq']['active']
     if use_rabbitmq:
@@ -74,24 +77,18 @@ def extract(host, username, tar_file, cd_dir, timeout = 30, key_filename = None,
             hostname = m.group(1)
             log.info(data.group(index)) #TODO: use regex to strip out just the machine name
             body = {"starting": hostname}
-            if use_rabbitmq:
-                www_channel.basic_publish(exchange='www',
-                        routing_key = "client",
-                        body= json.dumps(body))
+            messaging.publish_json(body)
 
     def lab_started(protocol, index, data):
         body = {"lab started": host}
-        if use_rabbitmq:
-            www_channel.basic_publish(exchange='www',
-                    routing_key = "client",
-                    body= json.dumps(body))
+        messaging.publish_json(body)
 
     def make_not_found(protocol, index, data):
         log.warning("Make not installed on remote host %s. Please install make and retry." % host)
 #TODO: raise exception here, catch in the start script
         return
 
-    def do_something(thread, host, conn):
+    def start_lab(thread, host, conn):
         conn.set_timeout(timeout)
         conn.add_monitor(r'Starting (\S+)', starting_host)
         conn.add_monitor(r'The lab has been started', lab_started)
@@ -132,4 +129,4 @@ def extract(host, username, tar_file, cd_dir, timeout = 30, key_filename = None,
         accounts = [Account(username)] 
 
     hosts = ['ssh://%s' % host]
-    start(accounts, hosts, do_something, verbose = verbosity)
+    start(accounts, hosts, start_lab, verbose = 0)
