@@ -5,3 +5,4 @@ configobj
 tornado
 textfsm
 pika
+exscript==0.0.1

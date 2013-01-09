@@ -29,7 +29,12 @@ setup (
      download_url = ("http://pypi.python.org/pypi/AutoNetkit"),
 
      install_requires = ['netaddr', 'mako', 'networkx>=1.7', 
-         'configobj', 'tornado', 'textfsm', 'pika', ],
+         'configobj', 'tornado', 'textfsm', 'pika',
+         # 'exscript==0.0.1'
+         ],
+
+     #Note: exscript disabled in default install: requires pycrypto which requires compilation (can cause installation issues)
+     #dependency_links = [ 'https://github.com/knipknap/exscript/tarball/master#egg=exscript-0.0.1',],
 
      classifiers = [
          "Programming Language :: Python",

@@ -1,1 +1,1 @@
-
+https://github.com/knipknap/exscript/tarball/master#egg=exscript-0.0.1

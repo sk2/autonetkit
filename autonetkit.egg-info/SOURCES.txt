@@ -1,5 +1,6 @@
 MANIFEST.in
 README.txt
+setup.cfg
 setup.py
 autonetkit/__init__.py
 autonetkit/ank.py
