@@ -33,6 +33,7 @@ var interface_label_id = "";
 
 ws.onmessage = function (evt) {
     var data = jQuery.parseJSON(evt.data);
+    console.log(data);
     //TODO: parse to see if valid traceroute path or other data
     if ("graph" in data) {
         if (overlay_id != "ip_allocations"){
@@ -1273,6 +1274,11 @@ function redraw_paths() {
         .style("stroke", "orange")
         .style("opacity", 50)
         ;
+
+        path2.exit().transition()
+        .duration(1000)
+        .style("opacity",0)
+        .remove();
 
 
 }
