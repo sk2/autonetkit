@@ -452,6 +452,10 @@ class overlay_edge(object):
         """For consistency, edge.get(key) is neater than getattr(edge, key)"""
         return self.__getattr__(key)
 
+    def set(self, key, val):
+        """For consistency, edge.set(key, value) is neater than setattr(edge, key, value)"""
+        return self.__setattr__(key, val)
+
     def __getattr__(self, key):
         """Returns edge property"""
         return self._graph[self.src_id][self.dst_id].get(key)
@@ -845,11 +849,21 @@ class overlay_graph(OverlayBase):
         #TODO: decide if want to allow nodes to be created when adding edge if not already in graph
         self._graph.add_edges_from(ebunch, **kwargs)
 
-    def update(self, nbunch, **kwargs):
+    def update(self, nbunch = None, **kwargs):
         """Sets property defined in kwargs to all nodes in nbunch"""
+        if not nbunch:
+            nbunch = self.nodes()
         for node in nbunch:
             for key, value in kwargs.items():
                 node.set(key, value)
+
+    def update_edges(self, ebunch = None, **kwargs):
+        """Sets property defined in kwargs to all edges in ebunch"""
+        if not ebunch:
+            ebunch = self.edges()
+        for edge in ebunch:
+            for key, value in kwargs.items():
+                edge.set(key, value)
 
     def subgraph(self, nbunch, name=None):
         nbunch = (n.node_id for n in nbunch) # only store the id in overlay

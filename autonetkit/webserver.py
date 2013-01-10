@@ -238,9 +238,12 @@ class PikaClient(object):
             #credentials=cred
         )
  
-        self.connection = TornadoConnection(param,
-            on_open_callback=self.on_connected)
-        self.connection.add_on_close_callback(self.on_closed)
+        try:
+            self.connection = TornadoConnection(param,
+                    on_open_callback=self.on_connected)
+            self.connection.add_on_close_callback(self.on_closed)
+        except pika.exceptions.AMQPConnectionError:
+            print("Unable to connect to RabbitMQ")
  
     def on_connected(self, connection):
         #pika.log.info('PikaClient: connected to RabbitMQ')
