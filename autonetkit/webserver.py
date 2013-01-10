@@ -1,9 +1,12 @@
 # based on http://reminiscential.wordpress.com/2012/04/07/realtime-notification-delivery-using-rabbitmq-tornado-and-websocket/
-import pika
+try:
+    import pika
+    from pika.adapters.tornado_connection import TornadoConnection
+except ImportError:
+    pass # no pika installed, module will handle accordingly 
 import tornado
 import tornado.websocket as websocket
 from tornado.netutil import TCPServer
-from pika.adapters.tornado_connection import TornadoConnection
 import os
 import json
 import glob
@@ -395,6 +398,10 @@ def main():
     # PikaClient is our rabbitmq consumer
     use_rabbitmq = ank_config.settings['Rabbitmq']['active']
     use_rabbitmq = True
+    try:
+        import pika
+    except ImportError:
+        use_rabbitmq = False # don't use pika
     if use_rabbitmq:
         host_address = ank_config.settings['Rabbitmq']['server']
         pc = PikaClient(io_loop, ank_accessor, host_address)
