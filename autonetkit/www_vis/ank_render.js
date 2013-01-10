@@ -9,12 +9,10 @@ ws.onopen = function() {
     ws.send("overlay_list");
     ws.send("overlay_id=" + overlay_id);
     ws.send("ip_allocations");
-    status_label.html("WebSocket connected");
     $("#websocket_icon").html(' <i class="icon-circle " title="WebSocket Connected. Reload page to reconnect."></i>');
 };
 ws.onclose = function () {
-    status_label.html("Warning: WebSocket disconnected");
-    $("#websocket_icon").html(' <i class="icon-remove-sign " title="WebSocket Disconnected"></i>');
+    $("#websocket_icon").html(' <font color ="red"> <i class="icon-remove-sign " title="WebSocket Disconnected"></i></font>');
 };
 
 var icon_width = 45;
@@ -38,6 +36,7 @@ starting_hosts = [];
 
 ws.onmessage = function (evt) {
     var data = jQuery.parseJSON(evt.data);
+    console.log(data);
     //TODO: parse to see if valid traceroute path or other data
     if ("graph" in data) {
         if (overlay_id != "ip_allocations"){
@@ -1280,8 +1279,8 @@ function redraw_paths() {
         path2.enter().append("svg:path")
         .attr("d", traceroute_line)
         .attr("class", "trace_path")
-        .style("stroke-width", 8)
-        .style("stroke", "green")
+        .style("stroke-width", 10)
+        .style("stroke", "red")
         .style("fill", "none")
         //TODO: can use following to map to marker type
         //.attr("marker-end", function(d) { return "url(#" + d.type + ")"; });
@@ -1297,7 +1296,7 @@ function redraw_paths() {
         clear_label();
     })
     .transition()
-        .duration(1000)
+        .duration(2000)
         .style("stroke-width", 3)
         //.style("stroke", "rgb(0,154,138)")
         .style("stroke", "orange")
@@ -1305,7 +1304,7 @@ function redraw_paths() {
         ;
 
         path2.exit().transition()
-        .duration(1000)
+        .duration(2000)
         .style("opacity",0)
         .remove();
 
