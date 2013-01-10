@@ -70,7 +70,11 @@ def load_graphml(input_graph_string):
     for label, nodes in duplicates:
         for node in nodes:
             #TODO: need to check they don't all have same ASN... if so then warn
-            graph.node[node]['label'] = "%s_%s" % (graph.node[node]['label'], graph.node[node]['asn'])
+            try:
+                graph.node[node]['label'] = "%s_%s" % (graph.node[node]['label'], graph.node[node]['asn'])
+            except KeyError:
+                log.warning("Unable to set new label for duplicate node %s: %s" % (node,
+                    graph.node[node].get("label")))
 
     boolean_attributes = set( k for n, d in graph.nodes(data=True)
             for k, v in d.items()
