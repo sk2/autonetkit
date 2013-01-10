@@ -22,6 +22,8 @@ def build_overlays(input_data, timestamp):
     routers = list(G_in.nodes("is_router"))
     G_ospf = anm.add_overlay("ospf", G_in.nodes("is_router"))
     G_ospf.add_edges_from(e for e in G_in.edges() if e.src.asn == e.dst.asn)
+    G_ospf.update(area=0) # set defaults
+    G_ospf.update_edges(area=0)
 
     G_ebgp = anm.add_overlay("ebgp", G_in.nodes("is_router"), directed = True)
     G_ebgp.add_edges_from((e for e in G_in.edges() if e.src.asn != e.dst.asn), bidirectional = True)

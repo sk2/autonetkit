@@ -1,10 +1,11 @@
 import autonetkit.log as log
-import time
 import pika
 import json
-import pprint
 import autonetkit.plugins.process_data as process_data
 import autonetkit.config as config
+import autonetkit.ank_messaging as ank_messaging
+import autonetkit.log as log
+
 
 def send(nidb, command, hosts, server = "measure_client", threads = 3):
 # netaddr IP addresses not JSON serializable
@@ -12,19 +13,18 @@ def send(nidb, command, hosts, server = "measure_client", threads = 3):
 
     pika_host = config.settings['Rabbitmq']['server']
 
-    www_connection = pika.BlockingConnection(pika.ConnectionParameters(
+    messaging = ank_messaging.AnkMessaging()
+
+    try:
+        connection = pika.BlockingConnection(pika.ConnectionParameters(
             host= pika_host))
-    www_channel = www_connection.channel()
+        channel = connection.channel()
 
-    www_channel.exchange_declare(exchange='www',
-            type='direct')
-
-    connection = pika.BlockingConnection(pika.ConnectionParameters(
-        host= pika_host))
-    channel = connection.channel()
-
-    channel.exchange_declare(exchange='measure',
-            type='direct')
+        channel.exchange_declare(exchange='measure',
+                type='direct')
+    except pika.exceptions.AMQPConnectionError:
+        log.warning("Unable to connect to RabbitMQ on %s, exiting measurement" % pika_host)
+        return
 
     data = {
             'command': command,
@@ -69,10 +69,8 @@ def send(nidb, command, hosts, server = "measure_client", threads = 3):
                     if str(trace_result[-1]) == str(dst_host[1]): #TODO: fix so direct comparison, not string, either here or in anm object comparison: eg compare on label?
 #TODO: make this use custom ANK serializer function
                         trace_result = [str(t.id) for t in trace_result if t] # make serializable
-                        body = json.dumps({"path": trace_result})
-                        www_channel.basic_publish(exchange='www',
-                                routing_key = "client",
-                                body= body)
+                        body = {"path": trace_result}
+                        messaging.publish_json(body)
                     else:
                         log.info("Partial trace, not sending to webserver: %s", trace_result)
                 else:
