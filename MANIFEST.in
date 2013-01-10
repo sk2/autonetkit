@@ -1,5 +1,5 @@
-include autonetkit/ank_vis/*.*
-include autonetkit/ank_vis/icons/*.*
+include autonetkit/www_vis/*.*
+include autonetkit/www_vis/icons/*.*
 
 recursive-include autonetkit/textfsm *
 include autonetkit/templates/*.mako
