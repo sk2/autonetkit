@@ -5,9 +5,9 @@ from setuptools import setup
 
 setup (
      name = "autonetkit",
-     version = "0.2.0",
-     description = 'Automatic configuration generation for emulated networks',
-     long_description = 'Automatic configuration generation for emulated networks',
+     version = "0.2.5",
+     description = 'Automatic configuration generation for emulated networks. www.autonetkit.org',
+     long_description = 'Automatic configuration generation for emulated networks. www.autonetkit.org',
 
      # simple to run 
      entry_points = {
@@ -29,8 +29,13 @@ setup (
      package_data = {'': ['settings.cfg', 'config/configspec.cfg', ]},
      download_url = ("http://pypi.python.org/pypi/AutoNetkit"),
 
-     install_requires = ['netaddr', 'mako', 'networkx>=1.7', 
-         'configobj', 'tornado', 'textfsm', 'pika',
+     install_requires = [
+         'netaddr',
+         'mako',
+         'networkx', 
+         'configobj', 
+         'tornado', 
+         #'textfsm', 'pika',
          # 'exscript==0.0.1'
          ],
 
