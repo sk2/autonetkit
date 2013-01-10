@@ -1,5 +1,6 @@
 
 .DS_Store
+build/*
 
 *.swp
 
@@ -53,3 +54,4 @@ autonetkit.egg-info/*
 autonetkit.egg-info/SOURCES.txt
 
 example/rendered/*
+build/lib/autonetkit/__init__.py
