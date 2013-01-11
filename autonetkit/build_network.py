@@ -189,8 +189,8 @@ def build_bgp(anm):
         ank.copy_attr_from(G_in, G_bgp, "ibgp_l3_cluster") 
         for node in G_bgp:
             #set defaults
-#TODO: map "None" string to None for attributes from Graphml
-            if not node.ibgp_level or node.ibgp_level == "None":
+#TODO: map "None" string to None for attributes from input, if not explicitly set to zero (ie non-iBGP)
+            if not node.ibgp_level and node.ibgp_level != 0: 
                 node.ibgp_level = 1
 
             node.ibgp_level = int(node.ibgp_level) # ensure is numeric
@@ -203,11 +203,11 @@ def build_bgp(anm):
 
         for asn, devices in G_phy.groupby("asn").items():
             as_graph = G_phy.subgraph(devices)
-            routers = list(n for n in as_graph if n.is_router)
+            routers = list(G_bgp.node(n) for n in as_graph if n.is_router)
 #TODO: catch integer cast exception
-            ibgp_levels = set(int(G_bgp.node(r).ibgp_level) for r in routers)
+            ibgp_levels = set(int(r.ibgp_level) for r in routers)
             max_level = max(ibgp_levels)
-            all_pairs = [ (G_bgp.node(s), G_bgp.node(t)) for s in routers for t in routers if s != t]
+            all_pairs = [ (s, t) for s in routers for t in routers if s != t]
             if max_level == 3:
                 l1_l2_up_links = [ (s, t) for (s, t) in all_pairs if s.ibgp_level == 1 and t.ibgp_level == 2
                         and s.ibgp_l2_cluster == t.ibgp_l2_cluster]
@@ -227,6 +227,26 @@ def build_bgp(anm):
 
                 l3_peer_links = [ (s, t) for (s, t) in all_pairs if s.ibgp_level == t.ibgp_level == 3]
                 G_bgp.add_edges_from(l3_peer_links, type = 'ibgp', direction = 'over')
+
+# also check for any clusters which only contain l1 and l3 links
+                l3_clusters = set(r.ibgp_l3_cluster for r in routers)
+                for l3_cluster in l3_clusters:
+                    l3_cluster_devices = [r for r in routers if r.ibgp_l3_cluster == l3_cluster]
+                    if any(r.ibgp_level == 2 for r in l3_cluster_devices):
+                        log.debug("L3 cluster %s in ASN %s has l2 devices, not adding extra links")
+                    else:
+                        l1_routers = [r for r in l3_cluster_devices if r.ibgp_level == 1]
+                        l3_routers = [r for r in l3_cluster_devices if r.ibgp_level == 3]
+                        log.debug("L3 cluster %s in ASN %s has no level 2 iBGP routers."
+                                "Connecting level 1 routers (%s) to level 3 routers (%s)"
+                                % (l3_cluster, asn, l1_routers, l3_routers))
+
+                        l1_l3_up_links = [ (s, t) for s in l1_routers for t in l3_routers]
+                        l3_l1_down_links = [ (t, s) for (s, t) in l1_l3_up_links] # the reverse
+                        G_bgp.add_edges_from(l1_l3_up_links, type = 'ibgp', direction = 'up')
+                        G_bgp.add_edges_from(l3_l1_down_links, type = 'ibgp', direction = 'down')
+
+                
 
             if max_level == 2:
                 l1_l2_up_links = [ (s, t) for (s, t) in all_pairs 
@@ -257,6 +277,17 @@ def build_bgp(anm):
         route_reflectors.allocate(G_phy, G_bgp)
 
 #TODO: probably want to use l3 connectivity graph for allocating route reflectors
+
+#TODO: set this for vis
+# and set label back
+    ibgp_label_to_level = {
+            0: "None", # Explicitly set role to "None" -> Not in iBGP
+            3: "RR",
+            1: "RRC",
+            2: "HRR",
+            }
+    for node in G_bgp:
+        node.ibgp_role = ibgp_label_to_level[node.ibgp_level]
 
     ebgp_nodes = [d for d in G_bgp if any(edge.type == 'ebgp' for edge in d.edges())]
     G_bgp.update(ebgp_nodes, ebgp=True)
