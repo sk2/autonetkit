@@ -455,16 +455,27 @@ class CiscoCompiler(PlatformCompiler):
 #TODO: setup to remap allocate interface id function here
         #super(CiscoCompiler, self).__init__(nidb, anm, host)
 
-    def interface_ids_ios(self):
+    def interface_ids_ios_by_slot(self):
         id_pairs = ( (slot, 0) for slot in itertools.count(0)) 
         for (slot, port) in id_pairs:
             #yield "Ethernet%s/%s" % (slot, port)
-            yield "FastEthernet%s/%s" % (slot, port)
+            yield "GigabitEthernet%s/%s" % (slot, port)
 
-    def interface_ids_ios2(self):
-        id_pairs = ( (slot, port) for (slot, port) in itertools.product(range(17), range(5))) 
+    def interface_ids_ios(self):
+        for x in itertools.count(0):
+            yield "GigabitEthernet0/%s" % x
+            
+    def interface_ids_ios2_slot_port(self):
+        """Allocate with slot and port iterating
+        TODO: make this iterator take the base string, and the number per slot/port (ie argument for range)
+        """
+        id_pairs = ( (slot, port) for (slot, port) in itertools.product(xrange(17), xrange(5))) 
         for (slot, port) in id_pairs:
             yield "GigabitEthernet%s/%s/%s/%s" % (0, 0, slot, port)
+
+    def interface_ids_ios2(self):
+        for x in itertools.count(0):
+            yield "GigabitEthernet0/0/0/%s" % x
 
     def compile(self):
         def edge_id_numeric(edge):
@@ -500,6 +511,7 @@ class CiscoCompiler(PlatformCompiler):
 
             # Assign interfaces
             int_ids = self.interface_ids_ios()
+            int_ids.next() # 0/0 is used for management ethernet
             for edge in sorted(self.nidb.edges(nidb_node), key = edge_id_numeric):
                 if specified_int_names:
                     directed_edge = G_in_directed.edge(edge)
