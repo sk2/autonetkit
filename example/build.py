@@ -6,7 +6,10 @@ import autonetkit.ank as ank_utils
 import autonetkit.ank as ank
 import networkx as nx
 
-def build_overlays(input_data, timestamp):
+def build_overlays(filename):
+    with open(filename, "r") as fh:
+        input_data = fh.read() # we pass in as a string to the overlay builder
+
     anm = autonetkit.anm.AbstractNetworkModel()
     input_graph = graphml.load_graphml(input_data)
     G_in = anm.add_overlay("input", graph = input_graph)
@@ -19,20 +22,20 @@ def build_overlays(input_data, timestamp):
     G_phy.add_edges_from(G_in.edges(type="physical"))
     G_phy.update(G_phy, syntax="quagga")
 
-    routers = list(G_in.nodes("is_router"))
-    G_ospf = anm.add_overlay("ospf", G_in.nodes("is_router"))
+    routers = list(G_in.routers())
+    G_ospf = anm.add_overlay("ospf", G_in.routers())
     G_ospf.add_edges_from(e for e in G_in.edges() if e.src.asn == e.dst.asn)
     G_ospf.update(area=0) # set defaults
     G_ospf.update_edges(area=0)
 
-    G_ebgp = anm.add_overlay("ebgp", G_in.nodes("is_router"), directed = True)
+    G_ebgp = anm.add_overlay("ebgp", G_in.routers(), directed = True)
     G_ebgp.add_edges_from((e for e in G_in.edges() if e.src.asn != e.dst.asn), bidirectional = True)
 
-    G_ibgp = anm.add_overlay("ibgp", G_in.nodes("is_router"), directed = True)
+    G_ibgp = anm.add_overlay("ibgp", G_in.routers(), directed = True)
     G_ibgp.add_edges_from(((s, t) for s in routers for t in routers if s.asn == t.asn), bidirectional = True)
 
     # hierarchical
-    G_ibgp = anm.add_overlay("ibgp_rr", G_in.nodes("is_router"), directed = True)
+    G_ibgp = anm.add_overlay("ibgp_rr", G_in.routers(), directed = True)
 
     graph_phy = ank_utils.unwrap_graph(G_phy)
     centrality = nx.degree_centrality(graph_phy) 
