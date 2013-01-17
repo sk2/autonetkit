@@ -61,7 +61,7 @@ class RouterCompiler(object):
                     _edge_id = link.edge_id, # used if need to append
                     id = nidb_edge.id,
                     description = "%s to %s" % (link.src, link.dst),
-                    ip_address = link.overlay.ip.ip_address,
+                    ip_address = link['ip'].ip_address,
                     subnet = subnet,
                     physical = True,
                     )
