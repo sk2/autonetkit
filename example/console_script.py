@@ -21,13 +21,10 @@ def main():
     
     arguments = parser.parse_args()
 
-    with open(arguments.filename, "r") as fh:
-        input_string = fh.read() # we pass in as a string to the overlay builder
-    timestamp =  os.stat(arguments.filename).st_mtime
-
     if arguments.filename:
+
         import build # grabs build.py from example
-        anm = build.build_overlays(input_string, timestamp)
+        anm = build.build_overlays(arguments.filename)
         anm.save()
 
         import compile # grabs compile.py from example
@@ -49,40 +46,38 @@ def main():
         nidb = autonetkit.nidb.NIDB()
         nidb.restore_latest()
 
-
     username = "sk2"
     host = "192.168.255.129"
     if arguments.deploy:
-        import autonetkit.deploy.netkit as netkit_deploy
-        config_path = os.path.join("rendered", "localhost", "netkit")
-
-        tar_file = netkit_deploy.package(config_path, "nklab")
-        netkit_deploy.transfer(host, username, tar_file)
-        netkit_deploy.extract(host, username, tar_file, config_path, timeout = 60, verbosity = 1)
+        import autonetkit.deploy.netkit as nk_deploy
+        dst_folder = nidb.topology['localhost'].render_dst_folder
+        nk_deploy.deploy(host, username, dst_folder)
     
     if arguments.measure:
-        #NOTE: Measure requires a remote host to be setup, and rabbitmq running, (by default ank will look on localhost)
-# http://www.rabbitmq.com/install-debian.html
+        """ Some notes on measurement:
+        NOTE: Measure requires a remote host to be setup, and rabbitmq running, (by default ank will look on localhost)
+ http://www.rabbitmq.com/install-debian.html
 
-# or for OS X: http://superuser.com/questions/464311/open-port-5672-tcp-for-access-to-rabbitmq-on-mac
+ or for OS X: http://superuser.com/questions/464311/open-port-5672-tcp-for-access-to-rabbitmq-on-mac
 
-# and
-# pip install pika
-# pip install https://github.com/knipknap/exscript/tarball/master
-# note this needs paramiko... which needs to compile. if you don't have python headers, eg in ubuntu: sudo apt-get install python-dev
-# wget https://raw.github.com/sk2/autonetkit/master/autonetkit/measure_client.py
-# sk2@ubuntu:~$ python measure_client.py --server 192.168.255.1
-# where --server specifies the rabbitmq server
-# can also use through ANK package:
-# install ank through github, then install Exscript
-# can then don
-# ank_measure_client --server 192.168.255.1
+ and
+ pip install pika
+ pip install https://github.com/knipknap/exscript/tarball/master
+ note this needs paramiko... which needs to compile. if you don't have python headers, eg in ubuntu: sudo apt-get install python-dev
+ wget https://raw.github.com/sk2/autonetkit/master/autonetkit/measure_client.py
+ sk2@ubuntu:~$ python measure_client.py --server 192.168.255.1
+ where --server specifies the rabbitmq server
+ can also use through ANK package:
+ install ank through github, then install Exscript
+ can then do:
+ ank_measure_client --server 192.168.255.1
+"""
 
         import autonetkit.measure as measure
         log.info("Measuring network")
-        remote_hosts = [node.tap.ip for node in nidb.nodes("is_router") ]
+        remote_hosts = [node.tap.ip for node in nidb.routers() ]
         #remote_hosts = remote_hosts[:3] # truncate for testing
-        dest_node = random.choice([n for n in nidb.nodes("is_l3device")])
+        dest_node = random.choice(list(nidb.routers()))
         log.info("Tracing to randomly selected node: %s" % dest_node)
         dest_ip = dest_node.interfaces[0].ip_address # choose random interface on this node
         command = "traceroute -n -a -U -w 0.5 %s" % dest_ip 
@@ -91,11 +86,9 @@ def main():
 
         # abort after 10 fails, proceed on any success, 0.1 second timeout (quite aggressive)
         #command = 'vtysh -c "show ip route"'
-        remote_hosts = [node.tap.ip for node in nidb.nodes("is_router") if node.bgp.ebgp_neighbors]
+        remote_hosts = [node.tap.ip for node in nidb.routers() if node.bgp.ebgp_neighbors]
         command = "cat /var/log/zebra/bgpd.log"
         #measure.send(nidb, command, remote_hosts)
-
-
 
 
 if __name__ == "__main__":
