@@ -484,7 +484,7 @@ var link_info = function(d) {
     text = source.id + " - " + target.id; //TODO: make sure all have labels from graphics appended overlay
 
     for (attr in d) {
-        if (d[attr] != null && d[attr] != "None" && attr != "source" & attr != "target" && attr != "edge_id") {
+        if (d[attr] != null && d[attr] != "None" && attr != "source" & attr != "target" && attr != "_interfaces" && attr != "edge_id") {
             text += ", " + attr + ": " + d[attr];
         }
     }
