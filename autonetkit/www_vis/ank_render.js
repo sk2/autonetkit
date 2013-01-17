@@ -36,7 +36,6 @@ starting_hosts = [];
 
 ws.onmessage = function (evt) {
     var data = jQuery.parseJSON(evt.data);
-    console.log(data);
     //TODO: parse to see if valid traceroute path or other data
     if ("graph" in data) {
         if (overlay_id != "ip_allocations"){
