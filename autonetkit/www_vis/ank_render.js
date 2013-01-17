@@ -9,10 +9,10 @@ ws.onopen = function() {
     ws.send("overlay_list");
     ws.send("overlay_id=" + overlay_id);
     ws.send("ip_allocations");
-    $("#websocket_icon").html(' <i class="icon-circle " title="WebSocket Connected. Reload page to reconnect."></i>');
+    $("#websocket_icon").html(' <i class="icon-circle " title="WebSocket Connected."></i>');
 };
 ws.onclose = function () {
-    $("#websocket_icon").html(' <font color ="red"> <i class="icon-remove-sign " title="WebSocket Disconnected"></i></font>');
+    $("#websocket_icon").html(' <font color ="red"> <i class="icon-remove-sign " title="WebSocket Disconnected. Reload page to reconnect."></i></font>');
 };
 
 var icon_width = 45;
