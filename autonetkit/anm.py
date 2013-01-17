@@ -589,6 +589,11 @@ class OverlayBase(object):
             result = self.filter(result, *args, **kwargs)
         return result
 
+    def routers(self, *args, **kwargs):
+        """Shortcut for nodes(), sets device_type to be router"""
+        kwargs['device_type'] = 'router'
+        return self.nodes(*args, **kwargs)
+
     def device(self, key):
         """To access programatically"""
         return overlay_node(self._anm, self._overlay_id, key)

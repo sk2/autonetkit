@@ -650,6 +650,11 @@ class NIDB_base(object):
             result = self.filter(result, *args, **kwargs)
         return result
 
+    def routers(self, *args, **kwargs):
+        """Shortcut for nodes(), sets device_type to be router"""
+        kwargs['device_type'] = 'router'
+        return self.nodes(*args, **kwargs)
+
     def filter(self, nbunch = None, *args, **kwargs):
         #TODO: also allow nbunch to be passed in to subfilter on...?
         """TODO: expand this to allow args also, ie to test if value evaluates to True"""
