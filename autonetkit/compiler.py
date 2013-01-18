@@ -213,6 +213,7 @@ class IosBaseCompiler(RouterCompiler):
         
     def interfaces(self, node):
         ipv4_node = self.anm['ip'].node(node)
+        ipv6_node = self.anm['ip6'].node(node)
         ipv6_address = address_prefixlen_to_network(ipv6_node.loopback, 126)
         ipv4_loopback_subnet = netaddr.IPNetwork("0.0.0.0/32")
 
@@ -236,8 +237,7 @@ class IosBaseCompiler(RouterCompiler):
 #TODO: update this to new format
         is_isis_node = bool(G_isis.node(node)) # if node is in ISIS graph
         node.interfaces.append(
-            ip_address = ip_node.loopback,
-            physical = False,
+                id = self.lo_interface,
                 description = "Loopback",
                 ipv4_address = ipv4_node.loopback,
                 ipv4_subnet = ipv4_loopback_subnet,
