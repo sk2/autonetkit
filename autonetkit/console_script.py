@@ -214,9 +214,9 @@ def main():
 
 def compile_network(anm):
     nidb = NIDB() 
-    G_phy = anm.overlay.phy
-    G_ip = anm.overlay.ip
-    G_graphics = anm.overlay.graphics
+    G_phy = anm['phy']
+    G_ip = anm['ip']
+    G_graphics = anm['graphics']
 #TODO: build this on a platform by platform basis
     nidb.add_nodes_from(G_phy, retain=['label', 'host', 'platform', 'Network', 'update'])
 

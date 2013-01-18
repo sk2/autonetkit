@@ -555,10 +555,9 @@ class OverlayBase(object):
         return iter(overlay_node(self._anm, self._overlay_id, node)
                 for node in self._graph.neighbors(node.node_id))
 
-    @property
-    def overlay(self):
+    def overlay(self, key):
         """Get to other overlay graphs in functions"""
-        return overlay_accessor(self._anm)
+        return overlay_graph(self._anm, key)
 
     @property
     def name(self):
@@ -874,22 +873,6 @@ class overlay_graph(OverlayBase):
         nbunch = (n.node_id for n in nbunch) # only store the id in overlay
         return overlay_subgraph(self._anm, self._overlay_id, self._graph.subgraph(nbunch), name)
 
-class overlay_accessor(object):
-    """API to access overlay graphs in ANM"""
-    def __init__(self, anm):
-#Set using this method to bypass __setattr__ 
-        object.__setattr__(self, 'anm', anm)
-
-    def __repr__(self):
-        return "Available overlay graphs: %s" % ", ".join(sorted(self.anm._overlays.keys()))
-
-    def __getattr__(self, key):
-        """Access overlay graph"""
-        return overlay_graph(self.anm, key)
-
-    def get(self, key):
-        return getattr(self, key)
-
 class AbstractNetworkModel(object):
     def __init__(self):
         self._overlays = {}
@@ -989,10 +972,6 @@ class AbstractNetworkModel(object):
             retain = retain or [] # default is an empty list
             overlay.add_nodes_from(nodes, retain)
         return overlay
-
-    @property
-    def overlay(self):
-        return overlay_accessor(self)
 
 #TODO: make this a property
     def overlays(self):
