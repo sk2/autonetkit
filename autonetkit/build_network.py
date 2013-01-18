@@ -230,8 +230,6 @@ def build_bgp(anm):
                 G_bgp.add_edges_from(l3_peer_links, type = 'ibgp', direction = 'over')
 
 # also check for any clusters which only contain l1 and l3 links
-                test = G_bgp.node("test")
-
                 l3_clusters = set(r.ibgp_l3_cluster for r in routers)
                 for l3_cluster in l3_clusters:
                     l3_cluster_devices = [r for r in routers if r.ibgp_l3_cluster == l3_cluster]
@@ -241,13 +239,13 @@ def build_bgp(anm):
                         l2_cluster_devices = [r for r in l3_cluster_devices if r.ibgp_l2_cluster == l2_cluster]
 
                         if any(r.ibgp_level == 2 for r in l2_cluster_devices):
-                            log.info("Cluster (%s, %s, %s) has l2 devices, not adding extra links" % (asn, l3_cluster, l2_cluster))
+                            log.debug("Cluster (%s, %s, %s) has l2 devices, not adding extra links" % (asn, l3_cluster, l2_cluster))
                         else:
                             l1_routers = [r for r in l2_cluster_devices if r.ibgp_level == 1]
                             l3_routers = [r for r in l2_cluster_devices if r.ibgp_level == 3]
                             if not(len(l1_routers) and len(l3_routers)):
                                 break # no routers to connect
-                            log.info("Cluster (%s, %s, %s) has no level 2 iBGP routers. "
+                            log.debug("Cluster (%s, %s, %s) has no level 2 iBGP routers. "
                                     "Connecting level 1 routers (%s) to level 3 routers (%s)"
                                     % (asn, l3_cluster, l2_cluster, l1_routers, l3_routers))
 
