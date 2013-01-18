@@ -253,11 +253,7 @@ def compile_network(anm):
     return nidb
 
 def deploy_network(nidb, input_graph_string):
-    import autonetkit.deploy.netkit as netkit_deploy
-    try:
-        from autonetkit_cisco import deploy as cisco_deploy
-    except ImportError:
-        pass # development module, may not be available
+
     #TODO: make this driven from config file
     log.info("Deploying network")
 
@@ -273,6 +269,10 @@ def deploy_network(nidb, input_graph_string):
             config_path = os.path.join("rendered", hostname, platform)
 
             if hostname == "internal":
+                try:
+                    from autonetkit_cisco import deploy as cisco_deploy
+                except ImportError:
+                    pass # development module, may not be available
                 if platform == "cisco":
                     cisco_deploy.package(nidb, config_path, input_graph_string)
                 continue
@@ -282,6 +282,7 @@ def deploy_network(nidb, input_graph_string):
             host = platform_data['host']
             
             if platform == "netkit" :
+                import autonetkit.deploy.netkit as netkit_deploy
                 tar_file = netkit_deploy.package(config_path, "nklab")
                 netkit_deploy.transfer(host, username, tar_file, tar_file, key_file)
                 netkit_deploy.extract(host, username, tar_file, config_path, timeout = 60, key_filename= key_file)
