@@ -273,7 +273,7 @@ class IosClassicCompiler(IosBaseCompiler):
     def compile(self, node):
         super(IosClassicCompiler, self).compile(node)
 
-        phy_node = self.anm.overlay.phy.node(node)
+        phy_node = self.anm['phy'].node(node)
         if phy_node.include_csr:
             node.include_csr = True
         
@@ -336,7 +336,7 @@ class JunosphereCompiler(PlatformCompiler):
 
     def compile(self):
         log.info("Compiling Junosphere for %s" % self.host)
-        G_phy = self.anm.overlay.phy
+        G_phy = self.anm['phy']
         junos_compiler = JunosCompiler(self.nidb, self.anm)
         for phy_node in G_phy.nodes('is_router', host = self.host, syntax='junos'):
             nidb_node = self.nidb.node(phy_node)
@@ -359,7 +359,7 @@ class NetkitCompiler(PlatformCompiler):
 
     def compile(self):
         log.info("Compiling Netkit for %s" % self.host)
-        G_phy = self.anm.overlay.phy
+        G_phy = self.anm['phy']
         quagga_compiler = QuaggaCompiler(self.nidb, self.anm)
 #TODO: this should be all l3 devices not just routers
         for phy_node in G_phy.nodes('is_router', host = self.host, syntax='quagga'):
@@ -502,7 +502,7 @@ class CiscoCompiler(PlatformCompiler):
         specified_int_names = G_in.data.specified_int_names
 
         log.info("Compiling Cisco for %s" % self.host)
-        G_phy = self.anm.overlay.phy
+        G_phy = self.anm['phy']
         ios_compiler = IosClassicCompiler(self.nidb, self.anm)
         now = datetime.now()
         if settings['Compiler']['Cisco']['timestamp']:
@@ -571,7 +571,7 @@ class DynagenCompiler(PlatformCompiler):
 
     def compile(self):
         log.info("Compiling Dynagen for %s" % self.host)
-        G_phy = self.anm.overlay.phy
+        G_phy = self.anm['phy']
         ios_compiler = IosClassicCompiler(self.nidb, self.anm)
         for phy_node in G_phy.nodes('is_router', host = self.host, syntax='ios'):
             nidb_node = self.nidb.node(phy_node)
