@@ -61,8 +61,11 @@ class RouterCompiler(object):
             nidb_edge = self.nidb.edge(link)
 
             ipv4_subnet =  ipv4_link.dst.subnet # netmask comes from collision domain on the link
-            ipv6_subnet =  ipv6_link.dst.subnet # netmask comes from collision domain on the link
-            ipv6_address = address_prefixlen_to_network(ipv6_link.ip, ipv6_subnet.prefixlen)
+            ipv6_address = None
+            if ipv6_link:
+                ipv6_subnet =  ipv6_link.dst.subnet # netmask comes from collision domain on the link
+                ipv6_address = address_prefixlen_to_network(ipv6_link.ip, ipv6_subnet.prefixlen)
+
             
             node.interfaces.append(
                     _edge_id = link.edge_id, # used if need to append
@@ -214,7 +217,9 @@ class IosBaseCompiler(RouterCompiler):
     def interfaces(self, node):
         ipv4_node = self.anm['ip'].node(node)
         ipv6_node = self.anm['ip6'].node(node)
-        ipv6_address = address_prefixlen_to_network(ipv6_node.loopback, 126)
+        ipv6_address = None
+        if ipv6_node:
+            ipv6_address = address_prefixlen_to_network(ipv6_node.loopback, 126)
         ipv4_loopback_subnet = netaddr.IPNetwork("0.0.0.0/32")
 
 #TODO: strip out returns from super
