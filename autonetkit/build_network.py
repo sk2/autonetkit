@@ -209,6 +209,7 @@ def build_bgp(anm):
             max_level = max(ibgp_levels)
             all_pairs = [ (s, t) for s in routers for t in routers if s != t]
             if max_level == 3:
+
                 l1_l2_up_links = [ (s, t) for (s, t) in all_pairs if s.ibgp_level == 1 and t.ibgp_level == 2
                         and s.ibgp_l2_cluster == t.ibgp_l2_cluster]
                 l1_l2_down_links = [ (t, s) for (s, t) in l1_l2_up_links] # the reverse
@@ -220,7 +221,7 @@ def build_bgp(anm):
                 G_bgp.add_edges_from(l2_peer_links, type = 'ibgp', direction = 'over')
 
                 l2_l3_up_links = [ (s, t) for (s, t) in all_pairs if s.ibgp_level == 2 and t.ibgp_level == 3
-                        and s.ibgp_l3_cluster == t.ibgp_l3_cluster]
+                        if s.ibgp_l3_cluster == t.ibgp_l3_cluster]
                 l2_l3_down_links = [ (t, s) for (s, t) in l2_l3_up_links] # the reverse
                 G_bgp.add_edges_from(l2_l3_up_links, type = 'ibgp', direction = 'up')
                 G_bgp.add_edges_from(l2_l3_down_links, type = 'ibgp', direction = 'down')
@@ -229,22 +230,31 @@ def build_bgp(anm):
                 G_bgp.add_edges_from(l3_peer_links, type = 'ibgp', direction = 'over')
 
 # also check for any clusters which only contain l1 and l3 links
+                test = G_bgp.node("test")
+
                 l3_clusters = set(r.ibgp_l3_cluster for r in routers)
                 for l3_cluster in l3_clusters:
                     l3_cluster_devices = [r for r in routers if r.ibgp_l3_cluster == l3_cluster]
-                    if any(r.ibgp_level == 2 for r in l3_cluster_devices):
-                        log.debug("L3 cluster %s in ASN %s has l2 devices, not adding extra links")
-                    else:
-                        l1_routers = [r for r in l3_cluster_devices if r.ibgp_level == 1]
-                        l3_routers = [r for r in l3_cluster_devices if r.ibgp_level == 3]
-                        log.debug("L3 cluster %s in ASN %s has no level 2 iBGP routers."
-                                "Connecting level 1 routers (%s) to level 3 routers (%s)"
-                                % (l3_cluster, asn, l1_routers, l3_routers))
+                    l2_clusters = set(r.ibgp_l2_cluster for r in l3_cluster_devices)
 
-                        l1_l3_up_links = [ (s, t) for s in l1_routers for t in l3_routers]
-                        l3_l1_down_links = [ (t, s) for (s, t) in l1_l3_up_links] # the reverse
-                        G_bgp.add_edges_from(l1_l3_up_links, type = 'ibgp', direction = 'up')
-                        G_bgp.add_edges_from(l3_l1_down_links, type = 'ibgp', direction = 'down')
+                    for l2_cluster in l2_clusters:
+                        l2_cluster_devices = [r for r in l3_cluster_devices if r.ibgp_l2_cluster == l2_cluster]
+
+                        if any(r.ibgp_level == 2 for r in l2_cluster_devices):
+                            log.info("Cluster (%s, %s, %s) has l2 devices, not adding extra links" % (asn, l3_cluster, l2_cluster))
+                        else:
+                            l1_routers = [r for r in l2_cluster_devices if r.ibgp_level == 1]
+                            l3_routers = [r for r in l2_cluster_devices if r.ibgp_level == 3]
+                            if not(len(l1_routers) and len(l3_routers)):
+                                break # no routers to connect
+                            log.info("Cluster (%s, %s, %s) has no level 2 iBGP routers. "
+                                    "Connecting level 1 routers (%s) to level 3 routers (%s)"
+                                    % (asn, l3_cluster, l2_cluster, l1_routers, l3_routers))
+
+                            l1_l3_up_links = [ (s, t) for s in l1_routers for t in l3_routers]
+                            l3_l1_down_links = [ (t, s) for (s, t) in l1_l3_up_links] # the reverse
+                            G_bgp.add_edges_from(l1_l3_up_links, type = 'ibgp', direction = 'up')
+                            G_bgp.add_edges_from(l3_l1_down_links, type = 'ibgp', direction = 'down')
 
             if max_level == 2:
                 l1_l2_up_links = [ (s, t) for (s, t) in all_pairs 
