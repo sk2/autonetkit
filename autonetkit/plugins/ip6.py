@@ -16,7 +16,7 @@ except ImportError:
 def assign_asn_to_interasn_cds(G_ip):
     #TODO: rename to assign_asn_to_cds as also does intra-asn cds
     #TODO: make this a common function to ip4 and ip6
-    G_phy = G_ip.overlay.phy
+    G_phy = G_ip.overlay("phy")
     for collision_domain in G_ip.nodes("collision_domain"):
         neigh_asn = list(ank_utils.neigh_attr(G_ip, collision_domain, "asn", G_phy)) #asn of neighbors
         if len(set(neigh_asn)) == 1:
