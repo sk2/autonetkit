@@ -760,7 +760,7 @@ var group_attr = "asn";
 var group_info = function(d) {
     if (overlay_id == "ospf") {
         var data = d.key.split(",");
-        text = ("Group: <ul><li>asn: " + data[0] +  "</li><li>area: " + data[1] + "</li></ul>");
+        text = ("Group: <ul><li>" + data[0] +  "</li><li>area: " + data[1] + "</li></ul>");
     } else {
         text = ("Group: " + group_attr + " " + d.key);
     }
@@ -774,15 +774,14 @@ var node_group_id = function(d) {
     if (overlay_id == "nidb") {
         group_attr = "host";
     }
-    if (overlay_id == "conn") {
+    else if (overlay_id == "conn") {
         group_attr = "device";
     }
-
-    if (overlay_id == "ospf") {
+    else if (overlay_id == "ospf") {
         return ([d['asn'], d['area']]);
     }
-    if (overlay_id == "bgp") {
-        return ([d['asn'], d['ibgp_l2_cluster']]);
+    else if (overlay_id == "bgp") {
+        return (["ASN " + d['asn'], d['ibgp_l3_cluster'], d['ibgp_l2_cluster']]);
     }
 
     return d[group_attr];
