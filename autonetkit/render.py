@@ -73,7 +73,7 @@ def render_node(node):
             return
 
         try:
-            ank_version = "autonetkit_%s" % pkg_resources.get_distribution("autonetkit-v3-dev").version #TODO: pick up name automatically
+            ank_version = "autonetkit_%s" % pkg_resources.get_distribution("autonetkit").version #TODO: pick up name automatically
         except pkg_resources.DistributionNotFound:
             ank_version = "autonetkit_dev"
 
@@ -211,7 +211,7 @@ def render_topologies(nidb):
 
 def render_topology(topology):
     try:
-        ank_version = "autonetkit_%s" % pkg_resources.get_distribution("autonetkit-v3-dev").version #TODO: pick up name automatically
+        ank_version = "autonetkit_%s" % pkg_resources.get_distribution("autonetkit").version #TODO: pick up name automatically
     except pkg_resources.DistributionNotFound:
         ank_version = "autonetkit_dev"
     date = time.strftime("%Y-%m-%d %H:%M", time.localtime())
