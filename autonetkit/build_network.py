@@ -10,6 +10,7 @@ import autonetkit.load.graphml as graphml
 import autonetkit.exception
 import networkx as nx
 import os
+import autonetkit.ank as ank_utils
 
 __all__ = ['build']
 
@@ -117,7 +118,6 @@ def boundary_nodes(G, nodes):
     """ returns nodes at boundary of G
     TODO: check works for both directed and undirected graphs
     based on edge_boundary from networkx """
-    import autonetkit.ank as ank_utils
     graph = ank_utils.unwrap_graph(G)
     nodes = list(nodes)
     nbunch = list(ank_utils.unwrap_nodes(nodes))
@@ -201,13 +201,12 @@ def build_bgp(anm):
             if not node.ibgp_l3_cluster or node.ibgp_l3_cluster == "None":
                 node.ibgp_l3_cluster = node.asn # ibgp_l3_cluster defaults to ASN
 
-        for asn, devices in G_phy.groupby("asn").items():
-            as_graph = G_phy.subgraph(devices)
-            routers = list(G_bgp.node(n) for n in as_graph if n.is_router)
+        for asn, devices in ank_utils.groupby("asn", G_bgp): # group by nodes in phy graph
+            routers = list(G_bgp.node(n) for n in devices if n.is_router) # list of nodes from bgp graph
 #TODO: catch integer cast exception
             ibgp_levels = set(int(r.ibgp_level) for r in routers)
             max_level = max(ibgp_levels)
-            all_pairs = [ (s, t) for s in routers for t in routers if s != t]
+            all_pairs = [ (s, t) for s in routers for t in routers if s != t] # all possible edge src/dst pairs
             if max_level == 3:
 
                 l1_l2_up_links = [ (s, t) for (s, t) in all_pairs if s.ibgp_level == 1 and t.ibgp_level == 2
@@ -230,13 +229,9 @@ def build_bgp(anm):
                 G_bgp.add_edges_from(l3_peer_links, type = 'ibgp', direction = 'over')
 
 # also check for any clusters which only contain l1 and l3 links
-                l3_clusters = set(r.ibgp_l3_cluster for r in routers)
-                for l3_cluster in l3_clusters:
-                    l3_cluster_devices = [r for r in routers if r.ibgp_l3_cluster == l3_cluster]
-                    l2_clusters = set(r.ibgp_l2_cluster for r in l3_cluster_devices)
-
-                    for l2_cluster in l2_clusters:
-                        l2_cluster_devices = [r for r in l3_cluster_devices if r.ibgp_l2_cluster == l2_cluster]
+                for l3_cluster, l3_cluster_devices in ank_utils.groupby("ibgp_l3_cluster", routers):
+                    for l2_cluster, l2_cluster_devices in ank_utils.groupby("ibgp_l2_cluster", l3_cluster_devices):
+                        l2_cluster_devices = list(l2_cluster_devices)
 
                         if any(r.ibgp_level == 2 for r in l2_cluster_devices):
                             log.debug("Cluster (%s, %s, %s) has l2 devices, not adding extra links" % (asn, l3_cluster, l2_cluster))
@@ -480,7 +475,6 @@ def build_ospf(anm):
                     log.warning("Invalid OSPF area %s for %s. Using default of %s" %
                             (router.area, router, default_area))
                     router.area = default_area
-
 
     for router in G_ospf:
 # and set area on interface

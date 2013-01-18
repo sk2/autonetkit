@@ -35,6 +35,8 @@ def set_node_default(overlay_graph, nbunch, **kwargs):
                 graph.node[node][key] = val
 
 
+#TODO: also add ability to copy multiple attributes
+
 #TODO: rename to copy_node_attr_from
 def copy_attr_from(overlay_src, overlay_dst, src_attr, dst_attr = None, nbunch = None):
     #TODO: add dest format, eg to convert to int
@@ -310,3 +312,12 @@ def neigh_equal(overlay_graph, node, attribute, attribute_graph = None):
 def unique_attr(overlay_graph, attribute):
     graph = unwrap_graph(overlay_graph)
     return set(graph.node[node].get(attribute) for node in graph)
+
+def groupby(attribute, nodes):
+    """Takes a group of nodes and returns a generator of (attribute, nodes) for each attribute value
+    A simple wrapped around itertools.groupby that creates a lambda for the attribute
+    """
+    import itertools
+    keyfunc = lambda x: x.get(attribute)
+    nodes = sorted(nodes, key = keyfunc)
+    return itertools.groupby(nodes, key = keyfunc)
