@@ -17,6 +17,12 @@ from ank_utils import alphabetical_sort as alpha_sort
 #TODO: tidy up the dict to list, and sorting formats
 #TODO: don't pass lists/dictionaries around: set directly, and then sort in-place later if needed
 
+def address_prefixlen_to_network(address, prefixlen):
+    """Workaround for creating an IPNetwork from an address and a prefixlen
+    TODO: check if this is part of netaddr module
+    """
+    return netaddr.IPNetwork("%s/%s" % (address, prefixlen))
+
 def dot_to_underscore(instring):
     return instring.replace(".", "_")
 
@@ -31,7 +37,7 @@ class RouterCompiler(object):
 
     def compile(self, node):
         phy_node = self.anm['phy'].node(node)
-        ip_node = self.anm.overlay.ip.node(node)
+        ip_node = self.anm['ip'].node(node)
         node.label = naming.network_hostname(phy_node)
         node.input_label = phy_node.id
         node.loopback = ip_node.loopback
@@ -45,24 +51,26 @@ class RouterCompiler(object):
             self.bgp(node)
 
     def interfaces(self, node):
-        phy_node = self.anm.overlay.phy.node(node)
-        G_ip = self.anm.overlay.ip
+        phy_node = self.anm['phy'].node(node)
+        G_ipv4 = self.anm['ip']
+        G_ipv6 = self.anm['ip6']
         node.interfaces = []
         for link in phy_node.edges():
-            ip_link = G_ip.edge(link)
+            ipv4_link = G_ipv4.edge(link)
+            ipv6_link = G_ipv6.edge(link)
             nidb_edge = self.nidb.edge(link)
-            #TODO: what if multiple ospf costs for this link
-            if not ip_link:
-                #TODO: fix this
-                continue
 
-            subnet =  ip_link.dst.subnet # netmask comes from collision domain on the link
+            ipv4_subnet =  ipv4_link.dst.subnet # netmask comes from collision domain on the link
+            ipv6_subnet =  ipv6_link.dst.subnet # netmask comes from collision domain on the link
+            ipv6_address = address_prefixlen_to_network(ipv6_link.ip, ipv6_subnet.prefixlen)
+            
             node.interfaces.append(
                     _edge_id = link.edge_id, # used if need to append
                     id = nidb_edge.id,
                     description = "%s to %s" % (link.src, link.dst),
-                    ip_address = link['ip'].ip_address,
-                    subnet = subnet,
+                    ipv4_address = ipv4_link.ip_address,
+                    ipv4_subnet = ipv4_subnet,
+                    ipv6_address = ipv6_address,
                     physical = True,
                     )
 
@@ -147,8 +155,8 @@ class QuaggaCompiler(RouterCompiler):
     lo_interface = "lo0:1"
 
     def interfaces(self, node):
-        ip_node = self.anm.overlay.ip.node(node)
-        phy_node = self.anm.overlay.phy.node(node)
+        ip_node = self.anm['ip'].node(node)
+        phy_node = self.anm['phy'].node(node)
         G_ospf = self.anm['ospf']
 
         super(QuaggaCompiler, self).interfaces(node)
@@ -204,15 +212,16 @@ class IosBaseCompiler(RouterCompiler):
             self.isis(node)
         
     def interfaces(self, node):
-        ip_node = self.anm.overlay.ip.node(node)
-        loopback_subnet = netaddr.IPNetwork("0.0.0.0/32")
+        ipv4_node = self.anm['ip'].node(node)
+        ipv6_address = address_prefixlen_to_network(ipv6_node.loopback, 126)
+        ipv4_loopback_subnet = netaddr.IPNetwork("0.0.0.0/32")
 
 #TODO: strip out returns from super
         super(IosBaseCompiler, self).interfaces(node)
         # OSPF cost
         G_ospf = self.anm['ospf']
         G_isis = self.anm['isis']
-        
+
         for interface in node.interfaces:
             ospf_link = G_ospf.edge(interface._edge_id) # find link in OSPF with this ID
             if ospf_link:
@@ -227,13 +236,15 @@ class IosBaseCompiler(RouterCompiler):
 #TODO: update this to new format
         is_isis_node = bool(G_isis.node(node)) # if node is in ISIS graph
         node.interfaces.append(
-            id = self.lo_interface,
-            description = "Loopback",
             ip_address = ip_node.loopback,
-            subnet = loopback_subnet,
-            isis = is_isis_node,
             physical = False,
-            )
+                description = "Loopback",
+                ipv4_address = ipv4_node.loopback,
+                ipv4_subnet = ipv4_loopback_subnet,
+                ipv6_address = ipv6_address,
+                isis = is_isis_node,
+                physical = False,
+                )
 
     def bgp(self, node):
         node.bgp.lo_interface = self.lo_interface

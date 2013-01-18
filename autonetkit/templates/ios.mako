@@ -34,7 +34,10 @@ line con 0
 % for interface in node.interfaces:  
 interface ${interface.id}
   description ${interface.description}
-  ip address ${interface.ip_address} ${interface.subnet.netmask}   
+  ip address ${interface.ipv4_address} ${interface.ipv4_subnet.netmask}   
+  % if interface.ipv6_address:
+  ipv6 address ${interface.ipv6_address} 
+  %endif
   % if interface.ospf_cost:
   ip ospf network point-to-point
   ip ospf cost ${interface.ospf_cost}
