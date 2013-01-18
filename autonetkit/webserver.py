@@ -161,7 +161,7 @@ class MyWebSocketHandler(websocket.WebSocketHandler):
         return True
 
     def open(self, *args, **kwargs):
-        print "New client connected"
+        print "Client connected from %s" % self.request.remote_ip
         self.application.socket_listeners.add(self) 
 
         try:
@@ -177,6 +177,7 @@ class MyWebSocketHandler(websocket.WebSocketHandler):
     def on_close(self):
         #pika.log.info("WebSocket closed")
         self.application.socket_listeners.remove(self) 
+        print "Client disconnected from %s" % self.request.remote_ip
         try:
             self.application.pc.remove_event_listener(self)
         except AttributeError:
