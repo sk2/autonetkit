@@ -3,18 +3,20 @@ version = 0.8.3.1
 [${topology.hypervisor_server}:${topology.hypervisor_port}]
     workingdir = /tmp
     udp = 10000
-    [[2621]]
+    [[7200]]
         image = ${topology.image}
-        idlepc = 0x80397f88
+        idlepc = ${topology.idlepc}
         ghostios = True
         chassis = 2621
 
     %for router in topology.routers:
-        [[ROUTER ${router.hostname}]]
+    [[ROUTER ${router.hostname}]]
         model = ${router.model}
         console = ${router.console}
         aux = ${router.aux}
-        slot1 = NM-1FE-TX
+        % for index, card in router.slots:
+        slot${index} = PA-2FE-TX
+        %endfor
         % for interface in router.interfaces:
         ${interface['src_port']} = ${interface['dst']} ${interface['dst_port']}
         %endfor
