@@ -58,3 +58,5 @@ build/lib/autonetkit/__init__.py
 autonetkit/example/rendered/*
 example/rendered/*
 example/rendered/localhost/netkit/1/etc/hostname
+
+router.image
