@@ -243,6 +243,10 @@ def compile_network(anm):
             platform_compiler = compiler.NetkitCompiler(nidb, anm, host)
         elif platform == "cisco":
             platform_compiler = compiler.CiscoCompiler(nidb, anm, host)
+        elif platform == "dynagen":
+            platform_compiler = compiler.DynagenCompiler(nidb, anm, host)
+        elif platform == "junosphere":
+            platform_compiler = compiler.JunosphereCompiler(nidb, anm, host)
 
         if any(G_phy.nodes(host = host, platform = platform)):
             log.info("Compile for %s on %s" % (platform, host))
