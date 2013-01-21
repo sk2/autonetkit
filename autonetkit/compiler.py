@@ -576,7 +576,7 @@ class DynagenCompiler(PlatformCompiler):
 
     def interface_ids(self):
         """Allocate with slot and port iterating """
-        id_pairs = ( (slot, port) for (slot, port) in itertools.product(xrange(4), xrange(2))) 
+        id_pairs = ( (slot+1, port) for (slot, port) in itertools.product(xrange(4), xrange(2))) 
         for (slot, port) in id_pairs:
             yield "f%s/%s" % (slot, port)
 
@@ -625,9 +625,11 @@ class DynagenCompiler(PlatformCompiler):
         lab_topology.render_dst_folder = "rendered/%s/%s" % (self.host, "dynagen")
         lab_topology.render_dst_file = "topology.net" 
 
+        #TODO: pick these up from config
         lab_topology.hypervisor_server = "127.0.0.1"
         lab_topology.hypervisor_port = "7200"
         lab_topology.image = "router.image"
+        lab_topology.image = "0x60629a94"
 
         lab_topology.routers = []
         routers = list(self.nidb.routers(host = self.host, platform = "dynagen"))
@@ -648,14 +650,20 @@ class DynagenCompiler(PlatformCompiler):
                     'dst_port': back_link_nidb.id,
                     })
 
+            slots = []
+            import math
+            number_of_slots = int(math.ceil(1.0*len(interfaces)/2))
+            slots = [(index+1, "PA-2FE-TX") for index in range(number_of_slots)]
+
             lab_topology.routers.append(
                     hostname = str(router),
-                    model = 2621,
+                    model = 7200,
                     console = router.console_port,
                     aux = router.aux_port,
                     interfaces = interfaces,
                     x = router.x,
                     y = router.y,
+                    slots = slots,
                     cnfg = router.render.dst_file,
                     )
 
