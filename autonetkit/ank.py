@@ -56,15 +56,18 @@ def copy_attr_from(overlay_src, overlay_dst, src_attr, dst_attr = None, nbunch =
             log.debug("Unable to copy node attribute %s for %s in %s" % (src_attr, n, overlay_src))
 
 
-def copy_edge_attr_from(overlay_src, overlay_dst, attr):
+def copy_edge_attr_from(overlay_src, overlay_dst, src_attr, dst_attr = None):
     graph_src = unwrap_graph(overlay_src)
     graph_dst = unwrap_graph(overlay_dst)
+    if not dst_attr:
+        dst_attr = src_attr
+
     for src, dst in graph_src.edges():
         try:
-            graph_dst[src][dst][attr] = graph_src[src][dst][attr]
+            graph_dst[src][dst][dst_attr] = graph_src[src][dst][src_attr]
         except KeyError:
             #TODO: check if because edge doesn't exist in dest, or because attribute doesn't exist in graph_src
-            log.warning("Unable to copy edge attribute %s for (%s, %s) in %s" % (attr, src, dst, overlay_src))
+            log.debug("Unable to copy edge attribute %s for (%s, %s) in %s" % (src_attr, src, dst, overlay_src))
 
 def stringify_netaddr(graph):
     import netaddr
