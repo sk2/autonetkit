@@ -88,8 +88,8 @@ def build(input_graph_string, timestamp):
     build_ip(anm)
 
     #TODO: make ip6 toggled by graph attribute
-    #build_ip6(anm)
-    anm.add_overlay("ip6")
+    build_ip6(anm)
+    #anm.add_overlay("ip6")
     
     igp = G_in.data.igp or "ospf" #TODO: make default template driven
 #TODO: make the global igp be set on each node - this way can also support different IGPs per router
