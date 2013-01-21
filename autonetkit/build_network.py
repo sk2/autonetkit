@@ -196,6 +196,9 @@ def build_bgp(anm):
             if not node.ibgp_level and node.ibgp_level != 0: 
                 node.ibgp_level = 1
 
+            if node.ibgp_level == "None": # if unicode string from yEd
+                node.ibgp_level = 1
+
             node.ibgp_level = int(node.ibgp_level) # ensure is numeric
 
             if not node.ibgp_l2_cluster or node.ibgp_l2_cluster == "None":
