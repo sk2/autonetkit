@@ -454,6 +454,7 @@ def build_ospf(anm):
     G_ospf.add_edges_from(G_in.edges(), retain = ['edge_id'])
 
     ank.copy_attr_from(G_in, G_ospf, "ospf_area", dst_attr = "area") #TODO: move this into graphml (and later gml) reader
+    ank.copy_edge_attr_from(G_in, G_ospf, "ospf_cost", dst_attr = "cost") #TODO: move this into graphml (and later gml) reader
 
     ank.aggregate_nodes(G_ospf, G_ospf.nodes("is_switch"), retain = "edge_id")
     ank.explode_nodes(G_ospf, G_ospf.nodes("is_switch"), retain= "edge_id")
@@ -528,7 +529,8 @@ def build_ospf(anm):
 #TODO: do we want to allocate non-symmetric OSPF costs? do we need a directed OSPF graph?
 # (note this will all change once have proper interface nodes)
     for link in G_ospf.edges():
-        link.cost = 1
+        if not link.cost:
+            link.cost = 1
 
 def ip_to_net_ent_title_ios(ip):
     """ Converts an IP address into an OSI Network Entity Title
