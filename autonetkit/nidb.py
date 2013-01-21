@@ -332,6 +332,26 @@ class nidb_node(object):
     def __getstate__(self):
         return (self.nidb, self.node_id)
 
+    def __hash__(self):
+        return hash(self.node_id)
+
+    def __eq__(self, other):
+        try:
+            return self.node_id == other.node_id
+        except AttributeError:
+            return self.node_id == other #TODO: check why comparing against strings - if in overlay graph...
+
+    @property
+    def _graph(self):
+        return self.nidb._graph
+
+    def degree(self):
+        return self._graph.degree(self.node_id)
+
+    def neighbors(self):
+        return iter(nidb_node(self.nidb, node)
+                for node in self._graph.neighbors(self.node_id))
+
     def __setstate__(self, state):
         (nidb, node_id) = state
         object.__setattr__(self, 'nidb', nidb)
