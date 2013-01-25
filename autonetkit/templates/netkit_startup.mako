@@ -1,5 +1,5 @@
 % for i in node.interfaces:  
-/sbin/ifconfig ${i.id} ${i.ip_address} netmask ${i.subnet.netmask} broadcast ${i.subnet.broadcast} up
+/sbin/ifconfig ${i.id} ${i.ipv4_address} netmask ${i.ipv4_subnet.netmask} broadcast ${i.ipv4_subnet.broadcast} up
 % endfor                                                                                                                             
 route del default
 /sbin/ifconfig lo 127.0.0.1 up
