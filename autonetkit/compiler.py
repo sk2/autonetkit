@@ -361,9 +361,7 @@ class NxOsCompiler(IosBaseCompiler):
             interface['color'] = "red"
 
     def ospf(self, node):
-        print "here"
         super(NxOsCompiler, self).ospf(node)
-        print "here"
         for interface in node.interfaces:
             # get ospf info for this id
             ospf_link = self.anm['ospf'].edge(interface._edge_id) # find link in OSPF with this ID
