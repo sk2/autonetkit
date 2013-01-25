@@ -804,6 +804,7 @@ var zoom_fit = function() {
         node_y_max = _.max(nodes, function(node){ return node.y}).y + 20;
 
         p =  Math.max((chart_width/node_x_max)/2, (chart_height/node_y_max)/2);
+        p = p * 1.5;
 
         var zoom_box = d3.select(".zoom_box")
 
