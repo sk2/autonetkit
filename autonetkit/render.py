@@ -234,6 +234,7 @@ def render_topology(topology):
         try:
             os.makedirs(render_output_dir)
         except OSError, e:
+            #TODO: replace with e.errno
             if e.strerror == "File exists":
                 pass # created by another process, safe to ignore
             else:
