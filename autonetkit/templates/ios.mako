@@ -34,7 +34,9 @@ line con 0
 % for interface in node.interfaces:  
 interface ${interface.id}
   description ${interface.description}
-  ip address ${interface.ipv4_address} ${interface.ipv4_subnet.netmask}   
+  % if node.ip.use_ipv4:
+  ipv4 address ${interface.ipv4_address} ${interface.ipv4_subnet.netmask}   
+  %endif
   % if interface.ipv6_address:
   ipv6 address ${interface.ipv6_address} 
   %endif
@@ -83,7 +85,7 @@ router eigrp ${node.eigrp.process_id}
 router bgp ${node.asn}   
   bgp router-id ${node.loopback}
   no synchronization
-% for subnet in node.bgp.advertise_subnets:
+% for subnet in node.bgp.ipv4_advertise_subnets:
   network ${subnet.network} mask ${subnet.netmask}
 % endfor 
 ! ibgp
