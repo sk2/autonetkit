@@ -67,6 +67,7 @@ class RouterCompiler(object):
                 ipv4_link = G_ipv4.edge(link)
                 ipv4_address = ipv4_link.ip_address
                 ipv4_subnet =  ipv4_link.dst.subnet # netmask comes from collision domain on the link
+                ipv4_cidr = address_prefixlen_to_network(ipv4_address, ipv4_subnet.prefixlen)
             if node.ip.use_ipv6:
                 ipv6_link = G_ipv6.edge(link)
                 ipv6_subnet =  ipv6_link.dst.subnet # netmask comes from collision domain on the link
@@ -79,6 +80,7 @@ class RouterCompiler(object):
                     description = "%s to %s" % (link.src, link.dst),
                     ipv4_address = ipv4_address,
                     ipv4_subnet = ipv4_subnet,
+                    ipv4_cidr = ipv4_cidr,
                     ipv6_address = ipv6_address,
                     physical = True,
                     )
@@ -250,6 +252,7 @@ class IosBaseCompiler(RouterCompiler):
             ipv4_node = self.anm['ip'].node(node)
             ipv4_address = ipv4_node.loopback
             ipv4_loopback_subnet = netaddr.IPNetwork("0.0.0.0/32")
+            ipv4_cidr = address_prefixlen_to_network(ipv4_address, ipv4_loopback_subnet.prefixlen)
         if node.ip.use_ipv6:
             ipv6_node = self.anm['ip6'].node(node)
             ipv6_address = address_prefixlen_to_network(ipv6_node.loopback, 126)
@@ -278,6 +281,7 @@ class IosBaseCompiler(RouterCompiler):
                 description = "Loopback",
                 ipv4_address = ipv4_address,
                 ipv4_subnet = ipv4_loopback_subnet,
+                ipv4_cidr = ipv4_cidr,
                 ipv6_address = ipv6_address,
                 isis = is_isis_node,
                 physical = False,
@@ -318,6 +322,37 @@ class IosClassicCompiler(IosBaseCompiler):
             node.include_csr = True
         
 class Ios2Compiler(IosBaseCompiler):
+    def ospf(self, node):
+#need to aggregate areas
+        super(Ios2Compiler, self).ospf(node)
+        G_ospf = self.anm['ospf']
+
+        interfaces_by_area = defaultdict(list)
+
+        for interface in node.interfaces:
+            ospf_link = G_ospf.edge(interface._edge_id) # find link in OSPF with this ID
+            if ospf_link:
+                area = str(ospf_link.area)
+                interfaces_by_area[area].append( {
+                    'id': interface.id,
+                    'cost': ospf_link.cost,
+                    'passive': False,
+                    }) #TODO: make this use the same parameter format as other appends... (in nidb API)
+
+
+        router_area = str(G_ospf.node(node).area)
+        interfaces_by_area[router_area].append( {
+            'id': self.lo_interface,
+            'cost': 0,
+            'passive': True,
+            })
+
+
+    # and add Loopback with this router's area
+
+        node.ospf.interfaces = dict(interfaces_by_area)# TODO: workaround for limited wrapping depth, make node.ospf.interfaces grouped by area
+
+class NxOsCompiler(IosBaseCompiler):
     def ospf(self, node):
 #need to aggregate areas
         super(Ios2Compiler, self).ospf(node)
@@ -514,6 +549,10 @@ class CiscoCompiler(PlatformCompiler):
     def interface_ids_ios(self):
         for x in itertools.count(0):
             yield "GigabitEthernet0/%s" % x
+
+    def interface_ids_nxos(self):
+        for x in itertools.count(0):
+            yield "Ethernet2/%s" % x
             
     def interface_ids_ios2_slot_port(self):
         """Allocate with slot and port iterating
@@ -539,9 +578,11 @@ class CiscoCompiler(PlatformCompiler):
         G_in = self.anm['input']
         G_in_directed = self.anm['input_directed']
         specified_int_names = G_in.data.specified_int_names
+        G_phy = self.anm['phy']
+        for node in G_phy:
+            print node, node.syntax
 
         log.info("Compiling Cisco for %s" % self.host)
-        G_phy = self.anm['phy']
         ios_compiler = IosClassicCompiler(self.nidb, self.anm)
         now = datetime.now()
         if settings['Compiler']['Cisco']['timestamp']:
@@ -552,6 +593,7 @@ class CiscoCompiler(PlatformCompiler):
 #TODO: merge common router code, so end up with three loops: routers, ios routers, ios2 routers
         for phy_node in G_phy.nodes('is_router', host = self.host, syntax='ios'):
             nidb_node = self.nidb.node(phy_node)
+            print nidb_node, nidb_node.syntax
             nidb_node.render.template = "templates/ios.mako"
             if self.to_memory:
                 nidb_node.render.to_memory = True
@@ -574,6 +616,7 @@ class CiscoCompiler(PlatformCompiler):
         ios2_compiler = Ios2Compiler(self.nidb, self.anm)
         for phy_node in G_phy.nodes('is_router', host = self.host, syntax='ios2'):
             nidb_node = self.nidb.node(phy_node)
+            print nidb_node, nidb_node.syntax
             #nidb_node.render.base = "templates/ios2"
             #nidb_node.render.base_dst_folder = "rendered/%s/%s/%s" % (self.host, "cisco", folder_name)
             nidb_node.render.template = "templates/ios2/router.conf.mako"
@@ -593,6 +636,31 @@ class CiscoCompiler(PlatformCompiler):
                     edge.id = int_ids.next()
 
             ios2_compiler.compile(nidb_node)
+
+            
+        nxos_compiler = NxOsCompiler(self.nidb, self.anm)
+        for phy_node in G_phy.nodes('is_router', host = self.host, syntax='nx_os'):
+            print "here for", phy_node
+            nidb_node = self.nidb.node(phy_node)
+            #nidb_node.render.base = "templates/ios2"
+            #nidb_node.render.base_dst_folder = "rendered/%s/%s/%s" % (self.host, "cisco", folder_name)
+            nidb_node.render.template = "templates/nx_os.mako"
+            if self.to_memory:
+                nidb_node.render.to_memory = True
+            else:
+                nidb_node.render.dst_folder = dst_folder
+                nidb_node.render.dst_file = "%s.conf" % naming.network_hostname(phy_node)
+
+            # Assign interfaces
+            int_ids = self.interface_ids_nxos()
+            for edge in sorted(self.nidb.edges(nidb_node), key = edge_id_numeric):
+                if specified_int_names:
+                    directed_edge = G_in_directed.edge(edge)
+                    edge.id = directed_edge.name
+                else:
+                    edge.id = int_ids.next()
+
+            nxos_compiler.compile(nidb_node)
 
 
         other_nodes = [phy_node for phy_node in G_phy.nodes('is_router', host = self.host)
