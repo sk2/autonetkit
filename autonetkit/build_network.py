@@ -41,6 +41,7 @@ def build(input_graph_string, timestamp):
                     },
                 }
 
+
     #TODO: make this more explicit than overloading add_overlay - make it load_graph or something similar
 
 #TODO: may need to revisit the collapse to a single directed graph: may need to consider link type, eg physical, when reducing directed to undirected graph
@@ -88,8 +89,8 @@ def build(input_graph_string, timestamp):
     build_ip(anm)
 
     #TODO: make ip6 toggled by graph attribute
-    build_ip6(anm)
-    #anm.add_overlay("ip6")
+    #build_ip6(anm)
+    anm.add_overlay("ip6")
     
     igp = G_in.data.igp or "ospf" #TODO: make default template driven
 #TODO: make the global igp be set on each node - this way can also support different IGPs per router
@@ -97,6 +98,7 @@ def build(input_graph_string, timestamp):
 # Add overlays even if not used: simplifies compiler where can check for presence in overlay (if blank not present, don't configure ospf etc)
     anm.add_overlay("ospf")
     anm.add_overlay("isis")
+
 
     G_phy = anm['phy']
     ank.copy_attr_from(G_in, G_phy, "include_csr") #TODO: find more elegant passing method from input to compiler
