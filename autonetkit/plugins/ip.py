@@ -380,7 +380,8 @@ def assign_asn_to_interasn_cds(G_ip):
 
     return
 
-def allocate_ips(G_ip):
+def allocate_ips(G_ip, infrastructure = True):
+    """Can disable infrastructure, eg for ipv6, still want to alloc ipv4 loopbacks for router ids"""
     log.info("Allocating Host loopback IPs")
     ip_tree = IpTree("10.0.0.0")
     ip_tree.add_nodes(G_ip.nodes("is_l3device"))
@@ -394,12 +395,15 @@ def allocate_ips(G_ip):
 
     log.info("Allocating Collision Domain IPs")
 
-    ip_tree = IpTree("192.168.1.0")
-    assign_asn_to_interasn_cds(G_ip)
-    ip_tree.add_nodes(G_ip.nodes("collision_domain"))
-    ip_tree.build()
-    cd_tree = ip_tree.json()
-    ip_tree.assign()
+    if infrastructure:
+        ip_tree = IpTree("192.168.1.0")
+        assign_asn_to_interasn_cds(G_ip)
+        ip_tree.add_nodes(G_ip.nodes("collision_domain"))
+        ip_tree.build()
+        cd_tree = ip_tree.json()
+        ip_tree.assign()
+    else:
+        cd_tree = {}
 
     total_tree = {
             'name': "ip",
