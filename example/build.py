@@ -7,11 +7,9 @@ import autonetkit.ank as ank
 import networkx as nx
 
 def build_overlays(filename):
-    with open(filename, "r") as fh:
-        input_data = fh.read() # we pass in as a string to the overlay builder
 
     anm = autonetkit.anm.AbstractNetworkModel()
-    input_graph = graphml.load_graphml(input_data)
+    input_graph = graphml.load_graphml(filename)
     G_in = anm.add_overlay("input", graph = input_graph)
 
     G_graphics = anm.add_overlay("graphics") # plotting data
@@ -51,6 +49,7 @@ def build_overlays(filename):
     G_ibgp.add_edges_from(((s, t) for s in rrs for t in rrs), direction = "over")
 
     build_ip(anm)
+
     return anm
 
 
@@ -94,9 +93,9 @@ def build_ip(anm):
 
 def build_nidb(anm):
     nidb = autonetkit.nidb.NIDB() 
-    G_phy = anm.overlay.phy
-    G_ip = anm.overlay.ip
-    G_graphics = anm.overlay.graphics
+    G_phy = anm['phy']
+    G_ip = anm['ip']
+    G_graphics = anm['graphics']
 #TODO: build this on a platform by platform basis
     nidb.add_nodes_from(G_phy, retain=['label', 'host', 'platform', 'syntax', 'Network', 'update'])
 
