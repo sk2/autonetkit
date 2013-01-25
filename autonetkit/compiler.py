@@ -38,6 +38,10 @@ class RouterCompiler(object):
     def compile(self, node):
         phy_node = self.anm['phy'].node(node)
         ip_node = self.anm['ip'].node(node)
+
+        node.ip.use_ipv4 = phy_node.use_ipv4
+        node.ip.use_ipv6 = phy_node.use_ipv6
+
         node.label = naming.network_hostname(phy_node)
         node.input_label = phy_node.id
         node.loopback = ip_node.loopback
@@ -56,13 +60,15 @@ class RouterCompiler(object):
         G_ipv6 = self.anm['ip6']
         node.interfaces = []
         for link in phy_node.edges():
-            ipv4_link = G_ipv4.edge(link)
-            ipv6_link = G_ipv6.edge(link)
             nidb_edge = self.nidb.edge(link)
 
-            ipv4_subnet =  ipv4_link.dst.subnet # netmask comes from collision domain on the link
-            ipv6_address = None
-            if ipv6_link:
+            ipv6_address = ipv4_address = ipv4_subnet = None
+            if node.ip.use_ipv4:
+                ipv4_link = G_ipv4.edge(link)
+                ipv4_address = ipv4_link.ip_address
+                ipv4_subnet =  ipv4_link.dst.subnet # netmask comes from collision domain on the link
+            if node.ip.use_ipv6:
+                ipv6_link = G_ipv6.edge(link)
                 ipv6_subnet =  ipv6_link.dst.subnet # netmask comes from collision domain on the link
                 ipv6_address = address_prefixlen_to_network(ipv6_link.ip, ipv6_subnet.prefixlen)
 
@@ -71,7 +77,7 @@ class RouterCompiler(object):
                     _edge_id = link.edge_id, # used if need to append
                     id = nidb_edge.id,
                     description = "%s to %s" % (link.src, link.dst),
-                    ipv4_address = ipv4_link.ip_address,
+                    ipv4_address = ipv4_address,
                     ipv4_subnet = ipv4_subnet,
                     ipv6_address = ipv6_address,
                     physical = True,
@@ -110,21 +116,34 @@ class RouterCompiler(object):
         phy_node = self.anm['phy'].node(node)
         G_bgp = self.anm['bgp']
         G_ip = self.anm['ip']
+        G_ipv6 = self.anm['ip6']
         asn = phy_node.asn # easy reference for cleaner code
         node.asn = asn
-        node.bgp.advertise_subnets = G_ip.data.infra_blocks.get(asn) or [] # note: could be none (if single-node AS) - default to empty list
-        
+        node.bgp.ipv4_advertise_subnets = G_ip.data.infra_blocks.get(asn) or [] # note: could be none (if single-node AS) - default to empty list
+# put into list
+        #TODO: put advertise subnets from ip6 plugin into a list for consistency with ipv4
+        node.bgp.ipv6_advertise_subnets = [G_ipv6.data.infra_blocks.get(asn)]
+         
         node.bgp.ibgp_neighbors = []
         node.bgp.ibgp_rr_clients = []
         node.bgp.ibgp_rr_parents = []
         node.bgp.ebgp_neighbors = []
 
-        for session in G_bgp.edges(phy_node):
+        def format_session(session, use_ipv4 = False, use_ipv6 = False):
             neigh = session.dst
-            neigh_ip = G_ip.node(neigh)
+            if use_ipv4:
+                neigh_ip = G_ip.node(neigh)
+            elif use_ipv6:
+                neigh_ip = G_ipv6.node(neigh)
+            else:
+                log.debug("Neither v4 nor v6 selected for BGP session %s, skipping" % session)
+                return
+
             if session.type == "ibgp":
                 data = {
                     'neighbor': neigh.label,
+                    'use_ipv4': use_ipv4,
+                    'use_ipv6': use_ipv6,
                     'asn': neigh.asn,
                     'loopback': neigh_ip.loopback,
                     'update_source': "loopback 0", #TODO: this is platform dependent???
@@ -142,6 +161,8 @@ class RouterCompiler(object):
                 dst_int_ip = G_ip.edges(ip_link.dst, neigh).next().ip_address #TODO: split this to a helper function
                 node.bgp.ebgp_neighbors.append( {
                     'neighbor': neigh.label,
+                    'use_ipv4': use_ipv4,
+                    'use_ipv6': use_ipv6,
                     'asn': neigh.asn,
                     'loopback': neigh_ip.loopback,
                     'local_int_ip': ip_link.ip_address,
@@ -149,7 +170,13 @@ class RouterCompiler(object):
                     'update_source': self.lo_interface, # TODO: change templates to access this from node.bgp.lo_interface
                 })
 
+        for session in G_bgp.edges(phy_node):
+            if node.ip.use_ipv4:
+                format_session(session, use_ipv4 = True)
+            if node.ip.use_ipv6:
+                format_session(session, use_ipv6 = True)
         node.bgp.ebgp_neighbors.sort("asn")
+
 
         return
 
@@ -214,14 +241,18 @@ class IosBaseCompiler(RouterCompiler):
         if node in self.anm['isis']:
             self.isis(node)
         node.label = self.anm['phy'].node(node).label
+
         
     def interfaces(self, node):
-        ipv4_node = self.anm['ip'].node(node)
-        ipv6_node = self.anm['ip6'].node(node)
-        ipv6_address = None
-        if ipv6_node:
+
+        ipv6_address = ipv4_address = ipv4_loopback_subnet = None
+        if node.ip.use_ipv4:
+            ipv4_node = self.anm['ip'].node(node)
+            ipv4_address = ipv4_node.loopback
+            ipv4_loopback_subnet = netaddr.IPNetwork("0.0.0.0/32")
+        if node.ip.use_ipv6:
+            ipv6_node = self.anm['ip6'].node(node)
             ipv6_address = address_prefixlen_to_network(ipv6_node.loopback, 126)
-        ipv4_loopback_subnet = netaddr.IPNetwork("0.0.0.0/32")
 
 #TODO: strip out returns from super
         super(IosBaseCompiler, self).interfaces(node)
@@ -245,7 +276,7 @@ class IosBaseCompiler(RouterCompiler):
         node.interfaces.append(
                 id = self.lo_interface,
                 description = "Loopback",
-                ipv4_address = ipv4_node.loopback,
+                ipv4_address = ipv4_address,
                 ipv4_subnet = ipv4_loopback_subnet,
                 ipv6_address = ipv6_address,
                 isis = is_isis_node,
@@ -256,6 +287,8 @@ class IosBaseCompiler(RouterCompiler):
         node.bgp.lo_interface = self.lo_interface
         super(IosBaseCompiler, self).bgp(node)
 
+    def ospf(self, node):
+        super(IosBaseCompiler, self).ospf(node)
 
     def isis(self, node):
         #TODO: this needs to go into IOS2 for neatness
@@ -267,6 +300,7 @@ class IosBaseCompiler(RouterCompiler):
         node.isis.process_id = isis_node.process_id
         node.isis.lo_interface = self.lo_interface
         node.isis.isis_links = []
+
         for interface in node.interfaces:
             isis_link = G_isis.edge(interface._edge_id) # find link in OSPF with this ID
             if isis_link: # only configure if has ospf interface

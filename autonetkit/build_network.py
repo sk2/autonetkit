@@ -78,19 +78,31 @@ def build(input_graph_string, timestamp):
     G_in.update(G_in.nodes("is_router", platform = "junosphere"), syntax="junos")
     G_in.update(G_in.nodes("is_router", platform = "dynagen"), syntax="ios")
     G_in.update(G_in.nodes("is_router", platform = "netkit"), syntax="quagga")
-    #G_in.update(G_in.nodes("is_router", platform = "cisco"), syntax="ios2")
+    G_in.update(G_in.nodes("is_router", platform = "cisco"), syntax="ios2")
 
     G_graphics = anm.add_overlay("graphics") # plotting data
     G_graphics.add_nodes_from(G_in, retain=['x', 'y', 'device_type', 'device_subtype', 'pop', 'asn'])
 
     build_phy(anm)
+    G_phy = anm['phy']
     #update_messaging(anm)
     #build_conn(anm)
-    build_ip(anm)
+    address_family = G_in.data.address_family or "v4"
+    allocate_ipv4_infrastructure = False
+    if address_family in set(["v4", "dual_stack"]):
+        allocate_ipv4_infrastructure = True
+    build_ip(anm, infrastructure = allocate_ipv4_infrastructure)
 
-    #TODO: make ip6 toggled by graph attribute
-    #build_ip6(anm)
-    anm.add_overlay("ip6")
+    allocate_ipv6 = False
+    if address_family in set(["v6", "dual_stack"]):
+        allocate_ipv6 = True
+        build_ip(anm, infrastructure = True)
+
+    build_ip6(anm)
+    #anm.add_overlay("ip6")
+    for node in G_phy:
+        node.use_ipv4 = allocate_ipv4_infrastructure
+        node.use_ipv6 = allocate_ipv6
     
     igp = G_in.data.igp or "ospf" #TODO: make default template driven
 #TODO: make the global igp be set on each node - this way can also support different IGPs per router
@@ -100,7 +112,6 @@ def build(input_graph_string, timestamp):
     anm.add_overlay("isis")
 
 
-    G_phy = anm['phy']
     ank.copy_attr_from(G_in, G_phy, "include_csr") #TODO: find more elegant passing method from input to compiler
 
     if igp == "ospf":
@@ -114,6 +125,7 @@ def build(input_graph_string, timestamp):
     for node in G_phy:
         for interface in node:
             interface.speed = 102
+
 
     return anm
 
@@ -320,7 +332,7 @@ def build_ip6(anm):
     ip6.allocate_ips(G_ip6) 
 
 
-def build_ip(anm):
+def build_ip(anm, infrastructure = True):
     import autonetkit.plugins.ip as ip
     G_ip = anm.add_overlay("ip")
     G_in = anm['input']
@@ -412,7 +424,7 @@ def build_ip(anm):
         G_ip.data.infra_blocks = infra_blocks
 
     else:
-        ip.allocate_ips(G_ip)
+        ip.allocate_ips(G_ip, infrastructure)
         ank.save(G_ip)
     #update_messaging(anm)
 
