@@ -31,7 +31,7 @@ class RouterCompiler(object):
 
     def compile(self, node):
         phy_node = self.anm['phy'].node(node)
-        ip_node = self.anm.overlay.ip.node(node)
+        ip_node = self.anm['ip'].node(node)
         node.label = naming.network_hostname(phy_node)
         node.input_label = phy_node.id
         node.loopback = ip_node.loopback
@@ -45,8 +45,8 @@ class RouterCompiler(object):
             self.bgp(node)
 
     def interfaces(self, node):
-        phy_node = self.anm.overlay.phy.node(node)
-        G_ip = self.anm.overlay.ip
+        phy_node = self.anm['phy'].node(node)
+        G_ip = self.anm['ip']
         node.interfaces = []
         for link in phy_node.edges():
             ip_link = G_ip.edge(link)
@@ -151,8 +151,8 @@ class QuaggaCompiler(RouterCompiler):
     lo_interface = "lo0:1"
 
     def interfaces(self, node):
-        ip_node = self.anm.overlay.ip.node(node)
-        phy_node = self.anm.overlay.phy.node(node)
+        ip_node = self.anm['ip'].node(node)
+        phy_node = self.anm['phy'].node(node)
         G_ospf = self.anm['ospf']
 
         super(QuaggaCompiler, self).interfaces(node)
@@ -220,7 +220,7 @@ class NetkitCompiler(PlatformCompiler):
 
     def compile(self):
         log.info("Compiling Netkit for %s" % self.host)
-        G_phy = self.anm.overlay.phy
+        G_phy = self.anm['phy']
         quagga_compiler = QuaggaCompiler(self.nidb, self.anm)
 #TODO: this should be all l3 devices not just routers
         for phy_node in G_phy.nodes('is_router', host = self.host, syntax='quagga'):
