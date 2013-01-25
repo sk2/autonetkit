@@ -660,6 +660,7 @@ class DynagenCompiler(PlatformCompiler):
             import math
             number_of_slots = int(math.ceil(1.0*len(interfaces)/2))
             slots = [(index+1, "PA-2FE-TX") for index in range(number_of_slots)]
+            cnfg = os.path.join(self.config_dir, router.render.dst_file)
 
             lab_topology.routers.append(
                     hostname = str(router),
