@@ -11,16 +11,29 @@ import autonetkit.exception
 from cStringIO import StringIO
 from collections import defaultdict
 
-def load_graphml(input_graph_string):
+def load_graphml(input_data):
     #TODO: allow default properties to be passed in as dicts
 
+
     try:
-        input_pseduo_fh = StringIO(input_graph_string) # load into filehandle to networkx
-        graph = nx.read_graphml(input_pseduo_fh)
-    except IOError:
-        raise autonetkit.exception.AnkIncorrectFileFormat
-    except IndexError:
-        raise autonetkit.exception.AnkIncorrectFileFormat
+        graph = nx.read_graphml(input_data)
+    except IOError, e:
+        acceptable_errors = set([
+            2, # no such file or directory
+            36, # input string too long for filename
+            63, # input string too long for filename
+            ])
+        if e.errno in acceptable_errors:
+            # try as data string rather than filename string
+            try:
+                input_pseduo_fh = StringIO(input_data) # load into filehandle to networkx
+                graph = nx.read_graphml(input_pseduo_fh)
+            except IOError:
+                raise autonetkit.exception.AnkIncorrectFileFormat
+            except IndexError:
+                raise autonetkit.exception.AnkIncorrectFileFormat
+        else:
+            raise e
 
     # remove selfloops
     graph.remove_edges_from(edge for edge in graph.selfloop_edges())
