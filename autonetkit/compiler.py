@@ -353,35 +353,29 @@ class Ios2Compiler(IosBaseCompiler):
         node.ospf.interfaces = dict(interfaces_by_area)# TODO: workaround for limited wrapping depth, make node.ospf.interfaces grouped by area
 
 class NxOsCompiler(IosBaseCompiler):
-    def ospf(self, node):
+    def interfaces(self, node):
 #need to aggregate areas
-        super(Ios2Compiler, self).ospf(node)
-        G_ospf = self.anm['ospf']
-
-        interfaces_by_area = defaultdict(list)
+        super(NxOsCompiler, self).interfaces(node)
 
         for interface in node.interfaces:
-            ospf_link = G_ospf.edge(interface._edge_id) # find link in OSPF with this ID
+            interface['color'] = "red"
+
+    def ospf(self, node):
+        print "here"
+        super(NxOsCompiler, self).ospf(node)
+        print "here"
+        for interface in node.interfaces:
+            # get ospf info for this id
+            ospf_link = self.anm['ospf'].edge(interface._edge_id) # find link in OSPF with this ID
             if ospf_link:
                 area = str(ospf_link.area)
-                interfaces_by_area[area].append( {
-                    'id': interface.id,
-                    'cost': ospf_link.cost,
-                    'passive': False,
-                    }) #TODO: make this use the same parameter format as other appends... (in nidb API)
+                interface['ospf'] = {
+                        'area': area,
+                        'process_id': node.ospf.process_id, # from super ospf config
+                        }
 
+        #TODO: configure OSPF on loopback like example
 
-        router_area = str(G_ospf.node(node).area)
-        interfaces_by_area[router_area].append( {
-            'id': self.lo_interface,
-            'cost': 0,
-            'passive': True,
-            })
-
-
-    # and add Loopback with this router's area
-
-        node.ospf.interfaces = dict(interfaces_by_area)# TODO: workaround for limited wrapping depth, make node.ospf.interfaces grouped by area
 
 # Platform compilers
 class PlatformCompiler(object):
@@ -579,8 +573,6 @@ class CiscoCompiler(PlatformCompiler):
         G_in_directed = self.anm['input_directed']
         specified_int_names = G_in.data.specified_int_names
         G_phy = self.anm['phy']
-        for node in G_phy:
-            print node, node.syntax
 
         log.info("Compiling Cisco for %s" % self.host)
         ios_compiler = IosClassicCompiler(self.nidb, self.anm)
@@ -593,7 +585,6 @@ class CiscoCompiler(PlatformCompiler):
 #TODO: merge common router code, so end up with three loops: routers, ios routers, ios2 routers
         for phy_node in G_phy.nodes('is_router', host = self.host, syntax='ios'):
             nidb_node = self.nidb.node(phy_node)
-            print nidb_node, nidb_node.syntax
             nidb_node.render.template = "templates/ios.mako"
             if self.to_memory:
                 nidb_node.render.to_memory = True
@@ -616,7 +607,6 @@ class CiscoCompiler(PlatformCompiler):
         ios2_compiler = Ios2Compiler(self.nidb, self.anm)
         for phy_node in G_phy.nodes('is_router', host = self.host, syntax='ios2'):
             nidb_node = self.nidb.node(phy_node)
-            print nidb_node, nidb_node.syntax
             #nidb_node.render.base = "templates/ios2"
             #nidb_node.render.base_dst_folder = "rendered/%s/%s/%s" % (self.host, "cisco", folder_name)
             nidb_node.render.template = "templates/ios2/router.conf.mako"
@@ -640,7 +630,6 @@ class CiscoCompiler(PlatformCompiler):
             
         nxos_compiler = NxOsCompiler(self.nidb, self.anm)
         for phy_node in G_phy.nodes('is_router', host = self.host, syntax='nx_os'):
-            print "here for", phy_node
             nidb_node = self.nidb.node(phy_node)
             #nidb_node.render.base = "templates/ios2"
             #nidb_node.render.base_dst_folder = "rendered/%s/%s/%s" % (self.host, "cisco", folder_name)
