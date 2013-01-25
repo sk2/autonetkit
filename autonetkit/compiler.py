@@ -568,8 +568,12 @@ class CiscoCompiler(PlatformCompiler):
             nidb_node = self.nidb.node(phy_node)
             nidb_node.input_label = phy_node.id # set specifically for now for other variants
 
+#TODO: use more os.path.join for render folders
+#TODO: Split compilers into seperate modules
 class DynagenCompiler(PlatformCompiler):
     """Dynagen Platform Compiler"""
+    config_dir = "configs"
+
     def console_ports(self):
         for x in itertools.count(2001):
             yield x
@@ -589,8 +593,8 @@ class DynagenCompiler(PlatformCompiler):
             nidb_node = self.nidb.node(phy_node)
             graphics_node = G_graphics.node(phy_node)
             nidb_node.render.template = "templates/ios.mako"
-            nidb_node.render.dst_folder = "rendered/%s/%s" % (self.host, "dynagen")
-            nidb_node.render.dst_file = "%s.conf" % ank.name_folder_safe(phy_node.label)
+            nidb_node.render.dst_folder = os.path.join("rendered", self.host, "dynagen", self.config_dir)
+            nidb_node.render.dst_file = "%s.cfg" % ank.name_folder_safe(phy_node.label)
 
             #TODO: may want to normalise x/y
             nidb_node.x = graphics_node.x
@@ -625,11 +629,13 @@ class DynagenCompiler(PlatformCompiler):
         lab_topology.render_dst_folder = "rendered/%s/%s" % (self.host, "dynagen")
         lab_topology.render_dst_file = "topology.net" 
 
+        lab_topology.config_dir = self.config_dir
+
         #TODO: pick these up from config
         lab_topology.hypervisor_server = "127.0.0.1"
         lab_topology.hypervisor_port = "7200"
         lab_topology.image = "router.image"
-        lab_topology.image = "0x60629a94"
+        lab_topology.idlepc = "0x60629004"
 
         lab_topology.routers = []
         routers = list(self.nidb.routers(host = self.host, platform = "dynagen"))
@@ -664,48 +670,9 @@ class DynagenCompiler(PlatformCompiler):
                     x = router.x,
                     y = router.y,
                     slots = slots,
-                    cnfg = router.render.dst_file,
+                    cnfg = cnfg,
                     )
 
 
+        lab_topology.routers.sort("hostname")
         return
-        if not len(host_nodes):
-            log.debug("No Netkit hosts for %s" % self.host)
-            #TODO: make so can return here 
-            #return
-# also need collision domains for this host
-        cd_nodes = self.nidb.nodes("collision_domain", host = self.host) # add in collision domains for this host (don't have platform)
-#TODO: need to allocate cds to a platform
-        host_nodes += cd_nodes
-        subgraph = self.nidb.subgraph(host_nodes, self.host)
-
-#TODO: sort this numerically, not just by string
-        lab_topology.machines = " ".join(alpha_sort(naming.network_hostname(phy_node) 
-            for phy_node in subgraph.nodes("is_l3device")))
-
-        G_ip = self.anm['ip']
-        lab_topology.config_items = []
-        for node in sorted(subgraph.nodes("is_l3device")):
-            for edge in node.edges():
-                collision_domain = str(G_ip.edge(edge).dst.subnet).replace("/", ".")
-                numeric_id = edge.id.replace("eth", "") # netkit lab.conf uses 1 instead of eth1
-                lab_topology.config_items.append(
-                    device = naming.network_hostname(node),
-                    key = numeric_id,
-                    value =  collision_domain,
-                    )
-
-        lab_topology.tap_ips = []
-        for node in subgraph:
-            if node.tap:
-                lab_topology.tap_ips.append(
-                        #TODO: merge the following and previous into a single function
-                        device= naming.network_hostname(node),
-                        id= node.tap.id.replace("eth", ""), # strip ethx -> x 
-                        ip= node.tap.ip,
-                        )
-
-        lab_topology.tap_ips.sort("ip")
-        lab_topology.config_items.sort("device")
-
-
