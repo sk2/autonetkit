@@ -174,8 +174,8 @@ class QuaggaCompiler(RouterCompiler):
             node.interfaces.append(
                     id = self.lo_interface,
                     description = "Loopback for BGP",
-                    ip_address = ip_node.loopback,
-                    subnet = node.loopback_subnet
+                    ipv4_address = ip_node.loopback,
+                    ipv4_subnet = node.loopback_subnet
                     )
 
     def ospf(self, node):
