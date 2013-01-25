@@ -7,7 +7,6 @@ version = 0.8.3.1
         image = ${topology.image}
         idlepc = ${topology.idlepc}
         ghostios = True
-        chassis = 2621
 
     %for router in topology.routers:
     [[ROUTER ${router.hostname}]]
@@ -27,5 +26,5 @@ version = 0.8.3.1
     %endfor
 
 [GNS3-DATA]
-    configs = configs
+    configs = ${topology.config_dir}
 
