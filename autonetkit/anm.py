@@ -600,6 +600,7 @@ class OverlayBase(object):
     def groupby(self, attribute, nodes = None):
         """Returns a dictionary sorted by attribute
 #TODO: Also want to be able to return list of subgraphs based on groupby, eg per ASN subgraphs
+#TODO: see if this has been duplicated in the ank tools: if so replace the version in ibgp construction
         
         >>> G_in.groupby("asn")
         {u'1': [r1, r2, r3, sw1], u'2': [r4]}
