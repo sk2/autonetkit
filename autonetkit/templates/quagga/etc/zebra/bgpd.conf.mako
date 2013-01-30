@@ -8,7 +8,7 @@ banner motd file /etc/quagga/motd.txt
   router bgp ${node.asn}   
   bgp router-id ${node.loopback}
   no synchronization
-% for subnet in node.bgp.advertise_subnets:
+% for subnet in node.bgp.ipv4_advertise_subnets:
   network ${subnet.cidr}
 % endfor 
 ! ibgp
