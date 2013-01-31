@@ -60,3 +60,5 @@ example/rendered/*
 example/rendered/localhost/netkit/1/etc/hostname
 
 router.image
+
+output.txt
