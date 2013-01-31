@@ -125,10 +125,9 @@ class RouterCompiler(object):
         if node.ip.use_ipv4:
             node.bgp.ipv4_advertise_subnets = G_ipv4.data.infra_blocks.get(asn) or [] # note: could be none (if single-node AS) - default to empty list
 # put into list
-        #TODO: put advertise subnets from ipv6 plugin into a list for consistency with ipv4
         node.bgp.ipv6_advertise_subnets = []
         if node.ip.use_ipv6:
-            node.bgp.ipv6_advertise_subnets = [G_ipv6.data.infra_blocks.get(asn)]
+            node.bgp.ipv6_advertise_subnets = G_ipv6.data.infra_blocks.get(asn) or []
          
         node.bgp.ibgp_neighbors = []
         node.bgp.ibgp_rr_clients = []

@@ -87,8 +87,9 @@ def allocate_ips(G_ip):
             host.loopback = loopback_hosts.next()
 
     # Store allocations for routing advertisement
-    G_ip.data.infra_blocks = infra_blocks
-    G_ip.data.loopback_blocks = loopback_blocks
+# convert blocks from being {asn: block} to {asn: [block]} for consistency with ipv4, and scalability with compiler if multiple blocks in future
+    G_ip.data.infra_blocks = dict((asn, [subnet]) for asn, subnet in infra_blocks.items())
+    G_ip.data.loopback_blocks = dict((asn, [subnet]) for asn, subnet in loopback_blocks.items())
 
     jsontree = {}
     infra_tree = []
