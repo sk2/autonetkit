@@ -19,7 +19,7 @@ class AnkEncoder(json.JSONEncoder):
             #TODO: add documentation about serializing anm nodes
             log.warning("%s is anm overlay_node. Use attribute rather than object in compiler." % obj)
             return str(obj)
-        if isinstance(obj, autonetkit.plugins.ip.TreeNode):
+        if isinstance(obj, autonetkit.plugins.ipv4.TreeNode):
             #TODO: add documentation about serializing anm nodes
             return str(obj)
         if isinstance(obj, autonetkit.anm.overlay_edge):

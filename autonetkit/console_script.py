@@ -215,16 +215,16 @@ def main():
 def compile_network(anm):
     nidb = NIDB() 
     G_phy = anm['phy']
-    G_ip = anm['ip']
+    G_ipv4 = anm['ipv4']
     G_graphics = anm['graphics']
 #TODO: build this on a platform by platform basis
     nidb.add_nodes_from(G_phy, retain=['label', 'host', 'platform', 'Network', 'update'])
 
-    cd_nodes = [n for n in G_ip.nodes("collision_domain") if not n.is_switch] # Only add created cds - otherwise overwrite host of switched
+    cd_nodes = [n for n in G_ipv4.nodes("collision_domain") if not n.is_switch] # Only add created cds - otherwise overwrite host of switched
     nidb.add_nodes_from(cd_nodes, retain=['label', 'host'], collision_domain = True)
 # add edges to switches
     edges_to_add = [edge for edge in G_phy.edges() if edge.src.is_switch or edge.dst.is_switch]
-    edges_to_add += [edge for edge in G_ip.edges() if edge.src.collision_domain or edge.dst.collision_domain]
+    edges_to_add += [edge for edge in G_ipv4.edges() if edge.src.collision_domain or edge.dst.collision_domain]
     nidb.add_edges_from(edges_to_add, retain='edge_id')
 
 #TODO: boundaries is still a work in progress...

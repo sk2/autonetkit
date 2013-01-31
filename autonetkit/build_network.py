@@ -91,15 +91,15 @@ def build(input_graph_string, timestamp):
     allocate_ipv4_infrastructure = False
     if address_family in set(["v4", "dual_stack"]):
         allocate_ipv4_infrastructure = True
-    build_ip(anm, infrastructure = allocate_ipv4_infrastructure)
+    build_ipv4(anm, infrastructure = allocate_ipv4_infrastructure)
 
     allocate_ipv6 = False
     if address_family in set(["v6", "dual_stack"]):
         allocate_ipv6 = True
-        build_ip(anm, infrastructure = True)
+        build_ipv4(anm, infrastructure = True)
 
     build_ip6(anm)
-    #anm.add_overlay("ip6")
+    #anm.add_overlay("ipv6")
     for node in G_phy:
         node.use_ipv4 = allocate_ipv4_infrastructure
         node.use_ipv6 = allocate_ipv6
@@ -320,66 +320,65 @@ def build_bgp(anm):
     for node in G_bgp:
         node._interfaces[0]['description'] = "loopback0"
 def build_ip6(anm):
-    import autonetkit.plugins.ip6 as ip6
+    import autonetkit.plugins.ipv6 as ipv6
     # uses the nodes and edges from ipv4
 #TODO: make the nodes/edges common for IP, and then allocate after these
-#TODO: globally replace ip with ip4
-    G_ip6 = anm.add_overlay("ip6")
+#TODO: globally replace ip with ipv4
+    G_ip6 = anm.add_overlay("ipv6")
     G_in = anm['input']
-    G_ip4 = anm['ip']
+    G_ip4 = anm['ipv4']
     G_ip6.add_nodes_from(G_ip4, retain="collision_domain") # retain if collision domain or not
     G_ip6.add_edges_from(G_ip4.edges())
-    ip6.allocate_ips(G_ip6) 
+    ipv6.allocate_ips(G_ip6) 
 
 
-def build_ip(anm, infrastructure = True):
-    import autonetkit.plugins.ip as ip
-    G_ip = anm.add_overlay("ip")
+def build_ipv4(anm, infrastructure = True):
+    G_ip4 = anm.add_overlay("ipv4")
     G_in = anm['input']
     G_graphics = anm['graphics']
     G_phy = anm['phy']
 
-    G_ip.add_nodes_from(G_in)
-    G_ip.add_edges_from(G_in.edges(type="physical"))
+    G_ip4.add_nodes_from(G_in)
+    G_ip4.add_edges_from(G_in.edges(type="physical"))
 
 #TODO: need to look at if allocate_v6 is specified: ie manually set
 
-    ank.aggregate_nodes(G_ip, G_ip.nodes("is_switch"), retain = "edge_id")
+    ank.aggregate_nodes(G_ip4, G_ip4.nodes("is_switch"), retain = "edge_id")
 #TODO: add function to update edge properties: can overload node update?
 
-    edges_to_split = [edge for edge in G_ip.edges() if edge.attr_both("is_l3device")]
-    split_created_nodes = list(ank.split(G_ip, edges_to_split, retain='edge_id'))
+    edges_to_split = [edge for edge in G_ip4.edges() if edge.attr_both("is_l3device")]
+    split_created_nodes = list(ank.split(G_ip4, edges_to_split, retain='edge_id'))
     for node in split_created_nodes:
-        node['graphics'].x = ank.neigh_average(G_ip, node, "x", G_graphics)
-        node['graphics'].y = ank.neigh_average(G_ip, node, "y", G_graphics)
-        asn = ank.neigh_most_frequent(G_ip, node, "asn", G_phy) # arbitrary choice
+        node['graphics'].x = ank.neigh_average(G_ip4, node, "x", G_graphics)
+        node['graphics'].y = ank.neigh_average(G_ip4, node, "y", G_graphics)
+        asn = ank.neigh_most_frequent(G_ip4, node, "asn", G_phy) # arbitrary choice
         node['graphics'].asn = asn
 # need to use asn in IP overlay for aggregating subnets
         node.asn = asn
 #TODO: could choose largest ASN if tie break
 #TODO: see if need G_phy - should auto fall through to phy for ASN
 
-    switch_nodes = G_ip.nodes("is_switch")# regenerate due to aggregated
-    G_ip.update(switch_nodes, collision_domain=True) # switches are part of collision domain
-    G_ip.update(split_created_nodes, collision_domain=True)
+    switch_nodes = G_ip4.nodes("is_switch")# regenerate due to aggregated
+    G_ip4.update(switch_nodes, collision_domain=True) # switches are part of collision domain
+    G_ip4.update(split_created_nodes, collision_domain=True)
 # Assign collision domain to a host if all neighbours from same host
     for node in split_created_nodes:
-        if ank.neigh_equal(G_ip, node, "host", G_phy):
-            node.host = ank.neigh_attr(G_ip, node, "host", G_phy).next() # first attribute
+        if ank.neigh_equal(G_ip4, node, "host", G_phy):
+            node.host = ank.neigh_attr(G_ip4, node, "host", G_phy).next() # first attribute
 
     #TODO: Need to allocate interfaces or appropriate bypass for collision domain nodes
 
 # set collision domain IPs
 #TODO: trim next line
     collision_domain_id = itertools.count(0) # TODO: remove this, as isn't needed as set id to be based on neighbors
-    for node in G_ip.nodes("collision_domain"):
+    for node in G_ip4.nodes("collision_domain"):
         graphics_node = G_graphics.node(node)
         graphics_node.device_type = "collision_domain"
         cd_id = collision_domain_id.next()
         node.cd_id = cd_id
 #TODO: Use this label
         if not node.is_switch:
-            label = "_".join(sorted(ank.neigh_attr(G_ip, node, "label", G_phy)))
+            label = "_".join(sorted(ank.neigh_attr(G_ip4, node, "label", G_phy)))
             cd_label = "cd_%s" % label # switches keep their names
             node.label = cd_label 
             node.cd_id = cd_label
@@ -389,7 +388,7 @@ def build_ip(anm, infrastructure = True):
         import netaddr
         G_in_directed = anm['input_directed']
 
-        for l3_device in G_ip.nodes("is_l3device"):
+        for l3_device in G_ip4.nodes("is_l3device"):
             directed_node = G_in_directed.node(l3_device)
             l3_device.loopback = directed_node.ipv4loopback
             for edge in l3_device.edges():
@@ -403,6 +402,7 @@ def build_ip(anm, infrastructure = True):
                     #TODO: see if direct method in netaddr to deduce network
                     prefixlen = directed_edge.netPrefixLenV4
                     cidr_string = "%s/%s" % (edge.ip_address, prefixlen)
+
                     intermediate_subnet = netaddr.IPNetwork(cidr_string)
                     cidr_string = "%s/%s" % (intermediate_subnet.network, prefixlen)
                     subnet = netaddr.IPNetwork(cidr_string)
@@ -411,7 +411,7 @@ def build_ip(anm, infrastructure = True):
         # also need to form aggregated IP blocks (used for e.g. routing prefix advertisement)
         loopback_blocks = {}
         infra_blocks = {}
-        for asn, devices in G_ip.groupby("asn").items():
+        for asn, devices in G_ip4.groupby("asn").items():
             routers = [d for d in devices if d.is_router]
             loopbacks = [r.loopback for r in routers]
             loopback_blocks[asn] = netaddr.cidr_merge(loopbacks)
@@ -420,12 +420,13 @@ def build_ip(anm, infrastructure = True):
             subnets = [cd.subnet for cd in collision_domains]
             infra_blocks[asn] = netaddr.cidr_merge(subnets)
 
-        G_ip.data.loopback_blocks = loopback_blocks
-        G_ip.data.infra_blocks = infra_blocks
+        G_ip4.data.loopback_blocks = loopback_blocks
+        G_ip4.data.infra_blocks = infra_blocks
 
     else:
-        ip.allocate_ips(G_ip, infrastructure)
-        ank.save(G_ip)
+        import autonetkit.plugins.ipv4 as ipv4
+        ipv4.allocate_ips(G_ip4, infrastructure)
+        ank.save(G_ip4)
     #update_messaging(anm)
 
 def build_phy(anm):
@@ -567,7 +568,7 @@ def ip_to_net_ent_title_ios(ip):
 
 def build_isis(anm):
     G_in = anm['input']
-    G_ip = anm['ip']
+    G_ip4 = anm['ipv4']
     G_isis = anm.add_overlay("isis")
     #G_isis.add_nodes_from(G_in.nodes("is_router", igp = "isis"), retain=['asn'])
 #TODO: filter only igp=isis nodes, set the igp as a default in build_network
@@ -581,7 +582,7 @@ def build_isis(anm):
     G_isis.remove_edges_from([link for link in G_isis.edges() if link.src.asn != link.dst.asn])
 
     for node in G_isis:
-        ip_node = G_ip.node(node)
+        ip_node = G_ip4.node(node)
         node.net = ip_to_net_ent_title_ios(ip_node.loopback)
         node.process_id = 1 # default
 

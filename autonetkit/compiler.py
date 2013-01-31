@@ -37,14 +37,14 @@ class RouterCompiler(object):
 
     def compile(self, node):
         phy_node = self.anm['phy'].node(node)
-        ip_node = self.anm['ip'].node(node)
+        ipv4_node = self.anm['ipv4'].node(node)
 
         node.ip.use_ipv4 = phy_node.use_ipv4
         node.ip.use_ipv6 = phy_node.use_ipv6
 
         node.label = naming.network_hostname(phy_node)
         node.input_label = phy_node.id
-        node.loopback = ip_node.loopback
+        node.loopback = ipv4_node.loopback
         node.loopback_subnet = netaddr.IPNetwork(node.loopback)
         node.loopback_subnet.prefixlen = 32
         self.interfaces(node)
@@ -56,8 +56,8 @@ class RouterCompiler(object):
 
     def interfaces(self, node):
         phy_node = self.anm['phy'].node(node)
-        G_ipv4 = self.anm['ip']
-        G_ipv6 = self.anm['ip6']
+        G_ipv4 = self.anm['ipv4']
+        G_ipv6 = self.anm['ipv6']
         node.interfaces = []
         for link in phy_node.edges():
             nidb_edge = self.nidb.edge(link)
@@ -91,7 +91,7 @@ class RouterCompiler(object):
         """Returns OSPF links, also sets process_id
         """
         G_ospf = self.anm['ospf']
-        G_ip = self.anm['ip']
+        G_ipv4 = self.anm['ipv4']
 
         node.ospf.loopback_area = G_ospf.node(node).area
 
@@ -101,7 +101,7 @@ class RouterCompiler(object):
         node.ospf.ospf_links = []
         added_networks = set()
         for link in G_ospf.edges(phy_node):
-            ip_link = G_ip.edge(link)
+            ip_link = G_ipv4.edge(link)
             if not ip_link:
                 #TODO: fix this: due to multi edges from router to same switch cluster
                 continue
@@ -117,15 +117,15 @@ class RouterCompiler(object):
     def bgp(self, node):
         phy_node = self.anm['phy'].node(node)
         G_bgp = self.anm['bgp']
-        G_ip = self.anm['ip']
-        G_ipv6 = self.anm['ip6']
+        G_ipv4 = self.anm['ipv4']
+        G_ipv6 = self.anm['ipv6']
         asn = phy_node.asn # easy reference for cleaner code
         node.asn = asn
         node.bgp.ipv4_advertise_subnets = []
         if node.ip.use_ipv4:
-            node.bgp.ipv4_advertise_subnets = G_ip.data.infra_blocks.get(asn) or [] # note: could be none (if single-node AS) - default to empty list
+            node.bgp.ipv4_advertise_subnets = G_ipv4.data.infra_blocks.get(asn) or [] # note: could be none (if single-node AS) - default to empty list
 # put into list
-        #TODO: put advertise subnets from ip6 plugin into a list for consistency with ipv4
+        #TODO: put advertise subnets from ipv6 plugin into a list for consistency with ipv4
         node.bgp.ipv6_advertise_subnets = []
         if node.ip.use_ipv6:
             node.bgp.ipv6_advertise_subnets = [G_ipv6.data.infra_blocks.get(asn)]
@@ -138,7 +138,7 @@ class RouterCompiler(object):
         def format_session(session, use_ipv4 = False, use_ipv6 = False):
             neigh = session.dst
             if use_ipv4:
-                neigh_ip = G_ip.node(neigh)
+                neigh_ip = G_ipv4.node(neigh)
             elif use_ipv6:
                 neigh_ip = G_ipv6.node(neigh)
             else:
@@ -163,8 +163,8 @@ class RouterCompiler(object):
                     node.bgp.ibgp_neighbors.append(data)
             else:
                 #TODO: fix this: this is a workaround for Quagga next-hop denied for loopback (even with static route)
-                ip_link = G_ip.edge(session)
-                dst_int_ip = G_ip.edges(ip_link.dst, neigh).next().ip_address #TODO: split this to a helper function
+                ip_link = G_ipv4.edge(session)
+                dst_int_ip = G_ipv4.edges(ip_link.dst, neigh).next().ip_address #TODO: split this to a helper function
                 node.bgp.ebgp_neighbors.append( {
                     'neighbor': neigh.label,
                     'use_ipv4': use_ipv4,
@@ -191,7 +191,7 @@ class QuaggaCompiler(RouterCompiler):
     lo_interface = "lo0:1"
 
     def interfaces(self, node):
-        ip_node = self.anm['ip'].node(node)
+        ipv4_node = self.anm['ipv4'].node(node)
         phy_node = self.anm['phy'].node(node)
         G_ospf = self.anm['ospf']
 
@@ -207,7 +207,7 @@ class QuaggaCompiler(RouterCompiler):
             node.interfaces.append(
                     id = self.lo_interface,
                     description = "Loopback for BGP",
-                    ipv4_address = ip_node.loopback,
+                    ipv4_address = ipv4_node.loopback,
                     ipv4_subnet = node.loopback_subnet
                     )
 
@@ -215,7 +215,7 @@ class QuaggaCompiler(RouterCompiler):
         super(QuaggaCompiler, self).ospf(node)
 
         # add eBGP link subnets
-        G_ip = self.anm['ip']
+        G_ipv4 = self.anm['ipv4']
         G_bgp = self.anm['bgp']
         node.ospf.passive_interfaces = []
         
@@ -225,7 +225,7 @@ class QuaggaCompiler(RouterCompiler):
                     id = nidb_edge.id,
                     )
 
-            ip_link = G_ip.edge(link)
+            ip_link = G_ipv4.edge(link)
             default_ebgp_area = 0
             if not ip_link:
                 #TODO: fix this: due to multi edges from router to same switch cluster
@@ -253,12 +253,12 @@ class IosBaseCompiler(RouterCompiler):
 
         ipv4_cidr = ipv6_address = ipv4_address = ipv4_loopback_subnet = None
         if node.ip.use_ipv4:
-            ipv4_node = self.anm['ip'].node(node)
+            ipv4_node = self.anm['ipv4'].node(node)
             ipv4_address = ipv4_node.loopback
             ipv4_loopback_subnet = netaddr.IPNetwork("0.0.0.0/32")
             ipv4_cidr = address_prefixlen_to_network(ipv4_address, ipv4_loopback_subnet.prefixlen)
         if node.ip.use_ipv6:
-            ipv6_node = self.anm['ip6'].node(node)
+            ipv6_node = self.anm['ipv6'].node(node)
             ipv6_address = address_prefixlen_to_network(ipv6_node.loopback, 126)
 
 #TODO: strip out returns from super
@@ -503,11 +503,11 @@ class NetkitCompiler(PlatformCompiler):
         lab_topology.machines = " ".join(alpha_sort(naming.network_hostname(phy_node) 
             for phy_node in subgraph.nodes("is_l3device")))
 
-        G_ip = self.anm['ip']
+        G_ipv4 = self.anm['ipv4']
         lab_topology.config_items = []
         for node in sorted(subgraph.nodes("is_l3device")):
             for edge in node.edges():
-                collision_domain = str(G_ip.edge(edge).dst.subnet).replace("/", ".")
+                collision_domain = str(G_ipv4.edge(edge).dst.subnet).replace("/", ".")
                 numeric_id = edge.id.replace("eth", "") # netkit lab.conf uses 1 instead of eth1
                 lab_topology.config_items.append(
                     device = naming.network_hostname(node),
