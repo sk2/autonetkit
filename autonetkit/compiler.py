@@ -62,7 +62,7 @@ class RouterCompiler(object):
         for link in phy_node.edges():
             nidb_edge = self.nidb.edge(link)
 
-            ipv6_address = ipv4_address = ipv4_subnet = None
+            ipv4_cidr = ipv6_address = ipv4_address = ipv4_subnet = None
             if node.ip.use_ipv4:
                 ipv4_link = G_ipv4.edge(link)
                 ipv4_address = ipv4_link.ip_address
@@ -121,10 +121,14 @@ class RouterCompiler(object):
         G_ipv6 = self.anm['ip6']
         asn = phy_node.asn # easy reference for cleaner code
         node.asn = asn
-        node.bgp.ipv4_advertise_subnets = G_ip.data.infra_blocks.get(asn) or [] # note: could be none (if single-node AS) - default to empty list
+        node.bgp.ipv4_advertise_subnets = []
+        if node.ip.use_ipv4:
+            node.bgp.ipv4_advertise_subnets = G_ip.data.infra_blocks.get(asn) or [] # note: could be none (if single-node AS) - default to empty list
 # put into list
         #TODO: put advertise subnets from ip6 plugin into a list for consistency with ipv4
-        node.bgp.ipv6_advertise_subnets = [G_ipv6.data.infra_blocks.get(asn)]
+        node.bgp.ipv6_advertise_subnets = []
+        if node.ip.use_ipv6:
+            node.bgp.ipv6_advertise_subnets = [G_ipv6.data.infra_blocks.get(asn)]
          
         node.bgp.ibgp_neighbors = []
         node.bgp.ibgp_rr_clients = []
@@ -247,7 +251,7 @@ class IosBaseCompiler(RouterCompiler):
         
     def interfaces(self, node):
 
-        ipv6_address = ipv4_address = ipv4_loopback_subnet = None
+        ipv4_cidr = ipv6_address = ipv4_address = ipv4_loopback_subnet = None
         if node.ip.use_ipv4:
             ipv4_node = self.anm['ip'].node(node)
             ipv4_address = ipv4_node.loopback
