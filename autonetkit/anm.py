@@ -184,8 +184,7 @@ class overlay_node(object):
             return False
 
     def __iter__(self):
-        return iter(overlay_interface(self.anm, self.overlay_id, self.node_id, interface_id)
-                for interface_id in self._interfaces)
+        return self.interfaces()
 
     def __getnewargs__(self):
         return ()
@@ -235,13 +234,36 @@ class overlay_node(object):
             if int_id not in self._interfaces:
                 return int_id
 
-    def _add_interface(self, description = None):
+    def _add_interface(self, type = "physical", description = None, **kwargs):
         next_id = self._next_int_id
-        self._interfaces[next_id] = {
-                'description': description,
-                }
+        data = kwargs
+        data['description'] = description
+        data['type'] = type
+        self._interfaces[next_id] = data 
         return next_id
 
+    def add_loopback(self, *args, **kwargs):
+        """Public function to add  a loopback interface"""
+#TODO: return the interface wrapper
+        self._add_interface(type = "loopback", **kwargs)
+
+    def add_interface(self, **kwargs):
+        """Public function to add interface"""
+        self._add_interface(**kwargs)
+
+    def interfaces(self, *args, **kwargs):
+        """Public function to view interfaces"""
+        #TODO: allow filtering
+        def filter_func(interface):
+            return (
+                    all(getattr(interface, key) for key in args) and
+                    all(getattr(interface, key) == val for key, val in kwargs.items())
+                    )
+
+        all_interfaces = iter(overlay_interface(self.anm, self.overlay_id, self.node_id, interface_id)
+                for interface_id in self._interfaces)
+
+        return (i for i in all_interfaces if filter_func(i))
 
     @property
     def _interfaces(self):
