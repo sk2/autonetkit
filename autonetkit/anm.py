@@ -319,8 +319,9 @@ class overlay_node(object):
     def degree(self):
         return self._graph.degree(self.node_id)
 
-    def neighbors(self):
-        return self._overlay.neighbors(self)
+    def neighbors(self, *args, **kwargs):
+        neighs = self._overlay.neighbors(self)
+        return self._overlay.filter(neighs, *args, **kwargs)
 
     @property
     def label(self):
