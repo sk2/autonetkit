@@ -249,7 +249,8 @@ class overlay_node(object):
 
     def add_interface(self, **kwargs):
         """Public function to add interface"""
-        self._add_interface(**kwargs)
+        interface_id = self._add_interface(**kwargs)
+        return overlay_interface(self.anm, self.overlay_id, self.node_id, interface_id)
 
     def interfaces(self, *args, **kwargs):
         """Public function to view interfaces"""

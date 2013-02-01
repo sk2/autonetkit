@@ -158,6 +158,9 @@ class IpTree(object):
 # make subtree for each attr
             items = list(items)
             subgraph = nx.DiGraph()
+            #if all(isinstance(item, autonetkit.anm.
+            #print [type(item) for item in items]
+
             if all(item.is_l3device for item in items): 
                 # Note: only l3 devices are added for loopbacks: cds allocate to edges not devices (for now) - will be fixed when move to proper interface model 
                 parent_id = self.next_node_id
@@ -393,6 +396,17 @@ def allocate_ips(G_ip, infrastructure = True):
     ip_tree.assign()
     G_ip.data.loopback_blocks = ip_tree.group_allocations()
 
+    ip_tree = IpTree("172.16.0.0")
+    secondary_loopbacks = []
+    ip_tree.add_nodes(G_ip.nodes("is_l3device"))
+    ip_tree.build()
+    secondary_loopback_tree = ip_tree.json()
+   # json.dumps(ip_tree.json(), cls=autonetkit.ank_json.AnkEncoder, indent = 4)
+    #body = json.dumps({"ip_allocations": jsontree})
+    #messaging.publish_compressed("www", "client", body)
+    ip_tree.assign()
+    #G_ip.data.loopback_blocks = ip_tree.group_allocations()
+
     log.info("Allocating Collision Domain IPs")
 
     if infrastructure:
@@ -408,7 +422,7 @@ def allocate_ips(G_ip, infrastructure = True):
     total_tree = {
             'name': "ip",
             'children': 
-                [loopback_tree, cd_tree],
+                [loopback_tree, secondary_loopback_tree, cd_tree],
                 #[loopback_tree],
             }
     jsontree = json.dumps(total_tree, cls=autonetkit.ank_json.AnkEncoder, indent = 4)

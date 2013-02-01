@@ -161,6 +161,10 @@ def build_vrf(anm):
     G_vrf.add_nodes_from(G_in.nodes("is_router"), retain = ["vrf_role", "vrf"])
     G_vrf.data.route_targets = {}
 
+    for node in G_vrf:
+        interface = node.add_interface(name = "test")
+        print interface
+
 # set default
     non_ce_nodes = [n for n in G_vrf if n.vrf_role != "CE"]
     for n in non_ce_nodes:
@@ -195,12 +199,19 @@ def build_vrf(anm):
         G_vrf.add_edges_from(ce_to_pe_edges, direction = "d")
 
 # and map to create extra loopbacks
-    for node in G_vrf:
-        node.add_loopback(color = 1)
-        node.add_loopback()
-        node.add_loopback()
+    for node in G_vrf.nodes(vrf_role = "PE"):
+        node_vrf_names = set(n.vrf for n in node.neighbors(vrf_role = "CE"))
+        for vrf_name in node_vrf_names:
+            node.add_loopback(vrf_name = vrf_name)
+        #for peering in node.edges():
+            #node.add_loopback(color = 1, vrf_peer = peering.dst)
         #for interface in node.interfaces(type = "loopback", color = 1):
             #print interface, interface.type, interface.color
+
+    for node in G_vrf:
+        for i in node.interfaces("vrf_peer"):
+            #print i, i.vrf_peer, i.color
+            pass
 
 # Create route-targets
 #TODO: this should be per ASN
