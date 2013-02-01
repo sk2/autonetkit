@@ -87,11 +87,17 @@ def build(input_graph_string, timestamp):
     G_phy = anm['phy']
     #update_messaging(anm)
     #build_conn(anm)
+
+    build_vrf(anm)
+
     address_family = G_in.data.address_family or "v4"
     allocate_ipv4_infrastructure = False
     if address_family in set(["v4", "dual_stack"]):
         allocate_ipv4_infrastructure = True
     build_ipv4(anm, infrastructure = allocate_ipv4_infrastructure)
+
+
+#TODO: need to be clear about the order of building overlays (for instance is-is uses ip allocations)... perhaps should create a NET addressing overlay for addressing?
 
     allocate_ipv6 = False
     if address_family in set(["v6", "dual_stack"]):
@@ -148,7 +154,59 @@ def boundary_nodes(G, nodes):
 # Node boundary returns external nodes connected to nodes in nbunch
 # for now use edge boundary, and find any node in nbunch connected to these edges
 
+def build_vrf(anm):
+    G_in = anm['input']
+    G_phy = anm['phy']
+    G_vrf = anm.add_overlay("vrf", directed = True)
+    G_vrf.add_nodes_from(G_in.nodes("is_router"), retain = ["vrf_role", "vrf"])
+    G_vrf.data.route_targets = {}
 
+# set default
+    non_ce_nodes = [n for n in G_vrf if n.vrf_role != "CE"]
+    for n in non_ce_nodes:
+        phy_neighbors = G_phy.node(n).neighbors() # neighbors from physical graph for connectivity
+        phy_neighbors = [neigh for neigh in phy_neighbors if neigh.asn == n.asn] # filter to just this asn
+        if any(G_vrf.node(neigh).vrf_role == "CE" for neigh in phy_neighbors):
+            # phy neigh has vrf set in this graph
+            n.vrf_role = "PE"
+        else:
+            n.vrf_role = "P" # default role
+
+    """TODO: sanity checks:
+    - vrf only set on CE nodes
+    """
+# add links from CE to PE
+    for asn, devices in G_phy.groupby("asn").items():
+        as_graph = G_phy.subgraph(devices)
+        edges = [(edge.src, edge.dst) for edge in as_graph.edges()]
+        vrf_edges = [(G_vrf.node(s), G_vrf.node(t)) for (s, t) in edges]
+        pe_to_ce_edges = []
+        ce_to_pe_edges = []
+        for s, t in vrf_edges:
+            if (s.vrf_role, t.vrf_role) == ("CE", "PE"):
+                pe_to_ce_edges.append((s, t))
+                ce_to_pe_edges.append((t, s))
+            if (s.vrf_role, t.vrf_role) == ("PE", "CE"):
+                pe_to_ce_edges.append((t, s))
+                ce_to_pe_edges.append((s, t))
+# other direction
+
+        G_vrf.add_edges_from(pe_to_ce_edges, direction = "u")
+        G_vrf.add_edges_from(ce_to_pe_edges, direction = "d")
+
+# and map to create extra loopbacks
+    for node in G_vrf:
+        node.add_loopback(color = 1)
+        node.add_loopback()
+        node.add_loopback()
+        #for interface in node.interfaces(type = "loopback", color = 1):
+            #print interface, interface.type, interface.color
+
+# Create route-targets
+#TODO: this should be per ASN
+    vrf_names = set(n.vrf for n in G_vrf.nodes(vrf_role = "CE"))
+    #print vrf_names
+    
 def build_bgp(anm):
     # eBGP
     G_phy = anm['phy']
@@ -158,11 +216,7 @@ def build_bgp(anm):
     ebgp_edges = [edge for edge in G_in.edges() if not edge.attr_equal("asn")]
     G_bgp.add_edges_from(ebgp_edges, bidirectional = True, type = 'ebgp')
 
-
 #TODO: here we want to map to lo0
-    for node in G_bgp:
-        for interface in node:
-            interface.speed = 100
 
 # now iBGP
 #TODO: add flag for three iBGP types: full-mesh, algorithmic, custom
@@ -229,6 +283,7 @@ def build_bgp(anm):
             all_pairs = [ (s, t) for s in routers for t in routers if s != t] # all possible edge src/dst pairs
             if max_level == 3:
 
+                #toDO: write in format (s.ibgp_level, t.ibgp_level) == (1, 2) as clearer
                 l1_l2_up_links = [ (s, t) for (s, t) in all_pairs if s.ibgp_level == 1 and t.ibgp_level == 2
                         and s.ibgp_l2_cluster == t.ibgp_l2_cluster]
                 l1_l2_down_links = [ (t, s) for (s, t) in l1_l2_up_links] # the reverse
