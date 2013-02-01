@@ -780,6 +780,9 @@ var node_group_id = function(d) {
     else if (overlay_id == "ospf") {
         return ([d['asn'], d['area']]);
     }
+    else if (overlay_id == "vrf") {
+        return ([d['asn'], d['vrf']]);
+    }
     else if (overlay_id == "bgp") {
         return (["ASN " + d['asn'], d['ibgp_l3_cluster'], d['ibgp_l2_cluster']]);
     }
