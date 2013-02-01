@@ -258,7 +258,11 @@ def most_frequent(iterable):
     """returns most frequent item in iterable"""
 # from http://stackoverflow.com/q/1518522
     g = itertools.groupby
-    return max(g(sorted(iterable)), key=lambda(x, v):(len(list(v)),-iterable.index(x)))[0]
+    try:
+        return max(g(sorted(iterable)), key=lambda(x, v):(len(list(v)),-iterable.index(x)))[0]
+    except ValueError, e:
+        log.warning("Unable to calculate most_frequent, %s" % e)
+        return None
     
 def neigh_most_frequent(overlay_graph, node, attribute, attribute_graph = None):
     """Used to explicitly force most frequent - useful if integers such as ASN which would otherwise return mean"""
