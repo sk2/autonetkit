@@ -803,8 +803,8 @@ var interface_label = function(d) {
 var zoom_fit = function() {
     if (jsondata.nodes.length) {
         //rescale if showing nodes, rather than the ip allocs, etc
-        node_x_max = _.max(nodes, function(node){ return node.x}).x + 20;
-        node_y_max = _.max(nodes, function(node){ return node.y}).y + 20;
+        node_x_max = _.max(nodes, function(node){ return node.x}).x + icon_width/2 + 20;
+        node_y_max = _.max(nodes, function(node){ return node.y}).y + icon_height/2 + 20;
 
         p =  Math.max((chart_width/node_x_max)/2, (chart_height/node_y_max)/2);
         p = p * 1.5;
