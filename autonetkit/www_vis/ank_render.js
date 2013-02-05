@@ -908,6 +908,7 @@ function redraw() {
     skip_attributes = Array("_interfaces", "None", "id", "label", "x", "y");
     filtered_attributes = _.reject(node_attribute_unique_values, function(x){
         if (x[1].length == 1 && x[1][0] == null) return true; // don't display attributes that are only null
+        if (x[1].length > 10) return true; // don't display attributes for long lists
         return _.contains(skip_attributes, x[0]); //reject attributes in skip_attributes
     });
 
