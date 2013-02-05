@@ -828,18 +828,21 @@ function numeric_strings_to_float(array){
     return array;
 }
 
+function serialized_array_to_grouped_list(array) {
+    array = _.groupBy(array, function(x) { return x.name});
+    //extract out grouped items to format: [['asn', [1, 2, 3,]]], etc
+    array = _.map(array, function(group_items, key, l) {
+        return [key, _.map(group_items, function(item){ return item.value})];
+    });
+    return array;
+}
+
 function applyNodeFilter() {
     test = $("#nodeFilterForm").serializeArray(); //obtain form values
 
     //convert numeric strings to floats for eg asn comparisons
     test = numeric_strings_to_float(test);
-
-
-    test = _.groupBy(test, function(x) { return x.name});
-    //extract out grouped items to format: [['asn', [1, 2, 3,]]], etc
-    test = _.map(test, function(group_items, key, l) {
-        return [key, _.map(group_items, function(item){ return item.value})];
-    });
+    test = serialized_array_to_grouped_list(test);
 
     f_nodes = nodes; //list of nodes to iteratively trim
     test.forEach(function(x) {
@@ -908,18 +911,25 @@ function redraw() {
         return _.contains(skip_attributes, x[0]); //reject attributes in skip_attributes
     });
 
-    var form = '<form action="javascript:applyNodeFilter()" id="nodeFilterForm" name="nodeFilterForm">';
+    var form = '<b>Filter:</b><br>';
+    form += '<form action="javascript:applyNodeFilter()" id="nodeFilterForm" name="nodeFilterForm">';
     previous_form_values = $("#nodeFilterForm").serializeArray(); 
-
-
+    previous_form_values = numeric_strings_to_float(previous_form_values);
+    previous_form_values = serialized_array_to_grouped_list(previous_form_values);
+    previous_form_values = _.object(previous_form_values);
     console.log(previous_form_values);
+
     filtered_attributes.forEach(function(unique_attribute) {
         var key = unique_attribute[0];
         var values = unique_attribute[1];
         values = values.sort();
         form += "<b>" + key + "</b>: ";
         values.forEach(function(val) {
-        form += '<input type=checkbox name=' + key + ' value=' + val + '>' + val;
+            form += '<input type=checkbox name=' + key + ' value=' + val ;
+            if (key in previous_form_values && _.contains(previous_form_values[key], val)) {
+                form += " checked ";
+            }
+            form += '>' + val;
         });
         form += "<br>";
 
@@ -1053,12 +1063,10 @@ function redraw() {
         clear_label();
     })
 
-    line
-        .style("opacity", line_opacity)
-
     line.transition()
         .duration(500)
         .attr("d", graph_edge)
+        .style("opacity", line_opacity)
 
         line.exit().transition()
         .duration(1000)
@@ -1302,9 +1310,9 @@ function redraw() {
         image
         .attr("width", icon_width)
         .attr("height", icon_height)
-        .style("opacity", icon_opacity)
         .transition()
         .attr("xlink:href", icon)
+        .style("opacity", icon_opacity)
         .attr("x", function(d) { return d.x + x_offset; })
         .attr("y", function(d) { return d.y + y_offset; })
         .duration(500)
@@ -1337,7 +1345,6 @@ function redraw() {
 
         //TODO: use a general accessor for x/y of nodes
         device_labels 
-        .style("opacity", icon_opacity)
         .attr("dx", icon_width/2) // padding-right
         .attr("dy", icon_height + 3) // vertical-align: middle
         .text(device_label);
@@ -1345,6 +1352,7 @@ function redraw() {
     device_labels.transition()
         .attr("x", function(d) { return d.x + x_offset; })
         .attr("y", function(d) { return d.y + y_offset + 3; })
+        .style("opacity", icon_opacity)
         .duration(500)
 
         device_labels.exit().transition()
