@@ -917,7 +917,6 @@ function redraw() {
     previous_form_values = numeric_strings_to_float(previous_form_values);
     previous_form_values = serialized_array_to_grouped_list(previous_form_values);
     previous_form_values = _.object(previous_form_values);
-    console.log(previous_form_values);
 
     filtered_attributes.forEach(function(unique_attribute) {
         var key = unique_attribute[0];
