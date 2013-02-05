@@ -292,20 +292,25 @@ def build_bgp(anm):
             max_level = max(ibgp_levels)
             all_pairs = [ (s, t) for s in routers for t in routers if s != t] # all possible edge src/dst pairs
             if max_level == 3:
-
-                #toDO: write in format (s.ibgp_level, t.ibgp_level) == (1, 2) as clearer
-                l1_l2_up_links = [ (s, t) for (s, t) in all_pairs if s.ibgp_level == 1 and t.ibgp_level == 2
-                        and s.ibgp_l2_cluster == t.ibgp_l2_cluster]
+                l1_l2_up_links = [ (s, t) for (s, t) in all_pairs
+                        if (s.ibgp_level, t.ibgp_level) == (1,2)
+                        and s.ibgp_l2_cluster == t.ibgp_l2_cluster
+                        and s.ibgp_l3_cluster == t.ibgp_l3_cluster
+                        ]
                 l1_l2_down_links = [ (t, s) for (s, t) in l1_l2_up_links] # the reverse
                 G_bgp.add_edges_from(l1_l2_up_links, type = 'ibgp', direction = 'up')
                 G_bgp.add_edges_from(l1_l2_down_links, type = 'ibgp', direction = 'down')
 
                 l2_peer_links = [ (s, t) for (s, t) in all_pairs 
-                        if s.ibgp_level == t.ibgp_level == 2 and s.ibgp_l2_cluster == t.ibgp_l2_cluster ]
+                        if s.ibgp_level == t.ibgp_level == 2 
+                        and s.ibgp_l2_cluster == t.ibgp_l2_cluster
+                        and s.ibgp_l3_cluster == t.ibgp_l3_cluster
+                        ]
                 G_bgp.add_edges_from(l2_peer_links, type = 'ibgp', direction = 'over')
 
-                l2_l3_up_links = [ (s, t) for (s, t) in all_pairs if s.ibgp_level == 2 and t.ibgp_level == 3
-                        if s.ibgp_l3_cluster == t.ibgp_l3_cluster]
+                l2_l3_up_links = [ (s, t) for (s, t) in all_pairs 
+                        if (s.ibgp_level, t.ibgp_level) == (2,3)
+                        and s.ibgp_l3_cluster == t.ibgp_l3_cluster]
                 l2_l3_down_links = [ (t, s) for (s, t) in l2_l3_up_links] # the reverse
                 G_bgp.add_edges_from(l2_l3_up_links, type = 'ibgp', direction = 'up')
                 G_bgp.add_edges_from(l2_l3_down_links, type = 'ibgp', direction = 'down')
@@ -336,14 +341,15 @@ def build_bgp(anm):
 
             if max_level == 2:
                 l1_l2_up_links = [ (s, t) for (s, t) in all_pairs 
-                        if s.ibgp_level == 1 and t.ibgp_level == 2
+                        if (s.ibgp_level, t.ibgp_level) == (1,2)
                         and s.ibgp_l3_cluster == t.ibgp_l3_cluster]
                 l1_l2_down_links = [ (t, s) for (s, t) in l1_l2_up_links] # the reverse
                 G_bgp.add_edges_from(l1_l2_up_links, type = 'ibgp', direction = 'up')
                 G_bgp.add_edges_from(l1_l2_down_links, type = 'ibgp', direction = 'down')
 
                 l2_peer_links = [ (s, t) for (s, t) in all_pairs 
-                        if s.ibgp_level == t.ibgp_level == 2 and s.ibgp_l3_cluster == t.ibgp_l3_cluster ]
+                        if s.ibgp_level == t.ibgp_level == 2 
+                        and s.ibgp_l3_cluster == t.ibgp_l3_cluster ]
                 G_bgp.add_edges_from(l2_peer_links, type = 'ibgp', direction = 'over')
 
             elif max_level == 1:
