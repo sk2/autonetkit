@@ -1031,6 +1031,7 @@ function redraw() {
         //line.enter().append("line")
         line.enter().append("svg:path")
         .attr("class", "link_edge")
+        .style("opacity", line_opacity)
         .attr("id", 
                 function(d) { 
                     return "path"+d.source+"_"+d.target; 
@@ -1295,6 +1296,7 @@ function redraw() {
         .attr("class", "device_icon")
         .attr("x", function(d) { return d.x + x_offset; })
         .attr("y", function(d) { return d.y + y_offset; })
+        .style("opacity", icon_opacity)
         .attr("width", icon_width)
         .attr("height", icon_height)
         .on("mouseover", function(d){
@@ -1341,6 +1343,7 @@ function redraw() {
         .attr("class", "device_label")
         .attr("text-anchor", "middle") 
         .attr("font-family", "helvetica") 
+        .style("opacity", icon_opacity)
         .attr("font-size", "small") 
 
         //TODO: use a general accessor for x/y of nodes
