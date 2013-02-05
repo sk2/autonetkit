@@ -818,6 +818,59 @@ var zoom_fit = function() {
     }
 }
 
+var filtered_nodes = [];
+
+function numeric_strings_to_float(array){
+    array = _.map(array, function(x) {    
+        if ($.isNumeric(x.value)) x.value = parseFloat(x.value); //float if numeric
+        return x;
+    });
+    return array;
+}
+
+function applyNodeFilter() {
+    test = $("#nodeFilterForm").serializeArray(); //obtain form values
+
+    //convert numeric strings to floats for eg asn comparisons
+    test = numeric_strings_to_float(test);
+
+
+    test = _.groupBy(test, function(x) { return x.name});
+    //extract out grouped items to format: [['asn', [1, 2, 3,]]], etc
+    test = _.map(test, function(group_items, key, l) {
+        return [key, _.map(group_items, function(item){ return item.value})];
+    });
+
+    f_nodes = nodes; //list of nodes to iteratively trim
+    test.forEach(function(x) {
+        attribute = x[0];
+        values = x[1];
+        f_nodes = _.filter(f_nodes, function(node) {
+            return _.contains(values, node[attribute]); //keep node if attribute in values list
+        });
+    });
+
+    filtered_nodes = f_nodes; //set the global
+    redraw();
+}
+
+var icon_opacity = function(x) {
+    if (filtered_nodes.length == 0) return 1; //no filtered, so display all at full opacity
+    if (_.contains(filtered_nodes, x)) return 1; //some are filtered, full opacity for these
+    return 0.2; //drop opacity for non filtered
+};
+
+var line_opacity = function(x) {
+    if (filtered_nodes.length == 0) return 1; //no filtered, so display all at full opacity
+
+    source = nodes[x.source];
+    target = nodes[x.target];
+
+    if (_.contains(filtered_nodes, source) && _.contains(filtered_nodes, target)) return 1; //some are filtered, full opacity for these
+    return 0.2; //drop opacity for non filtered
+};
+
+
 // Store the attributes used for nodes and edges, to allow user to select
 var node_attributes = [];
 var edge_attributes = [];
@@ -826,12 +879,10 @@ function redraw() {
     //TODO: tidy this up, not all functions need to be in here, move out those that do, and only pass required params. also avoid repeated calculations.
     
     nodes = jsondata.nodes;
-
         
     node_attributes = []; //reset
     nodes.forEach(function(node) {
         nodes_by_id[node.id] = node;
-
         node_attributes.push.apply(node_attributes, _.keys(node));
     });
 
@@ -842,6 +893,42 @@ function redraw() {
     node_attributes.sort();
     node_attributes = _.uniq(node_attributes);
     propagate_node_label_select(node_attributes);
+
+    //TODO: combine with node attributes to just take the keys from the groupby for efficiency
+    node_attribute_unique_values = [];
+    node_attributes.forEach(function(attribute) {
+        values = _.uniq(_.pluck(nodes, attribute));
+        node_attribute_unique_values.push([attribute, values]);
+    });
+
+    // apply these to form
+    skip_attributes = Array("_interfaces", "None", "id", "label", "x", "y");
+    filtered_attributes = _.reject(node_attribute_unique_values, function(x){
+        if (x[1].length == 1 && x[1][0] == null) return true; // don't display attributes that are only null
+        return _.contains(skip_attributes, x[0]); //reject attributes in skip_attributes
+    });
+
+    var form = '<form action="javascript:applyNodeFilter()" id="nodeFilterForm" name="nodeFilterForm">';
+    previous_form_values = $("#nodeFilterForm").serializeArray(); 
+
+
+    console.log(previous_form_values);
+    filtered_attributes.forEach(function(unique_attribute) {
+        var key = unique_attribute[0];
+        var values = unique_attribute[1];
+        values = values.sort();
+        form += "<b>" + key + "</b>: ";
+        values.forEach(function(val) {
+        form += '<input type=checkbox name=' + key + ' value=' + val + '>' + val;
+        });
+        form += "<br>";
+
+    });
+    //form += '<button onclick="javascript:applyNodeFilter();">Apply</button>';
+    form += '    <input type="submit" name="submit" class="button" id="submit_btn" value="Apply" />  ';
+    form += '</form>';
+
+    $(".node_filter").html(form);
 
     edge_attributes = []; //reset
     jsondata.links.forEach(function(link) {
@@ -965,6 +1052,9 @@ function redraw() {
         //d3.select(this).attr("marker-end", marker_end);
         clear_label();
     })
+
+    line
+        .style("opacity", line_opacity)
 
     line.transition()
         .duration(500)
@@ -1212,6 +1302,7 @@ function redraw() {
         image
         .attr("width", icon_width)
         .attr("height", icon_height)
+        .style("opacity", icon_opacity)
         .transition()
         .attr("xlink:href", icon)
         .attr("x", function(d) { return d.x + x_offset; })
@@ -1246,6 +1337,7 @@ function redraw() {
 
         //TODO: use a general accessor for x/y of nodes
         device_labels 
+        .style("opacity", icon_opacity)
         .attr("dx", icon_width/2) // padding-right
         .attr("dy", icon_height + 3) // vertical-align: middle
         .text(device_label);
