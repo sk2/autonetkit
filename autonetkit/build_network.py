@@ -163,7 +163,6 @@ def build_vrf(anm):
 
     for node in G_vrf:
         interface = node.add_interface(name = "test")
-        print interface
 
 # set default
     non_ce_nodes = [n for n in G_vrf if n.vrf_role != "CE"]
