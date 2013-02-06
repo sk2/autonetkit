@@ -45,7 +45,8 @@ ws.onmessage = function (evt) {
             revision_id = graph_history.length - 1;
             propagate_revision_dropdown(graph_history); //TODO: update this with revision from webserver
             ip_allocations = [];
-            redraw_ip_allocations();
+            filtered_nodes= []; //reset filtering
+            redraw_ip_allocations(); 
             redraw();
         }
     }
@@ -912,8 +913,9 @@ function redraw() {
         return _.contains(skip_attributes, x[0]); //reject attributes in skip_attributes
     });
 
-    var form = '<b>Filter:</b><br>';
+    var form = '<b>' + "<i class='icon-filter '></i> " + 'Filter:</b><br>';
     form += '<form action="javascript:applyNodeFilter()" id="nodeFilterForm" name="nodeFilterForm">';
+    form += "<table>";
     previous_form_values = $("#nodeFilterForm").serializeArray(); 
     previous_form_values = numeric_strings_to_float(previous_form_values);
     previous_form_values = serialized_array_to_grouped_list(previous_form_values);
@@ -923,7 +925,8 @@ function redraw() {
         var key = unique_attribute[0];
         var values = unique_attribute[1];
         values = values.sort();
-        form += "<b>" + key + "</b>: ";
+        form += "<tr>";
+        form += "<td><b>" + key + "</b></td><td>";
         values.forEach(function(val) {
             form += '<input type=checkbox name=' + key + ' value=' + val ;
             if (key in previous_form_values && _.contains(previous_form_values[key], val)) {
@@ -931,11 +934,13 @@ function redraw() {
             }
             form += '>' + val;
         });
-        form += "<br>";
+        form += "</td></tr>";
+        //form += "<br>";
 
     });
     //form += '<button onclick="javascript:applyNodeFilter();">Apply</button>';
-    form += '    <input type="submit" name="submit" class="button" id="submit_btn" value="Apply" />  ';
+    form += "</table>";
+    form += '<input type="submit" name="submit" class="button" id="submit_btn" value="Apply" />  ';
     form += '</form>';
 
     $(".node_filter").html(form);
