@@ -117,7 +117,6 @@ def build(input_graph_string, timestamp):
     anm.add_overlay("ospf")
     anm.add_overlay("isis")
 
-
     ank.copy_attr_from(G_in, G_phy, "include_csr") #TODO: find more elegant passing method from input to compiler
 
     if igp == "ospf":
@@ -128,13 +127,8 @@ def build(input_graph_string, timestamp):
 
     #TODO: provide an ANM wide function that allocates interfaces
     #TODO: work out why some interfaces in bgp graph in vis have node data....
-    for node in G_phy:
-        for interface in node:
-            interface.speed = 102
-
 
     return anm
-
 
 def boundary_nodes(G, nodes):
     #TODO: move to utils
@@ -208,8 +202,9 @@ def build_vrf(anm):
             #print interface, interface.type, interface.color
 
     for node in G_vrf:
-        for i in node.interfaces("vrf_peer"):
-            #print i, i.vrf_peer, i.color
+        for i in node.interfaces("is_loopback"):
+            print i, i.node, i.vrf_peer, i.color
+            print G_phy.node(node).interface(i)
             pass
 
 # Create route-targets
@@ -401,7 +396,6 @@ def build_ip6(anm):
     G_ip6.add_nodes_from(G_ip4, retain="collision_domain") # retain if collision domain or not
     G_ip6.add_edges_from(G_ip4.edges())
     ipv6.allocate_ips(G_ip6) 
-
 
 def build_ipv4(anm, infrastructure = True):
     G_ip4 = anm.add_overlay("ipv4")
