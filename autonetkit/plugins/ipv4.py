@@ -397,7 +397,13 @@ def allocate_ips(G_ip, infrastructure = True):
     G_ip.data.loopback_blocks = ip_tree.group_allocations()
 
     ip_tree = IpTree("172.16.0.0")
+    """
     secondary_loopbacks = []
+    for n in G_ip.nodes():
+        for i in n.interfaces("is_loopback"):
+            print i, "b"
+    """
+
     ip_tree.add_nodes(G_ip.nodes("is_l3device"))
     ip_tree.build()
     secondary_loopback_tree = ip_tree.json()

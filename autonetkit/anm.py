@@ -116,6 +116,10 @@ class overlay_interface(object):
         """Return graph the node belongs to"""
         return self._node["_interfaces"][self.interface_id]
 
+    @property
+    def is_loopback(self):
+        """"""
+        return self.type == "loopback" 
 
     @property
     def node(self):
@@ -235,7 +239,12 @@ class overlay_node(object):
                 return int_id
 
     def _add_interface(self, type = "physical", description = None, **kwargs):
-        next_id = self._next_int_id
+        if self.node_id != 'phy' and self.phy:
+            next_id = self.phy._next_int_id
+            self.phy._interfaces[next_id] = {}  # initialise in physical
+        else:
+            next_id = self._next_int_id
+        
         data = kwargs
         data['description'] = description
         data['type'] = type
@@ -262,13 +271,39 @@ class overlay_node(object):
                     )
 
         all_interfaces = iter(overlay_interface(self.anm, self.overlay_id, self.node_id, interface_id)
-                for interface_id in self._interfaces)
+                for interface_id in self._interface_ids)
 
-        return (i for i in all_interfaces if filter_func(i))
+        retval = (i for i in all_interfaces if filter_func(i))
+        return retval
+
+    def interface(self, key):
+        """Returns interface based on interface id"""
+        try:
+            if key.interface_id in self._interface_ids:
+                return overlay_interface(self.anm, self.overlay_id, self.node_id, key.interface_id)
+        except AttributeError:
+            log.warning( "Unable to find interface %s in %s " % (key, self))
+            return None
+
+    @property
+    def _interface_ids(self):
+        if self.overlay_id != 'phy' and self.phy:
+            # graph isn't physical, and node exists in physical graph -> use the interface mappings from phy
+            return self.phy._graph.node[self.node_id]["_interfaces"].keys()
+        else:
+            try:
+                return self._graph.node[self.node_id]["_interfaces"]
+            except KeyError:
+                log.debug("No interfaces initialised for %s" % self) 
+                return []
 
     @property
     def _interfaces(self):
-        return self._graph.node[self.node_id]["_interfaces"]
+        try:
+            return self._graph.node[self.node_id]["_interfaces"]
+        except KeyError:
+            log.debug("No interfaces initialised for %s" % self) 
+            return []
 
     @property
     def _graph(self):
