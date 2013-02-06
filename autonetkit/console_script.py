@@ -108,6 +108,8 @@ def manage_network(input_graph_string, timestamp, build_options, reload_build=Fa
     if build_options['measure']:
         measure_network(nidb)
 
+    log.info("Finished")
+
 def parse_options():
     import argparse
     usage = "autonetkit -f input.graphml"
