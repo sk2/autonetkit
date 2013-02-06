@@ -67,6 +67,11 @@ marker {
   z-index: 5;
 }
 
+.node_filter {
+  display: none;
+  border-radius: 5px;
+}
+
 .visualisation {
   position:absolute;
   top: 45px;
