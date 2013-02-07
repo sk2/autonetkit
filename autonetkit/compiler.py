@@ -28,6 +28,7 @@ def dot_to_underscore(instring):
 
 class RouterCompiler(object):
     lo_interface = "lo0" #make this clear distinction between interface id and lo IP
+    lo_interface_prefix = "lo"
 # and set per platform
 
     """Base Router compiler"""
@@ -47,6 +48,14 @@ class RouterCompiler(object):
         node.loopback = ipv4_node.loopback
         node.loopback_subnet = netaddr.IPNetwork(node.loopback)
         node.loopback_subnet.prefixlen = 32
+
+        #for loopback in phy_node.interfaces("loopback"):
+            #print loopback
+
+        #for interface in node.interfaces("loopback"):
+            #print interface
+
+
         self.interfaces(node)
         if node in self.anm['ospf']:
             self.ospf(node)
@@ -84,6 +93,15 @@ class RouterCompiler(object):
                     ipv6_address = ipv6_address,
                     physical = True,
                     )
+
+        for loopback in phy_node.interfaces("is_loopback"):
+            pass
+        #node.interfaces.append(
+                #id = self.lo_interface,
+                #description = "Loopback",
+                #ipv4_address = ipv4_node.loopback,
+                #ipv4_subnet = node.loopback_subnet
+                #)
 
         node.interfaces.sort("id")
     
@@ -164,6 +182,8 @@ class RouterCompiler(object):
                 #TODO: fix this: this is a workaround for Quagga next-hop denied for loopback (even with static route)
                 ip_link = G_ipv4.edge(session)
                 dst_int_ip = G_ipv4.edges(ip_link.dst, neigh).next().ip_address #TODO: split this to a helper function
+
+                #TODO: make this a returned value
                 node.bgp.ebgp_neighbors.append( {
                     'neighbor': neigh.label,
                     'use_ipv4': use_ipv4,
@@ -205,7 +225,7 @@ class QuaggaCompiler(RouterCompiler):
         if phy_node.is_router:
             node.interfaces.append(
                     id = self.lo_interface,
-                    description = "Loopback for BGP",
+                    description = "Loopback",
                     ipv4_address = ipv4_node.loopback,
                     ipv4_subnet = node.loopback_subnet
                     )
@@ -239,7 +259,8 @@ class QuaggaCompiler(RouterCompiler):
 class IosBaseCompiler(RouterCompiler):
     """Base IOS compiler"""
 
-    lo_interface = "Loopback0"
+    lo_interface_prefix = "Loopback"
+    lo_interface = "%s%s"  % (lo_interface_prefix, 0)
 
     def compile(self, node):
         super(IosBaseCompiler, self).compile(node)
@@ -247,10 +268,8 @@ class IosBaseCompiler(RouterCompiler):
             self.isis(node)
         node.label = self.anm['phy'].node(node).label
         self.vrf(node)
-
         
     def interfaces(self, node):
-
         ipv4_cidr = ipv6_address = ipv4_address = ipv4_loopback_subnet = None
         if node.ip.use_ipv4:
             ipv4_node = self.anm['ipv4'].node(node)
@@ -301,11 +320,11 @@ class IosBaseCompiler(RouterCompiler):
     def vrf(self, node):
         vrf_node = self.anm['vrf'].node(node)
         for loopback in vrf_node.interfaces("is_loopback", "vrf_name"):
-            if loopback:
+            continue
+            if loopback: # ie if any data set
                 print "vrf lo", loopback
             else:
                 print "no vrf lo", loopback
-
 
     def isis(self, node):
         #TODO: this needs to go into IOS2 for neatness
@@ -396,6 +415,14 @@ class PlatformCompiler(object):
         self.nidb = nidb
         self.anm = anm
         self.host = host
+        self.allocate_loopback_ids()
+
+    def allocate_loopback_ids(self):
+        for node in self.nidb.routers():
+            phy_node = self.anm['phy'].node(node)
+            for index, loopback in enumerate(phy_node.interfaces("is_loopback")):
+                index = index + 1 # loopback0 is allocated directly
+                loopback.index = index
 
     @property
     def timestamp(self):
