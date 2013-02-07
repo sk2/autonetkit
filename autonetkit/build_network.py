@@ -158,6 +158,10 @@ def build_vrf(anm):
     for node in G_vrf:
         interface = node.add_interface(name = "test")
 
+    for node in G_vrf.nodes(vrf_role = "CE"):
+        if not node.vrf:
+            node.vrf = "default_vrf"
+
 # set default
     non_ce_nodes = [n for n in G_vrf if n.vrf_role != "CE"]
     for n in non_ce_nodes:
@@ -168,6 +172,7 @@ def build_vrf(anm):
             n.vrf_role = "PE"
         else:
             n.vrf_role = "P" # default role
+
 
     """TODO: sanity checks:
     - vrf only set on CE nodes
@@ -195,7 +200,13 @@ def build_vrf(anm):
     for node in G_vrf.nodes(vrf_role = "PE"):
         node_vrf_names = set(n.vrf for n in node.neighbors(vrf_role = "CE"))
         for vrf_name in node_vrf_names:
-            node.add_loopback(vrf_name = vrf_name)
+            node.add_loopback(vrf_name = vrf_name, 
+                    description = "loopback for vrf %s" % vrf_name)
+
+    for node in G_vrf.nodes(vrf_role = "CE"):
+            node.add_loopback(vrf_name = n.vrf_name, 
+                    description = "loopback for vrf %s" % n.vrf_name)
+
         #for peering in node.edges():
             #node.add_loopback(color = 1, vrf_peer = peering.dst)
         #for interface in node.interfaces(type = "loopback", color = 1):
@@ -203,8 +214,6 @@ def build_vrf(anm):
 
     for node in G_vrf:
         for i in node.interfaces("is_loopback"):
-            print i, i.node, i.vrf_peer, i.color
-            print G_phy.node(node).interface(i)
             pass
 
 # Create route-targets
