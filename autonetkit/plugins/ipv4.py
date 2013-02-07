@@ -153,13 +153,34 @@ class IpTree(object):
             return
 
         unallocated_nodes = self.unallocated_nodes
-        unallocated_nodes = sorted(unallocated_nodes, key = lambda x: x.get(group_attr))
-        for attr_value, items in itertools.groupby(unallocated_nodes, key = lambda x: x.get(group_attr)):
+        key_func  = lambda x: x.get(group_attr)
+        if all(isinstance(item, autonetkit.anm.overlay_interface) for item in unallocated_nodes):
+            key_func  = lambda x: x.node.get(group_attr) # interface, map key function to be the interface's node
+
+        unallocated_nodes = sorted(unallocated_nodes, key = key_func)
+        groupings = itertools.groupby(unallocated_nodes, key = key_func)
+        for attr_value, items in groupings:
 # make subtree for each attr
             items = list(items)
             subgraph = nx.DiGraph()
-            #if all(isinstance(item, autonetkit.anm.
-            #print [type(item) for item in items]
+
+            if all(isinstance(item, autonetkit.anm.overlay_interface) for item in items):
+                # interface 
+                if all(item.is_loopback for item in items):
+                    parent_id = self.next_node_id
+                    prefixlen = 32 - subnet_size(len(items)) # group all loopbacks into single subnet
+                    subgraph.add_node(parent_id, prefixlen = prefixlen, loopback_group = True)
+                    for item in items:
+                    #subgraph.add_edge(node, child_a)
+                        item_id = self.next_node_id
+                        subgraph.add_node(item_id, prefixlen = 32, host = item)
+                        subgraph.add_edge(parent_id, item_id)
+
+                    root_node = parent_id
+                    subgraphs.append(subgraph)
+                    subgraph.graph['root'] = root_node
+                    subgraph.node[root_node]['group_attr'] = attr_value
+                    continue # finished for loopbacks, continue only for collision domains
 
             if all(item.is_l3device for item in items): 
                 # Note: only l3 devices are added for loopbacks: cds allocate to edges not devices (for now) - will be fixed when move to proper interface model 
@@ -385,7 +406,7 @@ def assign_asn_to_interasn_cds(G_ip):
 
 def allocate_ips(G_ip, infrastructure = True):
     """Can disable infrastructure, eg for ipv6, still want to alloc ipv4 loopbacks for router ids"""
-    log.info("Allocating Host loopback IPs")
+    log.info("Allocating Primary Host loopback IPs")
     ip_tree = IpTree("10.0.0.0")
     ip_tree.add_nodes(G_ip.nodes("is_l3device"))
     ip_tree.build()
@@ -396,15 +417,14 @@ def allocate_ips(G_ip, infrastructure = True):
     ip_tree.assign()
     G_ip.data.loopback_blocks = ip_tree.group_allocations()
 
+    log.info("Allocating Secondary Host loopback IPs")
     ip_tree = IpTree("172.16.0.0")
-    """
     secondary_loopbacks = []
     for n in G_ip.nodes():
         for i in n.interfaces("is_loopback"):
-            print i, "b"
-    """
+            secondary_loopbacks.append(i)
 
-    ip_tree.add_nodes(G_ip.nodes("is_l3device"))
+    ip_tree.add_nodes(secondary_loopbacks)
     ip_tree.build()
     secondary_loopback_tree = ip_tree.json()
    # json.dumps(ip_tree.json(), cls=autonetkit.ank_json.AnkEncoder, indent = 4)
@@ -428,7 +448,8 @@ def allocate_ips(G_ip, infrastructure = True):
     total_tree = {
             'name': "ip",
             'children': 
-                [loopback_tree, secondary_loopback_tree, cd_tree],
+            [loopback_tree, secondary_loopback_tree, cd_tree],
+            #[secondary_loopback_tree],
                 #[loopback_tree],
             }
     jsontree = json.dumps(total_tree, cls=autonetkit.ank_json.AnkEncoder, indent = 4)
