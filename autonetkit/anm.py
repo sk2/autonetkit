@@ -101,6 +101,18 @@ class overlay_interface(object):
         object.__setattr__(self, 'node_id', node_id)
         object.__setattr__(self, 'interface_id', interface_id)
 
+    def __repr__(self):
+        description = self.description or self.interface_id
+        return "(%s, %s)" % (self.node_id, description)
+
+    def __nonzero__(self):
+        """Allows for checking if node exists
+        """
+        return bool(len(self._interface)) # if interface data set
+
+    def __str__(self):
+        return self.__repr__()
+
     @property
     def _graph(self):
         """Return graph the node belongs to"""
@@ -117,17 +129,27 @@ class overlay_interface(object):
         return self._node["_interfaces"][self.interface_id]
 
     @property
+    def phy(self):
+        return overlay_interface(self.anm, 'phy', self.node_id, self.interface_id)
+
+    @property
     def is_loopback(self):
         """"""
-        return self.type == "loopback" 
+#TODO: add try/except in case not set, and not set in phy
+        return self.type == "loopback" or self.phy.type == "loopback"
+
+    @property
+    def description(self):
+        """"""
+#TODO: add try/except in case not set, and not set in phy
+        return self._interface.get("description") or self.phy.description
 
     @property
     def node(self):
         """Returns parent node of this interface"""
         return overlay_node(self.anm, self.overlay_id, self.node_id)
 
-    def __str__(self):
-        return "Interface: " + str(self.interface_id)
+
 
     def dump(self):
         return str(self._interface.items())
@@ -239,15 +261,16 @@ class overlay_node(object):
                 return int_id
 
     def _add_interface(self, type = "physical", description = None, **kwargs):
+        data = kwargs
+
         if self.node_id != 'phy' and self.phy:
             next_id = self.phy._next_int_id
-            self.phy._interfaces[next_id] = {}  # initialise in physical
+            self.phy._interfaces[next_id] = {'type': type, 'description': description}  # store type in physical
         else:
             next_id = self._next_int_id
+            data['type'] = type # store type on node
+            data['description'] = description
         
-        data = kwargs
-        data['description'] = description
-        data['type'] = type
         self._interfaces[next_id] = data 
         return next_id
 
