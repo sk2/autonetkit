@@ -266,7 +266,7 @@ class overlay_node(object):
                 return int_id
 
     def _add_interface(self, type = "physical", description = None, **kwargs):
-        data = kwargs
+        data = dict(kwargs)
 
         if self.node_id != 'phy' and self.phy:
             next_id = self.phy._next_int_id
@@ -849,7 +849,7 @@ class overlay_graph(OverlayBase):
                         'description' : None,
                         'type' : 'physical',
                         }
-                data = dict( (key, interface_data) for key in phy_interfaces)
+                data = dict( (key, dict(interface_data)) for key in phy_interfaces)
                 self._graph.node[node]['_interfaces'] = data
             except KeyError:
 # no counterpart in physical graph, initialise

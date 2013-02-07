@@ -49,13 +49,6 @@ class RouterCompiler(object):
         node.loopback_subnet = netaddr.IPNetwork(node.loopback)
         node.loopback_subnet.prefixlen = 32
 
-        #for loopback in phy_node.interfaces("loopback"):
-            #print loopback
-
-        #for interface in node.interfaces("loopback"):
-            #print interface
-
-
         self.interfaces(node)
         if node in self.anm['ospf']:
             self.ospf(node)
@@ -81,7 +74,6 @@ class RouterCompiler(object):
                 ipv6_link = G_ipv6.edge(link)
                 ipv6_subnet =  ipv6_link.dst.subnet # netmask comes from collision domain on the link
                 ipv6_address = address_prefixlen_to_network(ipv6_link.ip, ipv6_subnet.prefixlen)
-
             
             node.interfaces.append(
                     _edge_id = link.edge_id, # used if need to append
@@ -94,15 +86,21 @@ class RouterCompiler(object):
                     physical = True,
                     )
 
-        for loopback in phy_node.interfaces("is_loopback"):
-            pass
-        #node.interfaces.append(
-                #id = self.lo_interface,
-                #description = "Loopback",
-                #ipv4_address = ipv4_node.loopback,
-                #ipv4_subnet = node.loopback_subnet
-                #)
+        for index, interface in enumerate(phy_node.interfaces("is_loopback")):
+            ip_interface = G_ipv4.node(node).interface(interface)
+            vrf_interface = self.anm['vrf'].node(node).interface(interface)
+            index = index + 1 # loopback0 (ie index 0) is reserved
+            id = "%s%s" % (self.lo_interface_prefix, index)
+            node.interfaces.append(
+                    id = id,
+                    description = interface.description,
+                    ipv4_address = ip_interface.loopback,
+                    ipv4_subnet = node.loopback_subnet,
+                    vrf_name = vrf_interface.vrf_name,
+                    route_target = interface.route_target,
+                    )
 
+        #TODO: work out why this doesn't sort loopbacks properly (because append loopback 0 last)
         node.interfaces.sort("id")
     
     def ospf(self, node):
@@ -415,14 +413,6 @@ class PlatformCompiler(object):
         self.nidb = nidb
         self.anm = anm
         self.host = host
-        self.allocate_loopback_ids()
-
-    def allocate_loopback_ids(self):
-        for node in self.nidb.routers():
-            phy_node = self.anm['phy'].node(node)
-            for index, loopback in enumerate(phy_node.interfaces("is_loopback")):
-                index = index + 1 # loopback0 is allocated directly
-                loopback.index = index
 
     @property
     def timestamp(self):

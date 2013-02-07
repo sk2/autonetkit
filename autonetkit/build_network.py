@@ -125,6 +125,9 @@ def build(input_graph_string, timestamp):
         build_isis(anm)
     build_bgp(anm)
 
+    #TODO: need to allocate loopback indexes to remaining loopbacks
+    #TODO: need to add loopback zero as loopback with index 0, and add anm selector for loopback0
+
     #TODO: provide an ANM wide function that allocates interfaces
     #TODO: work out why some interfaces in bgp graph in vis have node data....
 
@@ -213,8 +216,10 @@ def build_vrf(anm):
             #print interface, interface.type, interface.color
 
     for node in G_vrf:
-        for i in node.interfaces("is_loopback"):
-            pass
+        for index, i in enumerate(node.interfaces("is_loopback", "vrf_name")):
+            # map (0, 1, 2, 3, ...) -> (101, 102, 103, 104, ...)
+            i.index = 100 + index + 1
+            i.route_target = "default_rt"
 
 # Create route-targets
 #TODO: this should be per ASN

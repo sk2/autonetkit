@@ -64,6 +64,9 @@ class TreeNode(object):
     def is_loopback_group(self):
         return self.loopback_group
 
+    def is_interface(self):
+        return isinstance(self.host, autonetkit.anm.overlay_interface)
+
     def is_host(self):
         return self.host
 
@@ -374,7 +377,6 @@ class IpTree(object):
             #print "edge subnet", edge.subnet
             edge.host.ip_address = edge.subnet
 
-
 #TODO: do we need to store loopback groups into advertise addresses?
 
         #loopback_groups = [n for n in self if n.is_loopback_group()]
@@ -391,6 +393,10 @@ class IpTree(object):
         cds = [n for n in self if n.is_collision_domain()]
         for cd in cds:
             cd.host.subnet = cd.subnet
+
+        interfaces = [n for n in self if n.is_interface()]
+        for n in interfaces:
+            n.host.loopback = n.subnet
 
 def assign_asn_to_interasn_cds(G_ip):
     G_phy = G_ip.overlay("phy")
