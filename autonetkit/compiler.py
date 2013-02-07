@@ -246,6 +246,7 @@ class IosBaseCompiler(RouterCompiler):
         if node in self.anm['isis']:
             self.isis(node)
         node.label = self.anm['phy'].node(node).label
+        self.vrf(node)
 
         
     def interfaces(self, node):
@@ -296,6 +297,15 @@ class IosBaseCompiler(RouterCompiler):
 
     def ospf(self, node):
         super(IosBaseCompiler, self).ospf(node)
+        
+    def vrf(self, node):
+        vrf_node = self.anm['vrf'].node(node)
+        for loopback in vrf_node.interfaces("is_loopback", "vrf_name"):
+            if loopback:
+                print "vrf lo", loopback
+            else:
+                print "no vrf lo", loopback
+
 
     def isis(self, node):
         #TODO: this needs to go into IOS2 for neatness
