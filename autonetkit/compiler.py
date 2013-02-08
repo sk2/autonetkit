@@ -276,7 +276,7 @@ class IosBaseCompiler(RouterCompiler):
             ipv4_cidr = address_prefixlen_to_network(ipv4_address, ipv4_loopback_subnet.prefixlen)
         if node.ip.use_ipv6:
             ipv6_node = self.anm['ipv6'].node(node)
-            ipv6_address = address_prefixlen_to_network(ipv6_node.loopback, 126)
+            ipv6_address = address_prefixlen_to_network(ipv6_node.loopback, 128)
 
 #TODO: strip out returns from super
         super(IosBaseCompiler, self).interfaces(node)
