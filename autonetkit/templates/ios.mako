@@ -50,12 +50,20 @@ interface ${interface.id}
   ipv6 ospf ${interface.ospf['process_id']} area ${interface.ospf['area']}
   % endif
   % if interface.isis:
+  % if interface.isis_use_ivp4:
   ip router isis ${node.isis.process_id}
     % if interface.physical:
     isis circuit-type level-2-only
     isis network point-to-point
     isis metric ${interface.isis_metric}
     % endif
+  % endif
+  % if interface.isis_use_ivp6:
+  ipv6 router isis ${node.isis.process_id}
+    % if interface.physical:
+    isis ipv6 metric ${interface.isis_metric}
+    % endif
+  % endif
   % endif
   duplex auto
   speed auto
@@ -89,6 +97,12 @@ router ospfv3 ${node.ospf.process_id}
 router isis ${node.isis.process_id}
   net ${node.isis.net}
   metric-style wide
+% if node.isis.use_ipv6: 
+  !
+  address-family ipv6
+    multi-topology
+  exit address-family
+% endif  
 % endif  
 % if node.eigrp: 
 router eigrp ${node.eigrp.process_id}       
