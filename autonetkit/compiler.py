@@ -292,6 +292,8 @@ class IosBaseCompiler(RouterCompiler):
             ospf_link = G_ospf.edge(interface._edge_id) # find link in OSPF with this ID
             if ospf_link:
                 interface['ospf_cost'] = ospf_link.cost
+                interface['ospf_use_ivp4'] = node.ospf.use_ipv4
+                interface['ospf_use_ivp6'] = node.ospf.use_ipv6
             isis_link = G_isis.edge(interface._edge_id) # find link in OSPF with this ID
             if isis_link: # only configure if has ospf interface
                 interface['isis'] = True
@@ -318,6 +320,15 @@ class IosBaseCompiler(RouterCompiler):
 
     def ospf(self, node):
         super(IosBaseCompiler, self).ospf(node)
+        for interface in node.interfaces:
+            # get ospf info for this id
+            ospf_link = self.anm['ospf'].edge(interface._edge_id) # find link in OSPF with this ID
+            if ospf_link:
+                area = str(ospf_link.area)
+                interface['ospf'] = {
+                        'area': area,
+                        'process_id': node.ospf.process_id, # from super ospf config
+                        }
         
     def vrf(self, node):
         vrf_node = self.anm['vrf'].node(node)
@@ -396,16 +407,6 @@ class NxOsCompiler(IosBaseCompiler):
 
     def ospf(self, node):
         super(NxOsCompiler, self).ospf(node)
-        for interface in node.interfaces:
-            # get ospf info for this id
-            ospf_link = self.anm['ospf'].edge(interface._edge_id) # find link in OSPF with this ID
-            if ospf_link:
-                area = str(ospf_link.area)
-                interface['ospf'] = {
-                        'area': area,
-                        'process_id': node.ospf.process_id, # from super ospf config
-                        }
-
         #TODO: configure OSPF on loopback like example
 
 
