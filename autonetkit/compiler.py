@@ -262,12 +262,20 @@ class IosBaseCompiler(RouterCompiler):
 
     def compile(self, node):
         phy_node = self.anm['phy'].node(node)
-        node.ospf.use_ipv4 = phy_node.use_ipv4
-        node.ospf.use_ipv6 = phy_node.use_ipv6
+
+        if node in self.anm['ospf']:
+            node.ospf.use_ipv4 = phy_node.use_ipv4
+            node.ospf.use_ipv6 = phy_node.use_ipv6
+
+        if node in self.anm['isis']:
+            node.isis.use_ipv4 = phy_node.use_ipv4
+            node.isis.use_ipv6 = phy_node.use_ipv6
 
         super(IosBaseCompiler, self).compile(node)
         if node in self.anm['isis']:
             self.isis(node)
+
+
         node.label = self.anm['phy'].node(node).label
         self.vrf(node)
         
@@ -300,6 +308,8 @@ class IosBaseCompiler(RouterCompiler):
                 isis_node = G_isis.node(node)
                 interface['isis_process_id'] = isis_node.process_id  #TODO: should this be from the interface?
                 interface['isis_metric'] = isis_link.metric  #TODO: should this be from the interface?
+                interface['isis_use_ivp4'] = node.isis.use_ipv4
+                interface['isis_use_ivp6'] = node.isis.use_ipv6
 
 #TODO: update this to new format
         is_isis_node = bool(G_isis.node(node)) # if node is in ISIS graph
