@@ -40,9 +40,14 @@ interface ${interface.id}
   % if interface.ipv6_address:
   ipv6 address ${interface.ipv6_address} 
   %endif
-  % if interface.ospf_cost:
+  % if interface.ospf_use_ivp4:
   ip ospf network point-to-point
   ip ospf cost ${interface.ospf_cost}
+  % endif
+  % if interface.ospf_use_ivp6:
+  ipv6 ospf network point-to-point
+  ipv6 ospf cost ${interface.ospf_cost}
+  ipv6 ospf ${interface.ospf['process_id']} area ${interface.ospf['area']}
   % endif
   % if interface.isis:
   ip router isis ${node.isis.process_id}
@@ -60,7 +65,8 @@ interface ${interface.id}
 % endfor 
 !               
 ## OSPF
-% if node.ospf: 
+% if node.ospf:
+% if node.ospf.use_ipv4: 
 router ospf ${node.ospf.process_id} 
 # Loopback
   network ${node.loopback} 0.0.0.0 area ${node.ospf.loopback_area}
@@ -69,6 +75,14 @@ router ospf ${node.ospf.process_id}
 % for ospf_link in node.ospf.ospf_links:
   network ${ospf_link.network.network} ${ospf_link.network.hostmask} area ${ospf_link.area} 
 % endfor    
+% endif           
+% if node.ospf.use_ipv6: 
+router ospfv3 ${node.ospf.process_id}
+  router-id ${node.loopback}
+  !
+  address-family ipv6 unicast
+  exist address-family
+% endif  
 % endif           
 ## ISIS
 % if node.isis: 
