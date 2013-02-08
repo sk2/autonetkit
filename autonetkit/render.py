@@ -112,6 +112,11 @@ def render_node(node):
                         log.warning( "Unable to render %s: %s " % (node, error))
                     except NameError, error:
                         log.warning( "Unable to render %s: %s. Check all variables used are defined" % (node, error))
+                    except TypeError, error:
+                        log.warning( "Unable to render %s: %s." % (node, error))
+                        from mako import exceptions
+                        log.warning(exceptions.text_error_template().render())
+                                            
 
             if node.render.to_memory:
 # Render directly to NIDB
@@ -258,5 +263,9 @@ def render_topology(topology):
             log.warning( "Unable to render %s: %s " % (topology, error))
         except NameError, error:
             log.warning( "Unable to render %s: %s. Check all variables used are defined" % (topology, error))
+        except TypeError, error:
+            log.warning( "Unable to render topology: %s." % (error))
+            from mako import exceptions
+            log.warning(exceptions.text_error_template().render())
 
 
