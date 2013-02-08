@@ -45,11 +45,11 @@ interface ${interface.id}
   ip ospf cost ${interface.ospf_cost}
   % endif
   % if interface.isis:
-  ip router isis
+  ip router isis ${node.isis.process_id}
     % if interface.physical:
-  isis circuit-type level-2-only
-  isis network point-to-point
-  isis metric ${interface.isis_metric}
+    isis circuit-type level-2-only
+    isis network point-to-point
+    isis metric ${interface.isis_metric}
     % endif
   % endif
   duplex auto
