@@ -193,7 +193,6 @@ def main():
                 rebuild = False
                 reload_build = False
                 if input_filemonitor.has_changed():
-                    print "input changed"
                     rebuild = True
                 if build_filemonitor.has_changed():
                     reload_build = True
