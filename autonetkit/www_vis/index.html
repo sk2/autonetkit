@@ -6,6 +6,8 @@
     <script type="text/javascript" src="underscore-min.js"></script>
     <script type="text/javascript" src="jquery.tipsy.js"></script>
     <script type="text/javascript" src="jquery.ba-bbq.min.js"></script>
+
+
     <link href="tipsy.css" rel="stylesheet" type="text/css" />
     <link href="font-awesome.min.css" rel="stylesheet" type="text/css" />
     <title>AutoNetkit</title>
@@ -37,12 +39,6 @@
         </button>
 
         |
-        <label for="enable_zoom">
-            Pan & Zoom
-        </label>
-        <input type="checkbox" id="enable_zoom" value="enable_zoom" />
-        |
-
         <label for="display_interfaces">
             <i class="icon-plus-sign-alt"></i>
         </label>
@@ -60,12 +56,32 @@
     <div class="node_filter" id="node_filter">
     </div>
 
+
     <div class="infobar"></div>
     <div class="visualisation""></div>
     <div class="size_box"><a href="javascript:setActiveStyleSheet('default');">Resize</a></div>
 
     <div>
       <script type="text/javascript">
+
+var current_translate = "0,0";
+
+ //$( "#slider-vertical" ).slider({
+      //orientation: "vertical",
+      //range: "min",
+      //min: -9,
+      //max: 9,
+      //value: 0,
+      //slide: function( event, ui ) {
+      //scale = ui.value;
+      //console.log(scale);
+      //console.log(scale, scale <0);
+      //if (scale >= 0)  scale = scale + 1;
+      //if (scale < 0)  scale = 1  + 1*(scale/10);
+      //console.log(scale);
+      //chart.attr("transform", "translate(" + current_translate + ") scale(" + scale + "," + scale + ")");
+      //}
+    //});
 
         function setActiveStyleSheet(title) {
           //From http://www.alistapart.com/articles/alternate/
@@ -136,13 +152,7 @@ var interface_label_select = d3.select("#interface_label_select")
     })
 
 
-var enable_zoom = false
 var display_interfaces = false
-
- d3.select("#enable_zoom")
-.on("change", function() {
-        enable_zoom = d3.select(this).property("checked");
-        })
 
 d3.select("#display_interfaces")
 .on("change", function() {
@@ -193,12 +203,13 @@ chart.append('svg:rect')
 .attr('width', chart_width)
 .attr('height', chart_height);
 
+
+
 function redraw() {
-  if (enable_zoom == true) {
+    //current_translate = d3.event.translate; // store to use when using slider
     chart.attr("transform",
-        "translate(" + d3.event.translate + ")"
-        + " scale(" + d3.event.scale + ")");
-  }
+                   "translate(" + d3.event.translate + ")"
+                   + " scale(" + d3.event.scale + ")");
 }
 
 function toggle_visibility(id) {

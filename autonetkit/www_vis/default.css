@@ -51,6 +51,14 @@ marker {
   background-color: white;
 }
 
+.slider-vertical {
+  border-radius: 5px;
+  float: right;
+  top: 100px;
+  right: 45px;
+  height: 200px;
+}
+
 .infobar ul{
   list-style-type:none;
   margin-left: 0;
