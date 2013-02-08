@@ -261,6 +261,10 @@ class IosBaseCompiler(RouterCompiler):
     lo_interface = "%s%s"  % (lo_interface_prefix, 0)
 
     def compile(self, node):
+        phy_node = self.anm['phy'].node(node)
+        node.ospf.use_ipv4 = phy_node.use_ipv4
+        node.ospf.use_ipv6 = phy_node.use_ipv6
+
         super(IosBaseCompiler, self).compile(node)
         if node in self.anm['isis']:
             self.isis(node)
