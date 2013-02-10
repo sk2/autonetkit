@@ -1,5 +1,0 @@
-Config
-****************
-
-.. automodule:: config
-   :members:
