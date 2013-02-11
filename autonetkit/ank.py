@@ -328,3 +328,16 @@ def groupby(attribute, nodes):
     keyfunc = lambda x: x.get(attribute)
     nodes = sorted(nodes, key = keyfunc)
     return itertools.groupby(nodes, key = keyfunc)
+
+def boundary_nodes(graph, nodes):
+    # TODO: move to utils
+    """ returns nodes at boundary of G based on edge_boundary from networkx """
+    graph = unwrap_graph(graph)
+    nodes = list(nodes)
+    nbunch = list(unwrap_nodes(nodes))
+    # find boundary
+    b_edges = nx.edge_boundary(graph, nbunch)  # boundary edges
+    internal_nodes = [s for (s, t) in b_edges]
+    assert(all(n in nbunch for n in internal_nodes))  # check internal
+
+    return wrap_nodes(graph, internal_nodes)
