@@ -1,8 +1,7 @@
-import ank
+import autonetkit.ank as ank
 import itertools
 import netaddr
 import os
-import pprint
 from collections import defaultdict
 import string
 from datetime import datetime
@@ -10,12 +9,7 @@ import autonetkit.log as log
 import autonetkit.plugins.naming as naming
 import autonetkit.config
 settings = autonetkit.config.settings
-from ank_utils import alphabetical_sort as alpha_sort
-
-#TODO: rename compiler to build
-
-#TODO: tidy up the dict to list, and sorting formats
-#TODO: don't pass lists/dictionaries around: set directly, and then sort in-place later if needed
+from autonetkit.ank_utils import alphabetical_sort as alpha_sort
 
 def address_prefixlen_to_network(address, prefixlen):
     """Workaround for creating an IPNetwork from an address and a prefixlen
@@ -24,6 +18,7 @@ def address_prefixlen_to_network(address, prefixlen):
     return netaddr.IPNetwork("%s/%s" % (address, prefixlen))
 
 def dot_to_underscore(instring):
+    """Replace dots with underscores"""
     return instring.replace(".", "_")
 
 class RouterCompiler(object):
@@ -69,11 +64,13 @@ class RouterCompiler(object):
                 ipv4_link = G_ipv4.edge(link)
                 ipv4_address = ipv4_link.ip_address
                 ipv4_subnet =  ipv4_link.dst.subnet # netmask comes from collision domain on the link
-                ipv4_cidr = address_prefixlen_to_network(ipv4_address, ipv4_subnet.prefixlen)
+                ipv4_cidr = address_prefixlen_to_network(ipv4_address, 
+                        ipv4_subnet.prefixlen)
             if node.ip.use_ipv6:
                 ipv6_link = G_ipv6.edge(link)
                 ipv6_subnet =  ipv6_link.dst.subnet # netmask comes from collision domain on the link
-                ipv6_address = address_prefixlen_to_network(ipv6_link.ip, ipv6_subnet.prefixlen)
+                ipv6_address = address_prefixlen_to_network(ipv6_link.ip,
+                        ipv6_subnet.prefixlen)
             
             node.interfaces.append(
                     _edge_id = link.edge_id, # used if need to append
@@ -90,9 +87,9 @@ class RouterCompiler(object):
             ip_interface = G_ipv4.node(node).interface(interface)
             vrf_interface = self.anm['vrf'].node(node).interface(interface)
             index = index + 1 # loopback0 (ie index 0) is reserved
-            id = "%s%s" % (self.lo_interface_prefix, index)
+            interface_id = "%s%s" % (self.lo_interface_prefix, index)
             node.interfaces.append(
-                    id = id,
+                    id = interface_id,
                     description = interface.description,
                     ipv4_address = ip_interface.loopback,
                     ipv4_subnet = node.loopback_subnet,
@@ -100,7 +97,6 @@ class RouterCompiler(object):
                     route_target = interface.route_target,
                     )
 
-        #TODO: work out why this doesn't sort loopbacks properly (because append loopback 0 last)
         node.interfaces.sort("id")
     
     def ospf(self, node):
@@ -200,14 +196,14 @@ class RouterCompiler(object):
                 format_session(session, use_ipv6 = True)
         node.bgp.ebgp_neighbors.sort("asn")
 
-
         return
 
 class QuaggaCompiler(RouterCompiler):
-    """Base Router compiler"""
+    """Base Quagga compiler"""
     lo_interface = "lo0:1"
 
     def interfaces(self, node):
+        """Quagga interface compiler"""
         ipv4_node = self.anm['ipv4'].node(node)
         phy_node = self.anm['phy'].node(node)
         G_ospf = self.anm['ospf']
@@ -229,6 +225,7 @@ class QuaggaCompiler(RouterCompiler):
                     )
 
     def ospf(self, node):
+        """Quagga ospf compiler"""
         super(QuaggaCompiler, self).ospf(node)
 
         # add eBGP link subnets
@@ -328,6 +325,16 @@ class IosBaseCompiler(RouterCompiler):
         node.bgp.lo_interface = self.lo_interface
         super(IosBaseCompiler, self).bgp(node)
 
+        if node.ip.use_ipv4:
+            ipv4_address = self.anm['ipv4'].node(node).loopback
+            ipv4_loopback_subnet = netaddr.IPNetwork("0.0.0.0/32")
+            ipv4_cidr = address_prefixlen_to_network(ipv4_address, ipv4_loopback_subnet.prefixlen)
+            node.bgp.ipv4_advertise_subnets = [ipv4_cidr]
+        if node.ip.use_ipv6:
+            ipv6_node = self.anm['ipv6'].node(node)
+            ipv6_address = address_prefixlen_to_network(ipv6_node.loopback, 128)
+            node.bgp.ipv6_advertise_subnets = [ipv6_address]
+
     def ospf(self, node):
         super(IosBaseCompiler, self).ospf(node)
         for interface in node.interfaces:
@@ -344,10 +351,12 @@ class IosBaseCompiler(RouterCompiler):
         vrf_node = self.anm['vrf'].node(node)
         for loopback in vrf_node.interfaces("is_loopback", "vrf_name"):
             continue
+            """
             if loopback: # ie if any data set
                 print "vrf lo", loopback
             else:
                 print "no vrf lo", loopback
+            """
 
     def isis(self, node):
         #TODO: this needs to go into IOS2 for neatness
@@ -464,7 +473,8 @@ class JunosphereCompiler(PlatformCompiler):
 
 class NetkitCompiler(PlatformCompiler):
     """Netkit Platform Compiler"""
-    def interface_ids(self):
+    @staticmethod
+    def interface_ids():
         for x in itertools.count(0):
             yield "eth%s" % x
 
@@ -570,28 +580,32 @@ class NetkitCompiler(PlatformCompiler):
         lab_topology.config_items.sort("device")
 
 class CiscoCompiler(PlatformCompiler):
+    """Platform compiler for Cisco"""
     to_memory = settings['Compiler']['Cisco']['to memory']
 
-    """Cisco Platform Compiler"""
     #def __init__(self, nidb, anm, host):
 #TODO: setup to remap allocate interface id function here
         #super(CiscoCompiler, self).__init__(nidb, anm, host)
 
-    def interface_ids_ios_by_slot(self):
+    @staticmethod
+    def interface_ids_ios_by_slot():
         id_pairs = ( (slot, 0) for slot in itertools.count(0)) 
         for (slot, port) in id_pairs:
             #yield "Ethernet%s/%s" % (slot, port)
             yield "GigabitEthernet%s/%s" % (slot, port)
 
-    def interface_ids_ios(self):
+    @staticmethod
+    def interface_ids_ios():
         for x in itertools.count(0):
             yield "GigabitEthernet0/%s" % x
 
-    def interface_ids_nxos(self):
+    @staticmethod
+    def interface_ids_nxos():
         for x in itertools.count(0):
             yield "Ethernet2/%s" % x
             
-    def interface_ids_ios2_slot_port(self):
+    @staticmethod
+    def interface_ids_ios2_slot_port():
         """Allocate with slot and port iterating
         TODO: make this iterator take the base string, and the number per slot/port (ie argument for range)
         """
@@ -599,19 +613,21 @@ class CiscoCompiler(PlatformCompiler):
         for (slot, port) in id_pairs:
             yield "GigabitEthernet%s/%s/%s/%s" % (0, 0, slot, port)
 
-    def interface_ids_ios2(self):
+    @staticmethod
+    def interface_ids_ios2():
         for x in itertools.count(0):
             yield "GigabitEthernet0/0/0/%s" % x
 
-    def compile(self):
-        def edge_id_numeric(edge):
-            """ Used for sorting
-            assumes format xx_src_dst -> return the xx component"""
-            try:
-                return int(edge.edge_id.split("_")[0])
-            except ValueError:
-                return edge.edge_id # not numeric
+    @staticmethod
+    def edge_id_numeric(edge):
+        """ Used for sorting
+        assumes format xx_src_dst -> return the xx component"""
+        try:
+            return int(edge.edge_id.split("_")[0])
+        except ValueError:
+            return edge.edge_id # not numeric
 
+    def compile(self):
         G_in = self.anm['input']
         G_in_directed = self.anm['input_directed']
         specified_int_names = G_in.data.specified_int_names
@@ -638,7 +654,7 @@ class CiscoCompiler(PlatformCompiler):
             # Assign interfaces
             int_ids = self.interface_ids_ios()
             int_ids.next() # 0/0 is used for management ethernet
-            for edge in sorted(self.nidb.edges(nidb_node), key = edge_id_numeric):
+            for edge in sorted(self.nidb.edges(nidb_node), key = self.edge_id_numeric):
                 if specified_int_names:
                     directed_edge = G_in_directed.edge(edge)
                     edge.id = directed_edge.name
@@ -661,7 +677,7 @@ class CiscoCompiler(PlatformCompiler):
 
             # Assign interfaces
             int_ids = self.interface_ids_ios2()
-            for edge in sorted(self.nidb.edges(nidb_node), key = edge_id_numeric):
+            for edge in sorted(self.nidb.edges(nidb_node), key = self.edge_id_numeric):
                 if specified_int_names:
                     directed_edge = G_in_directed.edge(edge)
                     edge.id = directed_edge.name
@@ -685,7 +701,7 @@ class CiscoCompiler(PlatformCompiler):
 
             # Assign interfaces
             int_ids = self.interface_ids_nxos()
-            for edge in sorted(self.nidb.edges(nidb_node), key = edge_id_numeric):
+            for edge in sorted(self.nidb.edges(nidb_node), key = self.edge_id_numeric):
                 if specified_int_names:
                     directed_edge = G_in_directed.edge(edge)
                     edge.id = directed_edge.name
@@ -708,11 +724,13 @@ class DynagenCompiler(PlatformCompiler):
     """Dynagen Platform Compiler"""
     config_dir = "configs"
 
-    def console_ports(self):
+    @staticmethod
+    def console_ports():
         for x in itertools.count(2001):
             yield x
 
-    def interface_ids(self):
+    @staticmethod
+    def interface_ids():
         """Allocate with slot and port iterating """
         id_pairs = ( (slot+1, port) for (slot, port) in itertools.product(xrange(4), xrange(2))) 
         for (slot, port) in id_pairs:

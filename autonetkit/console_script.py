@@ -18,7 +18,7 @@ import autonetkit.config as config
 #TODO: make if measure set, then not compile - or warn if both set, as don't want to regen topology when measuring
 
 try:
-    ank_version = pkg_resources.get_distribution("autonetkit-v3-dev").version
+    ank_version = pkg_resources.get_distribution("autonetkit").version
 except pkg_resources.DistributionNotFound:
     ank_version = "dev"
 

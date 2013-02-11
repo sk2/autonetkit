@@ -92,7 +92,7 @@ def build(input_graph_string, timestamp):
 
     address_family = G_in.data.address_family or "v4"
     allocate_ipv4_infrastructure = False
-    if address_family in set(["v4", "dual_stack"]):
+    if address_family in ("v4", "dual_stack"):
         allocate_ipv4_infrastructure = True
     build_ipv4(anm, infrastructure = allocate_ipv4_infrastructure)
 
@@ -100,7 +100,7 @@ def build(input_graph_string, timestamp):
 #TODO: need to be clear about the order of building overlays (for instance is-is uses ip allocations)... perhaps should create a NET addressing overlay for addressing?
 
     allocate_ipv6 = False
-    if address_family in set(["v6", "dual_stack"]):
+    if address_family in ("v6", "dual_stack"):
         allocate_ipv6 = True
         build_ipv4(anm, infrastructure = True)
 
@@ -165,7 +165,6 @@ def build_vrf(anm):
         if not node.vrf:
             node.vrf = "default_vrf"
 
-# set default
     non_ce_nodes = [n for n in G_vrf if n.vrf_role != "CE"]
     for n in non_ce_nodes:
         phy_neighbors = G_phy.node(n).neighbors() # neighbors from physical graph for connectivity
