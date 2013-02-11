@@ -231,6 +231,9 @@ class IpTree(object):
             subgraphs.append(subgraph)
 
             subgraph.graph['root'] = root_node
+#FOrce to be a /16 block
+#TODO: document this
+            subgraph.node[root_node]['prefixlen']  = 16
             subgraph.node[root_node]['group_attr'] = attr_value
 
         global_graph = nx.DiGraph()
@@ -413,7 +416,7 @@ def assign_asn_to_interasn_cds(G_ip):
 def allocate_ips(G_ip, infrastructure = True):
     """Can disable infrastructure, eg for ipv6, still want to alloc ipv4 loopbacks for router ids"""
     log.info("Allocating Primary Host loopback IPs")
-    ip_tree = IpTree("10.0.0.0")
+    ip_tree = IpTree("192.168.1.0")
     ip_tree.add_nodes(G_ip.nodes("is_l3device"))
     ip_tree.build()
     loopback_tree = ip_tree.json()
@@ -442,7 +445,7 @@ def allocate_ips(G_ip, infrastructure = True):
     log.info("Allocating Collision Domain IPs")
 
     if infrastructure:
-        ip_tree = IpTree("192.168.1.0")
+        ip_tree = IpTree("10.0.0.0")
         assign_asn_to_interasn_cds(G_ip)
         ip_tree.add_nodes(G_ip.nodes("collision_domain"))
         ip_tree.build()
