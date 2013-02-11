@@ -1,8 +1,0 @@
-*********
-Netkit
-*********
-
-.. automodule:: netkit  
-   :members:
-
-
