@@ -147,7 +147,7 @@ def build_vrf(anm):
 
 # and map to create extra loopbacks
     for node in g_vrf.nodes(vrf_role="PE"):
-        node_vrf_names = set(n.vrf for n in node.neighbors(vrf_role="CE"))
+        node_vrf_names = {n.vrf for n in node.neighbors(vrf_role="CE")}
         for vrf_name in node_vrf_names:
             node.add_loopback(vrf_name=vrf_name,
                               description="loopback for vrf %s" % vrf_name)
@@ -278,7 +278,7 @@ def build_bgp(anm):
         # group by nodes in phy graph
         routers = list(g_bgp.node(n) for n in devices if n.is_router)
         # list of nodes from bgp graph
-        ibgp_levels = set(int(r.ibgp_level) for r in routers)
+        ibgp_levels = {int(r.ibgp_level) for r in routers}
         max_level = max(ibgp_levels)
         # all possible edge src/dst pairs
         all_pairs = [(s, t) for s in routers for t in routers if s != t]
@@ -491,7 +491,7 @@ def build_ospf(anm):
 
     area_zero_ip = netaddr.IPAddress("0.0.0.0")
     area_zero_int = 0
-    area_zero_ids = set([area_zero_ip, area_zero_int])
+    area_zero_ids = {area_zero_ip, area_zero_int}
     default_area = area_zero_int
     if any(router.area == "0.0.0.0" for router in g_ospf):
         # string comparison as hasn't yet been cast to IPAddress
@@ -531,7 +531,7 @@ def build_ospf(anm):
                     edge.area = router.area
 
     for router in g_ospf:
-        areas = set(edge.area for edge in router.edges())
+        areas = {edge.area for edge in router.edges()}
 
         router.areas = list(
             areas)  # store all the edges a router participates in
