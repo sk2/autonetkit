@@ -44,7 +44,7 @@ class FileMonitor(object):
             return True
         return False
 
-def manage_network(input_graph_string, timestamp, build_options, reload_build=False):
+def manage_network(input_graph_string, timestamp, build_options, reload_build=False, filename=""):
     #import build_network_simple as build_network
     import build_network
     if reload_build:
@@ -55,9 +55,9 @@ def manage_network(input_graph_string, timestamp, build_options, reload_build=Fa
     rabbitmq_server = settings['Rabbitmq']['server']
     messaging = ank_messaging.AnkMessaging(rabbitmq_server)
 
-
     if build_options['build']:
         anm = build_network.build(input_graph_string, timestamp)
+        anm.filename = filename
         if not build_options['compile']:
             # publish without nidb
             import autonetkit.ank_json
@@ -159,11 +159,12 @@ def main():
             'archive': options.archive or settings['General']['archive'],
             }
 
-
     if options.webserver:
         log.info("Webserver not yet supported, please run as seperate module")
 
+    filename = ""
     if options.file:
+        filename = options.file.split("/")[-1] # only keep the file name
         with open(options.file, "r") as fh:
             input_string = fh.read()
         timestamp =  os.stat(options.file).st_mtime
@@ -176,7 +177,7 @@ def main():
         log.info("No input file specified. Exiting")
         raise SystemExit
 
-    manage_network(input_string, timestamp, build_options = build_options)
+    manage_network(input_string, timestamp, build_options = build_options, filename = filename)
 
 #TODO: work out why build_options is being clobbered for monitor mode
     build_options['monitor'] = options.monitor or settings['General']['monitor']

@@ -6,6 +6,7 @@ var jsondata;
 var socket_url = "ws://" + location.host + "/ws";
 var ws = new WebSocket(socket_url);
 ws.onopen = function() {
+    ws.send("network_name");
     ws.send("overlay_list");
     ws.send("overlay_id=" + overlay_id);
     ws.send("ip_allocations");
@@ -14,6 +15,8 @@ ws.onopen = function() {
 ws.onclose = function () {
     $("#websocket_icon").html(' <font color ="red"> <i class="icon-remove-sign " title="WebSocket Disconnected. Reload page to reconnect."></i></font>');
 };
+
+var network_name = "";
 
 var icon_width = 45;
 var icon_height = 45;
@@ -80,6 +83,9 @@ ws.onmessage = function (evt) {
             redraw();
             redraw_ip_allocations();
         }
+    } else if("network_name" in data) {
+        network_name = data['network_name'];
+        update_title();
     } else {
         //TODO: work out why reaching here if passing the "graph in data" check above
     }
@@ -348,7 +354,11 @@ var edge_id = function(d) {
 
 
 var update_title = function() {
-    document.title = "AutoNetkit - " + overlay_id + " r" + revision_id;
+    if (network_name != "")
+        document.title = "AutoNetkit - " + network_name + " - "
+                            + overlay_id + " r" + revision_id;
+    else
+        document.title = "AutoNetkit - " + overlay_id + " r" + revision_id;
 }
 
 var clear_graph_history = function() {

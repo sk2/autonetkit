@@ -93,6 +93,7 @@ def ank_json_loads(data):
 def jsonify_anm(anm):
     """ Returns a dictionary of json-ified overlay graphs"""
     anm_json = {}
+    anm_json['filename'] = anm.filename
     for overlay_id in anm.overlays():
         overlay_graph = anm[overlay_id]._graph.copy()
         for n in overlay_graph:
@@ -107,6 +108,7 @@ def jsonify_anm(anm):
 def jsonify_anm_with_graphics(anm):
     """ Returns a dictionary of json-ified overlay graphs, with graphics data appended to each overlay"""
     anm_json = {}
+    anm_json['filename'] = anm.filename
     graphics_graph = anm["graphics"]._graph.copy()
     for overlay_id in anm.overlays():
         overlay_graph = anm[overlay_id]._graph.copy()

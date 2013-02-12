@@ -905,6 +905,7 @@ class AbstractNetworkModel(object):
         self.label_attrs = ['label']
         self._build_node_label()
         self.timestamp =  time.strftime("%Y%m%d_%H%M%S", time.localtime())
+        self.filename = ""
         
     def __getnewargs__(self):
         return ()
@@ -961,9 +962,11 @@ class AbstractNetworkModel(object):
         import ank_json
         log.debug("Restoring %s" % pickle_file)
         with gzip.open(pickle_file, "r") as fh:
-            data = json.load(fh) 
+            data = json.load(fh)
+            self.filename = data['filename'] 
             for overlay_id, graph_data in data.items():
-                self._overlays[overlay_id] = ank_json.ank_json_loads(graph_data)
+                if not overlay_id == "filename":
+                    self._overlays[overlay_id] = ank_json.ank_json_loads(graph_data)
 
     @property
     def _phy(self):
