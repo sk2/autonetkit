@@ -200,12 +200,18 @@ class MyWebSocketHandler(websocket.WebSocketHandler):
         elif "ip_allocations" in message:
             body = json.dumps({'ip_allocations': self.ank_accessor.ip_allocations()})
             self.write_message(body)
+        elif "network_name" in message:
+            body = json.dumps({'network_name': self.ank_accessor.filename()})
+            self.write_message(body)
 
     def update_overlay(self):
         body = self.ank_accessor[self.overlay_id]
         self.write_message(body)
 # and update overlay dropdown
         body = json.dumps({'overlay_list': self.ank_accessor.overlays()})
+        self.write_message(body)
+        # If the overlay update was triggered by a file change, keeps title up to date
+        body = json.dumps({'network_name': self.ank_accessor.filename()})
         self.write_message(body)
 #TODO: tidy up the passing of IP allocations
 
@@ -374,6 +380,12 @@ class AnkAccessor():
 
     def ip_allocations(self):
         return self.ip_allocation
+
+    def filename(self):
+        if "filename" in self.anm:
+            return self.anm["filename"]
+        else:
+            return ""
  
 def main():
     ank_accessor = AnkAccessor()
