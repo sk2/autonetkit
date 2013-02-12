@@ -289,9 +289,10 @@ def build_bgp(anm):
             up_links, down_links, over_links = build_two_tier_ibgp(routers)
 
         elif max_level == 1:
-            l1_peer_links = [(s, t) for (s, t) in all_pairs
+            up_links = []
+            down_links = []
+            over_links = [(s, t) for (s, t) in all_pairs
                              if s.ibgp_l3_cluster == t.ibgp_l3_cluster]
-            g_bgp.add_edges_from(l1_peer_links, type='ibgp', direction='over')
 
         g_bgp.add_edges_from(up_links, type='ibgp', direction='up')
         g_bgp.add_edges_from(down_links, type='ibgp', direction='down')
