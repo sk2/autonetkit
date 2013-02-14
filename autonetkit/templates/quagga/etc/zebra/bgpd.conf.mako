@@ -17,6 +17,7 @@ banner motd file /etc/quagga/motd.txt
   ! ibgp clients
 % endif    
   ! ${client.neighbor}
+  neighbor ${client.loopback} remote-as ${node.asn}
   neighbor ${client.loopback} update-source ${node.loopback} 
   neighbor ${client.loopback} route-reflector-client                                                   
   neighbor ${client.loopback} send-community      
