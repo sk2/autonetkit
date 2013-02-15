@@ -413,7 +413,6 @@ var groupPath = function(d) {
         lower_x = lower_node.x;
         lower_y = lower_node.y;
         offset = 0;
-        //TODO: tidy offsets
         retval =  "M" ;
         retval += (upper_x - offset  + icon_offset + x_offset) + "," + (upper_y - offset + icon_offset + y_offset) + "L";
         retval += (upper_x + offset + icon_offset + x_offset) + "," + (upper_y - offset + icon_offset + y_offset) + "L";
