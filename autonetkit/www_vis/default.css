@@ -19,6 +19,15 @@ marker {
   fill: rgb(6,120,155);
 }
 
+.node_filter {
+  position:absolute; 
+  top: 45px;
+  left: 0.5%;
+  padding: 5px;
+  border: 1px solid #333;
+  background-color: #eee;
+}
+
 .interface_icon {
 }
 
@@ -42,6 +51,14 @@ marker {
   background-color: white;
 }
 
+.slider-vertical {
+  border-radius: 5px;
+  float: right;
+  top: 100px;
+  right: 45px;
+  height: 200px;
+}
+
 .infobar ul{
   list-style-type:none;
   margin-left: 0;
@@ -55,6 +72,12 @@ marker {
   height: 30px;
   width: 99%;
   border-bottom: 1px solid #333;
+  z-index: 5;
+}
+
+.node_filter {
+  display: none;
+  border-radius: 5px;
 }
 
 .visualisation {
@@ -62,7 +85,7 @@ marker {
   top: 45px;
   width: 99%;
   height: 90%;
-  background-color: rgb(240, 239, 255);
+  z-index: -1;
 }
 
 .chart_rect {

@@ -114,6 +114,13 @@ class overlay_data_list_of_dicts(object):
         """Used to feed changes from overlay_data_dict back"""
         self.parent[self.key][index][key] = value
 
+
+class overlay_interface(object):
+    def __init__(self, nidb, node_id, interface_id):
+        object.__setattr__(self, 'nidb', nidb)
+        object.__setattr__(self, 'node_id', node_id)
+        object.__setattr__(self, 'interface_id', interface_id)
+
 class overlay_edge_accessor(object):
 #TODO: do we even need this?
     """API to access overlay nodes in ANM"""
@@ -696,6 +703,9 @@ class NIDB_base(object):
         except AttributeError:
             pass # already a list
 
+        nbunch = list(nbunch)
+        nbunch_in = nbunch
+
         if len(retain):
             add_nodes = []
             for n in nbunch:
@@ -703,13 +713,19 @@ class NIDB_base(object):
                 add_nodes.append( (n.node_id, data) )
             nbunch = add_nodes
         else:
-            nbunch = (n.node_id for n in nbunch) # only store the id in overlay
+            log.warn("Cannot add node ids directly to NIDB: must add overlay nodes")
         self._graph.add_nodes_from(nbunch, **kwargs)
+
+        for n in nbunch_in:
+            interfaces = dict((interface.id, {"type": interface.type, "description": interface.description})
+                    for interface in n.interfaces())
+            self._graph.node[n.node_id]['_interfaces'] = interfaces
 
     def add_edge(self, src, dst, retain=[], **kwargs):
         self.add_edges_from([(src, dst)], retain, **kwargs)
 
     def add_edges_from(self, ebunch, retain=[], **kwargs):
+        #TODO: need to retain interface references
         try:
             retain.lower()
             retain = [retain] # was a string, put into list

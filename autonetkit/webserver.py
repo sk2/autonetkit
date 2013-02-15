@@ -14,6 +14,7 @@ import sys
 import autonetkit.config as ank_config
 import logging
 import pkg_resources
+import socket
 www_dir = pkg_resources.resource_filename(__name__, "www_vis")
 
 class EchoServer(TCPServer):
@@ -427,7 +428,13 @@ def main():
         port = sys.argv[1]
     except IndexError:
         port = 8000
-    application.listen(port)
+    try:
+        application.listen(port)
+    except socket.error, e:
+        if e.errno is 48: # socket in use
+            logging.warning("Unable to start webserver: socket in use for port %s" % port)
+            raise SystemExit
+
 
     print "Visualisation server started"
     io_loop.start()

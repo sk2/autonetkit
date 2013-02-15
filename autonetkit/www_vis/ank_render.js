@@ -45,7 +45,8 @@ ws.onmessage = function (evt) {
             revision_id = graph_history.length - 1;
             propagate_revision_dropdown(graph_history); //TODO: update this with revision from webserver
             ip_allocations = [];
-            redraw_ip_allocations();
+            filtered_nodes= []; //reset filtering
+            redraw_ip_allocations(); 
             redraw();
         }
     }
@@ -411,8 +412,7 @@ var groupPath = function(d) {
         upper_y = upper_node.y;
         lower_x = lower_node.x;
         lower_y = lower_node.y;
-        offset = 20;
-        //TODO: tidy offsets
+        offset = 0;
         retval =  "M" ;
         retval += (upper_x - offset  + icon_offset + x_offset) + "," + (upper_y - offset + icon_offset + y_offset) + "L";
         retval += (upper_x + offset + icon_offset + x_offset) + "," + (upper_y - offset + icon_offset + y_offset) + "L";
@@ -818,6 +818,62 @@ var zoom_fit = function() {
     }
 }
 
+var filtered_nodes = [];
+
+function numeric_strings_to_float(array){
+    array = _.map(array, function(x) {    
+        if ($.isNumeric(x.value)) x.value = parseFloat(x.value); //float if numeric
+        return x;
+    });
+    return array;
+}
+
+function serialized_array_to_grouped_list(array) {
+    array = _.groupBy(array, function(x) { return x.name});
+    //extract out grouped items to format: [['asn', [1, 2, 3,]]], etc
+    array = _.map(array, function(group_items, key, l) {
+        return [key, _.map(group_items, function(item){ return item.value})];
+    });
+    return array;
+}
+
+function applyNodeFilter() {
+    test = $("#nodeFilterForm").serializeArray(); //obtain form values
+
+    //convert numeric strings to floats for eg asn comparisons
+    test = numeric_strings_to_float(test);
+    test = serialized_array_to_grouped_list(test);
+
+    f_nodes = nodes; //list of nodes to iteratively trim
+    test.forEach(function(x) {
+        attribute = x[0];
+        values = x[1];
+        f_nodes = _.filter(f_nodes, function(node) {
+            return _.contains(values, node[attribute]); //keep node if attribute in values list
+        });
+    });
+
+    filtered_nodes = f_nodes; //set the global
+    redraw();
+}
+
+var icon_opacity = function(x) {
+    if (filtered_nodes.length == 0) return 1; //no filtered, so display all at full opacity
+    if (_.contains(filtered_nodes, x)) return 1; //some are filtered, full opacity for these
+    return 0.2; //drop opacity for non filtered
+};
+
+var line_opacity = function(x) {
+    if (filtered_nodes.length == 0) return 1; //no filtered, so display all at full opacity
+
+    source = nodes[x.source];
+    target = nodes[x.target];
+
+    if (_.contains(filtered_nodes, source) && _.contains(filtered_nodes, target)) return 1; //some are filtered, full opacity for these
+    return 0.2; //drop opacity for non filtered
+};
+
+
 // Store the attributes used for nodes and edges, to allow user to select
 var node_attributes = [];
 var edge_attributes = [];
@@ -826,12 +882,10 @@ function redraw() {
     //TODO: tidy this up, not all functions need to be in here, move out those that do, and only pass required params. also avoid repeated calculations.
     
     nodes = jsondata.nodes;
-
         
     node_attributes = []; //reset
     nodes.forEach(function(node) {
         nodes_by_id[node.id] = node;
-
         node_attributes.push.apply(node_attributes, _.keys(node));
     });
 
@@ -842,6 +896,53 @@ function redraw() {
     node_attributes.sort();
     node_attributes = _.uniq(node_attributes);
     propagate_node_label_select(node_attributes);
+
+    //TODO: combine with node attributes to just take the keys from the groupby for efficiency
+    node_attribute_unique_values = [];
+    node_attributes.forEach(function(attribute) {
+        values = _.uniq(_.pluck(nodes, attribute));
+        node_attribute_unique_values.push([attribute, values]);
+    });
+
+    // apply these to form
+    skip_attributes = Array("_interfaces", "None", "id", "label", "x", "y");
+    filtered_attributes = _.reject(node_attribute_unique_values, function(x){
+        if (x[1].length == 1 && x[1][0] == null) return true; // don't display attributes that are only null
+        if (x[1].length > 10) return true; // don't display attributes for long lists
+        return _.contains(skip_attributes, x[0]); //reject attributes in skip_attributes
+    });
+
+    var form = '<b>' + "<i class='icon-filter '></i> " + 'Filter:</b><br>';
+    form += '<form action="javascript:applyNodeFilter()" id="nodeFilterForm" name="nodeFilterForm">';
+    form += "<table>";
+    previous_form_values = $("#nodeFilterForm").serializeArray(); 
+    previous_form_values = numeric_strings_to_float(previous_form_values);
+    previous_form_values = serialized_array_to_grouped_list(previous_form_values);
+    previous_form_values = _.object(previous_form_values);
+
+    filtered_attributes.forEach(function(unique_attribute) {
+        var key = unique_attribute[0];
+        var values = unique_attribute[1];
+        values = values.sort();
+        form += "<tr>";
+        form += "<td><b>" + key + "</b></td><td>";
+        values.forEach(function(val) {
+            form += '<input type=checkbox name=' + key + ' value=' + val ;
+            if (key in previous_form_values && _.contains(previous_form_values[key], val)) {
+                form += " checked ";
+            }
+            form += '>' + val;
+        });
+        form += "</td></tr>";
+        //form += "<br>";
+
+    });
+    //form += '<button onclick="javascript:applyNodeFilter();">Apply</button>';
+    form += "</table>";
+    form += '<input type="submit" name="submit" class="button" id="submit_btn" value="Apply" />  ';
+    form += '</form>';
+
+    $(".node_filter").html(form);
 
     edge_attributes = []; //reset
     jsondata.links.forEach(function(link) {
@@ -934,6 +1035,7 @@ function redraw() {
         //line.enter().append("line")
         line.enter().append("svg:path")
         .attr("class", "link_edge")
+        .style("opacity", line_opacity)
         .attr("id", 
                 function(d) { 
                     return "path"+d.source+"_"+d.target; 
@@ -969,6 +1071,7 @@ function redraw() {
     line.transition()
         .duration(500)
         .attr("d", graph_edge)
+        .style("opacity", line_opacity)
 
         line.exit().transition()
         .duration(1000)
@@ -1197,6 +1300,7 @@ function redraw() {
         .attr("class", "device_icon")
         .attr("x", function(d) { return d.x + x_offset; })
         .attr("y", function(d) { return d.y + y_offset; })
+        .style("opacity", icon_opacity)
         .attr("width", icon_width)
         .attr("height", icon_height)
         .on("mouseover", function(d){
@@ -1214,6 +1318,7 @@ function redraw() {
         .attr("height", icon_height)
         .transition()
         .attr("xlink:href", icon)
+        .style("opacity", icon_opacity)
         .attr("x", function(d) { return d.x + x_offset; })
         .attr("y", function(d) { return d.y + y_offset; })
         .duration(500)
@@ -1242,6 +1347,7 @@ function redraw() {
         .attr("class", "device_label")
         .attr("text-anchor", "middle") 
         .attr("font-family", "helvetica") 
+        .style("opacity", icon_opacity)
         .attr("font-size", "small") 
 
         //TODO: use a general accessor for x/y of nodes
@@ -1253,6 +1359,7 @@ function redraw() {
     device_labels.transition()
         .attr("x", function(d) { return d.x + x_offset; })
         .attr("y", function(d) { return d.y + y_offset + 3; })
+        .style("opacity", icon_opacity)
         .duration(500)
 
         device_labels.exit().transition()
