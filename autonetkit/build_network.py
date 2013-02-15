@@ -163,15 +163,12 @@ def build_vrf(anm):
     g_vrf.add_nodes_from(g_in.nodes("is_router"), retain=["vrf_role", "vrf"])
 
     allocate_vrf_roles(g_vrf)
-    add_vrf_loopbacks(g_vrf)
 
     pe_to_ce_edges, ce_to_pe_edges = vrf_edges(g_vrf)
     g_vrf.add_edges_from(pe_to_ce_edges, direction="u")
     g_vrf.add_edges_from(ce_to_pe_edges, direction="d")
 
-# and map to create extra loopbacks
-
-
+    add_vrf_loopbacks(g_vrf)
     # allocate route-targets per AS
     # This could later look at connected components for each ASN
     route_targets = {}
