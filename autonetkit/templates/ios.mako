@@ -35,22 +35,35 @@ line con 0
 interface ${interface.id}
   description ${interface.description}
   % if node.ip.use_ipv4:
-  ipv4 address ${interface.ipv4_address} ${interface.ipv4_subnet.netmask}   
+  ip address ${interface.ipv4_address} ${interface.ipv4_subnet.netmask}   
   %endif
   % if interface.ipv6_address:
   ipv6 address ${interface.ipv6_address} 
   %endif
-  % if interface.ospf_cost:
+  % if interface.ospf_use_ivp4:
   ip ospf network point-to-point
   ip ospf cost ${interface.ospf_cost}
   % endif
+  % if interface.ospf_use_ivp6:
+  ipv6 ospf network point-to-point
+  ipv6 ospf cost ${interface.ospf_cost}
+  ipv6 ospf ${interface.ospf['process_id']} area ${interface.ospf['area']}
+  % endif
   % if interface.isis:
-  ip router isis
+  % if interface.isis_use_ivp4:
+  ip router isis ${node.isis.process_id}
     % if interface.physical:
-  isis circuit-type level-2-only
-  isis network point-to-point
-  isis metric ${interface.isis_metric}
+    isis circuit-type level-2-only
+    isis network point-to-point
+    isis metric ${interface.isis_metric}
     % endif
+  % endif
+  % if interface.isis_use_ivp6:
+  ipv6 router isis ${node.isis.process_id}
+    % if interface.physical:
+    isis ipv6 metric ${interface.isis_metric}
+    % endif
+  % endif
   % endif
   duplex auto
   speed auto
@@ -60,7 +73,8 @@ interface ${interface.id}
 % endfor 
 !               
 ## OSPF
-% if node.ospf: 
+% if node.ospf:
+% if node.ospf.use_ipv4: 
 router ospf ${node.ospf.process_id} 
 # Loopback
   network ${node.loopback} 0.0.0.0 area ${node.ospf.loopback_area}
@@ -70,11 +84,25 @@ router ospf ${node.ospf.process_id}
   network ${ospf_link.network.network} ${ospf_link.network.hostmask} area ${ospf_link.area} 
 % endfor    
 % endif           
+% if node.ospf.use_ipv6: 
+router ospfv3 ${node.ospf.process_id}
+  router-id ${node.loopback}
+  !
+  address-family ipv6 unicast
+  exist address-family
+% endif  
+% endif           
 ## ISIS
 % if node.isis: 
 router isis ${node.isis.process_id}
   net ${node.isis.net}
   metric-style wide
+% if node.isis.use_ipv6: 
+  !
+  address-family ipv6
+    multi-topology
+  exit address-family
+% endif  
 % endif  
 % if node.eigrp: 
 router eigrp ${node.eigrp.process_id}       

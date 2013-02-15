@@ -101,6 +101,18 @@ class overlay_interface(object):
         object.__setattr__(self, 'node_id', node_id)
         object.__setattr__(self, 'interface_id', interface_id)
 
+    def __repr__(self):
+        description = self.description or self.interface_id
+        return "(%s, %s)" % (self.node_id, description)
+
+    def __nonzero__(self):
+        """Allows for checking if node exists
+        """
+        return bool(len(self._interface)) # if interface data set
+
+    def __str__(self):
+        return self.__repr__()
+
     @property
     def _graph(self):
         """Return graph the node belongs to"""
@@ -116,14 +128,33 @@ class overlay_interface(object):
         """Return graph the node belongs to"""
         return self._node["_interfaces"][self.interface_id]
 
+    @property
+    def phy(self):
+        if self.overlay_id == "phy":
+            return self
+        return overlay_interface(self.anm, 'phy', self.node_id, self.interface_id)
+
+    @property
+    def is_loopback(self):
+        """"""
+#TODO: add try/except in case not set, and not set in phy
+        return self.type == "loopback" or self.phy.type == "loopback"
+
+    @property
+    def description(self):
+        """"""
+#TODO: add try/except in case not set, and not set in phy
+        retval = self._interface.get("description") 
+        if retval:
+            return retval
+
+        if self.overlay_id != "phy": # prevent recursion 
+            self.phy._interface.get("description")
 
     @property
     def node(self):
         """Returns parent node of this interface"""
         return overlay_node(self.anm, self.overlay_id, self.node_id)
-
-    def __str__(self):
-        return "Interface: " + str(self.interface_id)
 
     def dump(self):
         return str(self._interface.items())
@@ -235,10 +266,16 @@ class overlay_node(object):
                 return int_id
 
     def _add_interface(self, type = "physical", description = None, **kwargs):
-        next_id = self._next_int_id
-        data = kwargs
-        data['description'] = description
-        data['type'] = type
+        data = dict(kwargs)
+
+        if self.node_id != 'phy' and self.phy:
+            next_id = self.phy._next_int_id
+            self.phy._interfaces[next_id] = {'type': type, 'description': description}  # store type in physical
+        else:
+            next_id = self._next_int_id
+            data['type'] = type # store type on node
+            data['description'] = description
+        
         self._interfaces[next_id] = data 
         return next_id
 
@@ -249,7 +286,8 @@ class overlay_node(object):
 
     def add_interface(self, **kwargs):
         """Public function to add interface"""
-        self._add_interface(**kwargs)
+        interface_id = self._add_interface(**kwargs)
+        return overlay_interface(self.anm, self.overlay_id, self.node_id, interface_id)
 
     def interfaces(self, *args, **kwargs):
         """Public function to view interfaces"""
@@ -261,13 +299,39 @@ class overlay_node(object):
                     )
 
         all_interfaces = iter(overlay_interface(self.anm, self.overlay_id, self.node_id, interface_id)
-                for interface_id in self._interfaces)
+                for interface_id in self._interface_ids)
 
-        return (i for i in all_interfaces if filter_func(i))
+        retval = (i for i in all_interfaces if filter_func(i))
+        return retval
+
+    def interface(self, key):
+        """Returns interface based on interface id"""
+        try:
+            if key.interface_id in self._interface_ids:
+                return overlay_interface(self.anm, self.overlay_id, self.node_id, key.interface_id)
+        except AttributeError:
+            log.warning( "Unable to find interface %s in %s " % (key, self))
+            return None
+
+    @property
+    def _interface_ids(self):
+        if self.overlay_id != 'phy' and self.phy:
+            # graph isn't physical, and node exists in physical graph -> use the interface mappings from phy
+            return self.phy._graph.node[self.node_id]["_interfaces"].keys()
+        else:
+            try:
+                return self._graph.node[self.node_id]["_interfaces"]
+            except KeyError:
+                log.debug("No interfaces initialised for %s" % self) 
+                return []
 
     @property
     def _interfaces(self):
-        return self._graph.node[self.node_id]["_interfaces"]
+        try:
+            return self._graph.node[self.node_id]["_interfaces"]
+        except KeyError:
+            log.debug("No interfaces initialised for %s" % self) 
+            return []
 
     @property
     def _graph(self):
@@ -319,8 +383,9 @@ class overlay_node(object):
     def degree(self):
         return self._graph.degree(self.node_id)
 
-    def neighbors(self):
-        return self._overlay.neighbors(self)
+    def neighbors(self, *args, **kwargs):
+        neighs = self._overlay.neighbors(self)
+        return self._overlay.filter(neighs, *args, **kwargs)
 
     @property
     def label(self):
@@ -718,7 +783,6 @@ class overlay_graph(OverlayBase):
     # these work similar to their nx counterparts: just need to strip the node_id
     def add_nodes_from(self, nbunch, retain=[], update = False, **kwargs):
         """Update won't append data (which could clobber) if node exists"""
-        #Can't just append _interfaces or won't work for copying from G_in
         try:
             retain.lower()
             retain = [retain] # was a string, put into list
@@ -743,7 +807,6 @@ class overlay_graph(OverlayBase):
 
 #TODO: need to copy across _interfaces keys
 
-        nbunch = list(nbunch)
         self._graph.add_nodes_from(nbunch, **kwargs)
         self._init_interfaces(node_ids)
 
@@ -782,7 +845,11 @@ class overlay_graph(OverlayBase):
             #TODO: tidy up this hardcoded logic
             try:
                 phy_interfaces = phy_graph.node[node]["_interfaces"]
-                data = dict( (key, {}) for key in phy_interfaces)
+                interface_data = {
+                        'description' : None,
+                        'type' : 'physical',
+                        }
+                data = dict( (key, dict(interface_data)) for key in phy_interfaces)
                 self._graph.node[node]['_interfaces'] = data
             except KeyError:
 # no counterpart in physical graph, initialise

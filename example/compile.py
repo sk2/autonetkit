@@ -102,7 +102,9 @@ class RouterCompiler(object):
         G_ip = self.anm['ip']
         asn = phy_node.asn # easy reference for cleaner code
         node.asn = asn
-        node.bgp.advertise_subnets = G_ip.data.infra_blocks.get(asn) or [] # note: could be none (if single-node AS) - default to empty list
+        node.bgp.ipv4_advertise_subnets = G_ip.data.infra_blocks.get(asn) or [] # note: could be none (if single-node AS) - default to empty list
+        node.bgp.ipv6_advertise_subnets = []
+        
         
         node.bgp.ibgp_neighbors = []
         node.bgp.ibgp_rr_clients = []

@@ -62,7 +62,7 @@ except ImportError:
 #TODO: make a render class, that caches traversed folders for speed
 
 #TODO: Add support for both src template and src folder (eg for quagga, servers)
-def render_node(node):
+def render_node(node, folder_cache):
         log.debug("Rendering %s" % node)
         try:
             render_output_dir = node.render.dst_folder
@@ -112,6 +112,11 @@ def render_node(node):
                         log.warning( "Unable to render %s: %s " % (node, error))
                     except NameError, error:
                         log.warning( "Unable to render %s: %s. Check all variables used are defined" % (node, error))
+                    except TypeError, error:
+                        log.warning( "Unable to render %s: %s." % (node, error))
+                        from mako import exceptions
+                        log.warning(exceptions.text_error_template().render())
+                                            
 
             if node.render.to_memory:
 # Render directly to NIDB
@@ -122,6 +127,38 @@ def render_node(node):
                             )
 
         if render_base:
+            mako_tmp_dir = "cache"
+            if render_base in folder_cache:
+                src_folder = folder_cache[render_base]['folder']
+                fs_mako_templates = folder_cache[render_base]['templates']
+                folder_list = folder_cache[render_base]['folder_list']
+
+                try:
+                    shutil.rmtree(render_base_output_dir)
+                except OSError:
+                    pass # doesn't exist
+                shutil.copytree(src_folder, render_base_output_dir)
+                #for folder in folder_list:
+                    #folder = os.path.normpath((os.path.join(render_base_output_dir, folder)))
+                    #os.mkdir(folder)
+
+                for template_file in fs_mako_templates:
+                    render_base_rel = resource_path(render_base)
+                    template_file_path = os.path.normpath(os.path.join(render_base_rel, template_file))
+                    mytemplate = mako.template.Template(filename=template_file_path,
+# disabled cache
+#module_directory= mako_tmp_dir
+                            )
+                    dst_file = os.path.normpath((os.path.join(render_base_output_dir, template_file)))
+                    dst_file, _ = os.path.splitext(dst_file) # remove .mako suffix
+                    with open( dst_file, 'wb') as dst_fh:
+                        dst_fh.write(mytemplate.render(
+                            node = node, 
+                            ank_version = ank_version,
+                            date = date,
+                            ))
+                return
+                
             render_base = resource_path(render_base)
             fs_mako_templates = []
             for root, dirnames, filenames in os.walk(render_base):
@@ -129,7 +166,6 @@ def render_node(node):
                     rel_root = os.path.relpath(root, render_base) # relative to fs root
                     fs_mako_templates.append(os.path.join(rel_root, filename))
 
-            mako_tmp_dir = "cache"
 
 
 #TODO: rather than checking every time for .mako files, create a tmp folder with these stripped out, then copy this across to each rendered node
@@ -147,7 +183,7 @@ def render_node(node):
                 template_file_path = os.path.normpath(os.path.join(render_base, template_file))
                 mytemplate = mako.template.Template(filename=template_file_path,
 # disabled cache
-                        #module_directory= mako_tmp_dir
+                        module_directory= mako_tmp_dir
                         )
                 dst_file = os.path.normpath((os.path.join(render_base_output_dir, template_file)))
                 dst_file, _ = os.path.splitext(dst_file) # remove .mako suffix
@@ -160,25 +196,72 @@ def render_node(node):
                         ))
         return
 
+def cache_folders(nidb):
+    #TODO: look at copying to clobber folders rather than shutil remove
+    import tempfile
+    render_base = {node.render.base for node in nidb}
+    folder_cache_dir = tempfile.mkdtemp()
+    try:
+        render_base.remove(None)
+    except KeyError:
+        pass # Not present
+
+    folder_cache = {}
+    folder_cache['_folder_cache_dir'] = folder_cache_dir
+
+    for base in render_base:
+        folder_list = []
+        full_base = resource_path(base)
+        base_cache_dir = os.path.join(folder_cache_dir, full_base)
+        shutil.copytree(full_base, base_cache_dir, 
+                ignore=shutil.ignore_patterns('*.mako'))
+
+        fs_mako_templates = []
+        for root, dirnames, filenames in os.walk(full_base):
+            rel_root = os.path.relpath(root, full_base) # relative to fs root
+            folder_list.append(rel_root)
+            mako_templates = {f for f in filenames if f.endswith(".mako")}
+            other_files = set(filenames) - set(mako_templates)
+            for filename in mako_templates:
+                fs_mako_templates.append(os.path.join(rel_root, filename))
+
+#TODO: push templates into a cache dir
+
+        folder_cache[base] = {
+                'folder': base_cache_dir,
+                'templates': fs_mako_templates,
+                'folder_list': folder_list,
+                }
+
+    return folder_cache
+
+
 def render(nidb):
     #TODO: config option for single or multi threaded
     log.info("Rendering Network")
-    render_single(nidb)
-    #render_multi(nidb)
+    folder_cache = cache_folders(nidb)
+    render_single(nidb, folder_cache)
+    #render_multi(nidb, folder_cache)
     render_topologies(nidb)
 
-def render_single(nidb):
-    for node in sorted(nidb):
-        render_node(node)
+#TODO: Also cache for topologies
 
-def render_multi(nidb):
+    folder_cache_dir = folder_cache['_folder_cache_dir']
+    shutil.rmtree(folder_cache_dir)
+
+
+def render_single(nidb, folder_cache):
+    for node in sorted(nidb):
+        render_node(node, folder_cache)
+
+def render_multi(nidb, folder_cache):
         nidb_node_count = len(nidb)
         num_worker_threads = 10
         rendered_nodes = []
         def worker():
                 while True:
                     node = q.get()
-                    render_node(node)
+                    render_node(node, folder_cache)
                     q.task_done()
                     rendered_nodes.append(node.label)
 
@@ -258,5 +341,9 @@ def render_topology(topology):
             log.warning( "Unable to render %s: %s " % (topology, error))
         except NameError, error:
             log.warning( "Unable to render %s: %s. Check all variables used are defined" % (topology, error))
+        except TypeError, error:
+            log.warning( "Unable to render topology: %s." % (error))
+            from mako import exceptions
+            log.warning(exceptions.text_error_template().render())
 
 
