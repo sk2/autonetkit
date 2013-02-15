@@ -18,7 +18,7 @@ import autonetkit.config as config
 #TODO: make if measure set, then not compile - or warn if both set, as don't want to regen topology when measuring
 
 try:
-    ank_version = pkg_resources.get_distribution("autonetkit-v3-dev").version
+    ank_version = pkg_resources.get_distribution("autonetkit").version
 except pkg_resources.DistributionNotFound:
     ank_version = "dev"
 
@@ -108,6 +108,8 @@ def manage_network(input_graph_string, timestamp, build_options, reload_build=Fa
     if build_options['measure']:
         measure_network(nidb)
 
+    log.info("Finished")
+
 def parse_options():
     import argparse
     usage = "autonetkit -f input.graphml"
@@ -191,7 +193,6 @@ def main():
                 rebuild = False
                 reload_build = False
                 if input_filemonitor.has_changed():
-                    print "input changed"
                     rebuild = True
                 if build_filemonitor.has_changed():
                     reload_build = True

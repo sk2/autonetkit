@@ -6,6 +6,8 @@
     <script type="text/javascript" src="underscore-min.js"></script>
     <script type="text/javascript" src="jquery.tipsy.js"></script>
     <script type="text/javascript" src="jquery.ba-bbq.min.js"></script>
+
+
     <link href="tipsy.css" rel="stylesheet" type="text/css" />
     <link href="font-awesome.min.css" rel="stylesheet" type="text/css" />
     <title>AutoNetkit</title>
@@ -23,7 +25,7 @@
       <div class="navbar">
           <b>AutoNetkit</b>
           <span id="websocket_icon"></span>
-          | Overlay:
+          | <i class="icon-reorder "></i> Overlay:
         <select id = "overlay_select"></select>
         <select id = "revision_select"></select>
         <!--- <button onclick="history_start();"><<</button>
@@ -37,12 +39,6 @@
         </button>
 
         |
-        <label for="enable_zoom">
-            Pan & Zoom
-        </label>
-        <input type="checkbox" id="enable_zoom" value="enable_zoom" />
-        |
-
         <label for="display_interfaces">
             <i class="icon-plus-sign-alt"></i>
         </label>
@@ -51,7 +47,15 @@
         |<select id = "node_label_select"></select>
         <select id = "edge_group_select"></select>
         <select id = "interface_label_select"></select>
+
+        |        <button onclick="toggle_visibility('node_filter');">
+            <i class="icon-filter "></i> Node Filter
+        </button>
     </div>
+
+    <div class="node_filter" id="node_filter">
+    </div>
+
 
     <div class="infobar"></div>
     <div class="visualisation""></div>
@@ -59,6 +63,25 @@
 
     <div>
       <script type="text/javascript">
+
+var current_translate = "0,0";
+
+ //$( "#slider-vertical" ).slider({
+      //orientation: "vertical",
+      //range: "min",
+      //min: -9,
+      //max: 9,
+      //value: 0,
+      //slide: function( event, ui ) {
+      //scale = ui.value;
+      //console.log(scale);
+      //console.log(scale, scale <0);
+      //if (scale >= 0)  scale = scale + 1;
+      //if (scale < 0)  scale = 1  + 1*(scale/10);
+      //console.log(scale);
+      //chart.attr("transform", "translate(" + current_translate + ") scale(" + scale + "," + scale + ")");
+      //}
+    //});
 
         function setActiveStyleSheet(title) {
           //From http://www.alistapart.com/articles/alternate/
@@ -129,13 +152,7 @@ var interface_label_select = d3.select("#interface_label_select")
     })
 
 
-var enable_zoom = false
 var display_interfaces = false
-
- d3.select("#enable_zoom")
-.on("change", function() {
-        enable_zoom = d3.select(this).property("checked");
-        })
 
 d3.select("#display_interfaces")
 .on("change", function() {
@@ -170,7 +187,7 @@ var chart = d3.select(".visualisation")
 .attr("width", "100%")
 .attr("height", "100%")
 .attr("pointer-events", "all")
-.attr("viewBox", "200 0 " + chart_width * 0.85 + " " + chart_height * 0.85)
+.attr("viewBox", "0 0 " + chart_width * 0.85 + " " + chart_height * 0.85)
 .append('svg:g')
 .attr("class", "zoom_box")
 //.call(d3.behavior.zoom().on("zoom", redraw))
@@ -186,14 +203,22 @@ chart.append('svg:rect')
 .attr('width', chart_width)
 .attr('height', chart_height);
 
+
+
 function redraw() {
-  if (enable_zoom == true) {
+    //current_translate = d3.event.translate; // store to use when using slider
     chart.attr("transform",
-        "translate(" + d3.event.translate + ")"
-        + " scale(" + d3.event.scale + ")");
-  }
+                   "translate(" + d3.event.translate + ")"
+                   + " scale(" + d3.event.scale + ")");
 }
 
+function toggle_visibility(id) {
+       var e = document.getElementById(id);
+       if(e.style.display == 'block')
+          e.style.display = 'none';
+       else
+          e.style.display = 'block';
+    }
 </script>
 <script type="text/javascript" src="ank_render.js"></script>
 

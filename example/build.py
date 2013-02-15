@@ -56,7 +56,7 @@ def build_overlays(filename):
 
 def build_ip(anm):
     import itertools
-    import autonetkit.plugins.ip as ip
+    import autonetkit.plugins.ipv4 as ip
     G_ip = anm.add_overlay("ip")
     G_in = anm['input']
     G_graphics = anm['graphics']
