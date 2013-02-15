@@ -35,7 +35,7 @@ line con 0
 interface ${interface.id}
   description ${interface.description}
   % if node.ip.use_ipv4:
-  ipv4 address ${interface.ipv4_address} ${interface.ipv4_subnet.netmask}   
+  ip address ${interface.ipv4_address} ${interface.ipv4_subnet.netmask}   
   %endif
   % if interface.ipv6_address:
   ipv6 address ${interface.ipv6_address} 
