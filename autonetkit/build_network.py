@@ -16,7 +16,8 @@ __all__ = ['build']
 MESSAGING = ank_messaging.AnkMessaging()
 
 
-def build(input_graph_string, timestamp):
+def build(input_graph_string):
+    """Main function to build network overlay topologies"""
     anm = autonetkit.anm.AbstractNetworkModel()
 
     try:
@@ -38,8 +39,7 @@ def build(input_graph_string, timestamp):
 
     input_undirected = nx.Graph(input_graph)
     g_in = anm.add_overlay("input", graph=input_undirected)
-    g_in_directed = anm.add_overlay(
-        "input_directed", graph=input_graph, directed=True)
+    anm.add_overlay("input_directed", graph=input_graph, directed=True)
 
 # set defaults
     if not g_in.data.specified_int_names:
@@ -100,12 +100,9 @@ def build(input_graph_string, timestamp):
 
     return anm
 
-def build_vrf(anm):
-    g_in = anm['input']
-    g_phy = anm['phy']
-    g_vrf = anm.add_overlay("vrf", directed=True)
-    g_vrf.add_nodes_from(g_in.nodes("is_router"), retain=["vrf_role", "vrf"])
-
+def allocate_vrf_roles(g_vrf):
+    """Allocate VRF roles"""
+    g_phy = g_vrf.anm['phy']
     for node in g_vrf.nodes(vrf_role="CE"):
         if not node.vrf:
             node.vrf = "default_vrf"
@@ -113,39 +110,20 @@ def build_vrf(anm):
     for node in g_vrf.nodes('vrf'):
         node.vrf_role = "CE"
 
-    non_ce_nodes = [n for n in g_vrf if n.vrf_role != "CE"]
-    for n in non_ce_nodes:
-        phy_neighbors = g_phy.node(
-            n).neighbors()  # neighbors from physical graph for connectivity
-        phy_neighbors = [
-            neigh for neigh in phy_neighbors if neigh.asn == n.asn]
+    non_ce_nodes = [node for node in g_vrf if node.vrf_role != "CE"]
+    for node in non_ce_nodes:
+        phy_neighbors = g_phy.node( node).neighbors()  
+        # neighbors from physical graph for connectivity
+        phy_neighbors = [neigh for neigh in phy_neighbors if neigh.asn == node.asn]
             # filter to just this asn
         if any(g_vrf.node(neigh).vrf_role == "CE" for neigh in phy_neighbors):
             # phy neigh has vrf set in this graph
-            n.vrf_role = "PE"
+            node.vrf_role = "PE"
         else:
-            n.vrf_role = "P"  # default role
+            node.vrf_role = "P"  # default role
 
-# add links from CE to PE
-    for _, devices in g_phy.groupby("asn").items():
-        as_graph = g_phy.subgraph(devices)
-        edges = [(edge.src, edge.dst) for edge in as_graph.edges()]
-        vrf_edges = [(g_vrf.node(s), g_vrf.node(t)) for (s, t) in edges]
-        pe_to_ce_edges = []
-        ce_to_pe_edges = []
-        for s, t in vrf_edges:
-            if (s.vrf_role, t.vrf_role) == ("CE", "PE"):
-                pe_to_ce_edges.append((s, t))
-                ce_to_pe_edges.append((t, s))
-            if (s.vrf_role, t.vrf_role) == ("PE", "CE"):
-                pe_to_ce_edges.append((t, s))
-                ce_to_pe_edges.append((s, t))
-# other direction
-
-        g_vrf.add_edges_from(pe_to_ce_edges, direction="u")
-        g_vrf.add_edges_from(ce_to_pe_edges, direction="d")
-
-# and map to create extra loopbacks
+def add_vrf_loopbacks(g_vrf):
+    """Adds loopbacks for VRFs, and stores VRFs connected to PE router"""
     for node in g_vrf.nodes(vrf_role="PE"):
         node_vrf_names = {n.vrf for n in node.neighbors(vrf_role="CE")}
         node.node_vrf_names = node_vrf_names
@@ -156,8 +134,43 @@ def build_vrf(anm):
                               description="loopback for vrf %s" % vrf_name)
 
     for node in g_vrf.nodes(vrf_role="CE"):
-        node.add_loopback(vrf_name=n.vrf_name,
-                          description="loopback for vrf %s" % n.vrf_name)
+        node.add_loopback(vrf_name = node.vrf_name,
+                          description="loopback for vrf %s" % node.vrf_name)
+
+def vrf_edges(g_vrf):
+    """Calculate edges for vrf overlay"""
+    g_phy = g_vrf.anm['phy']
+    for _, devices in g_phy.groupby("asn").items():
+        as_graph = g_phy.subgraph(devices)
+        edges = [(edge.src, edge.dst) for edge in as_graph.edges()]
+        edges_vrf = [(g_vrf.node(s), g_vrf.node(t)) for (s, t) in edges]
+        pe_to_ce_edges = []
+        ce_to_pe_edges = []
+        for src, dst in edges_vrf:
+            if (src.vrf_role, dst.vrf_role) == ("CE", "PE"):
+                pe_to_ce_edges.append((src, dst))
+                ce_to_pe_edges.append((dst, src))
+            if (src.vrf_role, dst.vrf_role) == ("PE", "CE"):
+                pe_to_ce_edges.append((dst, src))
+                ce_to_pe_edges.append((src, dst))
+
+    return pe_to_ce_edges, ce_to_pe_edges
+
+def build_vrf(anm):
+    """Build VRF Overlay"""
+    g_in = anm['input']
+    g_vrf = anm.add_overlay("vrf", directed=True)
+    g_vrf.add_nodes_from(g_in.nodes("is_router"), retain=["vrf_role", "vrf"])
+
+    allocate_vrf_roles(g_vrf)
+    add_vrf_loopbacks(g_vrf)
+
+    pe_to_ce_edges, ce_to_pe_edges = vrf_edges(g_vrf)
+    g_vrf.add_edges_from(pe_to_ce_edges, direction="u")
+    g_vrf.add_edges_from(ce_to_pe_edges, direction="d")
+
+# and map to create extra loopbacks
+
 
     # allocate route-targets per AS
     # This could later look at connected components for each ASN
@@ -180,6 +193,8 @@ def build_vrf(anm):
 
 
 def three_tier_ibgp_l1_l3_clusters(rtrs):
+    """Calculate edges for iBGP l3 clusters that don't contain a HRR.
+    Connects l1 to l3 directly"""
     up_links = []
     down_links = []
     for l3_cluster, l3d in ank_utils.groupby("ibgp_l3_cluster", rtrs):
@@ -260,7 +275,6 @@ def build_two_tier_ibgp(routers):
 def build_bgp(anm):
     """Build iBGP end eBGP overlays"""
     # eBGP
-    g_phy = anm['phy']
     g_in = anm['input']
     g_bgp = anm.add_overlay("bgp", directed=True)
     g_bgp.add_nodes_from(g_in.nodes("is_router"))
@@ -472,7 +486,6 @@ def build_conn(anm):
 
     return
 
-
 def build_ospf(anm):
     """
     Build OSPF graph.
@@ -547,9 +560,7 @@ def build_ospf(anm):
 
     for router in g_ospf:
         areas = {edge.area for edge in router.edges()}
-
-        router.areas = list(
-            areas)  # store all the edges a router participates in
+        router.areas = list(areas)  # edges router participates in
 
         if len(areas) in area_zero_ids:
             router.type = "backbone"  # no ospf edges (eg single node in AS)
@@ -581,7 +592,7 @@ def build_ospf(anm):
             link.cost = 1
 
 
-def ip_to_net_ent_title_ios(ip):
+def ip_to_net_ent_title_ios(ip_addr):
     """ Converts an IP address into an OSI Network Entity Title
     suitable for use in IS-IS on IOS.
 
@@ -589,11 +600,11 @@ def ip_to_net_ent_title_ios(ip):
     '49.1921.6801.9001.00'
     """
     try:
-        ip_words = ip.words
+        ip_words = ip_addr.words
     except AttributeError:
         import netaddr  # try to cast to IP Address
-        ip = netaddr.IPAddress(ip)
-        ip_words = ip.words
+        ip_addr = netaddr.IPAddress(ip_addr)
+        ip_words = ip_addr.words
 
     log.debug("Converting IP to OSI ENT format")
     area_id = "49"
@@ -630,6 +641,7 @@ def build_isis(anm):
 
 
 def update_messaging(anm):
+    """Sends ANM to web server"""
     log.debug("Sending anm to messaging")
     body = autonetkit.ank_json.dumps(anm, None)
     MESSAGING.publish_compressed("www", "client", body)
