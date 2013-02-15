@@ -105,7 +105,6 @@ def build_vrf(anm):
     g_phy = anm['phy']
     g_vrf = anm.add_overlay("vrf", directed=True)
     g_vrf.add_nodes_from(g_in.nodes("is_router"), retain=["vrf_role", "vrf"])
-    g_vrf.data.route_targets = {}
 
     for node in g_vrf.nodes(vrf_role="CE"):
         if not node.vrf:
@@ -150,10 +149,9 @@ def build_vrf(anm):
     for node in g_vrf.nodes(vrf_role="PE"):
         node_vrf_names = {n.vrf for n in node.neighbors(vrf_role="CE")}
         node.node_vrf_names = node_vrf_names
-        rd_indices = itertools.count(1)
         node.rd_indices = {}
-        for vrf_name in node_vrf_names:
-            node.rd_indices[vrf_name] = rd_indices.next()
+        for index, vrf_name in enumerate(node_vrf_names, 1):
+            node.rd_indices[vrf_name] = index
             node.add_loopback(vrf_name=vrf_name,
                               description="loopback for vrf %s" % vrf_name)
 
@@ -166,19 +164,17 @@ def build_vrf(anm):
     route_targets = {}
     for asn, devices in ank_utils.groupby("asn", g_vrf.nodes(vrf_role = "PE")):
         asn_vrfs = [d.node_vrf_names for d in devices]
-        asn_vrfs = set(itertools.chain.from_iterable(asn_vrfs)) # flatten list to unique set
-        #route_targets[asn] = {(vrf, "%s:%s" % (asn, index)
-        counter = itertools.count(1)
-        route_targets[asn] = {vrf: "%s:%s" % (asn, counter.next())
-                for vrf in sorted(asn_vrfs)}
+        # flatten list to unique set
+        asn_vrfs = set(itertools.chain.from_iterable(asn_vrfs)) 
+        route_targets[asn] = {vrf: "%s:%s" % (asn, index)
+                for index, vrf in enumerate(sorted(asn_vrfs), 1)}
 
     g_vrf.data.route_targets = route_targets
 
     for node in g_vrf:
-        for index, i in enumerate(node.interfaces("is_loopback", "vrf_name")):
-        # map (0, 1, 2, 3, ...) -> (101, 102, 103, 104, ...)
-            i.index = 100 + index + 1
-            i.route_target = "default_rt"
+        vrf_loopbacks = node.interfaces("is_loopback", "vrf_name")
+        for index, interface in enumerate(vrf_loopbacks, start = 101):
+            interface.index = index 
 
 # Create route-targets
 
