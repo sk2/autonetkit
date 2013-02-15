@@ -107,12 +107,12 @@ def build_vrf(anm):
     g_vrf.add_nodes_from(g_in.nodes("is_router"), retain=["vrf_role", "vrf"])
     g_vrf.data.route_targets = {}
 
-    for node in g_vrf:
-        node.add_interface(name="test")
-
     for node in g_vrf.nodes(vrf_role="CE"):
         if not node.vrf:
             node.vrf = "default_vrf"
+
+    for node in g_vrf.nodes('vrf'):
+        node.vrf_role = "CE"
 
     non_ce_nodes = [n for n in g_vrf if n.vrf_role != "CE"]
     for n in non_ce_nodes:
