@@ -97,7 +97,6 @@ class RouterCompiler(object):
                 ipv4_address=ip_interface.loopback,
                 ipv4_subnet=node.loopback_subnet,
                 vrf_name=vrf_interface.vrf_name,
-                route_target=interface.route_target,
             )
 
         node.interfaces.sort("id")
