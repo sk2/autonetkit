@@ -57,7 +57,7 @@ def manage_network(input_graph_string, timestamp, build_options, reload_build=Fa
 
 
     if build_options['build']:
-        anm = build_network.build(input_graph_string, timestamp)
+        anm = build_network.build(input_graph_string)
         if not build_options['compile']:
             # publish without nidb
             import autonetkit.ank_json
