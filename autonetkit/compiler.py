@@ -355,6 +355,20 @@ class IosBaseCompiler(RouterCompiler):
                 ipv6_node.loopback, 128)
             node.bgp.ipv6_advertise_subnets = [ipv6_address]
 
+        # vrf
+        node.bgp.vrfs = []
+        vrf_node = self.anm['vrf'].node(node)
+        if vrf_node.vrf_role is "PE":
+            for vrf in vrf_node.node_vrf_names:
+                rd_index = vrf_node.rd_indices[vrf]
+                rd = "%s:%s" % (node.loopback, rd_index)
+                node.bgp.vrfs.append(
+                        vrf = vrf,
+                        rd = rd,
+                        use_ipv4 = node.ip.use_ipv4,
+                        use_ipv6 = node.ip.use_ipv6,
+                        )
+
     def ospf(self, node):
         super(IosBaseCompiler, self).ospf(node)
         for interface in node.interfaces:
@@ -369,15 +383,20 @@ class IosBaseCompiler(RouterCompiler):
                 }
 
     def vrf(self, node):
+        g_vrf = self.anm['vrf']
         vrf_node = self.anm['vrf'].node(node)
-        for loopback in vrf_node.interfaces("is_loopback", "vrf_name"):
-            continue
-            """
-            if loopback: # ie if any data set
-                print "vrf lo", loopback
-            else:
-                print "no vrf lo", loopback
-            """
+        node.vrf.vrfs = []
+        if vrf_node.vrf_role is "PE":
+            for vrf in vrf_node.node_vrf_names:
+                route_target = g_vrf.data.route_targets[node.asn][vrf]
+                node.vrf.vrfs.append({
+                    'vrf': vrf,
+                    'route_target': route_target,
+                    })
+
+        node.vrf.use_ipv4 = node.ip.use_ipv4
+        node.vrf.use_ipv6 = node.ip.use_ipv6
+        node.vrf.vrfs.sort("vrf")
 
     def isis(self, node):
         # TODO: this needs to go into IOS2 for neatness

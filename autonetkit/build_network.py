@@ -9,6 +9,7 @@ import autonetkit.load.graphml as graphml
 import autonetkit.exception
 import networkx as nx
 import autonetkit.ank as ank_utils
+import itertools
 
 __all__ = ['build']
 
@@ -148,13 +149,30 @@ def build_vrf(anm):
 # and map to create extra loopbacks
     for node in g_vrf.nodes(vrf_role="PE"):
         node_vrf_names = {n.vrf for n in node.neighbors(vrf_role="CE")}
+        node.node_vrf_names = node_vrf_names
+        rd_indices = itertools.count(1)
+        node.rd_indices = {}
         for vrf_name in node_vrf_names:
+            node.rd_indices[vrf_name] = rd_indices.next()
             node.add_loopback(vrf_name=vrf_name,
                               description="loopback for vrf %s" % vrf_name)
 
     for node in g_vrf.nodes(vrf_role="CE"):
         node.add_loopback(vrf_name=n.vrf_name,
                           description="loopback for vrf %s" % n.vrf_name)
+
+    # allocate route-targets per AS
+    # This could later look at connected components for each ASN
+    route_targets = {}
+    for asn, devices in ank_utils.groupby("asn", g_vrf.nodes(vrf_role = "PE")):
+        asn_vrfs = [d.node_vrf_names for d in devices]
+        asn_vrfs = set(itertools.chain.from_iterable(asn_vrfs)) # flatten list to unique set
+        #route_targets[asn] = {(vrf, "%s:%s" % (asn, index)
+        counter = itertools.count(1)
+        route_targets[asn] = {vrf: "%s:%s" % (asn, counter.next())
+                for vrf in sorted(asn_vrfs)}
+
+    g_vrf.data.route_targets = route_targets
 
     for node in g_vrf:
         for index, i in enumerate(node.interfaces("is_loopback", "vrf_name")):
