@@ -1,80 +1,70 @@
-from nidb import NIDB
-import render
+"""Console script entry point for AutoNetkit"""
+
+from autonetkit.nidb import NIDB
+import autonetkit.render as render
 import random
-import pprint
 import traceback
 from datetime import datetime
 import os
 import time
-import compiler
+import autonetkit.compiler as compiler
 import pkg_resources
 import autonetkit.log as log
 import autonetkit.ank_messaging as ank_messaging
 import autonetkit.config as config
+import autonetkit.ank_json as ank_json
 
-#import autonetkit.bgp_pol as bgp_pol
-#raise SystemExit
+# import autonetkit.bgp_pol as bgp_pol
+# raise SystemExit
 
-#TODO: make if measure set, then not compile - or warn if both set, as don't want to regen topology when measuring
+# TODO: make if measure set, then not compile - or warn if both set, as
+# don't want to regen topology when measuring
 
 try:
-    ank_version = pkg_resources.get_distribution("autonetkit").version
+    ANK_VERSION = pkg_resources.get_distribution("autonetkit").version
 except pkg_resources.DistributionNotFound:
-    ank_version = "dev"
+    ANK_VERSION = "dev"
 
-class FileMonitor(object):
-    """Lightweight polling-based monitoring to see if file has changed"""
-    def __init__(self, filename):
-        self.filename = filename
-        try:
-            self.last_timestamp = os.stat(filename).st_mtime
-        except OSError:
-            log.debug("Unable to read file %s, disabling monitoring" % filename)
-            self.has_changed = self.return_false #TODO: use a lambda for succintness
 
-    def return_false(self):
-        """Used if unable to load file to monitor"""
-        return False
+def file_monitor(filename):
+    """Generator based function to check if a file has changed"""
+    last_timestamp = os.stat(filename).st_mtime
 
-    def has_changed(self):
-        """Returns if file has changed since last called"""
-        timestamp = os.stat(self.filename).st_mtime
-        if timestamp > self.last_timestamp:
-            self.last_timestamp = timestamp
-            return True
-        return False
+    while True:
+        timestamp = os.stat(filename).st_mtime
+        if timestamp > last_timestamp:
+            last_timestamp = timestamp
+            yield True
+        yield False
+
 
 def manage_network(input_graph_string, timestamp, build_options, reload_build=False):
-    #import build_network_simple as build_network
-    import build_network
+    """Build, compile, render network as appropriate"""
+    # import build_network_simple as build_network
+    import autonetkit.build_network as build_network
     if reload_build:
 # remap?
         build_network = reload(build_network)
-    settings = config.settings
 
-    rabbitmq_server = settings['Rabbitmq']['server']
-    messaging = ank_messaging.AnkMessaging(rabbitmq_server)
-
+    messaging = ank_messaging.AnkMessaging()
 
     if build_options['build']:
         anm = build_network.build(input_graph_string)
         if not build_options['compile']:
             # publish without nidb
-            import autonetkit.ank_json
-            body = autonetkit.ank_json.dumps(anm)
+            body = ank_json.dumps(anm)
             messaging.publish_compressed("www", "client", body)
 
     if build_options['compile']:
         if build_options['archive']:
             anm.save()
         nidb = compile_network(anm)
-        import autonetkit.ank_json
-        body = autonetkit.ank_json.dumps(anm, nidb)
+        body = ank_json.dumps(anm, nidb)
         messaging.publish_compressed("www", "client", body)
         log.debug("Sent ANM to web server")
         if build_options['archive']:
             nidb.save()
-        #render.remove_dirs(["rendered"])
+        # render.remove_dirs(["rendered"])
         if build_options['render']:
             render.render(nidb)
 
@@ -85,23 +75,23 @@ def manage_network(input_graph_string, timestamp, build_options, reload_build=Fa
         anm.restore_latest()
         nidb = NIDB()
         nidb.restore_latest()
-        body = autonetkit.ank_json.dumps(anm, nidb)
+        body = ank_json.dumps(anm, nidb)
         messaging.publish_compressed("www", "client", body)
 
     if build_options['diff']:
         import autonetkit.diff
         nidb_diff = autonetkit.diff.nidb_diff()
-        import ank_json
         import json
-        data = json.dumps(nidb_diff, cls=ank_json.AnkEncoder, indent = 4)
+        data = json.dumps(nidb_diff, cls=ank_json.AnkEncoder, indent=4)
         log.info("Wrote diff to diff.json")
-        with open("diff.json", "w") as fh: #TODO: make file specified in config
+        with open("diff.json", "w") as fh:  # TODO: make file specified in config
             fh.write(data)
 
     # Note: this clobbers command line options
-    #build_options.update(settings['General']) # update in case build has updated, eg for deploy
-    #build_options.update(settings['General']) # update in case build has updated, eg for deploy
-    
+    # build_options.update(settings['General']) # update in case build has updated, eg for deploy
+    # build_options.update(settings['General']) # update in case build has
+    # updated, eg for deploy
+
     if build_options['deploy']:
         deploy_network(nidb, input_graph_string)
 
@@ -110,57 +100,70 @@ def manage_network(input_graph_string, timestamp, build_options, reload_build=Fa
 
     log.info("Finished")
 
+
 def parse_options():
+    """Parse user-provided options"""
     import argparse
     usage = "autonetkit -f input.graphml"
-    version="%(prog)s " + str(ank_version)
-    parser = argparse.ArgumentParser(description = usage, version = version)
+    version = "%(prog)s " + str(ANK_VERSION)
+    parser = argparse.ArgumentParser(description=usage, version=version)
 
     input_group = parser.add_mutually_exclusive_group()
-    input_group.add_argument('--file', '-f', default= None, help="Load topology from FILE")        
-    input_group.add_argument('--stdin',  action="store_true", default= False, help="Load topology from STDIN")        
+    input_group.add_argument(
+        '--file', '-f', default=None, help="Load topology from FILE")
+    input_group.add_argument('--stdin', action="store_true", default=False,
+                             help="Load topology from STDIN")
 
-
-    #TODO: move from -f to -i for --input
-    parser.add_argument('--monitor', '-m',  action="store_true", default= False, 
-            help="Monitor input file for changes")        
-    parser.add_argument('--debug',  action="store_true", default= False, help="Debug mode")        
-    parser.add_argument('--diff',  action="store_true", default= False, help="Diff NIDB")        
-    parser.add_argument('--compile',  action="store_true", default= False, help="Compile")        
-    parser.add_argument('--build',  action="store_true", default= False, help="Build")        
-    parser.add_argument('--render',  action="store_true", default= False, help="Compile")        
-    parser.add_argument('--deploy',  action="store_true", default= False, help="Deploy")        
-    parser.add_argument('--archive',  action="store_true", default= False, help="Archive ANM, NIDB, and IP allocations")        
-    parser.add_argument('--measure',  action="store_true", default= False, help="Measure")        
-    parser.add_argument('--webserver',  action="store_true", default= False, help="Webserver")        
+    # TODO: move from -f to -i for --input
+    parser.add_argument(
+        '--monitor', '-m', action="store_true", default=False,
+        help="Monitor input file for changes")
+    parser.add_argument('--debug', action="store_true",
+                        default=False, help="Debug mode")
+    parser.add_argument('--diff', action="store_true", default=False,
+                        help="Diff NIDB")
+    parser.add_argument('--compile', action="store_true",
+                        default=False, help="Compile")
+    parser.add_argument(
+        '--build', action="store_true", default=False, help="Build")
+    parser.add_argument('--render', action="store_true",
+                        default=False, help="Compile")
+    parser.add_argument('--deploy', action="store_true",
+                        default=False, help="Deploy")
+    parser.add_argument('--archive', action="store_true", default=False,
+                        help="Archive ANM, NIDB, and IP allocations")
+    parser.add_argument('--measure', action="store_true",
+                        default=False, help="Measure")
+    parser.add_argument('--webserver', action="store_true",
+                        default=False, help="Webserver")
     arguments = parser.parse_args()
     return arguments
+
 
 def main():
     settings = config.settings
 
     options = parse_options()
-    log.info("AutoNetkit %s" % ank_version)
+    log.info("AutoNetkit %s" % ANK_VERSION)
 
-#TODO: only allow monitor mode with options.file not options.stdin
+# TODO: only allow monitor mode with options.file not options.stdin
 
     if options.debug or settings['General']['debug']:
-        #TODO: fix this
+        # TODO: fix this
         import logging
         logger = logging.getLogger("ANK")
         logger.setLevel(logging.DEBUG)
 
     build_options = {
-            'compile':  options.compile or settings['General']['compile'],
-            'render':  options.render or settings['General']['render'],
-            'build':  options.build or settings['General']['build'],
-            'deploy': options.deploy or settings['General']['deploy'],
-            'measure': options.measure or settings['General']['measure'],
-            'monitor': options.monitor or settings['General']['monitor'],
-            'diff': options.diff or settings['General']['diff'],
-            'archive': options.archive or settings['General']['archive'],
-            }
-
+        'compile': options.compile or settings['General']['compile'],
+        'render': options.render or settings['General']['render'],
+        'build': options.build or settings['General']['build'],
+        'deploy': options.deploy or settings['General']['deploy'],
+        'measure': options.measure or settings['General']['measure'],
+        'monitor': options.monitor or settings['General']['monitor'],
+        'diff': options.diff or settings['General']['diff'],
+        'archive': options.archive or settings['General']['archive'],
+    }
 
     if options.webserver:
         log.info("Webserver not yet supported, please run as seperate module")
@@ -168,7 +171,7 @@ def main():
     if options.file:
         with open(options.file, "r") as fh:
             input_string = fh.read()
-        timestamp =  os.stat(options.file).st_mtime
+        timestamp = os.stat(options.file).st_mtime
     elif options.stdin:
         import sys
         input_string = sys.stdin
@@ -178,23 +181,25 @@ def main():
         log.info("No input file specified. Exiting")
         raise SystemExit
 
-    manage_network(input_string, timestamp, build_options = build_options)
+    manage_network(input_string, timestamp, build_options=build_options)
 
-#TODO: work out why build_options is being clobbered for monitor mode
-    build_options['monitor'] = options.monitor or settings['General']['monitor']
+
+# TODO: work out why build_options is being clobbered for monitor mode
+    build_options['monitor'] = options.monitor or settings['General'][
+        'monitor']
 
     if build_options['monitor']:
         try:
             log.info("Monitoring for updates...")
-            input_filemonitor = FileMonitor(options.file)
-            build_filemonitor = FileMonitor("autonetkit/build_network.py")
+            input_filemonitor = file_monitor(options.file)
+            build_filemonitor = file_monitor("autonetkit/build_network.py")
             while True:
                 time.sleep(1)
                 rebuild = False
                 reload_build = False
-                if input_filemonitor.has_changed():
+                if input_filemonitor.next():
                     rebuild = True
-                if build_filemonitor.has_changed():
+                if build_filemonitor.next():
                     reload_build = True
                     rebuild = True
 
@@ -202,40 +207,41 @@ def main():
                     try:
                         log.info("Input graph updated, recompiling network")
                         with open(options.file, "r") as fh:
-                            input_string = fh.read() # read updates
-                        manage_network(input_string, timestamp, build_options, reload_build)
+                            input_string = fh.read()  # read updates
+                        manage_network(input_string,
+                                       timestamp, build_options, reload_build)
                         log.info("Monitoring for updates...")
-                    except Exception:
-                        log.warning("Unable to build network")
+                    except Exception, e:
+                        log.warning("Unable to build network %s" %e)
                         traceback.print_exc()
 
         except KeyboardInterrupt:
-            #TODO: need to close filehandles for input and output
+            # TODO: need to close filehandles for input and output
             log.info("Exiting")
 
-def compile_network(anm):
-    nidb = NIDB() 
-    G_phy = anm['phy']
-    G_ipv4 = anm['ipv4']
-    G_graphics = anm['graphics']
-#TODO: build this on a platform by platform basis
-    nidb.add_nodes_from(G_phy, retain=['label', 'host', 'platform', 'Network', 'update'])
 
-    cd_nodes = [n for n in G_ipv4.nodes("collision_domain") if not n.is_switch] # Only add created cds - otherwise overwrite host of switched
-    nidb.add_nodes_from(cd_nodes, retain=['label', 'host'], collision_domain = True)
+def compile_network(anm):
+    nidb = NIDB()
+    g_phy = anm['phy']
+    g_ipv4 = anm['ipv4']
+    g_graphics = anm['graphics']
+# TODO: build this on a platform by platform basis
+    nidb.add_nodes_from(
+        g_phy, retain=['label', 'host', 'platform', 'Network', 'update'])
+
+    cd_nodes = [n for n in g_ipv4.nodes(
+        "collision_domain") if not n.is_switch]  # Only add created cds - otherwise overwrite host of switched
+    nidb.add_nodes_from(
+        cd_nodes, retain=['label', 'host'], collision_domain=True)
 # add edges to switches
-    edges_to_add = [edge for edge in G_phy.edges() if edge.src.is_switch or edge.dst.is_switch]
-    edges_to_add += [edge for edge in G_ipv4.edges() if edge.src.collision_domain or edge.dst.collision_domain]
+    edges_to_add = [edge for edge in g_phy.edges(
+    ) if edge.src.is_switch or edge.dst.is_switch]
+    edges_to_add += [edge for edge in g_ipv4.edges(
+    ) if edge.src.collision_domain or edge.dst.collision_domain]
     nidb.add_edges_from(edges_to_add, retain='edge_id')
 
-#TODO: boundaries is still a work in progress...
-    nidb.copy_graphics(G_graphics)
-
-    #junosphere_compiler = compiler.JunosphereCompiler(nidb, anm, host)
-    #junosphere_compiler.compile()
-    #host = "nectar1"
-    #netkit_compiler = compiler.NetkitCompiler(nidb, anm, host)
-    #netkit_compiler.compile()
+# TODO: boundaries is still a work in progress...
+    nidb.copy_graphics(g_graphics)
 
     for target, target_data in config.settings['Compile Targets'].items():
         host = target_data['host']
@@ -249,20 +255,21 @@ def compile_network(anm):
         elif platform == "junosphere":
             platform_compiler = compiler.JunosphereCompiler(nidb, anm, host)
 
-        if any(G_phy.nodes(host = host, platform = platform)):
+        if any(g_phy.nodes(host=host, platform=platform)):
             log.info("Compile for %s on %s" % (platform, host))
-            platform_compiler.compile() # only compile if hosts set
+            platform_compiler.compile()  # only compile if hosts set
         else:
             log.debug("No devices set for %s on %s" % (platform, host))
 
     return nidb
 
+
 def deploy_network(nidb, input_graph_string):
 
-    #TODO: make this driven from config file
+    # TODO: make this driven from config file
     log.info("Deploying network")
 
-#TODO: pick up platform, host, filenames from nidb (as set in there)
+# TODO: pick up platform, host, filenames from nidb (as set in there)
     deploy_hosts = config.settings['Deploy Hosts']
     for hostname, host_data in deploy_hosts.items():
         for platform, platform_data in host_data.items():
@@ -277,7 +284,7 @@ def deploy_network(nidb, input_graph_string):
                 try:
                     from autonetkit_cisco import deploy as cisco_deploy
                 except ImportError:
-                    pass # development module, may not be available
+                    pass  # development module, may not be available
                 if platform == "cisco":
                     cisco_deploy.package(nidb, config_path, input_graph_string)
                 continue
@@ -285,28 +292,33 @@ def deploy_network(nidb, input_graph_string):
             username = platform_data['username']
             key_file = platform_data['key file']
             host = platform_data['host']
-            
-            if platform == "netkit" :
+
+            if platform == "netkit":
                 import autonetkit.deploy.netkit as netkit_deploy
                 tar_file = netkit_deploy.package(config_path, "nklab")
-                netkit_deploy.transfer(host, username, tar_file, tar_file, key_file)
-                netkit_deploy.extract(host, username, tar_file, config_path, timeout = 60, key_filename= key_file)
+                netkit_deploy.transfer(
+                    host, username, tar_file, tar_file, key_file)
+                netkit_deploy.extract(host, username, tar_file,
+                                      config_path, timeout=60, key_filename=key_file)
             if platform == "cisco":
                 cisco_deploy.package(config_path, "nklab")
 
+
 def measure_network(nidb):
-    import measure
+    import autonetkit.measure as measure
     log.info("Measuring network")
-    remote_hosts = [node.tap.ip for node in nidb.nodes("is_router") ]
+    remote_hosts = [node.tap.ip for node in nidb.nodes("is_router")]
     dest_node = random.choice([n for n in nidb.nodes("is_l3device")])
     log.info("Tracing to randomly selected node: %s" % dest_node)
-    dest_ip = dest_node.interfaces[0].ip_address # choose random interface on this node
+    dest_ip = dest_node.interfaces[
+        0].ip_address  # choose random interface on this node
 
-    command = "traceroute -n -a -U -w 0.5 %s" % dest_ip 
+    command = "traceroute -n -a -U -w 0.5 %s" % dest_ip
     # abort after 10 fails, proceed on any success, 0.1 second timeout (quite aggressive)
-    #command = 'vtysh -c "show ip route"'
+    # command = 'vtysh -c "show ip route"'
     measure.send(nidb, "measure_client", command, remote_hosts)
-    remote_hosts = [node.tap.ip for node in nidb.nodes("is_router") if node.bgp.ebgp_neighbors]
+    remote_hosts = [node.tap.ip for node in nidb.nodes(
+        "is_router") if node.bgp.ebgp_neighbors]
     command = "cat /var/log/zebra/bgpd.log"
 
 if __name__ == "__main__":
