@@ -1,5 +1,5 @@
 import networkx as nx
-from anm import overlay_node, overlay_edge
+from anm import OverlayNode, OverlayEdge
 from collections import defaultdict
 import itertools
 import pprint
@@ -25,9 +25,9 @@ def name_folder_safe(foldername):
 #TODO: have function that goes over a list, edge edges_to_add and sets edge_id if not set
 #this cleans up the manual edge adding process
 
-def set_node_default(overlay_graph, nbunch, **kwargs):
+def set_node_default(OverlayGraph, nbunch, **kwargs):
     """Sets all nodes in nbunch to value if key not already set"""
-    graph = unwrap_graph(overlay_graph)
+    graph = unwrap_graph(OverlayGraph)
     nbunch = unwrap_nodes(nbunch)
     for node in nbunch:
         for key, val in kwargs.items():
@@ -91,20 +91,21 @@ def stringify_netaddr(graph):
 
     return graph
 
-def save(overlay_graph):
+def save(OverlayGraph):
     import netaddr
-    graph = overlay_graph._graph.copy() # copy as want to annotate
+    graph = OverlayGraph._graph.copy() # copy as want to annotate
 
 # and put in basic attributes
-    for node in overlay_graph:
+    for node in OverlayGraph:
         data = {}
         data['label'] = node.label
         #TODO: make these come from G_phy instead
         #graph.node[node.node_id]['label'] = node.overlay.input.label
         #graph.node[node.node_id]['device_type'] = node.overlay.input.device_type
-        graph.node[node.node_id]['device_type'] = node.overlay.graphics.device_type
-        graph.node[node.node_id]['x'] = node.overlay.graphics.x
-        graph.node[node.node_id]['y'] = node.overlay.graphics.y
+        graphics_node = node.anm['graphics'].node(node)
+        graph.node[node.node_id]['device_type'] = graphics_node.device_type
+        graph.node[node.node_id]['x'] = graphics_node.x
+        graph.node[node.node_id]['y'] = graphics_node.y
 
         graph.node[node.node_id].update(data)
 #TODO: tidy this up
@@ -126,39 +127,39 @@ def save(overlay_graph):
             if type(val) in replace_as_string:
                 graph[src][dst][key] = str(val)
 
-    mapping = dict( (n.node_id, str(n)) for n in overlay_graph) 
+    mapping = dict( (n.node_id, str(n)) for n in OverlayGraph) 
     nx.relabel_nodes( graph, mapping, copy=False)
 #TODO: See why getting networkx.exception.NetworkXError: GraphML writer does not support <type 'NoneType'> as data values.
 #TODO: process writer to allow writing of IPnetwork class values
-    #filename = "%s.graphml" % overlay_graph.name
+    #filename = "%s.graphml" % OverlayGraph.name
     #nx.write_graphml(graph, filename)
 
 # probably want to create a graph from input with switches expanded to direct connections
 
 #TODO: make edges own module
-def wrap_edges(overlay_graph, edges):
+def wrap_edges(OverlayGraph, edges):
     """ wraps edge ids into edge overlay """
-    return ( overlay_edge(overlay_graph._anm, overlay_graph._overlay_id, src, dst)
+    return ( OverlayEdge(OverlayGraph._anm, OverlayGraph._overlay_id, src, dst)
             for src, dst in edges)
 
-def wrap_nodes(overlay_graph, nodes):
+def wrap_nodes(OverlayGraph, nodes):
     """ wraps node id into node overlay """
-    return ( overlay_node(overlay_graph._anm, overlay_graph._overlay_id, node)
+    return ( OverlayNode(OverlayGraph._anm, OverlayGraph._overlay_id, node)
             for node in nodes)
 
-def in_edges(overlay_graph, nodes=None):
-    graph = unwrap_graph(overlay_graph)
+def in_edges(OverlayGraph, nodes=None):
+    graph = unwrap_graph(OverlayGraph)
     edges = graph.in_edges(nodes)
-    return wrap_edges(overlay_graph, edges)
+    return wrap_edges(OverlayGraph, edges)
 
-def split(overlay_graph, edges, retain = []):
+def split(OverlayGraph, edges, retain = []):
     try:
         retain.lower() #TODO: find more efficient operation to test if string-like
         retain = [retain] # was a string, put into list
     except AttributeError:
         pass # already a list
 
-    graph = unwrap_graph(overlay_graph)
+    graph = unwrap_graph(OverlayGraph)
     edges = list(unwrap_edges(edges))
     edges_to_add = []
     added_nodes = []
@@ -172,12 +173,12 @@ def split(overlay_graph, edges, retain = []):
     graph.remove_edges_from(edges)
     graph.add_edges_from(edges_to_add)
 
-    return wrap_nodes(overlay_graph, added_nodes)
+    return wrap_nodes(OverlayGraph, added_nodes)
 
-def explode_nodes(overlay_graph, nodes, retain = []):
+def explode_nodes(OverlayGraph, nodes, retain = []):
     """Explodes all nodes in nodes
     TODO: explain better
-    TODO: Add support for digraph - check if overlay_graph.is_directed()
+    TODO: Add support for digraph - check if OverlayGraph.is_directed()
     """
     log.debug("Exploding nodes")
     try:
@@ -186,7 +187,7 @@ def explode_nodes(overlay_graph, nodes, retain = []):
     except AttributeError:
         pass # already a list
 
-    graph = unwrap_graph(overlay_graph)
+    graph = unwrap_graph(OverlayGraph)
     nodes = unwrap_nodes(nodes)
     added_edges = []
 #TODO: need to keep track of edge_ids here also?
@@ -207,12 +208,12 @@ def explode_nodes(overlay_graph, nodes, retain = []):
 
         graph.remove_node(node)
 
-    return wrap_edges(overlay_graph, added_edges)
+    return wrap_edges(OverlayGraph, added_edges)
 
-def label(overlay_graph, nodes):
-    return list(overlay_graph._anm.node_label(node) for node in nodes)
+def label(OverlayGraph, nodes):
+    return list(OverlayGraph._anm.node_label(node) for node in nodes)
 
-def aggregate_nodes(overlay_graph, nodes, retain = []):
+def aggregate_nodes(OverlayGraph, nodes, retain = []):
     """Combines connected into a single node"""
     try:
         retain.lower()
@@ -221,7 +222,7 @@ def aggregate_nodes(overlay_graph, nodes, retain = []):
         pass # already a list
 
     nodes = list(unwrap_nodes(nodes))
-    graph = unwrap_graph(overlay_graph)
+    graph = unwrap_graph(OverlayGraph)
     subgraph = graph.subgraph(nodes)
     if not len(subgraph.edges()):
         #print "Nothing to aggregate for %s: no edges in subgraph"
@@ -250,7 +251,7 @@ def aggregate_nodes(overlay_graph, nodes, retain = []):
             total_added_edges += edges_to_add
             graph.remove_nodes_from(nodes_to_remove)
 
-    return wrap_edges(overlay_graph, total_added_edges)
+    return wrap_edges(OverlayGraph, total_added_edges)
 
 # chain of two or more nodes
 
@@ -264,9 +265,9 @@ def most_frequent(iterable):
         log.warning("Unable to calculate most_frequent, %s" % e)
         return None
     
-def neigh_most_frequent(overlay_graph, node, attribute, attribute_graph = None):
+def neigh_most_frequent(OverlayGraph, node, attribute, attribute_graph = None):
     """Used to explicitly force most frequent - useful if integers such as ASN which would otherwise return mean"""
-    graph = unwrap_graph(overlay_graph)
+    graph = unwrap_graph(OverlayGraph)
     if attribute_graph:
         attribute_graph = unwrap_graph(attribute_graph)
     else:
@@ -276,13 +277,13 @@ def neigh_most_frequent(overlay_graph, node, attribute, attribute_graph = None):
     return most_frequent(values)
 
 
-def neigh_average(overlay_graph, node, attribute, attribute_graph = None):
-    """ averages out attribute from neighbors in specified overlay_graph
+def neigh_average(OverlayGraph, node, attribute, attribute_graph = None):
+    """ averages out attribute from neighbors in specified OverlayGraph
     attribute_graph is the graph to read the attribute from
     if property is numeric, then return mean
         else return most frequently occuring value
     """
-    graph = unwrap_graph(overlay_graph)
+    graph = unwrap_graph(OverlayGraph)
     if attribute_graph:
         attribute_graph = unwrap_graph(attribute_graph)
     else:
@@ -296,10 +297,10 @@ def neigh_average(overlay_graph, node, attribute, attribute_graph = None):
     except ValueError:
         return most_frequent(values)
 
-def neigh_attr(overlay_graph, node, attribute, attribute_graph = None):
+def neigh_attr(OverlayGraph, node, attribute, attribute_graph = None):
     #TODO: tidy up parameters to take attribute_graph first, and then evaluate if attribute_graph set, if not then use attribute_graph as attribute
-#TODO: explain how overlay_graph and attribute_graph work, eg for G_ip and G_phy
-    graph = unwrap_graph(overlay_graph)
+#TODO: explain how OverlayGraph and attribute_graph work, eg for G_ip and G_phy
+    graph = unwrap_graph(OverlayGraph)
     node = unwrap_nodes(node)
     if attribute_graph:
         attribute_graph = unwrap_graph(attribute_graph)
@@ -311,13 +312,13 @@ def neigh_attr(overlay_graph, node, attribute, attribute_graph = None):
     valid_nodes = (n for n in neighs if n in attribute_graph)
     return (attribute_graph.node[node].get(attribute) for node in valid_nodes)
 
-def neigh_equal(overlay_graph, node, attribute, attribute_graph = None):
-    """Boolean, True if neighbors in overlay_graph all have same attribute in attribute_graph"""
-    neigh_attrs = neigh_attr(overlay_graph, node, attribute, attribute_graph)
+def neigh_equal(OverlayGraph, node, attribute, attribute_graph = None):
+    """Boolean, True if neighbors in OverlayGraph all have same attribute in attribute_graph"""
+    neigh_attrs = neigh_attr(OverlayGraph, node, attribute, attribute_graph)
     return len(set(neigh_attrs)) == 1
 
-def unique_attr(overlay_graph, attribute):
-    graph = unwrap_graph(overlay_graph)
+def unique_attr(OverlayGraph, attribute):
+    graph = unwrap_graph(OverlayGraph)
     return set(graph.node[node].get(attribute) for node in graph)
 
 def groupby(attribute, nodes):

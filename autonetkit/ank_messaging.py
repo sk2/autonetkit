@@ -15,6 +15,7 @@ use_http_post = config.settings['Http Post']['active']
 if use_http_post:
     import urllib
 
+
 class AnkMessaging(object):
 
     def __init__(self, host = None):
@@ -120,3 +121,5 @@ class AnkMessaging(object):
             log.info("Unable to connect to HTTP Server %s" % self.http_url)
 
         #print data # can log response
+
+
