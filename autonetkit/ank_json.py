@@ -15,7 +15,7 @@ class AnkEncoder(json.JSONEncoder):
             return str(obj)
         if isinstance(obj, netaddr.IPNetwork):
             return str(obj)
-        if isinstance(obj, autonetkit.anm.overlay_node):
+        if isinstance(obj, autonetkit.anm.OverlayNode):
             #TODO: add documentation about serializing anm nodes
             log.warning("%s is anm overlay_node. Use attribute rather than object in compiler." % obj)
             return str(obj)
@@ -94,13 +94,13 @@ def jsonify_anm(anm):
     """ Returns a dictionary of json-ified overlay graphs"""
     anm_json = {}
     for overlay_id in anm.overlays():
-        overlay_graph = anm[overlay_id]._graph.copy()
-        for n in overlay_graph:
+        OverlayGraph = anm[overlay_id]._graph.copy()
+        for n in OverlayGraph:
             try:
-                del overlay_graph.node[n]['id']
+                del OverlayGraph.node[n]['id']
             except KeyError:
                 pass
-        anm_json[overlay_id] = ank_json_dumps(overlay_graph)
+        anm_json[overlay_id] = ank_json_dumps(OverlayGraph)
     return json.dumps(anm_json)
 
 
@@ -109,12 +109,12 @@ def jsonify_anm_with_graphics(anm):
     anm_json = {}
     graphics_graph = anm["graphics"]._graph.copy()
     for overlay_id in anm.overlays():
-        overlay_graph = anm[overlay_id]._graph.copy()
+        OverlayGraph = anm[overlay_id]._graph.copy()
 
 
 #TODO: only update, don't over write if already set
-        for n in overlay_graph:
-            overlay_graph.node[n].update( {
+        for n in OverlayGraph:
+            OverlayGraph.node[n].update( {
                 'x': graphics_graph.node[n]['x'],
                 'y': graphics_graph.node[n]['y'],
                 'asn': graphics_graph.node[n]['asn'],
@@ -124,13 +124,13 @@ def jsonify_anm_with_graphics(anm):
                 })
 
             try:
-                del overlay_graph.node[n]['id']
+                del OverlayGraph.node[n]['id']
             except KeyError:
                 pass
 
 #TODO: combine these, and round as necessary
-        x = (overlay_graph.node[n]['x'] for n in overlay_graph)
-        y = (overlay_graph.node[n]['y'] for n in overlay_graph)
+        x = (OverlayGraph.node[n]['x'] for n in OverlayGraph)
+        y = (OverlayGraph.node[n]['y'] for n in OverlayGraph)
         try:
             x_min = min(x)
         except ValueError:
@@ -139,11 +139,11 @@ def jsonify_anm_with_graphics(anm):
             y_min = min(y)
         except ValueError:
             y_min = 0
-        for n in overlay_graph:
-            overlay_graph.node[n]['x'] += - x_min
-            overlay_graph.node[n]['y'] += - y_min
+        for n in OverlayGraph:
+            OverlayGraph.node[n]['x'] += - x_min
+            OverlayGraph.node[n]['y'] += - y_min
 
-        anm_json[overlay_id] = ank_json_dumps(overlay_graph)
+        anm_json[overlay_id] = ank_json_dumps(OverlayGraph)
     return anm_json
 
 def jsonify_nidb(nidb):
