@@ -598,10 +598,8 @@ class NetkitCompiler(PlatformCompiler):
         lab_topology = self.nidb.topology[self.host]
             # TODO: also store platform
         from netaddr import IPNetwork
-        #address_block = IPNetwork(
-        #    "172.16.0.0/16").iter_hosts()  # TODO: read this from config
         address_block = IPNetwork(settings.get("tapsn")
-            or "172.16.0.0/16").iter_hosts() # (Niklas) added for backwards compatibility
+            or "172.16.0.0/16").iter_hosts() # added for backwards compatibility
         lab_topology.tap_host = address_block.next()
         lab_topology.tap_vm = address_block.next()  # for tunnel host
         for node in sorted(self.nidb.nodes("is_l3device", host=self.host)):
