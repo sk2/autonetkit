@@ -51,7 +51,6 @@ class RouterCompiler(object):
         self.interfaces(node)
         if node in self.anm['ospf']:
             self.ospf(node)
-
         if node in self.anm['bgp']:
             self.bgp(node)
 
@@ -213,21 +212,35 @@ class QuaggaCompiler(RouterCompiler):
     """Base Quagga compiler"""
     lo_interface = "lo0:1"
 
+    def compile(self, node):
+        super(QuaggaCompiler, self).compile(node)
+        if node in self.anm['isis']:
+            self.isis(node)
+
     def interfaces(self, node):
         """Quagga interface compiler"""
         ipv4_node = self.anm['ipv4'].node(node)
         phy_node = self.anm['phy'].node(node)
         g_ospf = self.anm['ospf']
+        g_isis = self.anm['isis']
 
         super(QuaggaCompiler, self).interfaces(node)
         # OSPF cost
         for interface in node.interfaces:
             ospf_link = g_ospf.edge(
                 interface._edge_id)  # find link in OSPF with this ID
+            isis_link = g_isis.edge(interface._edge_id) # find link in ISIS with this ID 
 # TODO: check finding link if returns cost from r1 -> r2, or r2 -> r1
 # (directionality)
             if ospf_link:
                 interface['ospf_cost'] = ospf_link.cost
+
+            if isis_link:
+                interface['isis'] = True
+                isis_node = g_isis.node(node)
+                interface['isis_process_id'] = isis_node.process_id  #TODO: should this be from the interface?
+                interface['isis_metric'] = isis_link.metric  
+                interface['isis_hello'] = isis_link.hello
 
         if phy_node.is_router:
             node.interfaces.append(
@@ -262,6 +275,15 @@ class QuaggaCompiler(RouterCompiler):
                 network=ip_link.dst.subnet,
                 area=default_ebgp_area,
             )
+
+    def isis(self, node):
+        """Sets ISIS links
+        """
+        g_isis = self.anm['isis']
+        isis_node = g_isis.node(node)
+        node.isis.net = isis_node.net
+        node.isis.process_id = isis_node.process_id
+        
 
 # TODO: Don't render netkit lab topology if no netkit hosts
 
@@ -576,8 +598,10 @@ class NetkitCompiler(PlatformCompiler):
         lab_topology = self.nidb.topology[self.host]
             # TODO: also store platform
         from netaddr import IPNetwork
-        address_block = IPNetwork(
-            "172.16.0.0/16").iter_hosts()  # TODO: read this from config
+        #address_block = IPNetwork(
+        #    "172.16.0.0/16").iter_hosts()  # TODO: read this from config
+        address_block = IPNetwork(settings.get("tapsn")
+            or "172.16.0.0/16").iter_hosts() # (Niklas) added for backwards compatibility
         lab_topology.tap_host = address_block.next()
         lab_topology.tap_vm = address_block.next()  # for tunnel host
         for node in sorted(self.nidb.nodes("is_l3device", host=self.host)):

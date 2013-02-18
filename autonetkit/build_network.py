@@ -92,10 +92,8 @@ def build(input_graph_string):
 
     ank_utils.copy_attr_from(g_in, g_phy, "include_csr")
 
-    if igp == "ospf":
-        build_ospf(anm)
-    if igp == "isis":
-        build_isis(anm)
+    build_ospf(anm)
+    build_isis(anm)
     build_bgp(anm)
 
     return anm
@@ -499,7 +497,7 @@ def build_ospf(anm):
     import netaddr
     g_in = anm['input']
     g_ospf = anm.add_overlay("ospf")
-    g_ospf.add_nodes_from(g_in.nodes("is_router"), retain=['asn'])
+    g_ospf.add_nodes_from(g_in.nodes("is_router", igp = "ospf"), retain=['asn'])
     g_ospf.add_nodes_from(g_in.nodes("is_switch"), retain=['asn'])
     g_ospf.add_edges_from(g_in.edges(), retain=['edge_id'])
 
@@ -616,7 +614,7 @@ def build_isis(anm):
     g_in = anm['input']
     g_ipv4 = anm['ipv4']
     g_isis = anm.add_overlay("isis")
-    g_isis.add_nodes_from(g_in.nodes("is_router"), retain=['asn'])
+    g_isis.add_nodes_from(g_in.nodes("is_router", igp = "isis"), retain=['asn'])
     g_isis.add_nodes_from(g_in.nodes("is_switch"), retain=['asn'])
     g_isis.add_edges_from(g_in.edges(), retain=['edge_id'])
 # Merge and explode switches
@@ -635,6 +633,7 @@ def build_isis(anm):
 
     for link in g_isis.edges():
         link.metric = 1  # default
+        # link.hello = 5 # for debugging, TODO: read from graph
 
 
 def update_messaging(anm):
