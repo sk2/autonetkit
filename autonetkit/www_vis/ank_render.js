@@ -964,28 +964,7 @@ function redraw() {
     interface_attributes = _.uniq(interface_attributes);
     propagate_interface_label_select(interface_attributes);
 
-    if (overlay_id == "ospf") {
-
-        //objects of {asn, area, node} for each area in each node
-        // Follows decorate-sort-undecorate pattern, but for nest instead of sort
-        all_areas = _.map(nodes, function(node) {
-            return _.map(node.areas, function(area) {
-                return {'asn': node.asn, 'area': area, 'node': node};
-            });
-
-        });
-        all_areas = _.flatten(all_areas); //collapse from hierarchical nested structure
-
-        node_attr_groups = d3.nest()
-            .key(function(d) { return d.asn + "," + d.area})
-            .rollup( function(d) { 
-                return _.map(d, function(elem){ return elem.node; }); // extract the node from the decorated attributes
-            }) 
-        .entries(all_areas);
-
-    } else {
-        node_attr_groups = d3.nest().key( node_group_id ).entries(nodes);
-    }
+    node_attr_groups = d3.nest().key( node_group_id ).entries(nodes);
     edge_attr_groups = d3.nest().key(function(d) { return d[edge_group_id]; }).entries(jsondata.links);
     //TODO: use edge attr groups for edge colours
 
