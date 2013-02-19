@@ -3,6 +3,10 @@
   border: none;
 }
 
+body {
+  background-color: white;
+}
+
 .infobar {
   display: none;
   border: none;
