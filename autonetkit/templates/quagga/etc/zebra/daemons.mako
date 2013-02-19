@@ -34,3 +34,9 @@ ripngd=yes
 %else:
 ripngd=no
 %endif      
+##
+% if node.isis:
+isisd=yes
+%else:
+isisd=no
+%endif      
