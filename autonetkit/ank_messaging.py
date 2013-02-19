@@ -16,6 +16,20 @@ if use_http_post:
     import urllib
 
 
+def update_http(anm, nidb = None):
+    host = config.settings['Http Post']['server']
+    port = config.settings['Http Post']['port']
+
+        body = autonetkit.ank_json.dumps(anm, nidb)
+    else:
+
+    params = urllib.urlencode({
+        'body': body
+        })
+    try:
+        data = urllib.urlopen(http_url, params).read()
+    except IOError, e:
+        log.info("Unable to connect to HTTP Server %s: e" % (http_url, e))
 class AnkMessaging(object):
 
     def __init__(self, host = None):
