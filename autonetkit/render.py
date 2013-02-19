@@ -212,7 +212,7 @@ def cache_folders(nidb):
     for base in render_base:
         folder_list = []
         full_base = resource_path(base)
-        base_cache_dir = os.path.join(folder_cache_dir, full_base)
+        base_cache_dir = os.path.join(folder_cache_dir, base)
         shutil.copytree(full_base, base_cache_dir, 
                 ignore=shutil.ignore_patterns('*.mako'))
 
