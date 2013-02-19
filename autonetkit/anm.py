@@ -533,6 +533,18 @@ class OverlayBase(object):
     def edge(self, edge_to_find, dst_to_find=None):
         """returns edge in this graph with same src and same edge_id"""
         try:
+            src = edge_to_find
+            dst = dst_to_find
+            src.lower()
+            dst.lower()
+            if self._graph.has_edge(src, dst):
+                return OverlayEdge(self._anm, self._overlay_id, src, dst)
+        except AttributeError:
+            pass # not strings
+        except TypeError:
+            pass
+
+        try:
             if dst_to_find:
                 src_id = edge_to_find.node_id
                 search_id = dst_to_find.node_id
