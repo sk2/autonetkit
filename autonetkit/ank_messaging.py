@@ -19,9 +19,12 @@ if use_http_post:
 def update_http(anm, nidb = None):
     host = config.settings['Http Post']['server']
     port = config.settings['Http Post']['port']
+    http_url = "http://%s:%s/publish" % (host, port)
 
+    if nidb:
         body = autonetkit.ank_json.dumps(anm, nidb)
     else:
+        body = autonetkit.ank_json.dumps(anm)
 
     params = urllib.urlencode({
         'body': body
@@ -30,6 +33,45 @@ def update_http(anm, nidb = None):
         data = urllib.urlopen(http_url, params).read()
     except IOError, e:
         log.info("Unable to connect to HTTP Server %s: e" % (http_url, e))
+
+def highlight(nodes, edges):
+    def nfilter(n):
+        try:
+            return n.id
+        except AttributeError:
+            return n # likely already a node id (string)
+
+    def efilter(e):
+        try:
+            return (e.src.id, e.dst.id)
+        except AttributeError:
+            return e # likely already edge (src, dst) id tuple (string)
+
+    nodes = [nfilter(n) for n in nodes]
+    edges = [efilter(e) for e in edges]
+    import json
+    body = json.dumps({
+        'highlight': {
+        'nodes': nodes,
+        'edges': edges,
+        }
+        })
+
+    params = urllib.urlencode({
+        'body': body
+        })
+
+    #TODO: split this common function out, create at runtime so don't need to keep reading config
+    host = config.settings['Http Post']['server']
+    port = config.settings['Http Post']['port']
+    http_url = "http://%s:%s/publish" % (host, port)
+    try:
+        data = urllib.urlopen(http_url, params).read()
+    except IOError, e:
+        log.info("Unable to connect to HTTP Server %s: e" % (http_url, e))
+
+
+
 class AnkMessaging(object):
 
     def __init__(self, host = None):
@@ -135,5 +177,6 @@ class AnkMessaging(object):
             log.info("Unable to connect to HTTP Server %s" % self.http_url)
 
         #print data # can log response
+
 
 

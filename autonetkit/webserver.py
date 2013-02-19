@@ -124,12 +124,19 @@ class MyWebHandler(tornado.web.RequestHandler):
             self.ank_accessor.ip_allocation = alloc
             self.update_listeners("ip_allocations")
         elif "path" in body_parsed:
+            #TODO: check if need to write_message to listeners
             self.update_listeners(data) # could do extra processing here
+        elif "highlight" in body_parsed:
+            print "Received highlight data"
+            self.update_listeners(data) # could do extra processing here
+            #TODO check why need to do following - should be automatic for update_listeners?
+            for listener in self.application.socket_listeners:
+                listener.write_message(data) 
         else:
             self.update_listeners(data)
 
-        for listener in self.application.socket_listeners:
-            listener.write_message(data) 
+        #for listener in self.application.socket_listeners:
+            #listener.write_message(data) 
 
     def update_listeners(self, index):
         for listener in self.application.socket_listeners:

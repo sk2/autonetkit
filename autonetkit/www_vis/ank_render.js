@@ -81,9 +81,36 @@ ws.onmessage = function (evt) {
             redraw();
             redraw_ip_allocations();
         }
-    } else {
+    } 
+    else if("highlight" in data) {
+        apply_highlight(data['highlight']);
+    }
+    else {
+        console.log("Received unknown data", data);
         //TODO: work out why reaching here if passing the "graph in data" check above
     }
+}
+
+highlight_nodes = [];
+highlight_edges = [];
+
+var apply_highlight = function(data){
+
+    highlight_nodes = _.map(data['nodes'], function(n) {
+        return nodes_by_id[n];
+    })
+
+    highlight_edges = _.map(data['edges'], function(n) {
+        //Put into same form as json.links
+        src = nodes_by_id[n[0]];
+        src_index = nodes.indexOf(src);
+        target = nodes_by_id[n[1]];
+        target_index = nodes.indexOf(target);
+
+        return {'source': src_index, 'target': target_index};
+    }
+    )
+    redraw();
 }
 
 var load_ip_allocations = function(d) {
@@ -1008,6 +1035,33 @@ function redraw() {
 
     //TODO: filter the json data x and y ranges: store in nodes, and use this for the image plotting
 
+
+    
+        node_highlight = chart.selectAll(".node_highlight")
+        .data(highlight_nodes, function(d) { return d.id;})
+
+        node_highlight.enter().append("svg:rect")
+        .attr("class", "node_highlight")
+        .attr("width", icon_width + 20 )
+        .attr("height", icon_height + 20)
+        .style("stroke", "red")
+        .style("stroke-width", 2)
+        .style("fill", "none")
+        .attr("x", function(d) { return d.x + x_offset - 20/2; })
+        .attr("y", function(d) { return d.y + y_offset - 20/2; })
+        .style("opacity", 40)
+
+        node_highlight
+        .transition()
+        .style("opacity", 100)
+        .duration(500)
+
+        node_highlight.exit().transition()
+        .duration(1000)
+        .style("opacity",0)
+        .remove();
+
+
     var line = chart.selectAll(".link_edge")
         .data(jsondata.links, edge_id)
 
@@ -1066,6 +1120,41 @@ function redraw() {
         return link_info(d); 
         }
     });
+
+
+        var highlight_line = chart.selectAll(".highlight_line")
+        .data(highlight_edges)
+
+        //line.enter().append("line")
+        highlight_line.enter().append("svg:path")
+        .attr("class", "highlight_line")
+        .attr("id", 
+                function(d) { 
+                    return "path"+d.source+"_"+d.target; 
+                }) 
+    .attr("d", graph_edge)
+        .style("stroke-width", function() {
+            //TODO: use this stroke-width function on mouseout too
+            if (jsondata.directed) {
+                return 3;
+            } 
+            return 3;
+        })
+    //.attr("marker-end", marker_end)
+    .style("stroke", "red")
+        //.style("fill", "rgb(113,119,254)")
+        .style("fill", "none")
+
+    highlight_line.transition()
+        .duration(500)
+        .attr("d", graph_edge)
+        .style("opacity", line_opacity)
+
+        highlight_line.exit().transition()
+        .duration(1000)
+        .style("opacity",0)
+        .remove();
+
 
     //If undirected graph, then need two interfaces per edge: one at each end
     if (display_interfaces) {
@@ -1316,6 +1405,10 @@ function redraw() {
         return node_info(d); 
         }
     });
+
+
+
+
 
     device_labels = chart.selectAll(".device_label")
         .data(nodes, node_id)
