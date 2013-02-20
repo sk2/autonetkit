@@ -38,7 +38,7 @@ def set_node_default(OverlayGraph, nbunch, **kwargs):
 #TODO: also add ability to copy multiple attributes
 
 #TODO: rename to copy_node_attr_from
-def copy_attr_from(overlay_src, overlay_dst, src_attr, dst_attr = None, nbunch = None):
+def copy_attr_from(overlay_src, overlay_dst, src_attr, dst_attr = None, nbunch = None, type = None):
     #TODO: add dest format, eg to convert to int
     if not dst_attr:
         dst_attr = src_attr
@@ -50,13 +50,20 @@ def copy_attr_from(overlay_src, overlay_dst, src_attr, dst_attr = None, nbunch =
 
     for n in nbunch:
         try:
-            graph_dst.node[n][dst_attr] = graph_src.node[n][src_attr]
+            val = graph_src.node[n][src_attr]
         except KeyError:
             #TODO: check if because node doesn't exist in dest, or because attribute doesn't exist in graph_src
             log.debug("Unable to copy node attribute %s for %s in %s" % (src_attr, n, overlay_src))
+        else:
+            #TODO: use a dtype to take an int, float, etc
+            if type is float:
+                val = float(val)
+            elif type is int:
+                val = int(val)
 
+            graph_dst.node[n][dst_attr] = val
 
-def copy_edge_attr_from(overlay_src, overlay_dst, src_attr, dst_attr = None):
+def copy_edge_attr_from(overlay_src, overlay_dst, src_attr, dst_attr = None, type = None):
     graph_src = unwrap_graph(overlay_src)
     graph_dst = unwrap_graph(overlay_dst)
     if not dst_attr:
@@ -64,10 +71,18 @@ def copy_edge_attr_from(overlay_src, overlay_dst, src_attr, dst_attr = None):
 
     for src, dst in graph_src.edges():
         try:
-            graph_dst[src][dst][dst_attr] = graph_src[src][dst][src_attr]
+            val = graph_src[src][dst][src_attr]
         except KeyError:
             #TODO: check if because edge doesn't exist in dest, or because attribute doesn't exist in graph_src
             log.debug("Unable to copy edge attribute %s for (%s, %s) in %s" % (src_attr, src, dst, overlay_src))
+        else:
+            #TODO: use a dtype to take an int, float, etc
+            if type is float:
+                val = float(val)
+            elif type is int:
+                val = int(val)
+
+            graph_dst[src][dst][dst_attr] = val
 
 def stringify_netaddr(graph):
     import netaddr
@@ -332,6 +347,7 @@ def groupby(attribute, nodes):
 
 def boundary_nodes(graph, nodes):
     # TODO: move to utils
+#TODO: use networkx boundary nodes directly: does the same thing
     """ returns nodes at boundary of G based on edge_boundary from networkx """
     graph = unwrap_graph(graph)
     nodes = list(nodes)
