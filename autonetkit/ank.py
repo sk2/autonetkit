@@ -61,7 +61,8 @@ def copy_attr_from(overlay_src, overlay_dst, src_attr, dst_attr = None, nbunch =
             elif type is int:
                 val = int(val)
 
-            graph_dst.node[n][dst_attr] = val
+            if n in graph_dst:
+                graph_dst.node[n][dst_attr] = val
 
 def copy_edge_attr_from(overlay_src, overlay_dst, src_attr, dst_attr = None, type = None):
     graph_src = unwrap_graph(overlay_src)
