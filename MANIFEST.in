@@ -1,8 +1,0 @@
-include autonetkit/www_vis/*.*
-include autonetkit/www_vis/icons/*.*
-include autonetkit/www_vis/font/*.*
-
-recursive-include autonetkit/textfsm *
-include autonetkit/templates/*.mako
-recursive-include autonetkit/templates/quagga *
-include autonetkit/config/configspec.cfg
