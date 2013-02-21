@@ -377,7 +377,6 @@ class IpTree(object):
 # assigns allocated addresses back to hosts
         edges = [n for n in self if n.is_host() and n.host.src]
         for edge in edges:
-            #print "edge subnet", edge.subnet
             edge.host.ip_address = edge.subnet
 
 #TODO: do we need to store loopback groups into advertise addresses?
