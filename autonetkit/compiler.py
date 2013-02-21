@@ -416,9 +416,17 @@ class IosBaseCompiler(RouterCompiler):
                     'route_target': route_target,
                 })
 
+            for interface in node.interfaces:
+                vrf_link = self.anm['vrf'].edge(interface._edge_id)
+                if vrf_link:
+                    interface['vrf'] = vrf_link.vrf # mark interface as being part of vrf
+
         node.vrf.use_ipv4 = node.ip.use_ipv4
         node.vrf.use_ipv6 = node.ip.use_ipv6
         node.vrf.vrfs.sort("vrf")
+
+
+
 
     def isis(self, node):
         # TODO: this needs to go into IOS2 for neatness
