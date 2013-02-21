@@ -39,10 +39,29 @@
        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
        })();
 
-     </script>
-
-          <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+</script>
+          <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
           <script>!window.jQuery && document.write(unescape('%3Cscript src="js/jquery-1.7.2.min.js"%3E%3C/script%3E'))</script>
+          <script type="text/javascript" src="js/underscore-min.js"></script>
+          
+        <script type="text/javascript">
+            $.getJSON('https://api.github.com/repos/sk2/autonetkit/contributors', function(data) {
+                    var items = [];
+
+                    items = _.map(data, function(user) {
+                        return  ('<li id="' + user.login + '">' + 
+                            '<a href="' + user.html_url + '">' + user.login + '</a>'
+                            + ' (' + user.contributions + ') </li>')
+                        console.log(user);
+                        });
+
+                    $('<ul/>', {
+                        'class': '',
+                        html: items.join('')
+                        }).appendTo('#contributors');
+                    });
+              </script>
+
         </head>
         <body>
 
@@ -90,11 +109,27 @@
               </div>
             </div>
 
+
+            
             <div class="row">
+              <div class="span10">
+                <h2>Developers</h2>
+                <p>
+                Contributors to the current <a href="https://github.com/sk2/autonetkit">AutoNetkit release</a> on GitHub:
+                <span id = "contributors">
+                    </span>
+            </div>
+          </div>
+
+
+            <hr />
+
+
+                        <div class="row">
               <div class="span10">
                 <h2>Contributors</h2>
                 <p>
-                The following people have contributed to AutoNetkit:
+                Thanks also to contributors to previous releases, bugfixes, improvements, and suggestions from:
             <ul>
               <li>Simon Knight</li>
               <li>Hung Nguyen</li>
@@ -104,22 +139,6 @@
               <li>Iain Phillips</li>
               <li>Askar Jaboldinov</li>
               <li>Matthew Roughan</li>
-            </ul>
-            </p>
-
-    
-            </div>
-          </div>
-
-            <hr />
-
-
-                        <div class="row">
-              <div class="span10">
-                <h2>Acknowledgements</h2>
-                <p>
-                            Thanks also to bugfixes, improvments, and suggestions from:
-            <ul>
               <li>Hitesh Mali</li>
               <li>Ingmar Poese</li>
               <li>Michael Rumsewicz</li>
