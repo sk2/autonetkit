@@ -162,14 +162,20 @@ def vrf_edges(g_vrf):
 def build_vrf(anm):
     """Build VRF Overlay"""
     g_in = anm['input']
-    g_vrf = anm.add_overlay("vrf", directed=True)
+    g_vrf = anm.add_overlay("vrf")
     g_vrf.add_nodes_from(g_in.nodes("is_router"), retain=["vrf_role", "vrf"])
 
     allocate_vrf_roles(g_vrf)
 
-    pe_to_ce_edges, ce_to_pe_edges = vrf_edges(g_vrf)
-    g_vrf.add_edges_from(pe_to_ce_edges, direction="u")
-    g_vrf.add_edges_from(ce_to_pe_edges, direction="d")
+    def is_pe_ce_edge(edge):
+        src_vrf_role = g_vrf.node(edge.src).vrf_role
+        dst_vrf_role = g_vrf.node(edge.dst).vrf_role
+        return (src_vrf_role, dst_vrf_role) in (("PE", "CE"), ("CE", "PE"))
+
+    vrf_add_edges = (e for e in g_in.edges()
+            if e.src.asn == e.dst.asn and is_pe_ce_edge(e))
+
+    g_vrf.add_edges_from(vrf_add_edges, retain=['edge_id'])
 
     add_vrf_loopbacks(g_vrf)
     # allocate route-targets per AS
@@ -188,6 +194,10 @@ def build_vrf(anm):
         vrf_loopbacks = node.interfaces("is_loopback", "vrf_name")
         for index, interface in enumerate(vrf_loopbacks, start = 101):
             interface.index = index 
+
+    for edge in g_vrf.edges():
+        # Set the vrf of the edge to be that of the CE device (either src or dst)
+        edge.vrf = edge.src.vrf if edge.src.vrf_role is "CE" else edge.dst.vrf
 
 # Create route-targets
 
