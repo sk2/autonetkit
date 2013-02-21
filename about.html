@@ -48,7 +48,9 @@
             $.getJSON('https://api.github.com/repos/sk2/autonetkit/contributors?callback=?', function(data) {
                     var items = [];
 
-                    items = _.map(data, function(user) {
+                    user_data = data['data'];
+
+                    items = _.map(user_data, function(user) {
                         return  ('<li id="' + user.login + '">' + 
                             '<a href="' + user.html_url + '">' + user.login + '</a>'
                             + ' (' + user.contributions + ') </li>')
