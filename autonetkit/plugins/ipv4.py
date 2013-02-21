@@ -457,6 +457,7 @@ def allocate_ips(G_ip, infrastructure = True):
             'name': "ip",
             'children': 
             [loopback_tree, secondary_loopback_tree, cd_tree],
+            #[cd_tree],
             #[secondary_loopback_tree],
                 #[loopback_tree],
             }
