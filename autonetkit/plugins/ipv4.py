@@ -68,7 +68,7 @@ class TreeNode(object):
         return isinstance(self.host, autonetkit.anm.overlay_interface)
 
     def is_host(self):
-        return self.host
+        return bool(self.host)
 
     def children(self):
         return [TreeNode(self.graph, child) for child in self.graph.successors(self.node)]
