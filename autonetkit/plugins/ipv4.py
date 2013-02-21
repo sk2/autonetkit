@@ -291,7 +291,7 @@ class IpTree(object):
             prefixlen = node.prefixlen
             subnet = node.subnet.subnet(prefixlen+1)
 
-            if node.is_loopback_group(): # special case of single AS -> root is loopback_group
+            if node.is_loopback_group() or node.is_collision_domain(): # special case of single AS -> root is loopback_group
                 #TODO: generalise this rather than repeated code with below
                 #node.subnet = subnet.next() # Note: don't break into smaller subnets if single-AS
                 iterhosts = node.subnet.iter_hosts() # ensures start at .1 rather than .0
