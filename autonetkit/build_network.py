@@ -98,6 +98,8 @@ def build(input_graph_string):
     build_ospf(anm)
     build_isis(anm)
     build_bgp(anm)
+    autonetkit.update_http(anm)
+    autonetkit.update_http(anm)
 
     return anm
 
@@ -422,9 +424,9 @@ def build_ipv4(anm, infrastructure=True):
         ank_utils.split(g_ipv4, edges_to_split, retain='edge_id'))
     for node in split_created_nodes:
         node['graphics'].x = ank_utils.neigh_average(g_ipv4, node, "x",
-                                                     g_graphics)
+                                                     g_graphics) + 0.1 # temporary fix for gh-90
         node['graphics'].y = ank_utils.neigh_average(g_ipv4, node, "y",
-                                                     g_graphics)
+                                                     g_graphics) + 0.1 # temporary fix for gh-90
         asn = ank_utils.neigh_most_frequent(
             g_ipv4, node, "asn", g_phy)  # arbitrary choice
         node['graphics'].asn = asn
