@@ -46,7 +46,7 @@ def transfer(host, username, local, remote = None, key_filename = None):
     log.debug("Put file %s to %s" % (local, remote))
     ftp.close()
 
-def extract(host, username, tar_file, cd_dir, timeout = 30, key_filename = None, verbosity = 0):
+def extract(host, username, tar_file, cd_dir, timeout = 45, key_filename = None, verbosity = 0):
     """Extract and start lab"""
     log.debug("Extracting and starting lab on %s" % (host))
     log.info("Extracting and starting Netkit lab")
