@@ -316,7 +316,6 @@ class PikaClient(object):
     def on_message(self, channel, method, header, body):
         #pika.log.info('PikaClient: message received: %s' % body)
         import zlib
-        print "got message", body
         try:
             body = zlib.decompress(body)
         except zlib.error:
