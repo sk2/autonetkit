@@ -126,8 +126,22 @@ class MyWebHandler(tornado.web.RequestHandler):
         elif "path" in body_parsed:
             #TODO: check if need to write_message to listeners
             self.update_listeners(data) # could do extra processing here
+#TODO: check if update_listeners is working correctly, why do need next line?
+            for listener in self.application.socket_listeners:
+                listener.write_message(data) 
+        elif "starting" in body_parsed:
+            #TODO: check if need to write_message to listeners
+            self.update_listeners(data) # could do extra processing here
+#TODO: check if update_listeners is working correctly, why do need next line?
+            for listener in self.application.socket_listeners:
+                listener.write_message(data) 
+        elif "lab started" in body_parsed:
+            #TODO: check if need to write_message to listeners
+            self.update_listeners(data) # could do extra processing here
+#TODO: check if update_listeners is working correctly, why do need next line?
+            for listener in self.application.socket_listeners:
+                listener.write_message(data) 
         elif "highlight" in body_parsed:
-            print "Received highlight data"
             self.update_listeners(data) # could do extra processing here
             #TODO check why need to do following - should be automatic for update_listeners?
             for listener in self.application.socket_listeners:
@@ -302,6 +316,7 @@ class PikaClient(object):
     def on_message(self, channel, method, header, body):
         #pika.log.info('PikaClient: message received: %s' % body)
         import zlib
+        print "got message", body
         try:
             body = zlib.decompress(body)
         except zlib.error:
