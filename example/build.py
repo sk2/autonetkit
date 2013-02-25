@@ -55,7 +55,6 @@ def build_overlays(filename):
 
 
 def build_ip(anm):
-    import itertools
     import autonetkit.plugins.ipv4 as ip
     G_ip = anm.add_overlay("ip")
     G_in = anm['input']
@@ -80,7 +79,6 @@ def build_ip(anm):
         node.host = G_phy.node(node.neighbors().next()).host # Set host to be same as one of the neighbors (arbitrary choice)
         asn = ank.neigh_most_frequent(G_ip, node, "asn", G_phy) # arbitrary choice
         node.asn = asn
-
         graphics_node.asn = asn
         graphics_node.x = ank.neigh_average(G_ip, node, "x", G_graphics)
 
