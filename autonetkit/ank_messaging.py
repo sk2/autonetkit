@@ -32,7 +32,7 @@ def update_http(anm, nidb = None):
     try:
         data = urllib.urlopen(http_url, params).read()
     except IOError, e:
-        log.info("Unable to connect to HTTP Server %s: e" % (http_url, e))
+        log.info("Unable to connect to HTTP Server %s" % http_url)
 
 def highlight(nodes, edges):
     def nfilter(n):
@@ -131,9 +131,7 @@ class AnkMessaging(object):
     def publish_json(self, body):
         import json
         data = json.dumps(body, cls=autonetkit.ank_json.AnkEncoder, indent = 4)
-        
         self.publish(None, None, data)
-
 
     def publish_telnet(self, exchange, routing_key, body):
         try:
