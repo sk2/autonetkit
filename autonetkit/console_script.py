@@ -38,7 +38,7 @@ def file_monitor(filename):
         yield False
 
 
-def manage_network(input_graph_string, timestamp, build_options, reload_build=False):
+def manage_network(input_graph_string, timestamp, build_options, reload_build=False, grid = None):
     """Build, compile, render network as appropriate"""
     # import build_network_simple as build_network
     import autonetkit.build_network as build_network
@@ -49,7 +49,12 @@ def manage_network(input_graph_string, timestamp, build_options, reload_build=Fa
     messaging = ank_messaging.AnkMessaging()
 
     if build_options['build']:
-        anm = build_network.build(input_graph_string)
+        if input_graph_string:
+            graph = build_network.load(input_graph_string)
+        elif grid:
+            graph = build_network.grid_2d(grid)
+
+        anm = build_network.build(graph)
         if not build_options['compile']:
             # publish without nidb
             body = ank_json.dumps(anm)
@@ -93,7 +98,7 @@ def manage_network(input_graph_string, timestamp, build_options, reload_build=Fa
     # updated, eg for deploy
 
     if build_options['deploy']:
-        deploy_network(nidb, input_graph_string)
+        deploy_network(anm, nidb, input_graph_string)
 
     if build_options['measure']:
         measure_network(nidb)
@@ -134,8 +139,8 @@ def parse_options():
                         help="Archive ANM, NIDB, and IP allocations")
     parser.add_argument('--measure', action="store_true",
                         default=False, help="Measure")
-    parser.add_argument('--webserver', action="store_true",
-                        default=False, help="Webserver")
+    parser.add_argument('--webserver', action="store_true", default=False, help="Webserver")
+    parser.add_argument('--grid', type=int, help="Webserver")
     arguments = parser.parse_args()
     return arguments
 
@@ -177,11 +182,16 @@ def main():
         input_string = sys.stdin
         now = datetime.now()
         timestamp = now.strftime("%Y%m%d_%H%M%S_%f")
+    elif options.grid:
+        input_string = ""
+        now = datetime.now()
+        timestamp = now.strftime("%Y%m%d_%H%M%S_%f")
+        pass # don't have input file
     else:
         log.info("No input file specified. Exiting")
         raise SystemExit
 
-    manage_network(input_string, timestamp, build_options=build_options)
+    manage_network(input_string, timestamp, build_options=build_options, grid = options.grid)
 
 
 # TODO: work out why build_options is being clobbered for monitor mode
@@ -264,7 +274,7 @@ def compile_network(anm):
     return nidb
 
 
-def deploy_network(nidb, input_graph_string):
+def deploy_network(anm, nidb, input_graph_string):
 
     # TODO: make this driven from config file
     log.info("Deploying network")
@@ -286,7 +296,10 @@ def deploy_network(nidb, input_graph_string):
                 except ImportError:
                     pass  # development module, may not be available
                 if platform == "cisco":
-                    cisco_deploy.package(nidb, config_path, input_graph_string)
+                    if input_graph_string: # input xml file
+                        cisco_deploy.package(nidb, config_path, input_graph_string)
+                    else:
+                        cisco_deploy.create_xml(anm, nidb, input_graph_string)
                 continue
 
             username = platform_data['username']
@@ -310,13 +323,13 @@ def measure_network(nidb):
     remote_hosts = [node.tap.ip for node in nidb.nodes("is_router")]
     dest_node = random.choice([n for n in nidb.nodes("is_l3device")])
     log.info("Tracing to randomly selected node: %s" % dest_node)
-    dest_ip = dest_node.interfaces[
-        0].ip_address  # choose random interface on this node
+    dest_ip = dest_node.interfaces[0].ipv4_address  # choose random interface on this node
 
     command = "traceroute -n -a -U -w 0.5 %s" % dest_ip
+    measure.send(nidb, command, remote_hosts, threads = 10)
     # abort after 10 fails, proceed on any success, 0.1 second timeout (quite aggressive)
-    # command = 'vtysh -c "show ip route"'
-    measure.send(nidb, "measure_client", command, remote_hosts)
+    #command = 'vtysh -c "show ip route"'
+    #measure.send(nidb, command, remote_hosts, threads = 5)
     remote_hosts = [node.tap.ip for node in nidb.nodes(
         "is_router") if node.bgp.ebgp_neighbors]
     command = "cat /var/log/zebra/bgpd.log"
