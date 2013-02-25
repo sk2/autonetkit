@@ -1461,19 +1461,19 @@ function redraw_paths() {
         .attr("d", traceroute_line)
         .attr("class", "trace_path")
         .style("stroke-width", 10)
-        .style("stroke", "red")
+        .style("stroke", "yellow")
         .style("fill", "none")
         //TODO: can use following to map to marker type
         //.attr("marker-end", function(d) { return "url(#" + d.type + ")"; });
         //.attr("marker-end", "url(#trace)")
         .on("mouseover", function(d){
-            d3.select(this).style("stroke", "blue");
+            d3.select(this).style("stroke", "orange");
             d3.select(this).style("stroke-width", "6");
             path_info(d);
         })
     .on("mouseout", function(){
         d3.select(this).style("stroke-width", "3");
-        d3.select(this).style("stroke", "orange");
+        d3.select(this).style("stroke", "yellow");
         clear_label();
     })
     .transition()
