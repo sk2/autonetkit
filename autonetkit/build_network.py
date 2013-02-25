@@ -15,11 +15,7 @@ __all__ = ['build']
 
 MESSAGING = ank_messaging.AnkMessaging()
 
-
-def build(input_graph_string):
-    """Main function to build network overlay topologies"""
-    anm = autonetkit.anm.AbstractNetworkModel()
-
+def load(input_graph_string):
     try:
         input_graph = graphml.load_graphml(input_graph_string)
     except autonetkit.exception.AnkIncorrectFileFormat:
@@ -36,6 +32,40 @@ def build(input_graph_string):
             'deploy': True,
             },
         }
+
+    return input_graph
+
+def grid_2d(dim):
+    import networkx as nx
+    graph = nx.grid_2d_graph(dim, dim)
+
+    for n in graph:
+        graph.node[n]['asn'] = 1
+        graph.node[n]['x'] = n[0] * 150
+        graph.node[n]['y'] = n[1] * 150
+        graph.node[n]['device_type'] = 'router'
+        graph.node[n]['platform'] = 'cisco'
+        graph.node[n]['syntax'] = 'ios2'
+        graph.node[n]['host'] = 'internal'
+
+    mapping = {n: "%s_%s" % (n[0], n[1]) for n in graph}
+    nx.relabel_nodes(graph, mapping, copy=False) # Networkx wipes data if remap with same labels
+    for index, (src, dst) in enumerate(graph.edges()):
+        graph[src][dst]['type'] = "physical"
+        graph[src][dst]['edge_id'] = "%s_%s_%s" % (index, src, dst) # add global index for sorting
+
+    SETTINGS['General']['deploy'] = True
+    SETTINGS['Deploy Hosts']['internal'] = {
+        'cisco': {
+        'deploy': True,
+        },
+    }
+
+    return graph
+
+def build(input_graph):
+    """Main function to build network overlay topologies"""
+    anm = autonetkit.anm.AbstractNetworkModel()
 
     input_undirected = nx.Graph(input_graph)
     g_in = anm.add_overlay("input", graph=input_undirected)
@@ -65,6 +95,7 @@ def build(input_graph_string):
                               'device_subtype', 'pop', 'asn'])
 
     build_phy(anm)
+    autonetkit.update_http(anm)
     g_phy = anm['phy']
 
     build_vrf(anm)
@@ -98,7 +129,6 @@ def build(input_graph_string):
     build_ospf(anm)
     build_isis(anm)
     build_bgp(anm)
-    autonetkit.update_http(anm)
     autonetkit.update_http(anm)
 
     return anm
