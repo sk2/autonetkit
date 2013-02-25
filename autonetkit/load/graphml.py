@@ -193,7 +193,7 @@ def load_graphml(input_data):
         # we need to map node ids to contain network to ensure unique labels
         #mapping = dict( (n, "%s__%s" % (d['label'], d['asn'])) for n, d in graph.nodes(data=True))
 
-    mapping = dict( (n, d['label']) for n, d in graph.nodes(data=True))
+    mapping = dict( (n, d['label']) for n, d in graph.nodes(data=True)) #TODO: use dict comprehension
     if not all( key == val for key, val in mapping.items()):
         nx.relabel_nodes(graph, mapping, copy=False) # Networkx wipes data if remap with same labels
 
