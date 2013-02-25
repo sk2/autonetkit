@@ -10,9 +10,7 @@ def sh_ip_route(nidb, data):
     template = open(template_file)
     re_table = textfsm.TextFSM(template)
     routes = re_table.ParseText(data)
-    print "\t".join(re_table.header)
-    for route in routes:
-        print "\t".join(route)
+    print "\t".join(route)
     return
 
 def traceroute(nidb, data):
@@ -39,7 +37,7 @@ def reverse_lookup(nidb, address):
             return ("loopback", node)
 
         for interface in node.interfaces:
-            if str(interface.ip_address) == address:
+            if str(interface.ipv4_address) == address:
                 return (interface.id, node)
             
     return None 
