@@ -79,7 +79,7 @@ def main():
         #remote_hosts = remote_hosts[:3] # truncate for testing
         dest_node = random.choice(list(nidb.routers()))
         log.info("Tracing to randomly selected node: %s" % dest_node)
-        dest_ip = dest_node.interfaces[0].ip_address # choose random interface on this node
+        dest_ip = dest_node.interfaces[0].ipv4_address # choose random interface on this node
         command = "traceroute -n -a -U -w 0.5 %s" % dest_ip 
         #command = 'vtysh -c "show ip route"'
         measure.send(nidb, command, remote_hosts, threads = 20)
