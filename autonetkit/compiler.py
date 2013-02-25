@@ -41,6 +41,9 @@ class RouterCompiler(object):
 
         node.ip.use_ipv4 = phy_node.use_ipv4
         node.ip.use_ipv6 = phy_node.use_ipv6
+        if not (node.ip.use_ipv4 and node.ip.use_ipv6):
+            log.debug("Neither IPv4 nor IPv6 specified for %s, using IPv4" % node)
+            node.ip.use_ipv4 = True
 
         node.label = naming.network_hostname(phy_node)
         node.input_label = phy_node.id
@@ -233,7 +236,7 @@ class QuaggaCompiler(RouterCompiler):
 # TODO: check finding link if returns cost from r1 -> r2, or r2 -> r1
 # (directionality)
             if ospf_link:
-                interface['ospf_cost'] = ospf_link.cost
+                interface['ospf_cost'] = int(ospf_link.cost)
 
             if isis_link:
                 interface['isis'] = True
@@ -335,7 +338,7 @@ class IosBaseCompiler(RouterCompiler):
             ospf_link = g_ospf.edge(
                 interface._edge_id)  # find link in OSPF with this ID
             if ospf_link:
-                interface['ospf_cost'] = ospf_link.cost
+                interface['ospf_cost'] = int(ospf_link.cost)
                 interface['ospf_use_ivp4'] = node.ospf.use_ipv4
                 interface['ospf_use_ivp6'] = node.ospf.use_ipv6
             isis_link = g_isis.edge(
@@ -473,7 +476,7 @@ class Ios2Compiler(IosBaseCompiler):
                 area = str(ospf_link.area)
                 interfaces_by_area[area].append({
                     'id': interface.id,
-                    'cost': ospf_link.cost,
+                    'cost': int(ospf_link.cost),
                     'passive': False,
                 })
         # TODO: make this use the same parameter format as other appends...
