@@ -745,6 +745,19 @@ init_mathjax();
 </head>
 <body>
 <div class="text_cell_render border-box-sizing rendered_html">
+<h1>
+  AutoNetkit Tutorial
+</h1>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Please note this is a growing work in progress. It will be split into multiple tutorials in the future. To contribute, please fork the AutoNetkit GitHub project, modify the tutorial, and submit a pull request with your changes.</p>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2>
+  Visualisation Server
+</h2>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
 <p>The first step is to enable the visualisation server.
 At a command prompt, run</p>
 <pre><code>$ank_webserver
@@ -775,6 +788,15 @@ At a command prompt, run</p>
 </div>
 </div>
 </div>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2>
+  Designing a Network
+</h2>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>In this tutorial we use a graphml file created using the yEd graph editor, available at <a href="http://www.yworks.com/en/products_yed_about.html">http://www.yworks.com/en/products_yed_about.html</a>.</p>
+<p>You can download yEd to modify the graphml file, and rerun the code to view the changes.</p>
 </div>
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>We can now import the graphml load module to import a graphml file, and the Abstract Network Model to store our overlay networks.</p>
@@ -1076,6 +1098,11 @@ At a command prompt, run</p>
 </div>
 </div>
 </div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2>
+  IP Addressing
+</h2>
+</div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
 <div class="prompt input_prompt">In&nbsp;[16]:</div>
@@ -1181,6 +1208,11 @@ At a command prompt, run</p>
 </div>
 <div class="text_cell_render border-box-sizing rendered_html">
 <p><img alt="" src="files/images/ipv6_alloc.png" /></p>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2>
+  Compiling to NIDB
+</h2>
 </div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
@@ -1442,6 +1474,11 @@ At a command prompt, run</p>
 </div>
 </div>
 </div>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2>
+  Rendering to Templates
+</h2>
 </div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
@@ -1717,6 +1754,23 @@ log file /var/log/zebra/bgpd.log
 </div>
 </div>
 </div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2>
+  Deploying to Netkit Host
+</h2>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The deployment has a number of requirements:</p>
+<ol>
+<li>Netkit (available at <a href="netkit.org">netkit.org</a>) installed (download and installation instructions available <a href="http://wiki.netkit.org/index.php/Download_Official">here</a>).</li>
+<li>SSH keys configured for remote server (AutoNetkit currently uses SSH to deploy to the server - you can use the localhost through SSH for now)</li>
+<li>
+<p>A virtual machine created for the TAP Interface:</p>
+<p>vstart taptunnelvm --con0=none --eth0=tap,172.16.0.1,172.16.0.2</p>
+</li>
+</ol>
+<p>(this will require sudo access on the Netkit host)</p>
+</div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
 <div class="prompt input_prompt">In&nbsp;[21]:</div>
@@ -1768,6 +1822,11 @@ log file /var/log/zebra/bgpd.log
 </div>
 </div>
 <div class="text_cell_render border-box-sizing rendered_html">
+<h2>
+  Measurement
+</h2>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
 <p>Measure requires a remote host to be setup, and rabbitmq running, (by default ank will look on localhost)
  http://www.rabbitmq.com/install-debian.html</p>
 <p>or for OS X: http://superuser.com/questions/464311/open-port-5672-tcp-for-access-to-rabbitmq-on-mac</p>
@@ -1778,14 +1837,16 @@ log file /var/log/zebra/bgpd.log
 <p>note this needs paramiko... which needs to compile. if you don't have python headers, eg in ubuntu: </p>
 <pre><code>sudo apt-get install python-dev
 
- wget https://raw.github.com/sk2/autonetkit/master/autonetkit/measure_client.py
+wget https://raw.github.com/sk2/autonetkit/master/autonetkit/measure_client.py
 
- sk2@ubuntu:~$ python measure_client.py --server 192.168.255.1
+$ python measure_client.py --server 192.168.255.1
 </code></pre>
-<p>where --server specifies the rabbitmq server
- can also use through ANK package:
+<p>where --server specifies the rabbitmq server</p>
+<p>can also use through ANK package:
  install ank through github, then install Exscript</p>
 <p>Can then run the below measurement commands</p>
+<pre><code>$ ank_measure_client --server 192.168.129.1
+</code></pre>
 </div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
