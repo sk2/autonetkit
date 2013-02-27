@@ -744,13 +744,47 @@ init_mathjax();
 </script>
 </head>
 <body>
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The first step is to enable the visualisation server.
+At a command prompt, run</p>
+<pre><code>$ank_webserver
+</code></pre>
+<p>You should get the following message:</p>
+<pre><code>Visualisation server started
+</code></pre>
+<p>We can test that AutoNetkit can send to the webserver:</p>
+</div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
-<div class="prompt input_prompt">In&nbsp;[61]:</div>
+<div class="prompt input_prompt">In&nbsp;[1]:</div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="kn">import</span> <span class="nn">autonetkit</span>
+<span class="n">autonetkit</span><span class="o">.</span><span class="n">update_http</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+<div class="vbox output_wrapper">
+<div class="output vbox">
+<div class="hbox output_area">
+<div class="prompt output_prompt"></div>
+<div class="output_subarea output_stream output_stderr">
+<pre><span class="ansigrey">INFO</span> Visualisation server running
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can now import the graphml load module to import a graphml file, and the Abstract Network Model to store our overlay networks.</p>
+</div>
+<div class="cell border-box-sizing code_cell vbox">
+<div class="input hbox">
+<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="input_area box-flex1">
+<div class="highlight"><pre><span class="kn">import</span> <span class="nn">autonetkit.load.graphml</span> <span class="kn">as</span> <span class="nn">graphml</span>
 <span class="kn">import</span> <span class="nn">autonetkit.anm</span>
-<span class="kn">import</span> <span class="nn">autonetkit.load.graphml</span> <span class="kn">as</span> <span class="nn">graphml</span>
 
 <span class="n">anm</span> <span class="o">=</span>  <span class="n">autonetkit</span><span class="o">.</span><span class="n">ANM</span><span class="p">()</span>
 <span class="c">#input_graph = graphml.load_graphml(&quot;small_internet.graphml&quot;)</span>
@@ -767,7 +801,7 @@ init_mathjax();
 </div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
-<div class="prompt input_prompt">In&nbsp;[62]:</div>
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="n">g_phy</span> <span class="o">=</span> <span class="n">anm</span><span class="p">[</span><span class="s">&#39;phy&#39;</span><span class="p">]</span>
 <span class="n">g_phy</span><span class="o">.</span><span class="n">add_nodes_from</span><span class="p">(</span><span class="n">g_in</span><span class="p">,</span> <span class="n">retain</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;label&#39;</span><span class="p">,</span> <span class="s">&#39;device_type&#39;</span><span class="p">,</span> <span class="s">&#39;asn&#39;</span><span class="p">,</span> <span class="s">&#39;platform&#39;</span><span class="p">,</span> <span class="s">&#39;host&#39;</span><span class="p">,</span> <span class="s">&#39;syntax&#39;</span><span class="p">])</span>
@@ -782,9 +816,12 @@ init_mathjax();
 <div class="text_cell_render border-box-sizing rendered_html">
 <p><img alt="" src="files/images/phy.png" /></p>
 </div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The OSPF graph is constructed from routers in the physical graph, and edges in the physical graph, that are within an AS.</p>
+</div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
-<div class="prompt input_prompt">In&nbsp;[63]:</div>
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="n">g_ospf</span> <span class="o">=</span> <span class="n">anm</span><span class="o">.</span><span class="n">add_overlay</span><span class="p">(</span><span class="s">&quot;ospf&quot;</span><span class="p">,</span> <span class="n">g_in</span><span class="o">.</span><span class="n">routers</span><span class="p">())</span>
 <span class="n">g_ospf</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">((</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">g_in</span><span class="o">.</span><span class="n">edges</span><span class="p">()</span> <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">src</span><span class="o">.</span><span class="n">asn</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">dst</span><span class="o">.</span><span class="n">asn</span><span class="p">),</span> <span class="n">retain</span><span class="o">=</span><span class="s">&#39;edge_id&#39;</span><span class="p">)</span>
@@ -800,11 +837,11 @@ init_mathjax();
 <p><img alt="" src="files/images/ospf.png" /></p>
 </div>
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Now create the BGP overlays</p>
+<p>Now create the BGP overlays, also using the routers. This is a directed graph.</p>
 </div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
-<div class="prompt input_prompt">In&nbsp;[64]:</div>
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="n">g_bgp</span> <span class="o">=</span> <span class="n">anm</span><span class="o">.</span><span class="n">add_overlay</span><span class="p">(</span><span class="s">&quot;bgp&quot;</span><span class="p">,</span> <span class="n">g_in</span><span class="o">.</span><span class="n">routers</span><span class="p">(),</span> <span class="n">directed</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
 <span class="n">autonetkit</span><span class="o">.</span><span class="n">update_http</span><span class="p">(</span><span class="n">anm</span><span class="p">)</span>
@@ -818,7 +855,7 @@ init_mathjax();
 </div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
-<div class="prompt input_prompt">In&nbsp;[65]:</div>
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="n">g_bgp</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">((</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">g_in</span><span class="o">.</span><span class="n">edges</span><span class="p">()</span> <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">src</span><span class="o">.</span><span class="n">asn</span> <span class="o">!=</span> <span class="n">e</span><span class="o">.</span><span class="n">dst</span><span class="o">.</span><span class="n">asn</span><span class="p">),</span> 
     <span class="n">bidirectional</span> <span class="o">=</span> <span class="bp">True</span><span class="p">,</span> <span class="nb">type</span> <span class="o">=</span> <span class="s">&#39;ebgp&#39;</span><span class="p">,</span> <span class="n">retain</span><span class="o">=</span><span class="s">&#39;edge_id&#39;</span><span class="p">)</span>
@@ -833,7 +870,7 @@ init_mathjax();
 </div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
-<div class="prompt input_prompt">In&nbsp;[66]:</div>
+<div class="prompt input_prompt">In&nbsp;[7]:</div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="n">g_bgp</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">(((</span><span class="n">s</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">g_bgp</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">g_bgp</span> 
     <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">asn</span> <span class="o">==</span> <span class="n">t</span><span class="o">.</span><span class="n">asn</span> <span class="ow">and</span> <span class="n">s</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">t</span><span class="p">),</span> <span class="nb">type</span> <span class="o">=</span> <span class="s">&#39;ibgp&#39;</span><span class="p">)</span>
@@ -848,7 +885,7 @@ init_mathjax();
 </div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
-<div class="prompt input_prompt">In&nbsp;[67]:</div>
+<div class="prompt input_prompt">In&nbsp;[8]:</div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="kn">import</span> <span class="nn">autonetkit.ank_messaging</span> <span class="kn">as</span> <span class="nn">ank_messaging</span>
 </pre></div>
@@ -866,7 +903,7 @@ init_mathjax();
 </div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
-<div class="prompt input_prompt">In&nbsp;[68]:</div>
+<div class="prompt input_prompt">In&nbsp;[9]:</div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="n">asn</span> <span class="o">=</span> <span class="mi">30</span> <span class="c"># change me</span>
 <span class="n">nodes</span> <span class="o">=</span> <span class="p">[</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">g_bgp</span> <span class="k">if</span> <span class="n">n</span><span class="o">.</span><span class="n">asn</span> <span class="o">==</span> <span class="n">asn</span><span class="p">]</span>
@@ -894,7 +931,7 @@ init_mathjax();
 </div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
-<div class="prompt input_prompt">In&nbsp;[69]:</div>
+<div class="prompt input_prompt">In&nbsp;[10]:</div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="kn">from</span> <span class="nn">autonetkit.ank_utils</span> <span class="kn">import</span> <span class="n">unwrap_graph</span><span class="p">,</span> <span class="n">unwrap_nodes</span>
 
@@ -926,7 +963,7 @@ init_mathjax();
 </div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
-<div class="prompt input_prompt">In&nbsp;[70]:</div>
+<div class="prompt input_prompt">In&nbsp;[11]:</div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="n">graph</span> <span class="o">=</span> <span class="n">unwrap_graph</span><span class="p">(</span><span class="n">g_ospf</span><span class="p">)</span>
 <span class="n">T</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">minimum_spanning_tree</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
@@ -950,7 +987,7 @@ init_mathjax();
 </div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
-<div class="prompt input_prompt">In&nbsp;[71]:</div>
+<div class="prompt input_prompt">In&nbsp;[12]:</div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="kn">import</span> <span class="nn">autonetkit.ank</span> <span class="kn">as</span> <span class="nn">ank_utils</span>
 <span class="n">ank_utils</span><span class="o">.</span><span class="n">copy_edge_attr_from</span><span class="p">(</span><span class="n">g_in</span><span class="p">,</span> <span class="n">g_ospf</span><span class="p">,</span> <span class="s">&quot;ospf_cost&quot;</span><span class="p">,</span> <span class="n">dst_attr</span><span class="o">=</span><span class="s">&quot;cost&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
@@ -971,7 +1008,7 @@ init_mathjax();
 </div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
-<div class="prompt input_prompt">In&nbsp;[72]:</div>
+<div class="prompt input_prompt">In&nbsp;[13]:</div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="n">asn</span> <span class="o">=</span> <span class="mi">20</span>
 <span class="n">nbunch</span> <span class="o">=</span> <span class="n">unwrap_nodes</span><span class="p">(</span><span class="n">g_bgp</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">asn</span><span class="o">=</span><span class="n">asn</span><span class="p">))</span>
@@ -989,7 +1026,7 @@ init_mathjax();
 </div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
-<div class="prompt input_prompt">In&nbsp;[73]:</div>
+<div class="prompt input_prompt">In&nbsp;[14]:</div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="n">nodes</span> <span class="o">=</span> <span class="p">[</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">graph</span><span class="p">]</span>
 <span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="n">choice</span>
@@ -1014,7 +1051,7 @@ init_mathjax();
 </div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
-<div class="prompt input_prompt">In&nbsp;[74]:</div>
+<div class="prompt input_prompt">In&nbsp;[15]:</div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="n">nodes</span> <span class="o">=</span> <span class="p">[</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">graph</span><span class="p">]</span>
 <span class="n">src</span> <span class="o">=</span> <span class="n">choice</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span>
@@ -1032,7 +1069,7 @@ init_mathjax();
 <div class="hbox output_area">
 <div class="prompt output_prompt"></div>
 <div class="output_subarea output_stream output_stdout">
-<pre>3.0
+<pre>11.0
 </pre>
 </div>
 </div>
@@ -1041,7 +1078,7 @@ init_mathjax();
 </div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
-<div class="prompt input_prompt">In&nbsp;[92]:</div>
+<div class="prompt input_prompt">In&nbsp;[16]:</div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="kn">import</span> <span class="nn">autonetkit.plugins.ipv4</span> <span class="kn">as</span> <span class="nn">ipv4</span>
 <span class="kn">import</span> <span class="nn">autonetkit.ank</span> <span class="kn">as</span> <span class="nn">ank</span>
@@ -1088,7 +1125,7 @@ init_mathjax();
 </div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
-<div class="prompt input_prompt">In&nbsp;[29]:</div>
+<div class="prompt input_prompt">In&nbsp;[17]:</div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="n">ipv4</span><span class="o">.</span><span class="n">allocate_ips</span><span class="p">(</span><span class="n">g_ipv4</span><span class="p">)</span>
 <span class="n">autonetkit</span><span class="o">.</span><span class="n">update_http</span><span class="p">(</span><span class="n">anm</span><span class="p">)</span>
@@ -1115,7 +1152,7 @@ init_mathjax();
 </div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
-<div class="prompt input_prompt">In&nbsp;[30]:</div>
+<div class="prompt input_prompt">In&nbsp;[18]:</div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="kn">import</span> <span class="nn">autonetkit.plugins.ipv6</span> <span class="kn">as</span> <span class="nn">ipv6</span>
 <span class="c"># uses the nodes and edges from ipv4</span>
@@ -1147,7 +1184,7 @@ init_mathjax();
 </div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
-<div class="prompt input_prompt">In&nbsp;[17]:</div>
+<div class="prompt input_prompt">In&nbsp;[19]:</div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="n">nidb</span> <span class="o">=</span> <span class="n">autonetkit</span><span class="o">.</span><span class="n">nidb</span><span class="o">.</span><span class="n">NIDB</span><span class="p">()</span> 
 <span class="n">G_phy</span> <span class="o">=</span> <span class="n">anm</span><span class="p">[</span><span class="s">&#39;phy&#39;</span><span class="p">]</span>
@@ -1173,7 +1210,7 @@ init_mathjax();
 </div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
-<div class="prompt input_prompt">In&nbsp;[18]:</div>
+<div class="prompt input_prompt">In&nbsp;[20]:</div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="kn">import</span> <span class="nn">autonetkit.compiler</span>
 
@@ -1200,9 +1237,215 @@ init_mathjax();
 </div>
 </div>
 </div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can see the NIDB for a router, this is what gets pushed into the templates:</p>
+</div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
-<div class="prompt input_prompt">In&nbsp;[19]:</div>
+<div class="prompt input_prompt">In&nbsp;[21]:</div>
+<div class="input_area box-flex1">
+<div class="highlight"><pre><span class="n">router</span> <span class="o">=</span> <span class="n">nidb</span><span class="o">.</span><span class="n">routers</span><span class="p">()</span><span class="o">.</span><span class="n">next</span><span class="p">()</span> <span class="c"># choose a router</span>
+<span class="n">router</span><span class="o">.</span><span class="n">dump</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+<div class="vbox output_wrapper">
+<div class="output vbox">
+<div class="hbox output_area">
+<div class="prompt output_prompt"></div>
+<div class="output_subarea output_stream output_stdout">
+<pre>{&apos;Network&apos;: None,
+ &apos;_interfaces&apos;: {None: {&apos;description&apos;: &apos;loopback&apos;, &apos;type&apos;: None}},
+ &apos;asn&apos;: 1,
+ &apos;bgp&apos;: {&apos;debug&apos;: True,
+         &apos;ebgp_neighbors&apos;: [],
+         &apos;ibgp_neighbors&apos;: [{&apos;asn&apos;: 1,
+                             &apos;loopback&apos;: IPAddress(&apos;192.168.1.3&apos;),
+                             &apos;neighbor&apos;: &apos;r16&apos;,
+                             &apos;update_source&apos;: &apos;loopback 0&apos;,
+                             &apos;use_ipv4&apos;: True,
+                             &apos;use_ipv6&apos;: False},
+                            {&apos;asn&apos;: 1,
+                             &apos;loopback&apos;: IPAddress(&apos;192.168.1.4&apos;),
+                             &apos;neighbor&apos;: &apos;r17&apos;,
+                             &apos;update_source&apos;: &apos;loopback 0&apos;,
+                             &apos;use_ipv4&apos;: True,
+                             &apos;use_ipv6&apos;: False},
+                            {&apos;asn&apos;: 1,
+                             &apos;loopback&apos;: IPAddress(&apos;192.168.1.5&apos;),
+                             &apos;neighbor&apos;: &apos;r14&apos;,
+                             &apos;update_source&apos;: &apos;loopback 0&apos;,
+                             &apos;use_ipv4&apos;: True,
+                             &apos;use_ipv6&apos;: False},
+                            {&apos;asn&apos;: 1,
+                             &apos;loopback&apos;: IPAddress(&apos;192.168.1.6&apos;),
+                             &apos;neighbor&apos;: &apos;r15&apos;,
+                             &apos;update_source&apos;: &apos;loopback 0&apos;,
+                             &apos;use_ipv4&apos;: True,
+                             &apos;use_ipv6&apos;: False},
+                            {&apos;asn&apos;: 1,
+                             &apos;loopback&apos;: IPAddress(&apos;192.168.1.7&apos;),
+                             &apos;neighbor&apos;: &apos;r12&apos;,
+                             &apos;update_source&apos;: &apos;loopback 0&apos;,
+                             &apos;use_ipv4&apos;: True,
+                             &apos;use_ipv6&apos;: False},
+                            {&apos;asn&apos;: 1,
+                             &apos;loopback&apos;: IPAddress(&apos;192.168.1.8&apos;),
+                             &apos;neighbor&apos;: &apos;r13&apos;,
+                             &apos;update_source&apos;: &apos;loopback 0&apos;,
+                             &apos;use_ipv4&apos;: True,
+                             &apos;use_ipv6&apos;: False},
+                            {&apos;asn&apos;: 1,
+                             &apos;loopback&apos;: IPAddress(&apos;192.168.1.9&apos;),
+                             &apos;neighbor&apos;: &apos;r10&apos;,
+                             &apos;update_source&apos;: &apos;loopback 0&apos;,
+                             &apos;use_ipv4&apos;: True,
+                             &apos;use_ipv6&apos;: False},
+                            {&apos;asn&apos;: 1,
+                             &apos;loopback&apos;: IPAddress(&apos;192.168.1.10&apos;),
+                             &apos;neighbor&apos;: &apos;r11&apos;,
+                             &apos;update_source&apos;: &apos;loopback 0&apos;,
+                             &apos;use_ipv4&apos;: True,
+                             &apos;use_ipv6&apos;: False},
+                            {&apos;asn&apos;: 1,
+                             &apos;loopback&apos;: IPAddress(&apos;192.168.1.18&apos;),
+                             &apos;neighbor&apos;: &apos;r3&apos;,
+                             &apos;update_source&apos;: &apos;loopback 0&apos;,
+                             &apos;use_ipv4&apos;: True,
+                             &apos;use_ipv6&apos;: False},
+                            {&apos;asn&apos;: 1,
+                             &apos;loopback&apos;: IPAddress(&apos;192.168.1.19&apos;),
+                             &apos;neighbor&apos;: &apos;r8&apos;,
+                             &apos;update_source&apos;: &apos;loopback 0&apos;,
+                             &apos;use_ipv4&apos;: True,
+                             &apos;use_ipv6&apos;: False},
+                            {&apos;asn&apos;: 1,
+                             &apos;loopback&apos;: IPAddress(&apos;192.168.1.15&apos;),
+                             &apos;neighbor&apos;: &apos;r6&apos;,
+                             &apos;update_source&apos;: &apos;loopback 0&apos;,
+                             &apos;use_ipv4&apos;: True,
+                             &apos;use_ipv6&apos;: False},
+                            {&apos;asn&apos;: 1,
+                             &apos;loopback&apos;: IPAddress(&apos;192.168.1.11&apos;),
+                             &apos;neighbor&apos;: &apos;r18&apos;,
+                             &apos;update_source&apos;: &apos;loopback 0&apos;,
+                             &apos;use_ipv4&apos;: True,
+                             &apos;use_ipv6&apos;: False},
+                            {&apos;asn&apos;: 1,
+                             &apos;loopback&apos;: IPAddress(&apos;192.168.1.12&apos;),
+                             &apos;neighbor&apos;: &apos;r19&apos;,
+                             &apos;update_source&apos;: &apos;loopback 0&apos;,
+                             &apos;use_ipv4&apos;: True,
+                             &apos;use_ipv6&apos;: False},
+                            {&apos;asn&apos;: 1,
+                             &apos;loopback&apos;: IPAddress(&apos;192.168.1.20&apos;),
+                             &apos;neighbor&apos;: &apos;r9&apos;,
+                             &apos;update_source&apos;: &apos;loopback 0&apos;,
+                             &apos;use_ipv4&apos;: True,
+                             &apos;use_ipv6&apos;: False},
+                            {&apos;asn&apos;: 1,
+                             &apos;loopback&apos;: IPAddress(&apos;192.168.1.17&apos;),
+                             &apos;neighbor&apos;: &apos;r2&apos;,
+                             &apos;update_source&apos;: &apos;loopback 0&apos;,
+                             &apos;use_ipv4&apos;: True,
+                             &apos;use_ipv6&apos;: False},
+                            {&apos;asn&apos;: 1,
+                             &apos;loopback&apos;: IPAddress(&apos;192.168.1.16&apos;),
+                             &apos;neighbor&apos;: &apos;r1&apos;,
+                             &apos;update_source&apos;: &apos;loopback 0&apos;,
+                             &apos;use_ipv4&apos;: True,
+                             &apos;use_ipv6&apos;: False},
+                            {&apos;asn&apos;: 1,
+                             &apos;loopback&apos;: IPAddress(&apos;192.168.1.14&apos;),
+                             &apos;neighbor&apos;: &apos;r5&apos;,
+                             &apos;update_source&apos;: &apos;loopback 0&apos;,
+                             &apos;use_ipv4&apos;: True,
+                             &apos;use_ipv6&apos;: False},
+                            {&apos;asn&apos;: 1,
+                             &apos;loopback&apos;: IPAddress(&apos;192.168.1.13&apos;),
+                             &apos;neighbor&apos;: &apos;r4&apos;,
+                             &apos;update_source&apos;: &apos;loopback 0&apos;,
+                             &apos;use_ipv4&apos;: True,
+                             &apos;use_ipv6&apos;: False},
+                            {&apos;asn&apos;: 1,
+                             &apos;loopback&apos;: IPAddress(&apos;192.168.1.1&apos;),
+                             &apos;neighbor&apos;: &apos;r21&apos;,
+                             &apos;update_source&apos;: &apos;loopback 0&apos;,
+                             &apos;use_ipv4&apos;: True,
+                             &apos;use_ipv6&apos;: False},
+                            {&apos;asn&apos;: 1,
+                             &apos;loopback&apos;: IPAddress(&apos;192.168.1.2&apos;),
+                             &apos;neighbor&apos;: &apos;r20&apos;,
+                             &apos;update_source&apos;: &apos;loopback 0&apos;,
+                             &apos;use_ipv4&apos;: True,
+                             &apos;use_ipv6&apos;: False}],
+         &apos;ibgp_rr_clients&apos;: [],
+         &apos;ibgp_rr_parents&apos;: [],
+         &apos;ipv4_advertise_subnets&apos;: [IPNetwork(&apos;10.0.0.0/16&apos;)],
+         &apos;ipv6_advertise_subnets&apos;: []},
+ &apos;device_subtype&apos;: None,
+ &apos;device_type&apos;: &apos;router&apos;,
+ &apos;graphics&apos;: {&apos;device_subtype&apos;: None,
+              &apos;device_type&apos;: &apos;router&apos;,
+              &apos;x&apos;: 335.14050102233887,
+              &apos;y&apos;: 495.67582416534424},
+ &apos;host&apos;: &apos;localhost&apos;,
+ &apos;input_label&apos;: &apos;r21&apos;,
+ &apos;interfaces&apos;: [{&apos;_edge_id&apos;: &apos;r21_r11&apos;,
+                 &apos;description&apos;: &apos;r21 to r11&apos;,
+                 &apos;id&apos;: &apos;eth0&apos;,
+                 &apos;ipv4_address&apos;: IPAddress(&apos;10.0.128.42&apos;),
+                 &apos;ipv4_cidr&apos;: IPNetwork(&apos;10.0.128.42/30&apos;),
+                 &apos;ipv4_subnet&apos;: IPNetwork(&apos;10.0.128.40/30&apos;),
+                 &apos;ipv6_address&apos;: None,
+                 &apos;ospf_cost&apos;: 10,
+                 &apos;physical&apos;: True},
+                {&apos;_edge_id&apos;: &apos;r21_r6&apos;,
+                 &apos;description&apos;: &apos;r21 to r6&apos;,
+                 &apos;id&apos;: &apos;eth1&apos;,
+                 &apos;ipv4_address&apos;: IPAddress(&apos;10.0.0.1&apos;),
+                 &apos;ipv4_cidr&apos;: IPNetwork(&apos;10.0.0.1/30&apos;),
+                 &apos;ipv4_subnet&apos;: IPNetwork(&apos;10.0.0.0/30&apos;),
+                 &apos;ipv6_address&apos;: None,
+                 &apos;ospf_cost&apos;: 10,
+                 &apos;physical&apos;: True},
+                {&apos;description&apos;: &apos;Loopback&apos;,
+                 &apos;id&apos;: &apos;lo0:1&apos;,
+                 &apos;ipv4_address&apos;: IPAddress(&apos;192.168.1.1&apos;),
+                 &apos;ipv4_subnet&apos;: IPNetwork(&apos;192.168.1.1/32&apos;)}],
+ &apos;ip&apos;: {&apos;use_ipv4&apos;: True, &apos;use_ipv6&apos;: None},
+ &apos;label&apos;: &apos;r21&apos;,
+ &apos;loopback&apos;: IPAddress(&apos;192.168.1.1&apos;),
+ &apos;loopback_subnet&apos;: IPNetwork(&apos;192.168.1.1/32&apos;),
+ &apos;ospf&apos;: {&apos;lo_interface&apos;: &apos;lo0:1&apos;,
+          &apos;loopback_area&apos;: 0,
+          &apos;ospf_links&apos;: [{&apos;area&apos;: 0, &apos;network&apos;: IPNetwork(&apos;10.0.0.0/30&apos;)},
+                         {&apos;area&apos;: 0, &apos;network&apos;: IPNetwork(&apos;10.0.128.40/30&apos;)}],
+          &apos;passive_interfaces&apos;: [],
+          &apos;process_id&apos;: 1},
+ &apos;platform&apos;: &apos;netkit&apos;,
+ &apos;render&apos;: {&apos;base&apos;: &apos;templates/quagga&apos;,
+            &apos;base_dst_folder&apos;: &apos;rendered/localhost/netkit/r21&apos;,
+            &apos;dst_file&apos;: &apos;r21.startup&apos;,
+            &apos;dst_folder&apos;: &apos;rendered/localhost/netkit&apos;,
+            &apos;template&apos;: &apos;templates/netkit_startup.mako&apos;},
+ &apos;ssh&apos;: {&apos;use_key&apos;: True},
+ &apos;syntax&apos;: &apos;quagga&apos;,
+ &apos;tap&apos;: {&apos;id&apos;: &apos;eth2&apos;, &apos;ip&apos;: IPAddress(&apos;172.16.0.22&apos;)},
+ &apos;update&apos;: None,
+ &apos;x&apos;: 340.0,
+ &apos;y&apos;: 590.0,
+ &apos;zebra&apos;: {&apos;hostname&apos;: &apos;r21&apos;, &apos;password&apos;: &apos;1234&apos;, &apos;static_routes&apos;: []}}
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell vbox">
+<div class="input hbox">
+<div class="prompt input_prompt">In&nbsp;[22]:</div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="kn">import</span> <span class="nn">autonetkit.render</span>
 <span class="n">autonetkit</span><span class="o">.</span><span class="n">render</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">nidb</span><span class="p">)</span>
@@ -1224,13 +1467,14 @@ init_mathjax();
 </div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
-<div class="prompt input_prompt">In&nbsp;[20]:</div>
+<div class="prompt input_prompt">In&nbsp;[23]:</div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="kn">import</span> <span class="nn">os</span>
 <span class="n">dst_folder</span> <span class="o">=</span> <span class="n">nidb</span><span class="o">.</span><span class="n">topology</span><span class="p">[</span><span class="s">&#39;localhost&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">render_dst_folder</span>
-<span class="k">for</span> <span class="n">path</span><span class="p">,</span> <span class="n">dirs</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">dst_folder</span><span class="p">):</span>
+<span class="n">walked</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">dst_folder</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">path</span><span class="p">,</span> <span class="n">dirs</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">walked</span><span class="p">)[:</span><span class="mi">10</span><span class="p">]:</span> <span class="c"># first ten dirs</span>
   <span class="k">print</span> <span class="n">path</span>
-  <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+  <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span><span class="p">[:</span><span class="mi">10</span><span class="p">]:</span> <span class="c"># first ten files</span>
     <span class="k">print</span> <span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">f</span>
 </pre></div>
 
@@ -1252,17 +1496,6 @@ init_mathjax();
 	r15.startup
 	r16.startup
 	r17.startup
-	r18.startup
-	r19.startup
-	r2.startup
-	r20.startup
-	r21.startup
-	r3.startup
-	r4.startup
-	r5.startup
-	r6.startup
-	r8.startup
-	r9.startup
 rendered/localhost/netkit/r1
 rendered/localhost/netkit/r1/etc
 	hostname
@@ -1285,304 +1518,199 @@ rendered/localhost/netkit/r10/etc
 	shadow
 rendered/localhost/netkit/r10/etc/ssh
 	sshd_config
-rendered/localhost/netkit/r10/etc/zebra
-	bgpd.conf
-	daemons
-	isisd.conf
-	motd.txt
-	ospfd.conf
-	zebra.conf
-rendered/localhost/netkit/r10/root
-rendered/localhost/netkit/r10/root/.ssh
-	authorized_keys
-rendered/localhost/netkit/r11
-rendered/localhost/netkit/r11/etc
-	hostname
-	shadow
-rendered/localhost/netkit/r11/etc/ssh
-	sshd_config
-rendered/localhost/netkit/r11/etc/zebra
-	bgpd.conf
-	daemons
-	isisd.conf
-	motd.txt
-	ospfd.conf
-	zebra.conf
-rendered/localhost/netkit/r11/root
-rendered/localhost/netkit/r11/root/.ssh
-	authorized_keys
-rendered/localhost/netkit/r12
-rendered/localhost/netkit/r12/etc
-	hostname
-	shadow
-rendered/localhost/netkit/r12/etc/ssh
-	sshd_config
-rendered/localhost/netkit/r12/etc/zebra
-	bgpd.conf
-	daemons
-	isisd.conf
-	motd.txt
-	ospfd.conf
-	zebra.conf
-rendered/localhost/netkit/r12/root
-rendered/localhost/netkit/r12/root/.ssh
-	authorized_keys
-rendered/localhost/netkit/r13
-rendered/localhost/netkit/r13/etc
-	hostname
-	shadow
-rendered/localhost/netkit/r13/etc/ssh
-	sshd_config
-rendered/localhost/netkit/r13/etc/zebra
-	bgpd.conf
-	daemons
-	isisd.conf
-	motd.txt
-	ospfd.conf
-	zebra.conf
-rendered/localhost/netkit/r13/root
-rendered/localhost/netkit/r13/root/.ssh
-	authorized_keys
-rendered/localhost/netkit/r14
-rendered/localhost/netkit/r14/etc
-	hostname
-	shadow
-rendered/localhost/netkit/r14/etc/ssh
-	sshd_config
-rendered/localhost/netkit/r14/etc/zebra
-	bgpd.conf
-	daemons
-	isisd.conf
-	motd.txt
-	ospfd.conf
-	zebra.conf
-rendered/localhost/netkit/r14/root
-rendered/localhost/netkit/r14/root/.ssh
-	authorized_keys
-rendered/localhost/netkit/r15
-rendered/localhost/netkit/r15/etc
-	hostname
-	shadow
-rendered/localhost/netkit/r15/etc/ssh
-	sshd_config
-rendered/localhost/netkit/r15/etc/zebra
-	bgpd.conf
-	daemons
-	isisd.conf
-	motd.txt
-	ospfd.conf
-	zebra.conf
-rendered/localhost/netkit/r15/root
-rendered/localhost/netkit/r15/root/.ssh
-	authorized_keys
-rendered/localhost/netkit/r16
-rendered/localhost/netkit/r16/etc
-	hostname
-	shadow
-rendered/localhost/netkit/r16/etc/ssh
-	sshd_config
-rendered/localhost/netkit/r16/etc/zebra
-	bgpd.conf
-	daemons
-	isisd.conf
-	motd.txt
-	ospfd.conf
-	zebra.conf
-rendered/localhost/netkit/r16/root
-rendered/localhost/netkit/r16/root/.ssh
-	authorized_keys
-rendered/localhost/netkit/r17
-rendered/localhost/netkit/r17/etc
-	hostname
-	shadow
-rendered/localhost/netkit/r17/etc/ssh
-	sshd_config
-rendered/localhost/netkit/r17/etc/zebra
-	bgpd.conf
-	daemons
-	isisd.conf
-	motd.txt
-	ospfd.conf
-	zebra.conf
-rendered/localhost/netkit/r17/root
-rendered/localhost/netkit/r17/root/.ssh
-	authorized_keys
-rendered/localhost/netkit/r18
-rendered/localhost/netkit/r18/etc
-	hostname
-	shadow
-rendered/localhost/netkit/r18/etc/ssh
-	sshd_config
-rendered/localhost/netkit/r18/etc/zebra
-	bgpd.conf
-	daemons
-	isisd.conf
-	motd.txt
-	ospfd.conf
-	zebra.conf
-rendered/localhost/netkit/r18/root
-rendered/localhost/netkit/r18/root/.ssh
-	authorized_keys
-rendered/localhost/netkit/r19
-rendered/localhost/netkit/r19/etc
-	hostname
-	shadow
-rendered/localhost/netkit/r19/etc/ssh
-	sshd_config
-rendered/localhost/netkit/r19/etc/zebra
-	bgpd.conf
-	daemons
-	isisd.conf
-	motd.txt
-	ospfd.conf
-	zebra.conf
-rendered/localhost/netkit/r19/root
-rendered/localhost/netkit/r19/root/.ssh
-	authorized_keys
-rendered/localhost/netkit/r2
-rendered/localhost/netkit/r2/etc
-	hostname
-	shadow
-rendered/localhost/netkit/r2/etc/ssh
-	sshd_config
-rendered/localhost/netkit/r2/etc/zebra
-	bgpd.conf
-	daemons
-	isisd.conf
-	motd.txt
-	ospfd.conf
-	zebra.conf
-rendered/localhost/netkit/r2/root
-rendered/localhost/netkit/r2/root/.ssh
-	authorized_keys
-rendered/localhost/netkit/r20
-rendered/localhost/netkit/r20/etc
-	hostname
-	shadow
-rendered/localhost/netkit/r20/etc/ssh
-	sshd_config
-rendered/localhost/netkit/r20/etc/zebra
-	bgpd.conf
-	daemons
-	isisd.conf
-	motd.txt
-	ospfd.conf
-	zebra.conf
-rendered/localhost/netkit/r20/root
-rendered/localhost/netkit/r20/root/.ssh
-	authorized_keys
-rendered/localhost/netkit/r21
-rendered/localhost/netkit/r21/etc
-	hostname
-	shadow
-rendered/localhost/netkit/r21/etc/ssh
-	sshd_config
-rendered/localhost/netkit/r21/etc/zebra
-	bgpd.conf
-	daemons
-	isisd.conf
-	motd.txt
-	ospfd.conf
-	zebra.conf
-rendered/localhost/netkit/r21/root
-rendered/localhost/netkit/r21/root/.ssh
-	authorized_keys
-rendered/localhost/netkit/r3
-rendered/localhost/netkit/r3/etc
-	hostname
-	shadow
-rendered/localhost/netkit/r3/etc/ssh
-	sshd_config
-rendered/localhost/netkit/r3/etc/zebra
-	bgpd.conf
-	daemons
-	isisd.conf
-	motd.txt
-	ospfd.conf
-	zebra.conf
-rendered/localhost/netkit/r3/root
-rendered/localhost/netkit/r3/root/.ssh
-	authorized_keys
-rendered/localhost/netkit/r4
-rendered/localhost/netkit/r4/etc
-	hostname
-	shadow
-rendered/localhost/netkit/r4/etc/ssh
-	sshd_config
-rendered/localhost/netkit/r4/etc/zebra
-	bgpd.conf
-	daemons
-	isisd.conf
-	motd.txt
-	ospfd.conf
-	zebra.conf
-rendered/localhost/netkit/r4/root
-rendered/localhost/netkit/r4/root/.ssh
-	authorized_keys
-rendered/localhost/netkit/r5
-rendered/localhost/netkit/r5/etc
-	hostname
-	shadow
-rendered/localhost/netkit/r5/etc/ssh
-	sshd_config
-rendered/localhost/netkit/r5/etc/zebra
-	bgpd.conf
-	daemons
-	isisd.conf
-	motd.txt
-	ospfd.conf
-	zebra.conf
-rendered/localhost/netkit/r5/root
-rendered/localhost/netkit/r5/root/.ssh
-	authorized_keys
-rendered/localhost/netkit/r6
-rendered/localhost/netkit/r6/etc
-	hostname
-	shadow
-rendered/localhost/netkit/r6/etc/ssh
-	sshd_config
-rendered/localhost/netkit/r6/etc/zebra
-	bgpd.conf
-	daemons
-	isisd.conf
-	motd.txt
-	ospfd.conf
-	zebra.conf
-rendered/localhost/netkit/r6/root
-rendered/localhost/netkit/r6/root/.ssh
-	authorized_keys
-rendered/localhost/netkit/r8
-rendered/localhost/netkit/r8/etc
-	hostname
-	shadow
-rendered/localhost/netkit/r8/etc/ssh
-	sshd_config
-rendered/localhost/netkit/r8/etc/zebra
-	bgpd.conf
-	daemons
-	isisd.conf
-	motd.txt
-	ospfd.conf
-	zebra.conf
-rendered/localhost/netkit/r8/root
-rendered/localhost/netkit/r8/root/.ssh
-	authorized_keys
-rendered/localhost/netkit/r9
-rendered/localhost/netkit/r9/etc
-	hostname
-	shadow
-rendered/localhost/netkit/r9/etc/ssh
-	sshd_config
-rendered/localhost/netkit/r9/etc/zebra
-	bgpd.conf
-	daemons
-	isisd.conf
-	motd.txt
-	ospfd.conf
-	zebra.conf
-rendered/localhost/netkit/r9/root
-rendered/localhost/netkit/r9/root/.ssh
-	authorized_keys
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can see the config files for a router:</p>
+</div>
+<div class="cell border-box-sizing code_cell vbox">
+<div class="input hbox">
+<div class="prompt input_prompt">In&nbsp;[24]:</div>
+<div class="input_area box-flex1">
+<div class="highlight"><pre><span class="n">router</span> <span class="o">=</span> <span class="n">nidb</span><span class="o">.</span><span class="n">routers</span><span class="p">()</span><span class="o">.</span><span class="n">next</span><span class="p">()</span> <span class="c"># choose a router</span>
+<span class="n">zebra_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">router</span><span class="o">.</span><span class="n">render</span><span class="o">.</span><span class="n">base_dst_folder</span><span class="p">,</span> <span class="s">&quot;etc&quot;</span><span class="p">,</span> <span class="s">&quot;zebra&quot;</span><span class="p">)</span>
+
+<span class="n">ospfd_conf</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">zebra_dir</span><span class="p">,</span> <span class="s">&quot;ospfd.conf&quot;</span><span class="p">)</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">ospfd_conf</span><span class="p">,</span> <span class="s">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+    <span class="k">print</span> <span class="n">fh</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+<div class="vbox output_wrapper">
+<div class="output vbox">
+<div class="hbox output_area">
+<div class="prompt output_prompt"></div>
+<div class="output_subarea output_stream output_stdout">
+<pre>hostname r21
+password 1234   
+banner motd file /etc/quagga/motd.txt
+!
+  interface eth0
+  #Link to r21 to r11
+  ip ospf cost 10
+  !
+  interface eth1
+  #Link to r21 to r6
+  ip ospf cost 10
+  !
+!
+router ospf
+  network 10.0.0.0/30 area 0 
+  network 10.0.128.40/30 area 0 
+  !
+  !
+  network 192.168.1.1/32 area 0
+!
+
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell vbox">
+<div class="input hbox">
+<div class="prompt input_prompt">In&nbsp;[25]:</div>
+<div class="input_area box-flex1">
+<div class="highlight"><pre><span class="n">bgpd_conf</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">zebra_dir</span><span class="p">,</span> <span class="s">&quot;bgpd.conf&quot;</span><span class="p">)</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">bgpd_conf</span><span class="p">,</span> <span class="s">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+    <span class="k">print</span> <span class="n">fh</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+<div class="vbox output_wrapper">
+<div class="output vbox">
+<div class="hbox output_area">
+<div class="prompt output_prompt"></div>
+<div class="output_subarea output_stream output_stdout">
+<pre>!
+hostname r21
+password 1234              
+banner motd file /etc/quagga/motd.txt
+!enable password 1234
+!
+  router bgp 1   
+  bgp router-id 192.168.1.1
+  no synchronization
+  network 10.0.0.0/16
+! ibgp
+  ! ibgp peers
+  ! r16
+  neighbor 192.168.1.3 remote-as 1
+  neighbor 192.168.1.3 update-source 192.168.1.1                                                     
+  neighbor 192.168.1.3 send-community      
+  neighbor 192.168.1.3 next-hop-self
+  ! r17
+  neighbor 192.168.1.4 remote-as 1
+  neighbor 192.168.1.4 update-source 192.168.1.1                                                     
+  neighbor 192.168.1.4 send-community      
+  neighbor 192.168.1.4 next-hop-self
+  ! r14
+  neighbor 192.168.1.5 remote-as 1
+  neighbor 192.168.1.5 update-source 192.168.1.1                                                     
+  neighbor 192.168.1.5 send-community      
+  neighbor 192.168.1.5 next-hop-self
+  ! r15
+  neighbor 192.168.1.6 remote-as 1
+  neighbor 192.168.1.6 update-source 192.168.1.1                                                     
+  neighbor 192.168.1.6 send-community      
+  neighbor 192.168.1.6 next-hop-self
+  ! r12
+  neighbor 192.168.1.7 remote-as 1
+  neighbor 192.168.1.7 update-source 192.168.1.1                                                     
+  neighbor 192.168.1.7 send-community      
+  neighbor 192.168.1.7 next-hop-self
+  ! r13
+  neighbor 192.168.1.8 remote-as 1
+  neighbor 192.168.1.8 update-source 192.168.1.1                                                     
+  neighbor 192.168.1.8 send-community      
+  neighbor 192.168.1.8 next-hop-self
+  ! r10
+  neighbor 192.168.1.9 remote-as 1
+  neighbor 192.168.1.9 update-source 192.168.1.1                                                     
+  neighbor 192.168.1.9 send-community      
+  neighbor 192.168.1.9 next-hop-self
+  ! r11
+  neighbor 192.168.1.10 remote-as 1
+  neighbor 192.168.1.10 update-source 192.168.1.1                                                     
+  neighbor 192.168.1.10 send-community      
+  neighbor 192.168.1.10 next-hop-self
+  ! r3
+  neighbor 192.168.1.18 remote-as 1
+  neighbor 192.168.1.18 update-source 192.168.1.1                                                     
+  neighbor 192.168.1.18 send-community      
+  neighbor 192.168.1.18 next-hop-self
+  ! r8
+  neighbor 192.168.1.19 remote-as 1
+  neighbor 192.168.1.19 update-source 192.168.1.1                                                     
+  neighbor 192.168.1.19 send-community      
+  neighbor 192.168.1.19 next-hop-self
+  ! r6
+  neighbor 192.168.1.15 remote-as 1
+  neighbor 192.168.1.15 update-source 192.168.1.1                                                     
+  neighbor 192.168.1.15 send-community      
+  neighbor 192.168.1.15 next-hop-self
+  ! r18
+  neighbor 192.168.1.11 remote-as 1
+  neighbor 192.168.1.11 update-source 192.168.1.1                                                     
+  neighbor 192.168.1.11 send-community      
+  neighbor 192.168.1.11 next-hop-self
+  ! r19
+  neighbor 192.168.1.12 remote-as 1
+  neighbor 192.168.1.12 update-source 192.168.1.1                                                     
+  neighbor 192.168.1.12 send-community      
+  neighbor 192.168.1.12 next-hop-self
+  ! r9
+  neighbor 192.168.1.20 remote-as 1
+  neighbor 192.168.1.20 update-source 192.168.1.1                                                     
+  neighbor 192.168.1.20 send-community      
+  neighbor 192.168.1.20 next-hop-self
+  ! r2
+  neighbor 192.168.1.17 remote-as 1
+  neighbor 192.168.1.17 update-source 192.168.1.1                                                     
+  neighbor 192.168.1.17 send-community      
+  neighbor 192.168.1.17 next-hop-self
+  ! r1
+  neighbor 192.168.1.16 remote-as 1
+  neighbor 192.168.1.16 update-source 192.168.1.1                                                     
+  neighbor 192.168.1.16 send-community      
+  neighbor 192.168.1.16 next-hop-self
+  ! r5
+  neighbor 192.168.1.14 remote-as 1
+  neighbor 192.168.1.14 update-source 192.168.1.1                                                     
+  neighbor 192.168.1.14 send-community      
+  neighbor 192.168.1.14 next-hop-self
+  ! r4
+  neighbor 192.168.1.13 remote-as 1
+  neighbor 192.168.1.13 update-source 192.168.1.1                                                     
+  neighbor 192.168.1.13 send-community      
+  neighbor 192.168.1.13 next-hop-self
+  ! r21
+  neighbor 192.168.1.1 remote-as 1
+  neighbor 192.168.1.1 update-source 192.168.1.1                                                     
+  neighbor 192.168.1.1 send-community      
+  neighbor 192.168.1.1 next-hop-self
+  ! r20
+  neighbor 192.168.1.2 remote-as 1
+  neighbor 192.168.1.2 update-source 192.168.1.1                                                     
+  neighbor 192.168.1.2 send-community      
+  neighbor 192.168.1.2 next-hop-self
+! ebgp
+
+debug bgp
+debug bgp events
+debug bgp filters
+debug bgp fsm
+debug bgp keepalives
+debug bgp updates 
+log file /var/log/zebra/bgpd.log
+
 </pre>
 </div>
 </div>
