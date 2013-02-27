@@ -746,17 +746,7 @@ init_mathjax();
 <body>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
-<div class="prompt input_prompt">In&nbsp;[75]:</div>
-<div class="input_area box-flex1">
-<div class="highlight"><pre><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell vbox">
-<div class="input hbox">
-<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="prompt input_prompt">In&nbsp;[61]:</div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="kn">import</span> <span class="nn">autonetkit</span>
 <span class="kn">import</span> <span class="nn">autonetkit.anm</span>
@@ -777,7 +767,7 @@ init_mathjax();
 </div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
-<div class="prompt input_prompt">In&nbsp;[3]:</div>
+<div class="prompt input_prompt">In&nbsp;[62]:</div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="n">g_phy</span> <span class="o">=</span> <span class="n">anm</span><span class="p">[</span><span class="s">&#39;phy&#39;</span><span class="p">]</span>
 <span class="n">g_phy</span><span class="o">.</span><span class="n">add_nodes_from</span><span class="p">(</span><span class="n">g_in</span><span class="p">,</span> <span class="n">retain</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;label&#39;</span><span class="p">,</span> <span class="s">&#39;device_type&#39;</span><span class="p">,</span> <span class="s">&#39;asn&#39;</span><span class="p">,</span> <span class="s">&#39;platform&#39;</span><span class="p">,</span> <span class="s">&#39;host&#39;</span><span class="p">,</span> <span class="s">&#39;syntax&#39;</span><span class="p">])</span>
@@ -794,7 +784,7 @@ init_mathjax();
 </div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
-<div class="prompt input_prompt">In&nbsp;[3]:</div>
+<div class="prompt input_prompt">In&nbsp;[63]:</div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="n">g_ospf</span> <span class="o">=</span> <span class="n">anm</span><span class="o">.</span><span class="n">add_overlay</span><span class="p">(</span><span class="s">&quot;ospf&quot;</span><span class="p">,</span> <span class="n">g_in</span><span class="o">.</span><span class="n">routers</span><span class="p">())</span>
 <span class="n">g_ospf</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">((</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">g_in</span><span class="o">.</span><span class="n">edges</span><span class="p">()</span> <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">src</span><span class="o">.</span><span class="n">asn</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">dst</span><span class="o">.</span><span class="n">asn</span><span class="p">),</span> <span class="n">retain</span><span class="o">=</span><span class="s">&#39;edge_id&#39;</span><span class="p">)</span>
@@ -814,7 +804,7 @@ init_mathjax();
 </div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
-<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="prompt input_prompt">In&nbsp;[64]:</div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="n">g_bgp</span> <span class="o">=</span> <span class="n">anm</span><span class="o">.</span><span class="n">add_overlay</span><span class="p">(</span><span class="s">&quot;bgp&quot;</span><span class="p">,</span> <span class="n">g_in</span><span class="o">.</span><span class="n">routers</span><span class="p">(),</span> <span class="n">directed</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
 <span class="n">autonetkit</span><span class="o">.</span><span class="n">update_http</span><span class="p">(</span><span class="n">anm</span><span class="p">)</span>
@@ -828,7 +818,7 @@ init_mathjax();
 </div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
-<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="prompt input_prompt">In&nbsp;[65]:</div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="n">g_bgp</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">((</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">g_in</span><span class="o">.</span><span class="n">edges</span><span class="p">()</span> <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">src</span><span class="o">.</span><span class="n">asn</span> <span class="o">!=</span> <span class="n">e</span><span class="o">.</span><span class="n">dst</span><span class="o">.</span><span class="n">asn</span><span class="p">),</span> 
     <span class="n">bidirectional</span> <span class="o">=</span> <span class="bp">True</span><span class="p">,</span> <span class="nb">type</span> <span class="o">=</span> <span class="s">&#39;ebgp&#39;</span><span class="p">,</span> <span class="n">retain</span><span class="o">=</span><span class="s">&#39;edge_id&#39;</span><span class="p">)</span>
@@ -843,7 +833,7 @@ init_mathjax();
 </div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
-<div class="prompt input_prompt">In&nbsp;[6]:</div>
+<div class="prompt input_prompt">In&nbsp;[66]:</div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="n">g_bgp</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">(((</span><span class="n">s</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">g_bgp</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">g_bgp</span> 
     <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">asn</span> <span class="o">==</span> <span class="n">t</span><span class="o">.</span><span class="n">asn</span> <span class="ow">and</span> <span class="n">s</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">t</span><span class="p">),</span> <span class="nb">type</span> <span class="o">=</span> <span class="s">&#39;ibgp&#39;</span><span class="p">)</span>
@@ -858,7 +848,7 @@ init_mathjax();
 </div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
-<div class="prompt input_prompt">In&nbsp;[7]:</div>
+<div class="prompt input_prompt">In&nbsp;[67]:</div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="kn">import</span> <span class="nn">autonetkit.ank_messaging</span> <span class="kn">as</span> <span class="nn">ank_messaging</span>
 </pre></div>
@@ -876,7 +866,7 @@ init_mathjax();
 </div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
-<div class="prompt input_prompt">In&nbsp;[8]:</div>
+<div class="prompt input_prompt">In&nbsp;[68]:</div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="n">asn</span> <span class="o">=</span> <span class="mi">30</span> <span class="c"># change me</span>
 <span class="n">nodes</span> <span class="o">=</span> <span class="p">[</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">g_bgp</span> <span class="k">if</span> <span class="n">n</span><span class="o">.</span><span class="n">asn</span> <span class="o">==</span> <span class="n">asn</span><span class="p">]</span>
@@ -904,7 +894,7 @@ init_mathjax();
 </div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
-<div class="prompt input_prompt">In&nbsp;[9]:</div>
+<div class="prompt input_prompt">In&nbsp;[69]:</div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="kn">from</span> <span class="nn">autonetkit.ank_utils</span> <span class="kn">import</span> <span class="n">unwrap_graph</span><span class="p">,</span> <span class="n">unwrap_nodes</span>
 
@@ -936,7 +926,7 @@ init_mathjax();
 </div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
-<div class="prompt input_prompt">In&nbsp;[10]:</div>
+<div class="prompt input_prompt">In&nbsp;[70]:</div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="n">graph</span> <span class="o">=</span> <span class="n">unwrap_graph</span><span class="p">(</span><span class="n">g_ospf</span><span class="p">)</span>
 <span class="n">T</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">minimum_spanning_tree</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
@@ -960,7 +950,7 @@ init_mathjax();
 </div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
-<div class="prompt input_prompt">In&nbsp;[11]:</div>
+<div class="prompt input_prompt">In&nbsp;[71]:</div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="kn">import</span> <span class="nn">autonetkit.ank</span> <span class="kn">as</span> <span class="nn">ank_utils</span>
 <span class="n">ank_utils</span><span class="o">.</span><span class="n">copy_edge_attr_from</span><span class="p">(</span><span class="n">g_in</span><span class="p">,</span> <span class="n">g_ospf</span><span class="p">,</span> <span class="s">&quot;ospf_cost&quot;</span><span class="p">,</span> <span class="n">dst_attr</span><span class="o">=</span><span class="s">&quot;cost&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
@@ -981,7 +971,7 @@ init_mathjax();
 </div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
-<div class="prompt input_prompt">In&nbsp;[12]:</div>
+<div class="prompt input_prompt">In&nbsp;[72]:</div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="n">asn</span> <span class="o">=</span> <span class="mi">20</span>
 <span class="n">nbunch</span> <span class="o">=</span> <span class="n">unwrap_nodes</span><span class="p">(</span><span class="n">g_bgp</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">asn</span><span class="o">=</span><span class="n">asn</span><span class="p">))</span>
@@ -999,7 +989,7 @@ init_mathjax();
 </div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
-<div class="prompt input_prompt">In&nbsp;[13]:</div>
+<div class="prompt input_prompt">In&nbsp;[73]:</div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="n">nodes</span> <span class="o">=</span> <span class="p">[</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">graph</span><span class="p">]</span>
 <span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="n">choice</span>
@@ -1024,7 +1014,7 @@ init_mathjax();
 </div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
-<div class="prompt input_prompt">In&nbsp;[14]:</div>
+<div class="prompt input_prompt">In&nbsp;[74]:</div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="n">nodes</span> <span class="o">=</span> <span class="p">[</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">graph</span><span class="p">]</span>
 <span class="n">src</span> <span class="o">=</span> <span class="n">choice</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span>
@@ -1042,7 +1032,7 @@ init_mathjax();
 <div class="hbox output_area">
 <div class="prompt output_prompt"></div>
 <div class="output_subarea output_stream output_stdout">
-<pre>2.0
+<pre>3.0
 </pre>
 </div>
 </div>
@@ -1051,7 +1041,7 @@ init_mathjax();
 </div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
-<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="prompt input_prompt">In&nbsp;[92]:</div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="kn">import</span> <span class="nn">autonetkit.plugins.ipv4</span> <span class="kn">as</span> <span class="nn">ipv4</span>
 <span class="kn">import</span> <span class="nn">autonetkit.ank</span> <span class="kn">as</span> <span class="nn">ank</span>
@@ -1086,6 +1076,8 @@ init_mathjax();
     <span class="n">cd_label</span> <span class="o">=</span> <span class="s">&quot;cd_&quot;</span> <span class="o">+</span> <span class="s">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">ank</span><span class="o">.</span><span class="n">neigh_attr</span><span class="p">(</span><span class="n">g_ipv4</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="s">&quot;label&quot;</span><span class="p">,</span> <span class="n">G_phy</span><span class="p">)))</span>
     <span class="n">node</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="n">cd_label</span> 
     <span class="n">graphics_node</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="n">cd_label</span>
+    
+<span class="n">autonetkit</span><span class="o">.</span><span class="n">update_http</span><span class="p">(</span><span class="n">anm</span><span class="p">)</span>
 </pre></div>
 
 </div>
@@ -1096,7 +1088,7 @@ init_mathjax();
 </div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
-<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="prompt input_prompt">In&nbsp;[29]:</div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="n">ipv4</span><span class="o">.</span><span class="n">allocate_ips</span><span class="p">(</span><span class="n">g_ipv4</span><span class="p">)</span>
 <span class="n">autonetkit</span><span class="o">.</span><span class="n">update_http</span><span class="p">(</span><span class="n">anm</span><span class="p">)</span>
@@ -1123,7 +1115,7 @@ init_mathjax();
 </div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
-<div class="prompt input_prompt">In&nbsp;[16]:</div>
+<div class="prompt input_prompt">In&nbsp;[30]:</div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="kn">import</span> <span class="nn">autonetkit.plugins.ipv6</span> <span class="kn">as</span> <span class="nn">ipv6</span>
 <span class="c"># uses the nodes and edges from ipv4</span>

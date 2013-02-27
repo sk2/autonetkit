@@ -16,15 +16,18 @@ if use_http_post:
     import urllib
 
 
-def update_http(anm, nidb = None):
+def update_http(anm = None, nidb = None):
     host = config.settings['Http Post']['server']
     port = config.settings['Http Post']['port']
     http_url = "http://%s:%s/publish" % (host, port)
 
-    if nidb:
+    if anm and nidb:
         body = autonetkit.ank_json.dumps(anm, nidb)
-    else:
+    elif anm:
         body = autonetkit.ank_json.dumps(anm)
+    else:
+        import json
+        body = json.dumps({}) # blank to test visualisation server running
 
     params = urllib.urlencode({
         'body': body
@@ -32,7 +35,13 @@ def update_http(anm, nidb = None):
     try:
         data = urllib.urlopen(http_url, params).read()
     except IOError, e:
-        log.info("Unable to connect to HTTP Server %s" % http_url)
+        log.info("Unable to connect to visualisation server %s" % http_url)
+        return
+
+    if not anm:
+        # testing
+        log.info("Visualisation server running")
+
 
 def highlight(nodes, edges):
     def nfilter(n):
