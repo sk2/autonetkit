@@ -391,7 +391,9 @@ class nidb_node(object):
         return self.nidb._graph.node[self.node_id]
 
     def dump(self):
-        return str(self._node_data)
+        #return str(self._node_data)
+        import pprint
+        pprint.pprint(self._node_data)
 
     def __nonzero__(self):
         return self.node_id in self.nidb._graph

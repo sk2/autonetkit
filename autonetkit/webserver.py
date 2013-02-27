@@ -396,6 +396,8 @@ class AnkAccessor():
 
     def ip_allocations(self):
         return self.ip_allocation
+
+
  
 def main():
     ank_accessor = AnkAccessor()
@@ -459,6 +461,7 @@ def main():
 
     print "Visualisation server started"
     io_loop.start()
+    print "HERE"
 
     #TODO: run main web server here too for HTTP
 
