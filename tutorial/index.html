@@ -777,6 +777,21 @@ $ ipython notebook
 </div>
 <div class="text_cell_render border-box-sizing rendered_html">
 <h2>
+  AutoNetkit Design Process
+</h2>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The below flowchart provides an overview of the design process in AutoNetkit.</p>
+<ol>
+<li>The input file is loaded into the Abstract Network Model.</li>
+<li>This is stored as G_in.</li>
+<li>Overlay graphs are created by the user to represent services and protocols.</li>
+<li>The Compile module condenses the overlay graphs into a single resource database, the Network Information Database. This includes defining the template(s) to be used.</li>
+</ol>
+<p><img alt="" src="files/images/flowchart_anm.png" /></p>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2>
   Visualisation Server
 </h2>
 </div>
@@ -1239,7 +1254,7 @@ At a command prompt, run</p>
 </div>
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
-<div class="prompt input_prompt">In&nbsp;[19]:</div>
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="n">nidb</span> <span class="o">=</span> <span class="n">autonetkit</span><span class="o">.</span><span class="n">nidb</span><span class="o">.</span><span class="n">NIDB</span><span class="p">()</span> 
 <span class="n">G_phy</span> <span class="o">=</span> <span class="n">anm</span><span class="p">[</span><span class="s">&#39;phy&#39;</span><span class="p">]</span>
@@ -1497,6 +1512,15 @@ At a command prompt, run</p>
 </div>
 </div>
 </div>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2>
+  AutoNetkit Configuration Generation Process
+</h2>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The Render module pushes the NIDB into the specified template(s), creating device configuration files.</p>
+<p><img alt="" src="files/images/flowchart_nidb.png" /></p>
 </div>
 <div class="text_cell_render border-box-sizing rendered_html">
 <h2>
