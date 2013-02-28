@@ -106,6 +106,10 @@ class IpTree(object):
 
             if level_counts[parent_level] == 1:
                 if parent_level == min(level_counts.keys()):
+                    children = [n for n in subgraph if subgraph.node[n]['prefixlen'] == parent_level + 1]
+                    if all('host' in subgraph.node[n] for n in children):
+                        subgraph.add_node(self.next_node_id, prefixlen = parent_level - 1)
+
                     break # Reached top of tree
 
     def build_tree(self, subgraph, level_counts, nodes_by_level):
@@ -216,8 +220,20 @@ class IpTree(object):
                 prefixlen = subgraph.node[node]['prefixlen']
                 nodes_by_level[prefixlen].append(node)
 
+            log.debug("Building IP subtree for %s %s" % (group_attr, attr_value))
+
             for level, nodes in nodes_by_level.items():
                 level_counts[level] = len(nodes)
+
+            min_level = min(level_counts)
+            # need to update level counts if added extra parent nodes,
+            # in order to ensure root node isn't a cd
+            if level_counts[min_level] == 1:
+                # one node at this level -> added one parent at next level (node is a cd)
+                level_counts[min_level - 1] = 1
+            elif level_counts[min_level] == 2:
+                # two nodes at this level -> added a grandparent (nodes are cds)
+                level_counts[min_level - 2] = 1
 
             self.add_parent_nodes(subgraph, level_counts)
 
@@ -288,9 +304,18 @@ class IpTree(object):
         def allocate(node):
             #children = graph.successors(node)
             children = sorted(node.children())
-            prefixlen = node.prefixlen
-            subnet = node.subnet.subnet(prefixlen+1)
+            prefixlen = node.prefixlen + 1
 
+            # workaround for clobbering attr subgraph root node with /16 if was a /28 
+            """
+            child_prefixlen = {c.prefixlen for c in children}.pop()
+            if (prefixlen) != child_prefixlen:
+                prefixlen = child_prefixlen
+            """
+
+            subnet = node.subnet.subnet(prefixlen)
+
+# handle case where children subnet 
             if node.is_loopback_group() or node.is_collision_domain(): # special case of single AS -> root is loopback_group
                 #TODO: generalise this rather than repeated code with below
                 #node.subnet = subnet.next() # Note: don't break into smaller subnets if single-AS
@@ -456,8 +481,8 @@ def allocate_ips(G_ip, infrastructure = True):
     total_tree = {
             'name': "ip",
             'children': 
-            [loopback_tree, secondary_loopback_tree, cd_tree],
-            #[cd_tree],
+            #[loopback_tree, secondary_loopback_tree, cd_tree],
+            [cd_tree],
             #[secondary_loopback_tree],
                 #[loopback_tree],
             }
