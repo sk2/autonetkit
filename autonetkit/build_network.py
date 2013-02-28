@@ -342,7 +342,7 @@ def build_bgp(anm):
             # ibgp_l3_cluster defaults to ASN
             node.ibgp_l3_cluster = node.asn
 
-    for _, devices in ank_utils.groupby("asn", g_bgp):
+    for asn, devices in ank_utils.groupby("asn", g_bgp):
         # group by nodes in phy graph
         routers = list(g_bgp.node(n) for n in devices if n.is_router)
         # list of nodes from bgp graph
@@ -362,9 +362,13 @@ def build_bgp(anm):
             over_links = [(s, t) for (s, t) in all_pairs
                              if s.ibgp_l3_cluster == t.ibgp_l3_cluster]
 
-        g_bgp.add_edges_from(up_links, type='ibgp', direction='up')
-        g_bgp.add_edges_from(down_links, type='ibgp', direction='down')
-        g_bgp.add_edges_from(over_links, type='ibgp', direction='over')
+        if max_level > 0:
+            g_bgp.add_edges_from(up_links, type='ibgp', direction='up')
+            g_bgp.add_edges_from(down_links, type='ibgp', direction='down')
+            g_bgp.add_edges_from(over_links, type='ibgp', direction='over')
+
+        else:
+            log.debug("No iBGP routers in %s" % asn)
 
 # and set label back
     ibgp_label_to_level = {
