@@ -229,6 +229,10 @@ def build_vrf(anm):
         # Set the vrf of the edge to be that of the CE device (either src or dst)
         edge.vrf = edge.src.vrf if edge.src.vrf_role is "CE" else edge.dst.vrf
 
+    for node in g_vrf:
+        for interface in node:
+            interface.color="red"
+
 # Create route-targets
 
 
@@ -566,6 +570,11 @@ def build_ospf(anm):
         default_area = area_zero_ip
 
     for router in g_ospf:
+        for interface in router:
+            interface.cost = 10
+
+
+    for router in g_ospf:
         if not router.area or router.area == "None":
             router.area = default_area
             # check if 0.0.0.0 used anywhere, if so then use 0.0.0.0 as format
@@ -630,7 +639,6 @@ def build_ospf(anm):
     for link in g_ospf.edges():
         if not link.cost:
             link.cost = 1
-
 
 def ip_to_net_ent_title_ios(ip_addr):
     """ Converts an IP address into an OSI Network Entity Title
