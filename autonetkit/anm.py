@@ -61,10 +61,23 @@ class overlay_interface(object):
 
     @property
     def phy(self):
+        # check overlay requested exists
         if self.overlay_id == "phy":
             return self
         return overlay_interface(self.anm, 'phy', 
                 self.node_id, self.interface_id)
+
+    def __getitem__(self, overlay_id):
+        """Returns corresponding interface in specified overlay"""
+        if not self.anm.has_overlay(overlay_id):
+            log.warning("Trying to access interface %s for non-existent overlay %s"
+                    % (self, overlay_id))
+            return None
+
+        try:
+            return overlay_interface(self.anm, overlay_id, self.node_id, self.interface_id)
+        except KeyError:
+            return
 
     @property
     def is_loopback(self):
