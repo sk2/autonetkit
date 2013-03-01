@@ -117,9 +117,17 @@ def build(input_graph):
         node.use_ipv4 = allocate_ipv4_infrastructure
         node.use_ipv6 = allocate_ipv6
 
+    for edge in anm['ipv4'].edges():
+        print edge, edge._interfaces
+
+    for node in anm['ipv4']:
+        for interface in node:
+            print interface
+            interface.test = 1
+
     default_igp = g_in.data.igp or "ospf" 
     non_igp_nodes = [n for n in g_in if not node.igp]
-    g_in.update(non_igp_nodes, igp=default_igp)
+    g_in.update(non_igp_nodes, igp=default_igp) # store igp onto each node
 
     anm.add_overlay("ospf")
     anm.add_overlay("isis")
