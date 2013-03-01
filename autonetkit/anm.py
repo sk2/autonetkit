@@ -931,6 +931,9 @@ class AbstractNetworkModel(object):
         self._build_node_label()
         self.timestamp = time.strftime("%Y%m%d_%H%M%S", time.localtime())
 
+    def __repr__(self):
+        return "ANM %s" % self.timestamp
+
     @staticmethod
     def __getnewargs__():
         return ()
