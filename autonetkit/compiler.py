@@ -64,7 +64,10 @@ class RouterCompiler(object):
         for phy_int in phy_node.interfaces():
             nidb_int = node.interface(phy_int)
             nidb_int.color = phy_int.color
-            print nidb_int.edges()
+
+        for interface in node.get_interfaces():
+            interface.test = 123
+            pass
 
         for link in phy_node.edges():
             nidb_edge = self.nidb.edge(link)

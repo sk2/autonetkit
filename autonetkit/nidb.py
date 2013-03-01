@@ -441,6 +441,29 @@ class nidb_node(object):
             return 
 
     @property
+    def _interface_ids(self):
+        return self._graph.node[self.node_id]["_interfaces"].keys()
+    
+    def get_interfaces(self, *args, **kwargs):
+        """Public function to view interfaces
+
+        Temporary function name until Compiler/NIDB/Templates
+        move to using "proper" interfaces"""
+        def filter_func(interface):
+            """Filter based on args and kwargs"""
+            return (
+                all(getattr(interface, key) for key in args) and
+                all(getattr(
+                    interface, key) == val for key, val in kwargs.items())
+            )
+
+        all_interfaces = iter(overlay_interface(self.nidb, 
+            self.node_id, interface_id)
+            for interface_id in self._interface_ids)
+        retval = (i for i in all_interfaces if filter_func(i))
+        return retval
+
+    @property
     def _graph(self):
         return self.nidb._graph
 
@@ -846,8 +869,6 @@ class NIDB_base(object):
         self._graph.add_edges_from(ebunch, **kwargs)
         for edge in edges_to_add:
             # copy across interface bindings
-            print "adding edge", edge
-            print "setting with", edge._interfaces
             self._graph[edge.src.node_id][edge.dst.node_id]['_interfaces'] = edge._interfaces
 
     def __iter__(self):
