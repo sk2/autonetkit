@@ -18,11 +18,9 @@ def address_prefixlen_to_network(address, prefixlen):
     """
     return netaddr.IPNetwork("%s/%s" % (address, prefixlen))
 
-
 def dot_to_underscore(instring):
     """Replace dots with underscores"""
     return instring.replace(".", "_")
-
 
 class RouterCompiler(object):
     """Base router compiler"""
@@ -62,6 +60,12 @@ class RouterCompiler(object):
         g_ipv4 = self.anm['ipv4']
         g_ipv6 = self.anm['ipv6']
         node.interfaces = []
+
+        for phy_int in phy_node.interfaces():
+            nidb_int = node.interface(phy_int)
+            nidb_int.color = phy_int.color
+            print nidb_int.edges()
+
         for link in phy_node.edges():
             nidb_edge = self.nidb.edge(link)
 
