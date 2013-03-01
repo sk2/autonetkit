@@ -129,8 +129,10 @@ class overlay_interface(object):
     def edges(self):
         """Returns all edges from node that have this interface ID
         This is the convention for binding an edge to an interface"""
-        valid_edges = [e for e in self.node.edges(
-        ) if self.interface_id in e._interfaces]
+        # edges have _interfaces stored as a dict of {node_id: interface_id, }
+        valid_edges = [e for e in self.node.edges()
+                if self.node_id in e._interfaces
+                and e._interfaces[self.node_id] == self.interface_id]
         return valid_edges
 
 
