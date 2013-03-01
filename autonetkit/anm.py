@@ -943,6 +943,9 @@ class AbstractNetworkModel(object):
     def overlay_nx_graphs(self):
         return self._overlays
 
+    def has_overlay(self, overlay_id):
+        return overlay_id in self._overlays
+
     def __setstate__(self, state):
         """For pickling"""
         (overlays, label_seperator, label_attrs) = state
