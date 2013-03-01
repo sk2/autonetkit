@@ -181,9 +181,18 @@ def split(OverlayGraph, edges, retain = []):
     added_nodes = []
     for (src, dst) in edges:
         cd_id = "cd_%s_%s" % (src, dst)
+        interfaces = graph[src][dst]["_interfaces"]
         data = dict( (key, graph[src][dst][key]) for key in retain)
-        edges_to_add.append( (src, cd_id, data))
-        edges_to_add.append( (dst, cd_id, data))
+        src_data = data.copy()
+        if src in interfaces:
+            src_int_id = interfaces[src]
+            src_data['_interfaces'] = {src: src_int_id}
+        dst_data = data.copy()
+        if dst in interfaces:
+            dst_int_id = interfaces[src]
+            dst_data['_interfaces'] = {dst: dst_int_id}
+        edges_to_add.append( (src, cd_id, src_data))
+        edges_to_add.append( (dst, cd_id, dst_data))
         added_nodes.append(cd_id)
 
     graph.remove_edges_from(edges)
