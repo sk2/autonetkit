@@ -145,7 +145,6 @@ def allocate_vrf_roles(g_vrf):
 
     non_ce_nodes = [node for node in g_vrf if node.vrf_role != "CE"]
     for node in non_ce_nodes:
-        phy_neighbors = g_phy.node( node).neighbors()  
         phy_neighbors = g_phy.node(node).neighbors("is_router")  
         # neighbors from physical graph for connectivity
         phy_neighbors = [neigh for neigh in phy_neighbors if neigh.asn == node.asn]
