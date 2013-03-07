@@ -155,6 +155,16 @@ def save(OverlayGraph):
 #TODO: make edges own module
 def wrap_edges(OverlayGraph, edges):
     """ wraps edge ids into edge overlay """
+    edges = list(edges) 
+    if not any(len(e) for e in edges):
+        return []# each edge tuple is empty
+
+    try:
+        # strip out data from (src, dst, data) tuple
+        edges = [(s, t) for (s, t, _) in edges]
+    except ValueError:
+        pass # already of form (src, dst)
+
     return ( OverlayEdge(OverlayGraph._anm, OverlayGraph._overlay_id, src, dst)
             for src, dst in edges)
 
@@ -181,9 +191,18 @@ def split(OverlayGraph, edges, retain = []):
     added_nodes = []
     for (src, dst) in edges:
         cd_id = "cd_%s_%s" % (src, dst)
+        interfaces = graph[src][dst]["_interfaces"]
         data = dict( (key, graph[src][dst][key]) for key in retain)
-        edges_to_add.append( (src, cd_id, data))
-        edges_to_add.append( (dst, cd_id, data))
+        src_data = data.copy()
+        if src in interfaces:
+            src_int_id = interfaces[src]
+            src_data['_interfaces'] = {src: src_int_id}
+        dst_data = data.copy()
+        if dst in interfaces:
+            dst_int_id = interfaces[src]
+            dst_data['_interfaces'] = {dst: dst_int_id}
+        edges_to_add.append( (src, cd_id, src_data))
+        edges_to_add.append( (dst, cd_id, dst_data))
         added_nodes.append(cd_id)
 
     graph.remove_edges_from(edges)
@@ -208,10 +227,13 @@ def explode_nodes(OverlayGraph, nodes, retain = []):
     added_edges = []
 #TODO: need to keep track of edge_ids here also?
     nodes = list(nodes)
+#TODO: if graph is bidirectional, need to explode here too
+#TODO: how do we handle explode for multi graphs?
     for node in nodes:
-        log.debug("Exploding from %s" % node)
+        log.info("Exploding from %s" % node)
         neighbors = graph.neighbors(node)
         neigh_edge_pairs = ( (s,t) for s in neighbors for t in neighbors if s != t)
+        neigh_edge_pairs = list(neigh_edge_pairs)
         edges_to_add = []
         for (src, dst) in neigh_edge_pairs:
             src_to_node_data = dict( (key, graph[src][node][key]) for key in retain)
@@ -220,10 +242,9 @@ def explode_nodes(OverlayGraph, nodes, retain = []):
             edges_to_add.append((src, dst, src_to_node_data))
 
         graph.add_edges_from(edges_to_add)
-        added_edges.append(edges_to_add)
+        added_edges += edges_to_add
 
         graph.remove_node(node)
-
     return wrap_edges(OverlayGraph, added_edges)
 
 def label(OverlayGraph, nodes):
@@ -244,7 +265,11 @@ def aggregate_nodes(OverlayGraph, nodes, retain = []):
         #print "Nothing to aggregate for %s: no edges in subgraph"
         pass
     total_added_edges = []
-    for component_nodes in nx.connected_components(subgraph):
+    if graph.is_directed():
+        component_nodes_list = nx.strongly_connected_components(subgraph) 
+    else:
+        component_nodes_list = nx.connected_components(subgraph) 
+    for component_nodes in component_nodes_list:
         if len(component_nodes) > 1:
             base = component_nodes.pop() # choose one base device to retain
             nodes_to_remove = set(component_nodes) # remaining nodes, set for fast membership test
@@ -259,10 +284,21 @@ def aggregate_nodes(OverlayGraph, nodes, retain = []):
                         # edge from component to outside
                         data = dict( (key, graph[src][dst][key]) for key in retain)
                         edges_to_add.append((base, dst, data))
+                        if graph.is_directed():
+                            # other direction
+                            #TODO: check which data should be copied
+                            dst_data = dict( (key, graph[src][dst][key]) for key in retain)
+                            edges_to_add.append((dst, base, dst_data))
                     else:
                         # edge from outside into component
                         data = dict( (key, graph[dst][src][key]) for key in retain)
                         edges_to_add.append((base, src, data))
+                        if graph.is_directed():
+                            # other direction
+                            #TODO: check which data should be copied
+                            dst_data = dict( (key, graph[src][dst][key]) for key in retain)
+                            edges_to_add.append((src, base, dst_data))
+                        
             graph.add_edges_from(edges_to_add)
             total_added_edges += edges_to_add
             graph.remove_nodes_from(nodes_to_remove)

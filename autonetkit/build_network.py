@@ -119,7 +119,7 @@ def build(input_graph):
 
     default_igp = g_in.data.igp or "ospf" 
     non_igp_nodes = [n for n in g_in if not node.igp]
-    g_in.update(non_igp_nodes, igp=default_igp)
+    g_in.update(non_igp_nodes, igp=default_igp) # store igp onto each node
 
     anm.add_overlay("ospf")
     anm.add_overlay("isis")
@@ -145,7 +145,7 @@ def allocate_vrf_roles(g_vrf):
 
     non_ce_nodes = [node for node in g_vrf if node.vrf_role != "CE"]
     for node in non_ce_nodes:
-        phy_neighbors = g_phy.node( node).neighbors()  
+        phy_neighbors = g_phy.node(node).neighbors("is_router")  
         # neighbors from physical graph for connectivity
         phy_neighbors = [neigh for neigh in phy_neighbors if neigh.asn == node.asn]
             # filter to just this asn
@@ -229,6 +229,10 @@ def build_vrf(anm):
         # Set the vrf of the edge to be that of the CE device (either src or dst)
         edge.vrf = edge.src.vrf if edge.src.vrf_role is "CE" else edge.dst.vrf
 
+    for node in g_vrf:
+        for interface in node:
+            interface.color="red"
+
 # Create route-targets
 
 
@@ -311,15 +315,30 @@ def build_two_tier_ibgp(routers):
                   and s.ibgp_l3_cluster == t.ibgp_l3_cluster]
     return up_links, down_links, over_links
 
-
 def build_bgp(anm):
     """Build iBGP end eBGP overlays"""
     # eBGP
     g_in = anm['input']
+    g_phy = anm['phy']
     g_bgp = anm.add_overlay("bgp", directed=True)
     g_bgp.add_nodes_from(g_in.nodes("is_router"))
     ebgp_edges = [edge for edge in g_in.edges() if not edge.attr_equal("asn")]
     g_bgp.add_edges_from(ebgp_edges, bidirectional=True, type='ebgp')
+#TODO: why don't we include edge_id here
+
+    ebgp_switches = [n for n in g_in.nodes("is_switch")
+            if not ank_utils.neigh_equal(g_phy, n, "asn")]
+    g_bgp.add_nodes_from(ebgp_switches, retain=['asn'])
+    log.debug("eBGP switches are %s" % ebgp_switches)
+    g_bgp.add_edges_from((e for e in g_in.edges()
+            if e.src in ebgp_switches or e.dst in ebgp_switches), bidirectional=True, type='ebgp')
+    ank_utils.aggregate_nodes(g_bgp, ebgp_switches, retain="edge_id")
+    ebgp_switches = list(g_bgp.nodes("is_switch")) # need to recalculate as may have aggregated
+    log.debug("aggregated eBGP switches are %s" % ebgp_switches)
+    exploded_edges = ank_utils.explode_nodes(g_bgp, ebgp_switches,
+            retain="edge_id")
+    for edge in exploded_edges:
+        edge.multipoint = True
 
 # now iBGP
     ank_utils.copy_attr_from(g_in, g_bgp, "ibgp_level")
@@ -353,7 +372,7 @@ def build_bgp(anm):
         if max_level == 3:
             up_links, down_links, over_links = three_tier_ibgp_edges(routers)
 
-        if max_level == 2:
+        elif max_level == 2:
             up_links, down_links, over_links = build_two_tier_ibgp(routers)
 
         elif max_level == 1:
@@ -361,6 +380,11 @@ def build_bgp(anm):
             down_links = []
             over_links = [(s, t) for (s, t) in all_pairs
                              if s.ibgp_l3_cluster == t.ibgp_l3_cluster]
+        else:
+            # no iBGP
+            up_links = []
+            down_links = []
+            over_links = []
 
         if max_level > 0:
             g_bgp.add_edges_from(up_links, type='ibgp', direction='up')
@@ -447,7 +471,6 @@ def manual_ipv4_allocation(anm):
 
     g_ipv4.data.loopback_blocks = loopback_blocks
     g_ipv4.data.infra_blocks = infra_blocks
-
 
 def build_ipv4(anm, infrastructure=True):
     """Builds IPv4 graph"""
@@ -555,8 +578,10 @@ def build_ospf(anm):
 
     ank_utils.aggregate_nodes(g_ospf, g_ospf.nodes("is_switch"),
                               retain="edge_id")
-    ank_utils.explode_nodes(g_ospf, g_ospf.nodes("is_switch"),
+    exploded_edges = ank_utils.explode_nodes(g_ospf, g_ospf.nodes("is_switch"),
                             retain="edge_id")
+    for edge in exploded_edges:
+        edge.multipoint = True
 
     g_ospf.remove_edges_from([link for link in g_ospf.edges(
     ) if link.src.asn != link.dst.asn])  # remove inter-AS links
@@ -568,6 +593,11 @@ def build_ospf(anm):
     if any(router.area == "0.0.0.0" for router in g_ospf):
         # string comparison as hasn't yet been cast to IPAddress
         default_area = area_zero_ip
+
+    for router in g_ospf:
+        for interface in router:
+            interface.cost = 10
+
 
     for router in g_ospf:
         if not router.area or router.area == "None":
@@ -635,7 +665,6 @@ def build_ospf(anm):
         if not link.cost:
             link.cost = 1
 
-
 def ip_to_net_ent_title_ios(ip_addr):
     """ Converts an IP address into an OSI Network Entity Title
     suitable for use in IS-IS on IOS.
@@ -669,8 +698,10 @@ def build_isis(anm):
 # Merge and explode switches
     ank_utils.aggregate_nodes(g_isis, g_isis.nodes("is_switch"),
                               retain="edge_id")
-    ank_utils.explode_nodes(g_isis, g_isis.nodes("is_switch"),
+    exploded_edges = ank_utils.explode_nodes(g_isis, g_isis.nodes("is_switch"),
                             retain="edge_id")
+    for edge in exploded_edges:
+        edge.multipoint = True
 
     g_isis.remove_edges_from(
         [link for link in g_isis.edges() if link.src.asn != link.dst.asn])
