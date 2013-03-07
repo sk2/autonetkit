@@ -329,9 +329,12 @@ def build_bgp(anm):
     ebgp_switches = [n for n in g_in.nodes("is_switch")
             if not ank_utils.neigh_equal(g_phy, n, "asn")]
     g_bgp.add_nodes_from(ebgp_switches, retain=['asn'])
+    log.debug("eBGP switches are %s" % ebgp_switches)
     g_bgp.add_edges_from((e for e in g_in.edges()
             if e.src in ebgp_switches or e.dst in ebgp_switches), bidirectional=True, type='ebgp')
     ank_utils.aggregate_nodes(g_bgp, ebgp_switches, retain="edge_id")
+    ebgp_switches = list(g_bgp.nodes("is_switch")) # need to recalculate as may have aggregated
+    log.debug("aggregated eBGP switches are %s" % ebgp_switches)
     exploded_edges = ank_utils.explode_nodes(g_bgp, ebgp_switches,
             retain="edge_id")
     for edge in exploded_edges:
@@ -468,7 +471,6 @@ def manual_ipv4_allocation(anm):
 
     g_ipv4.data.loopback_blocks = loopback_blocks
     g_ipv4.data.infra_blocks = infra_blocks
-
 
 def build_ipv4(anm, infrastructure=True):
     """Builds IPv4 graph"""
