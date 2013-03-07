@@ -241,10 +241,9 @@ def explode_nodes(OverlayGraph, nodes, retain = []):
             edges_to_add.append((src, dst, src_to_node_data))
 
         graph.add_edges_from(edges_to_add)
-        added_edges.append(edges_to_add)
+        added_edges += edges_to_add
 
         graph.remove_node(node)
-
     return wrap_edges(OverlayGraph, added_edges)
 
 def label(OverlayGraph, nodes):
