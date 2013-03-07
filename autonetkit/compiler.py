@@ -191,9 +191,22 @@ class RouterCompiler(object):
             else:
                 # TODO: fix this: this is a workaround for Quagga next-hop
                 # denied for loopback (even with static route)
-                ip_link = g_ipv4.edge(session)
-                dst_int_ip = g_ipv4.edges(ip_link.dst, neigh).next(
-                ).ip_address  # TODO: split this to a helper function
+                if session.multipoint:
+                    #TODO: should this also support IPv6?
+                    log.debug("Multipoint BGP for %s" % node)
+                    #TODO: remove this once IP addresses are on interfaces
+                    # Find the CD that connects both nodes
+                    collision_domains = [cd for cd in g_ipv4.nodes("collision_domain")
+                            if node in cd.neighbors() and neigh in cd.neighbors() ]
+                    collision_domain = collision_domains[0]
+                    ip_link = collision_domain.edges(node).next()
+                    neigh_ip_link = collision_domain.edges(neigh).next()
+                    dst_int_ip = neigh_ip_link.ip_address
+                    # need to find (switch, neigh) in g_ipv4 from (node, switch)
+                else:
+                    ip_link = g_ipv4.edge(session)
+                    dst_int_ip = g_ipv4.edges(ip_link.dst, neigh).next(
+                            ).ip_address  # TODO: split this to a helper function
 
                 # TODO: make this a returned value
                 node.bgp.ebgp_neighbors.append({
