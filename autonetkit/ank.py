@@ -264,7 +264,11 @@ def aggregate_nodes(OverlayGraph, nodes, retain = []):
         #print "Nothing to aggregate for %s: no edges in subgraph"
         pass
     total_added_edges = []
-    for component_nodes in nx.connected_components(subgraph):
+    if graph.is_directed():
+        component_nodes_list = nx.strongly_connected_components(subgraph) 
+    else:
+        component_nodes_list = nx.connected_components(subgraph) 
+    for component_nodes in component_nodes_list:
         if len(component_nodes) > 1:
             base = component_nodes.pop() # choose one base device to retain
             nodes_to_remove = set(component_nodes) # remaining nodes, set for fast membership test
