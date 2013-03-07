@@ -155,6 +155,16 @@ def save(OverlayGraph):
 #TODO: make edges own module
 def wrap_edges(OverlayGraph, edges):
     """ wraps edge ids into edge overlay """
+    edges = list(edges) 
+    if not any(len(e) for e in edges):
+        return []# each edge tuple is empty
+
+    try:
+        # strip out data from (src, dst, data) tuple
+        edges = [(s, t) for (s, t, _) in edges]
+    except ValueError:
+        pass # already of form (src, dst)
+
     return ( OverlayEdge(OverlayGraph._anm, OverlayGraph._overlay_id, src, dst)
             for src, dst in edges)
 
