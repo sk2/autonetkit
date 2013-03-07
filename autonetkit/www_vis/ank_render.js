@@ -409,7 +409,7 @@ var edgeStroke = function(d, i) { return fill(d); };
 var groupPath = function(d) {
     if (d.values.length  == 1) {
         node = d.values[0];
-        offset = 10;
+        offset = 2;
         retval =  "M" ;
         retval += (node.x - offset  + icon_offset + x_offset) + "," + (node.y - offset + icon_offset + y_offset) + "L";
         retval += (node.x + offset  + icon_offset + x_offset) + "," + (node.y - offset + icon_offset + y_offset) + "L";

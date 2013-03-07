@@ -121,9 +121,88 @@ class overlay_interface(object):
         object.__setattr__(self, 'node_id', node_id)
         object.__setattr__(self, 'interface_id', interface_id)
 
+    def __repr__(self):
+        description = self.description or self.interface_id
+        return "(%s, %s)" % (self.node_id, description)
+
+    def __nonzero__(self):
+        """Allows for checking if node exists
+        """
+        return len(self._interface) > 0  # if interface data set
+
+    def __str__(self):
+        return self.__repr__()
+
+    @property
+    def _graph(self):
+        """Return graph the node belongs to"""
+        return self.nidb._graph
+
+    @property
+    def _node(self):
+        """Return graph the node belongs to"""
+        return self._graph.node[self.node_id]
+
+    @property
+    def _interface(self):
+        """Return graph the node belongs to"""
+        return self._node["_interfaces"][self.interface_id]
+
+    @property
+    def is_loopback(self):
+        """"""
+        return self.type == "loopback" or self.phy.type == "loopback"
+
+    @property
+    def description(self):
+        """"""
+        return self._interface.get("description")
+
+    @property
+    def node(self):
+        """Returns parent node of this interface"""
+        return nidb_node(self.nidb, self.node_id)
+
+    def dump(self):
+        return str(self._interface.items())
+
+    def __getattr__(self, key):
+        """Returns interface property"""
+        try:
+            return self._interface.get(key)
+        except KeyError:
+            return
+
+    def get(self, key):
+        """For consistency, node.get(key) is neater 
+        than getattr(interface, key)"""
+        return getattr(self, key)
+
+    def __setattr__(self, key, val):
+        """Sets interface property"""
+        try:
+            self._interface[key] = val
+        except KeyError:
+            self.set(key, val)
+
+    def set(self, key, val):
+        """For consistency, node.set(key, value) is neater
+        than setattr(interface, key, value)"""
+        return self.__setattr__(key, val)
+
+    def edges(self):
+        """Returns all edges from node that have this interface ID
+        This is the convention for binding an edge to an interface"""
+        # edges have _interfaces stored as a dict of {node_id: interface_id, }
+        valid_edges = [e for e in self.node.edges()
+                if self.node_id in e._interfaces
+                and e._interfaces[self.node_id] == self.interface_id]
+        return valid_edges
+
+
 class overlay_edge_accessor(object):
 #TODO: do we even need this?
-    """API to access overlay nodes in ANM"""
+    """API to access overlay edges in NIDB"""
 #TODO: fix consistency between node_id (id) and edge (overlay edge)
     def __init__(self, nidb, edge):
 #Set using this method to bypass __setattr__ 
@@ -347,6 +426,42 @@ class nidb_node(object):
             return self.node_id == other.node_id
         except AttributeError:
             return self.node_id == other #TODO: check why comparing against strings - if in overlay graph...
+
+    def interface(self, key):
+        #TODO: also need to allow access interface for nidb and search on (node, interface id) tuple
+        return overlay_interface(self.nidb, self.node_id, key.interface_id)
+
+    @property
+    def _interfaces(self):
+        """Returns underlying interface dict"""
+        try:
+            return self._graph.node[self.node_id]["_interfaces"]
+        except KeyError:
+            log.debug("No interfaces initialised for %s" % self)
+            return 
+
+    @property
+    def _interface_ids(self):
+        return self._graph.node[self.node_id]["_interfaces"].keys()
+    
+    def get_interfaces(self, *args, **kwargs):
+        """Public function to view interfaces
+
+        Temporary function name until Compiler/NIDB/Templates
+        move to using "proper" interfaces"""
+        def filter_func(interface):
+            """Filter based on args and kwargs"""
+            return (
+                all(getattr(interface, key) for key in args) and
+                all(getattr(
+                    interface, key) == val for key, val in kwargs.items())
+            )
+
+        all_interfaces = iter(overlay_interface(self.nidb, 
+            self.node_id, interface_id)
+            for interface_id in self._interface_ids)
+        retval = (i for i in all_interfaces if filter_func(i))
+        return retval
 
     @property
     def _graph(self):
@@ -706,7 +821,7 @@ class NIDB_base(object):
             pass # already a list
 
         nbunch = list(nbunch)
-        nbunch_in = nbunch
+        nodes_to_add = nbunch # retain for interface copying
 
         if len(retain):
             add_nodes = []
@@ -718,10 +833,11 @@ class NIDB_base(object):
             log.warn("Cannot add node ids directly to NIDB: must add overlay nodes")
         self._graph.add_nodes_from(nbunch, **kwargs)
 
-        for n in nbunch_in:
-            interfaces = dict((interface.id, {"type": interface.type, "description": interface.description})
-                    for interface in n.interfaces())
-            self._graph.node[n.node_id]['_interfaces'] = interfaces
+        for node in nodes_to_add:
+            interface_ids = [i.interface_id for i in node.interfaces()]
+            # Initialise with blank dictionaries
+            #TODO: add an interface_retain for attributes also
+            self._graph.node[node.node_id]["_interfaces"] = dict.fromkeys(interface_ids, {})
 
     def add_edge(self, src, dst, retain=[], **kwargs):
         self.add_edges_from([(src, dst)], retain, **kwargs)
@@ -733,6 +849,8 @@ class NIDB_base(object):
             retain = [retain] # was a string, put into list
         except AttributeError:
             pass # already a list
+
+        edges_to_add = ebunch # retain for interface copying
 
         #TODO: need to test if given a (id, id) or an edge overlay pair... use try/except for speed
         try:
@@ -749,6 +867,9 @@ class NIDB_base(object):
 
         #TODO: decide if want to allow nodes to be created when adding edge if not already in graph
         self._graph.add_edges_from(ebunch, **kwargs)
+        for edge in edges_to_add:
+            # copy across interface bindings
+            self._graph[edge.src.node_id][edge.dst.node_id]['_interfaces'] = edge._interfaces
 
     def __iter__(self):
         return iter(nidb_node(self, node)

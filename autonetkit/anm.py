@@ -61,10 +61,23 @@ class overlay_interface(object):
 
     @property
     def phy(self):
+        # check overlay requested exists
         if self.overlay_id == "phy":
             return self
         return overlay_interface(self.anm, 'phy', 
                 self.node_id, self.interface_id)
+
+    def __getitem__(self, overlay_id):
+        """Returns corresponding interface in specified overlay"""
+        if not self.anm.has_overlay(overlay_id):
+            log.warning("Trying to access interface %s for non-existent overlay %s"
+                    % (self, overlay_id))
+            return None
+
+        try:
+            return overlay_interface(self.anm, overlay_id, self.node_id, self.interface_id)
+        except KeyError:
+            return
 
     @property
     def is_loopback(self):
@@ -116,8 +129,10 @@ class overlay_interface(object):
     def edges(self):
         """Returns all edges from node that have this interface ID
         This is the convention for binding an edge to an interface"""
-        valid_edges = [e for e in self.node.edges(
-        ) if self.interface_id in e._interfaces]
+        # edges have _interfaces stored as a dict of {node_id: interface_id, }
+        valid_edges = [e for e in self.node.edges()
+                if self.node_id in e._interfaces
+                and e._interfaces[self.node_id] == self.interface_id]
         return valid_edges
 
 
@@ -900,7 +915,7 @@ class OverlayGraph(OverlayBase):
 
     def update(self, nbunch=None, **kwargs):
         """Sets property defined in kwargs to all nodes in nbunch"""
-        if not nbunch:
+        if nbunch is None:
             nbunch = self.nodes()
         for node in nbunch:
             for key, value in kwargs.items():
@@ -931,6 +946,9 @@ class AbstractNetworkModel(object):
         self._build_node_label()
         self.timestamp = time.strftime("%Y%m%d_%H%M%S", time.localtime())
 
+    def __repr__(self):
+        return "ANM %s" % self.timestamp
+
     @staticmethod
     def __getnewargs__():
         return ()
@@ -942,6 +960,9 @@ class AbstractNetworkModel(object):
     @property
     def overlay_nx_graphs(self):
         return self._overlays
+
+    def has_overlay(self, overlay_id):
+        return overlay_id in self._overlays
 
     def __setstate__(self, state):
         """For pickling"""
