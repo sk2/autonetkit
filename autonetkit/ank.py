@@ -230,9 +230,10 @@ def explode_nodes(OverlayGraph, nodes, retain = []):
 #TODO: if graph is bidirectional, need to explode here too
 #TODO: how do we handle explode for multi graphs?
     for node in nodes:
-        log.debug("Exploding from %s" % node)
+        log.info("Exploding from %s" % node)
         neighbors = graph.neighbors(node)
         neigh_edge_pairs = ( (s,t) for s in neighbors for t in neighbors if s != t)
+        neigh_edge_pairs = list(neigh_edge_pairs)
         edges_to_add = []
         for (src, dst) in neigh_edge_pairs:
             src_to_node_data = dict( (key, graph[src][node][key]) for key in retain)
@@ -283,10 +284,21 @@ def aggregate_nodes(OverlayGraph, nodes, retain = []):
                         # edge from component to outside
                         data = dict( (key, graph[src][dst][key]) for key in retain)
                         edges_to_add.append((base, dst, data))
+                        if graph.is_directed():
+                            # other direction
+                            #TODO: check which data should be copied
+                            dst_data = dict( (key, graph[src][dst][key]) for key in retain)
+                            edges_to_add.append((dst, base, dst_data))
                     else:
                         # edge from outside into component
                         data = dict( (key, graph[dst][src][key]) for key in retain)
                         edges_to_add.append((base, src, data))
+                        if graph.is_directed():
+                            # other direction
+                            #TODO: check which data should be copied
+                            dst_data = dict( (key, graph[src][dst][key]) for key in retain)
+                            edges_to_add.append((src, base, dst_data))
+                        
             graph.add_edges_from(edges_to_add)
             total_added_edges += edges_to_add
             graph.remove_nodes_from(nodes_to_remove)
