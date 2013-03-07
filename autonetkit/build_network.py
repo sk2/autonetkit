@@ -315,15 +315,27 @@ def build_two_tier_ibgp(routers):
                   and s.ibgp_l3_cluster == t.ibgp_l3_cluster]
     return up_links, down_links, over_links
 
-
 def build_bgp(anm):
     """Build iBGP end eBGP overlays"""
     # eBGP
     g_in = anm['input']
+    g_phy = anm['phy']
     g_bgp = anm.add_overlay("bgp", directed=True)
     g_bgp.add_nodes_from(g_in.nodes("is_router"))
     ebgp_edges = [edge for edge in g_in.edges() if not edge.attr_equal("asn")]
     g_bgp.add_edges_from(ebgp_edges, bidirectional=True, type='ebgp')
+#TODO: why don't we include edge_id here
+
+    ebgp_switches = [n for n in g_in.nodes("is_switch")
+            if not ank_utils.neigh_equal(g_phy, n, "asn")]
+    g_bgp.add_nodes_from(ebgp_switches, retain=['asn'])
+    g_bgp.add_edges_from((e for e in g_in.edges()
+            if e.src in ebgp_switches or e.dst in ebgp_switches), bidirectional=True, type='ebgp')
+    ank_utils.aggregate_nodes(g_bgp, ebgp_switches, retain="edge_id")
+    exploded_edges = ank_utils.explode_nodes(g_bgp, ebgp_switches,
+            retain="edge_id")
+    for edge in exploded_edges:
+        edge.multipoint = True
 
 # now iBGP
     ank_utils.copy_attr_from(g_in, g_bgp, "ibgp_level")
@@ -564,8 +576,10 @@ def build_ospf(anm):
 
     ank_utils.aggregate_nodes(g_ospf, g_ospf.nodes("is_switch"),
                               retain="edge_id")
-    ank_utils.explode_nodes(g_ospf, g_ospf.nodes("is_switch"),
+    exploded_edges = ank_utils.explode_nodes(g_ospf, g_ospf.nodes("is_switch"),
                             retain="edge_id")
+    for edge in exploded_edges:
+        edge.multipoint = True
 
     g_ospf.remove_edges_from([link for link in g_ospf.edges(
     ) if link.src.asn != link.dst.asn])  # remove inter-AS links
@@ -682,8 +696,10 @@ def build_isis(anm):
 # Merge and explode switches
     ank_utils.aggregate_nodes(g_isis, g_isis.nodes("is_switch"),
                               retain="edge_id")
-    ank_utils.explode_nodes(g_isis, g_isis.nodes("is_switch"),
+    exploded_edges = ank_utils.explode_nodes(g_isis, g_isis.nodes("is_switch"),
                             retain="edge_id")
+    for edge in exploded_edges:
+        edge.multipoint = True
 
     g_isis.remove_edges_from(
         [link for link in g_isis.edges() if link.src.asn != link.dst.asn])
