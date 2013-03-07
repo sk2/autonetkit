@@ -18,11 +18,9 @@ def address_prefixlen_to_network(address, prefixlen):
     """
     return netaddr.IPNetwork("%s/%s" % (address, prefixlen))
 
-
 def dot_to_underscore(instring):
     """Replace dots with underscores"""
     return instring.replace(".", "_")
-
 
 class RouterCompiler(object):
     """Base router compiler"""
@@ -62,6 +60,15 @@ class RouterCompiler(object):
         g_ipv4 = self.anm['ipv4']
         g_ipv6 = self.anm['ipv6']
         node.interfaces = []
+
+        for phy_int in phy_node.interfaces():
+            nidb_int = node.interface(phy_int)
+            nidb_int.color = phy_int.color
+
+        for interface in node.get_interfaces():
+            interface.test = 123
+            pass
+
         for link in phy_node.edges():
             nidb_edge = self.nidb.edge(link)
 
@@ -184,9 +191,22 @@ class RouterCompiler(object):
             else:
                 # TODO: fix this: this is a workaround for Quagga next-hop
                 # denied for loopback (even with static route)
-                ip_link = g_ipv4.edge(session)
-                dst_int_ip = g_ipv4.edges(ip_link.dst, neigh).next(
-                ).ip_address  # TODO: split this to a helper function
+                if session.multipoint:
+                    #TODO: should this also support IPv6?
+                    log.debug("Multipoint BGP for %s" % node)
+                    #TODO: remove this once IP addresses are on interfaces
+                    # Find the CD that connects both nodes
+                    collision_domains = [cd for cd in g_ipv4.nodes("collision_domain")
+                            if node in cd.neighbors() and neigh in cd.neighbors() ]
+                    collision_domain = collision_domains[0]
+                    ip_link = collision_domain.edges(node).next()
+                    neigh_ip_link = collision_domain.edges(neigh).next()
+                    dst_int_ip = neigh_ip_link.ip_address
+                    # need to find (switch, neigh) in g_ipv4 from (node, switch)
+                else:
+                    ip_link = g_ipv4.edge(session)
+                    dst_int_ip = g_ipv4.edges(ip_link.dst, neigh).next(
+                            ).ip_address  # TODO: split this to a helper function
 
                 # TODO: make this a returned value
                 node.bgp.ebgp_neighbors.append({
@@ -427,9 +447,6 @@ class IosBaseCompiler(RouterCompiler):
         node.vrf.use_ipv4 = node.ip.use_ipv4
         node.vrf.use_ipv6 = node.ip.use_ipv6
         node.vrf.vrfs.sort("vrf")
-
-
-
 
     def isis(self, node):
         # TODO: this needs to go into IOS2 for neatness
