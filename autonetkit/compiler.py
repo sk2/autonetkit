@@ -448,9 +448,6 @@ class IosBaseCompiler(RouterCompiler):
         node.vrf.use_ipv6 = node.ip.use_ipv6
         node.vrf.vrfs.sort("vrf")
 
-
-
-
     def isis(self, node):
         # TODO: this needs to go into IOS2 for neatness
         """Sets ISIS links
