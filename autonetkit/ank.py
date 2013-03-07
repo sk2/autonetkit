@@ -227,6 +227,8 @@ def explode_nodes(OverlayGraph, nodes, retain = []):
     added_edges = []
 #TODO: need to keep track of edge_ids here also?
     nodes = list(nodes)
+#TODO: if graph is bidirectional, need to explode here too
+#TODO: how do we handle explode for multi graphs?
     for node in nodes:
         log.debug("Exploding from %s" % node)
         neighbors = graph.neighbors(node)
