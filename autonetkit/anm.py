@@ -915,7 +915,7 @@ class OverlayGraph(OverlayBase):
 
     def update(self, nbunch=None, **kwargs):
         """Sets property defined in kwargs to all nodes in nbunch"""
-        if not nbunch:
+        if nbunch is None:
             nbunch = self.nodes()
         for node in nbunch:
             for key, value in kwargs.items():
