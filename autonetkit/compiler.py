@@ -358,12 +358,14 @@ class IosBaseCompiler(RouterCompiler):
             ospf_link = g_ospf.edge(
                 interface._edge_id)  # find link in OSPF with this ID
             if ospf_link:
+                #TODO: this shpuld for in the ospf function below
                 interface['ospf_cost'] = int(ospf_link.cost)
                 interface['ospf_use_ivp4'] = node.ospf.use_ipv4
                 interface['ospf_use_ivp6'] = node.ospf.use_ipv6
             isis_link = g_isis.edge(
                 interface._edge_id)  # find link in OSPF with this ID
             if isis_link:  # only configure if has ospf interface
+                #TODO: this shpuld for in the isis function below
                 interface['isis'] = True
                 isis_node = g_isis.node(node)
                 interface['isis_process_id'] = isis_node.process_id
@@ -421,11 +423,41 @@ class IosBaseCompiler(RouterCompiler):
             ospf_link = self.anm['ospf'].edge(
                 interface._edge_id)  # find link in OSPF with this ID
             if ospf_link:
-                area = str(ospf_link.area)
+                area = str(ospf_link.area) # TODO: check why area is string not int
                 interface['ospf'] = {
                     'area': area,
                     'process_id': node.ospf.process_id,  # from super ospf config
+                    'multipoint': ospf_link.multipoint,
                 }
+            elif interface.physical:
+                # see if connected to switch, and if so, if can't find due to edge_id clobber
+                # when merging
+                # test if this link has lost interface ID
+                # workaround for not having full interfaces
+                #TODO: remove this code
+                #TODO: check handling eBGP links correctly
+                phy_link = self.anm['phy'].edge(interface._edge_id)
+#TODO: need to find OSPF area
+                switch = None
+                if phy_link.src.is_switch:
+                    switch = phy_link.src
+                elif phy_link.dst.is_switch:
+                    switch = phy_link.dst
+
+                if switch:
+                    #TODO: merge the next 3 lines back into the interface['ospf'] block
+                    ospf_cost = 1
+                    interface['ospf_cost'] = ospf_cost
+                    interface['ospf_use_ivp4'] = node.ospf.use_ipv4
+                    interface['ospf_use_ivp6'] = node.ospf.use_ipv6
+                    area = 1
+                    log.debug("Unable to find corresponding multipoint OSPF links for %s, "
+                            "using default area=1, cost=1 to connected switch %s" % (phy_link, switch))
+                    interface['ospf'] = {
+                            'area': area,
+                            'process_id': node.ospf.process_id,  # from super ospf config
+                            'multipoint': True,
+                    }
 
     def vrf(self, node):
         g_vrf = self.anm['vrf']
