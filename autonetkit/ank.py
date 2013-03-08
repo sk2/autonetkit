@@ -193,6 +193,7 @@ def split(OverlayGraph, edges, retain = []):
         cd_id = "cd_%s_%s" % (src, dst)
         interfaces = graph[src][dst]["_interfaces"]
         data = dict( (key, graph[src][dst][key]) for key in retain)
+        #TODO: check how this behaves for directed graphs
         src_data = data.copy()
         if src in interfaces:
             src_int_id = interfaces[src]
