@@ -484,9 +484,7 @@ class OverlayEdge(object):
     def interfaces(self):
         #TODO: warn if interface doesn't exist on node
         return iter(overlay_interface(self.anm, self.overlay_id, node_id, interface_id) 
-                for (node_id, interface_id) in self._interfaces.items()
-                if interface_id in self._graph.node[node_id]["_interfaces"] # check interface exists
-                )
+                for (node_id, interface_id) in self._interfaces.items())
 
     @property
     def _graph(self):
