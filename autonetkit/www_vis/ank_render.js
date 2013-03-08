@@ -28,7 +28,7 @@ var graph_history = [];
 var ip_allocations = [];
 
 var node_label_id = "id";
-var edge_group_id = "";
+var edge_group_id = ""; //TODO: rename edge_label_id
 var interface_label_id = "";
 
 
@@ -1363,6 +1363,13 @@ function redraw() {
             .attr("dx", 0) // padding-right
             .attr("dy", 0) // vertical-align: middle
             .text(function (d) {
+                if (edge_group_id == "_interfaces") {
+                    retval = "";
+                    for (attr in d[edge_group_id]) {
+                        retval += "(" + attr + ", " + d[edge_group_id][attr] + ")";
+                    }
+                    return retval;
+                }
                 return d[edge_group_id];
             });
 
