@@ -535,6 +535,11 @@ def build_ipv4(anm, infrastructure=True):
         ipv4.allocate_ips(g_ipv4, infrastructure)
         ank_utils.save(g_ipv4)
 
+    for edge in g_ipv4.edges():
+        print edge, edge._interfaces.items()
+        for interface in edge.interfaces():
+            print "interface", interface
+            interface.ip_address = edge.ip_address
 
 def build_phy(anm):
     """Build physical overlay"""
@@ -670,6 +675,13 @@ def build_ospf(anm):
     for link in g_ospf.edges():
         if not link.cost:
             link.cost = 1
+
+    # map areas and costs onto interfaces
+    #TODO: later map them directly rather than with edges - this is part of the transition
+    for edge in g_ospf.edges():
+        for interface in edge.interfaces():
+            interface.cost = edge.cost
+            interface.area = edge.area
 
 def ip_to_net_ent_title_ios(ip_addr):
     """ Converts an IP address into an OSI Network Entity Title

@@ -86,7 +86,7 @@ ws.onmessage = function (evt) {
         apply_highlight(data['highlight']);
     }
     else {
-        console.log("Received unknown data", data);
+        //console.log("Received unknown data", data);
         //TODO: work out why reaching here if passing the "graph in data" check above
     }
 }
@@ -523,6 +523,7 @@ var interface_info = function(d) {
     int_data = d.node._interfaces[d.interface];
 
     text = "<ul>"; //begin the unordered list
+    text += "<li><b>id:</b> " + d.interface + "</li>"; //add the key/val
     for (attr in int_data) {
         text += "<li><b>" + attr + ":</b> " + int_data[attr] + "</li>"; //add the key/val
     }
@@ -823,8 +824,14 @@ var device_label = function(d) {
 }
 
 var interface_label = function(d) {
+    try {
     int_data = d.node._interfaces[d.interface];
     return int_data[interface_label_id];
+    }
+    catch (err) {
+        //console.log(err);
+        //console.log("error for", d.node.id, d.interface);
+    }
 }
 
 var zoom_fit = function() {
@@ -987,13 +994,20 @@ function redraw() {
             return _.keys(interface);
         });
     });
-    interface_attributes = _.flatten(interface_attributes); //collapse from hierarchical nested structure
-    interface_attributes = _.uniq(interface_attributes);
-    propagate_interface_label_select(interface_attributes);
+    //collapse from hierarchical nested structure
+    interface_attributes_flattened = _.flatten(interface_attributes);
+    interface_attributes_unique = _.uniq(interface_attributes_flattened);
+    propagate_interface_label_select(interface_attributes_unique);
 
     node_attr_groups = d3.nest().key( node_group_id ).entries(nodes);
     edge_attr_groups = d3.nest().key(function(d) { return d[edge_group_id]; }).entries(jsondata.links);
     //TODO: use edge attr groups for edge colours
+    
+
+    if (display_interfaces) {
+        //if ospf graph then display groupings by interface rather than node
+
+    }
 
     //TODO: make group path change/exit with node data
     groupings = chart.selectAll(".attr_group")
@@ -1166,12 +1180,16 @@ function redraw() {
             src_int_id = interface_data[src_node.id]; //interface id is indexed by the node id
             dst_int_id = interface_data[dst_node.id]; //interface id is indexed by the node id
 
+            //Check for null interface ids: some nodes may not have interfaces (eg a collision domain)
+
             //TODO: if a directed link, only return for source
             //
             retval = [];
-            retval.push( { 'node': src_node, 'interface':  src_int_id, 'target': dst_node, 'link': link });
+            if (src_int_id != null) {
+                retval.push( { 'node': src_node, 'interface':  src_int_id, 'target': dst_node, 'link': link });
+            }
 
-            if (!jsondata.directed) {
+            if (!jsondata.directed && dst_int_id != null) {
                 //undirected, also include data for other interface
                 retval.push( { 'node': dst_node, 'interface':  dst_int_id, 'target': src_node, 'link': link });
                 }
@@ -1205,9 +1223,11 @@ function redraw() {
         .duration(4000);
 
 
+    //console.log(interface_data);
 
     interface_icons = chart.selectAll(".interface_icon")
         //.data(interface_data) //TODO: check if need to provide an index
+        //TODO: check if should return tuple of interface, node for uniqueness (esp for switching overlays)
         .data(interface_data, function(d) { return d.interface;})
 
         var interface_width = 15;
