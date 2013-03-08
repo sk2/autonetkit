@@ -95,6 +95,16 @@ class overlay_interface(object):
             self.phy._interface.get("description")
 
     @property
+    def type(self):
+        """"""
+        retval = self._interface.get("type")
+        if retval:
+            return retval
+
+        if self.overlay_id != "phy":  # prevent recursion
+            self.phy._interface.get("type")
+
+    @property
     def node(self):
         """Returns parent node of this interface"""
         return OverlayNode(self.anm, self.overlay_id, self.node_id)
