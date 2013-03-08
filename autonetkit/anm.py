@@ -216,7 +216,7 @@ class OverlayNode(object):
                 return int_id
 
     # TODO: interface function access needs to be cleaned up
-    def _add_interface(self, type="physical", description=None, **kwargs):
+    def _add_interface(self, description=None, type="physical", **kwargs):
         data = dict(kwargs)
 
         if self.overlay_id != 'phy' and self.phy:
