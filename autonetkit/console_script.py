@@ -244,10 +244,9 @@ def compile_network(anm):
     nidb.add_nodes_from(
         cd_nodes, retain=['label', 'host'], collision_domain=True)
 # add edges to switches
-    edges_to_add = [edge for edge in g_phy.edges(
-    ) if edge.src.is_switch or edge.dst.is_switch]
-    edges_to_add += [edge for edge in g_ipv4.edges(
-    ) if edge.src.collision_domain or edge.dst.collision_domain]
+    edges_to_add = [edge for edge in g_phy.edges()
+            if edge.src.is_switch or edge.dst.is_switch]
+    edges_to_add += [edge for edge in g_ipv4.edges() if edge.split] # cd edges from split
     nidb.add_edges_from(edges_to_add, retain='edge_id')
 
 # TODO: boundaries is still a work in progress...
