@@ -1003,11 +1003,47 @@ function redraw() {
     edge_attr_groups = d3.nest().key(function(d) { return d[edge_group_id]; }).entries(jsondata.links);
     //TODO: use edge attr groups for edge colours
     
-
+    //If undirected graph, then need two interfaces per edge: one at each end
     if (display_interfaces) {
-        //if ospf graph then display groupings by interface rather than node
+        //Undirected, need to handle for both src and dst
+        interface_data = _.map(jsondata.links, function(link) {
+            interface_data = link._interfaces;
+            src_node = nodes[link.source];
+            dst_node = nodes[link.target];
+            src_int_id = interface_data[src_node.id]; //interface id is indexed by the node id
+            dst_int_id = interface_data[dst_node.id]; //interface id is indexed by the node id
 
+            //Check for null interace ids: some nodes may not have interfaces (eg a collision domain)
+
+            //TODO: if a directed link, only return for source
+            //
+            retval = [];
+            if (src_int_id != null) {
+                retval.push( { 'node': src_node, 'interface':  src_int_id, 'target': dst_node, 'link': link });
+            }
+
+            if (!jsondata.directed && dst_int_id != null) {
+                //undirected, also include data for other interface
+                retval.push( { 'node': dst_node, 'interface':  dst_int_id, 'target': src_node, 'link': link });
+                }
+
+            return retval;
+
+        });
+
+        interface_data = _.flatten(interface_data); //collapse from hierarchical nested structure
+    } else {
+        interface_data = {}; //reset 
     }
+
+
+    var interface_area = function(d) {
+        interface_id = d.interface;
+        return d.node._interfaces[interface_id]['area'];
+    }
+
+    interface_attr_groups = d3.nest().key( interface_area ).entries(interface_data);
+    console.log(interface_attr_groups);
 
     //TODO: make group path change/exit with node data
     groupings = chart.selectAll(".attr_group")
@@ -1170,38 +1206,7 @@ function redraw() {
         .remove();
 
 
-    //If undirected graph, then need two interfaces per edge: one at each end
-    if (display_interfaces) {
-        //Undirected, need to handle for both src and dst
-        interface_data = _.map(jsondata.links, function(link) {
-            interface_data = link._interfaces;
-            src_node = nodes[link.source];
-            dst_node = nodes[link.target];
-            src_int_id = interface_data[src_node.id]; //interface id is indexed by the node id
-            dst_int_id = interface_data[dst_node.id]; //interface id is indexed by the node id
 
-            //Check for null interface ids: some nodes may not have interfaces (eg a collision domain)
-
-            //TODO: if a directed link, only return for source
-            //
-            retval = [];
-            if (src_int_id != null) {
-                retval.push( { 'node': src_node, 'interface':  src_int_id, 'target': dst_node, 'link': link });
-            }
-
-            if (!jsondata.directed && dst_int_id != null) {
-                //undirected, also include data for other interface
-                retval.push( { 'node': dst_node, 'interface':  dst_int_id, 'target': src_node, 'link': link });
-                }
-
-            return retval;
-
-        });
-
-        interface_data = _.flatten(interface_data); //collapse from hierarchical nested structure
-    } else {
-        interface_data = {}; //reset 
-    }
 
     //TODO: handle removing of interfaces
 
