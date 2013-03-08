@@ -61,11 +61,14 @@ class RouterCompiler(object):
         g_ipv6 = self.anm['ipv6']
         node.interfaces = []
 
-        for interface in node.get_interfaces():
-            #TODO: check if physical or loopback interface
+        for interface in node.get_interfaces(type = "physical"):
+            #TODO: check if loopbacks are being marked as physical too in anm
+            print interface.interface_id
             phy_int = self.anm['phy'].interface(interface)
             ospf_int = phy_int['ospf']
             ipv4_int = phy_int['ipv4']
+            interface.cost = ospf_int.cost
+            interface.ip_address = ipv4_int.ip_address
 
         for link in phy_node.edges():
             nidb_edge = self.nidb.edge(link)
