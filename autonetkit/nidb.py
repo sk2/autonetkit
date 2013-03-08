@@ -834,10 +834,14 @@ class NIDB_base(object):
         self._graph.add_nodes_from(nbunch, **kwargs)
 
         for node in nodes_to_add:
-            interface_ids = [i.interface_id for i in node.interfaces()]
-            # Initialise with blank dictionaries
             #TODO: add an interface_retain for attributes also
-            self._graph.node[node.node_id]["_interfaces"] = dict.fromkeys(interface_ids, {})
+            int_dict = {i.interface_id: {'type': i.type, 'layer': i.overlay_id} for i in node.interfaces()}
+            for interface in node:
+                print "interface dict for", interface.interface_id
+                print interface.overlay_id, interface._interface
+            print int_dict
+            int_dict = {i.interface_id: {'type': i.type} for i in node.interfaces()}
+            self._graph.node[node.node_id]["_interfaces"] = int_dict
 
     def add_edge(self, src, dst, retain=[], **kwargs):
         self.add_edges_from([(src, dst)], retain, **kwargs)
