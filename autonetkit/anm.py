@@ -481,6 +481,13 @@ class OverlayEdge(object):
         """Bind this edge to specified index"""
         self._interfaces[node.id] = interface
 
+    def interfaces(self):
+        #TODO: warn if interface doesn't exist on node
+        return iter(overlay_interface(self.anm, self.overlay_id, node_id, interface_id) 
+                for (node_id, interface_id) in self._interfaces.items()
+                if interface_id in self._graph.node[node_id]["_interfaces"] # check interface exists
+                )
+
     @property
     def _graph(self):
         """Return graph the node belongs to"""

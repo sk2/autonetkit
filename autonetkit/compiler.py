@@ -62,6 +62,7 @@ class RouterCompiler(object):
         node.interfaces = []
 
         for interface in node.get_interfaces():
+            continue
             #TODO: check if physical or loopback interface
             interface.test = 123
             print interface, interface.test

@@ -99,6 +99,9 @@ var current_translate = "0,0";
 //TODO: use icons that are updated for the zoom and Interfaces selectors
 
 var overlay_id = "phy";
+var overlay_id = "ipv4";
+var display_interfaces = false;
+var display_interfaces = true;
 
 var overlay_dropdown = d3.select("#overlay_select")
 .attr("title", "Overlay graph")
@@ -152,7 +155,6 @@ var interface_label_select = d3.select("#interface_label_select")
     })
 
 
-var display_interfaces = false
 
 d3.select("#display_interfaces")
 .on("change", function() {
