@@ -230,7 +230,7 @@ def explode_nodes(OverlayGraph, nodes, retain = []):
 #TODO: if graph is bidirectional, need to explode here too
 #TODO: how do we handle explode for multi graphs?
     for node in nodes:
-        log.info("Exploding from %s" % node)
+        log.debug("Exploding from %s" % node)
         neighbors = graph.neighbors(node)
         neigh_edge_pairs = ( (s,t) for s in neighbors for t in neighbors if s != t)
         neigh_edge_pairs = list(neigh_edge_pairs)
