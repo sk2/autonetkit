@@ -535,9 +535,12 @@ def build_ipv4(anm, infrastructure=True):
         ipv4.allocate_ips(g_ipv4, infrastructure)
         ank_utils.save(g_ipv4)
 
+    # map ip addresses to interfaces
     for edge in g_ipv4.edges():
         for interface in edge.interfaces():
             interface.ip_address = edge.ip_address
+
+    # TODO: also map loopbacks to loopback interface 0
 
 def build_phy(anm):
     """Build physical overlay"""
@@ -602,11 +605,6 @@ def build_ospf(anm):
     if any(router.area == "0.0.0.0" for router in g_ospf):
         # string comparison as hasn't yet been cast to IPAddress
         default_area = area_zero_ip
-
-    for router in g_ospf:
-        for interface in router:
-            interface.cost = 10
-
 
     for router in g_ospf:
         if not router.area or router.area == "None":
