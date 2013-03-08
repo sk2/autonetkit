@@ -200,7 +200,7 @@ def split(OverlayGraph, edges, retain = []):
             src_data['_interfaces'] = {src: src_int_id}
         dst_data = data.copy()
         if dst in interfaces:
-            dst_int_id = interfaces[src]
+            dst_int_id = interfaces[dst]
             dst_data['_interfaces'] = {dst: dst_int_id}
         edges_to_add.append( (src, cd_id, src_data))
         edges_to_add.append( (dst, cd_id, dst_data))
