@@ -239,6 +239,7 @@ def explode_nodes(OverlayGraph, nodes, retain = []):
             src_to_node_data = dict( (key, graph[src][node][key]) for key in retain)
             node_to_dst_data = dict( (key, graph[node][dst][key]) for key in retain)
             src_to_node_data.update(node_to_dst_data)
+            #TODO: handle interfaces for explode
             edges_to_add.append((src, dst, src_to_node_data))
 
         graph.add_edges_from(edges_to_add)
