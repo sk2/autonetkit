@@ -410,6 +410,12 @@ class OverlayEdge(object):
         object.__setattr__(self, 'src_id', src_id)
         object.__setattr__(self, 'dst_id', dst_id)
 
+    def __eq__(self, other):
+        try:
+            return (self.src_id, self.dst_id) == (other.src_id, other.dst_id)
+        except AttributeError:
+            return self.node_id == other
+
     def __repr__(self):
         """String of node"""
         return "%s: (%s, %s)" % (self.overlay_id, self.src, self.dst)
