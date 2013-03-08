@@ -487,8 +487,10 @@ def build_ipv4(anm, infrastructure=True):
 
     edges_to_split = [edge for edge in g_ipv4.edges() if edge.attr_both(
         "is_l3device")]
+    for edge in edges_to_split:
+        edge.split = True # mark as split for use in building nidb
     split_created_nodes = list(
-        ank_utils.split(g_ipv4, edges_to_split, retain='edge_id'))
+        ank_utils.split(g_ipv4, edges_to_split, retain=['edge_id', 'split']))
     for node in split_created_nodes:
         node['graphics'].x = ank_utils.neigh_average(g_ipv4, node, "x",
                                                      g_graphics) + 0.1 # temporary fix for gh-90
