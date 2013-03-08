@@ -836,10 +836,6 @@ class NIDB_base(object):
         for node in nodes_to_add:
             #TODO: add an interface_retain for attributes also
             int_dict = {i.interface_id: {'type': i.type, 'layer': i.overlay_id} for i in node.interfaces()}
-            for interface in node:
-                print "interface dict for", interface.interface_id
-                print interface.overlay_id, interface._interface
-            print int_dict
             int_dict = {i.interface_id: {'type': i.type} for i in node.interfaces()}
             self._graph.node[node.node_id]["_interfaces"] = int_dict
 
