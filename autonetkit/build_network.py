@@ -536,9 +536,7 @@ def build_ipv4(anm, infrastructure=True):
         ank_utils.save(g_ipv4)
 
     for edge in g_ipv4.edges():
-        print edge, edge._interfaces.items()
         for interface in edge.interfaces():
-            print "interface", interface
             interface.ip_address = edge.ip_address
 
 def build_phy(anm):
@@ -551,8 +549,8 @@ def build_phy(anm):
         ank_utils.copy_attr_from(g_in, g_phy, "Network")
 
     g_phy.add_edges_from(g_in.edges(type="physical"))
-    g_phy.allocate_interfaces(
-    )  # TODO: make this automatic if adding to the physical graph?
+    # TODO: make this automatic if adding to the physical graph?
+    g_phy.allocate_interfaces() 
 
 
 def build_conn(anm):
