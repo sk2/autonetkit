@@ -41,11 +41,15 @@ interface ${interface.id}
   ipv6 address ${interface.ipv6_address} 
   %endif
   % if interface.ospf_use_ivp4:
+      % if not interface.ospf['multipoint']:
   ip ospf network point-to-point
+      % endif
   ip ospf cost ${interface.ospf_cost}
   % endif
   % if interface.ospf_use_ivp6:
+      % if not interface.ospf['multipoint']:
   ipv6 ospf network point-to-point
+      % endif
   ipv6 ospf cost ${interface.ospf_cost}
   ipv6 ospf ${interface.ospf['process_id']} area ${interface.ospf['area']}
   % endif
