@@ -219,7 +219,7 @@ class OverlayNode(object):
     def _add_interface(self, type="physical", description=None, **kwargs):
         data = dict(kwargs)
 
-        if self.node_id != 'phy' and self.phy:
+        if self.overlay_id != 'phy' and self.phy:
             next_id = self.phy._next_int_id
             self.phy._interfaces[next_id] = {'type': type,
                                              'description': description} 
