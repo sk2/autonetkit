@@ -839,6 +839,7 @@ class OverlayGraph(OverlayBase):
                     'description': None,
                     'type': 'physical',
                 }
+                # need to do dict() to copy, otherwise all point to same memory location -> clobber
                 data = dict(
                     (key, dict(interface_data)) for key in phy_interfaces)
                 self._graph.node[node]['_interfaces'] = data
