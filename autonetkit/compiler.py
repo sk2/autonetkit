@@ -62,13 +62,10 @@ class RouterCompiler(object):
         node.interfaces = []
 
         for interface in node.get_interfaces():
-            continue
             #TODO: check if physical or loopback interface
-            interface.test = 123
-            print interface, interface.test
-            bgp_int = self.anm['bgp'].interface(interface)
-            print "bgp interface", bgp_int, bgp_int.color
-            interface.color = bgp_int.color
+            phy_int = self.anm['phy'].interface(interface)
+            ospf_int = phy_int['ospf']
+            ipv4_int = phy_int['ipv4']
 
         for link in phy_node.edges():
             nidb_edge = self.nidb.edge(link)
