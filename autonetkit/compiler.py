@@ -61,13 +61,13 @@ class RouterCompiler(object):
         g_ipv6 = self.anm['ipv6']
         node.interfaces = []
 
-        for phy_int in phy_node.interfaces():
-            nidb_int = node.interface(phy_int)
-            nidb_int.color = phy_int.color
-
         for interface in node.get_interfaces():
+            #TODO: check if physical or loopback interface
             interface.test = 123
-            pass
+            print interface, interface.test
+            bgp_int = self.anm['bgp'].interface(interface)
+            print "bgp interface", bgp_int, bgp_int.color
+            interface.color = bgp_int.color
 
         for link in phy_node.edges():
             nidb_edge = self.nidb.edge(link)

@@ -551,6 +551,10 @@ class OverlayBase(object):
     def __contains__(self, n):
         return n.node_id in self._graph
 
+    def interface(self, interface):
+        return overlay_interface(self._anm, self._overlay_id,
+                interface.node_id, interface.interface_id)
+
     def edge(self, edge_to_find, dst_to_find=None):
         """returns edge in this graph with same src and same edge_id"""
         try:

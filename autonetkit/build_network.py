@@ -415,6 +415,10 @@ def build_bgp(anm):
     #for node in g_bgp:
         #node._interfaces[0]['description'] = "loopback0"
 
+    for node in g_bgp:
+        for interface in node:
+            interface.color = "blue"
+
 
 def build_ip6(anm):
     """Builds IPv6 graph, using nodes and edges from IPv4 graph"""
