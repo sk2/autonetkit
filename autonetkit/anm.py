@@ -37,9 +37,12 @@ class overlay_interface(object):
         return "(%s, %s)" % (self.node_id, description)
 
     def __nonzero__(self):
-        """Allows for checking if node exists
-        """
         return len(self._interface) > 0  # if interface data set
+
+    @property
+    def is_bound(self):
+        """Returns if this interface is bound to an edge on this layer"""
+        return len(self.edges())
 
     def __str__(self):
         return self.__repr__()
@@ -74,6 +77,11 @@ class overlay_interface(object):
                     % (self, overlay_id))
             return None
 
+        if not self.node_id in self.anm.overlay_nx_graphs[overlay_id]:
+            log.debug("Trying to access interface %s for non-existent node %s in overlay %s" 
+                    % (self, self.node_id, self.overlay_id))
+            return None
+
         try:
             return overlay_interface(self.anm, overlay_id, self.node_id, self.interface_id)
         except KeyError:
@@ -83,6 +91,11 @@ class overlay_interface(object):
     def is_loopback(self):
         """"""
         return self.type == "loopback" or self.phy.type == "loopback"
+
+    @property
+    def is_physical(self):
+        """"""
+        return self.type == "physical" or self.phy.type == "physical"
 
     @property
     def description(self):
@@ -95,8 +108,16 @@ class overlay_interface(object):
             self.phy._interface.get("description")
 
     @property
+    def is_loopback_zero(self):
+        return self.interface_id == 0 and self.is_loopback
+
+    @property
     def type(self):
         """"""
+#TODO: make 0 correctly access interface 0 -> copying problem
+# TODO: this needs a bugfix rather than the below workaround
+        if self.interface_id == 0:
+            return "loopback"
         retval = self._interface.get("type")
         if retval:
             return retval
@@ -184,6 +205,10 @@ class OverlayNode(object):
             return self.node_id == other.node_id
         except AttributeError:
             return self.node_id == other
+
+    @property
+    def loopback_zero(self):
+        return (i for i in self.interfaces("is_loopback_zero")).next()
 
     def __lt__(self, other):
 # want [r1, r2, ..., r11, r12, ..., r21, r22] not [r1, r11, r12, r2, r21, r22]
@@ -848,8 +873,8 @@ class OverlayGraph(OverlayBase):
                 log.debug("Initialise interfaces for %s in %s" % (
                     node, self._overlay_id))
                 self._graph.node[node]['_interfaces'] = {0:
-                                                         {'description': 
-                                                             'loopback'}}
+                                                         {'description': 'loopback',
+                                                             'type': 'loopback'}}
 
     def allocate_interfaces(self):
         """allocates edges to interfaces"""

@@ -159,6 +159,10 @@ class overlay_interface(object):
         return self._interface.get("description")
 
     @property
+    def is_loopback_zero(self):
+        return self.interface_id == 0 and self.is_loopback
+
+    @property
     def node(self):
         """Returns parent node of this interface"""
         return nidb_node(self.nidb, self.node_id)
@@ -198,7 +202,6 @@ class overlay_interface(object):
                 if self.node_id in e._interfaces
                 and e._interfaces[self.node_id] == self.interface_id]
         return valid_edges
-
 
 class overlay_edge_accessor(object):
 #TODO: do we even need this?
@@ -444,10 +447,10 @@ class nidb_node(object):
     def _interface_ids(self):
         return self._graph.node[self.node_id]["_interfaces"].keys()
 
-    def interfaces(self, *args, **kwargs):
-        #TODO: sort by interface name
-        return self.get_interfaces(*args, **kwargs)
-    
+    @property
+    def interfaces(self):
+        return self.get_interfaces()
+
     def get_interfaces(self, *args, **kwargs):
         """Public function to view interfaces
 
@@ -466,6 +469,10 @@ class nidb_node(object):
             for interface_id in self._interface_ids)
         retval = (i for i in all_interfaces if filter_func(i))
         return retval
+
+    @property
+    def loopback_zero(self):
+        return (i for i in self.interfaces if i.is_loopback_zero).next()
 
     @property
     def _graph(self):
