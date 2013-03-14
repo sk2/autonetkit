@@ -98,6 +98,7 @@ class RouterCompiler(object):
             )
 
         for index, interface in enumerate(phy_node.interfaces("is_loopback")):
+            continue
             ip_interface = g_ipv4.node(node).interface(interface)
             vrf_interface = self.anm['vrf'].node(node).interface(interface)
             index = index + 1  # loopback0 (ie index 0) is reserved

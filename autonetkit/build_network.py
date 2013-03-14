@@ -112,7 +112,7 @@ def build(input_graph):
         allocate_ipv6 = True
         build_ipv4(anm, infrastructure=True)
 
-    build_ip6(anm)
+    build_ipv6(anm)
     for node in g_phy:
         node.use_ipv4 = allocate_ipv4_infrastructure
         node.use_ipv6 = allocate_ipv6
@@ -419,8 +419,11 @@ def build_bgp(anm):
         for interface in node:
             interface.color = "blue"
 
+    for edge in g_bgp.edges():
+        print edge, edge.type, edge._interfaces
 
-def build_ip6(anm):
+
+def build_ipv6(anm):
     """Builds IPv6 graph, using nodes and edges from IPv4 graph"""
     import autonetkit.plugins.ipv6 as ipv6
     # uses the nodes and edges from ipv4
@@ -431,6 +434,15 @@ def build_ip6(anm):
     g_ipv6.add_edges_from(g_ipv4.edges())
     ipv6.allocate_ips(g_ipv6)
 
+
+    #TODO: replace this with direct allocation to interfaces in ip alloc plugin
+    for node in g_ipv6.nodes("is_l3device"):
+        for interface in node:
+            edges = list(interface.edges())
+            if len(edges):
+                edge = edges[0] # first (only) edge
+                interface.ip_address = edge.ip #TODO: make this consistent
+                interface.subnet = edge.dst.subnet # from collision domain
 
 def manual_ipv4_allocation(anm):
     """Applies manual IPv4 allocation"""
@@ -535,12 +547,18 @@ def build_ipv4(anm, infrastructure=True):
         ipv4.allocate_ips(g_ipv4, infrastructure)
         ank_utils.save(g_ipv4)
 
-    # map ip addresses to interfaces
-    for edge in g_ipv4.edges():
-        for interface in edge.interfaces():
-            interface.ip_address = edge.ip_address
+    autonetkit.update_http(anm)
+    #TODO: replace this with direct allocation to interfaces in ip alloc plugin
+    for node in g_ipv4.nodes("is_l3device"):
+        for interface in node:
+            edges = list(interface.edges())
+            if len(edges):
+                edge = edges[0] # first (only) edge
+                interface.ip_address = edge.ip_address
+                interface.subnet = edge.dst.subnet # from collision domain
 
     # TODO: also map loopbacks to loopback interface 0
+    autonetkit.update_http(anm)
 
 def build_phy(anm):
     """Build physical overlay"""
@@ -678,6 +696,7 @@ def build_ospf(anm):
         for interface in edge.interfaces():
             interface.cost = edge.cost
             interface.area = edge.area
+            interface.multipoint = edge.multipoint
 
 def ip_to_net_ent_title_ios(ip_addr):
     """ Converts an IP address into an OSI Network Entity Title

@@ -145,7 +145,6 @@ class overlay_interface(object):
                 and e._interfaces[self.node_id] == self.interface_id]
         return valid_edges
 
-
 @functools.total_ordering
 class OverlayNode(object):
     def __init__(self, anm, overlay_id, node_id):
@@ -163,7 +162,8 @@ class OverlayNode(object):
         return self.node_id in self._graph
 
     def __iter__(self):
-        return self.interfaces()
+        """Shortcut to iterate over the physical interfaces of this node"""
+        return self.interfaces(type="physical")
 
     def __getnewargs__(self):
         return ()
@@ -927,8 +927,7 @@ class OverlayGraph(OverlayBase):
             else:
                 ebunch = [(e.src.node_id, e.dst.node_id, {}) for e in ebunch]
         except AttributeError:
-            data = {"_interfaces": {}}
-            ebunch = [(src.node_id, dst.node_id, data) for src, dst in ebunch]
+            ebunch = [(src.node_id, dst.node_id, {"_interfaces": {}}) for src, dst in ebunch]
 
         ebunch = [(src, dst, data) for (src, dst, data)
                   in ebunch if src in self._graph and dst in self._graph]
