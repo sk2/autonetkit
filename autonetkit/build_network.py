@@ -412,16 +412,10 @@ def build_bgp(anm):
         # TODO: need interface querying/selection. rather than hard-coded ids
         edge.bind_interface(edge.src, 0)
 
-    #for node in g_bgp:
-        #node._interfaces[0]['description'] = "loopback0"
-
+    #TODO: need to initialise interface zero to be a loopback rather than physical type
     for node in g_bgp:
-        for interface in node:
-            interface.color = "blue"
-
-    for edge in g_bgp.edges():
-        print edge, edge.type, edge._interfaces
-
+        for interface in node.interfaces():
+            interface.multipoint = any(e.multipoint for e in interface.edges())
 
 def build_ipv6(anm):
     """Builds IPv6 graph, using nodes and edges from IPv4 graph"""
@@ -437,6 +431,7 @@ def build_ipv6(anm):
 
     #TODO: replace this with direct allocation to interfaces in ip alloc plugin
     for node in g_ipv6.nodes("is_l3device"):
+        node.loopback_zero.ip_address = node.loopback
         for interface in node:
             edges = list(interface.edges())
             if len(edges):
@@ -550,6 +545,7 @@ def build_ipv4(anm, infrastructure=True):
     autonetkit.update_http(anm)
     #TODO: replace this with direct allocation to interfaces in ip alloc plugin
     for node in g_ipv4.nodes("is_l3device"):
+        node.loopback_zero.ip_address = node.loopback
         for interface in node:
             edges = list(interface.edges())
             if len(edges):
@@ -595,6 +591,8 @@ def build_ospf(anm):
 
     Not-allowed:
     x -> x (x != y != 0)
+
+    #TODO: build check that verifies these rules
     """
     import netaddr
     g_in = anm['input']

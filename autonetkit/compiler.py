@@ -37,8 +37,8 @@ class RouterCompiler(object):
         phy_node = self.anm['phy'].node(node)
         ipv4_node = self.anm['ipv4'].node(node)
 
-        node.ip.use_ipv4 = phy_node.use_ipv4
-        node.ip.use_ipv6 = phy_node.use_ipv6
+        node.ip.use_ipv4 = phy_node.use_ipv4 or False
+        node.ip.use_ipv6 = phy_node.use_ipv6 or False
         if not (node.ip.use_ipv4 and node.ip.use_ipv6):
             log.debug("Neither IPv4 nor IPv6 specified for %s, using IPv4" % node)
             node.ip.use_ipv4 = True
@@ -62,40 +62,27 @@ class RouterCompiler(object):
         node.interfaces = []
 
         for interface in node.get_interfaces(type = "physical"):
-            #TODO: check if loopbacks are being marked as physical too in anm
-            print interface.interface_id
             phy_int = self.anm['phy'].interface(interface)
-            ospf_int = phy_int['ospf']
+
+            interface.ospf = {'a': 1}
+
+            phy_link = phy_int.edges()[0] # first (only) edge
+            interface.description = "%s to %s" % (node, phy_link.dst)
+
+            interface.physical = True
+
             ipv4_int = phy_int['ipv4']
-            interface.cost = ospf_int.cost
-            interface.ip_address = ipv4_int.ip_address
+            interface.ipv4_address = ipv4_int.ip_address
+            interface.ipv4_subnet = ipv4_int.subnet
+            interface.ipv4_address = address_prefixlen_to_network(interface.ipv4_address,
+                    interface.ipv4_subnet.prefixlen)
 
-        for link in phy_node.edges():
-            nidb_edge = self.nidb.edge(link)
+            ipv6_int = phy_int['ipv6']
+            interface.ipv6_address = ipv6_int.ip_address
+            interface.ipv6_subnet = ipv6_int.subnet
+            interface.ipv6_address = address_prefixlen_to_network(interface.ipv6_address,
+                    interface.ipv6_subnet.prefixlen)
 
-            ipv4_cidr = ipv6_address = ipv4_address = ipv4_subnet = None
-            if node.ip.use_ipv4:
-                ipv4_link = g_ipv4.edge(link)
-                ipv4_address = ipv4_link.ip_address
-                ipv4_subnet = ipv4_link.dst.subnet
-                ipv4_cidr = address_prefixlen_to_network(ipv4_address,
-                                                         ipv4_subnet.prefixlen)
-            if node.ip.use_ipv6:
-                ipv6_link = g_ipv6.edge(link)
-                ipv6_subnet = ipv6_link.dst.subnet
-                ipv6_address = address_prefixlen_to_network(ipv6_link.ip,
-                                                            ipv6_subnet.prefixlen)
-
-            node.interfaces.append(
-                _edge_id=link.edge_id,  # used if need to append
-                id=nidb_edge.id,
-                description="%s to %s" % (link.src, link.dst),
-                ipv4_address=ipv4_address,
-                ipv4_subnet=ipv4_subnet,
-                ipv4_cidr=ipv4_cidr,
-                ipv6_address=ipv6_address,
-                physical=True,
-            )
 
         for index, interface in enumerate(phy_node.interfaces("is_loopback")):
             continue
@@ -111,7 +98,9 @@ class RouterCompiler(object):
                 vrf_name=vrf_interface.vrf_name,
             )
 
-        node.interfaces.sort("id")
+            #node.interfaces.sort("id")
+
+        print list(node.interfaces)
 
     def ospf(self, node):
         """Returns OSPF links, also sets process_id
@@ -338,17 +327,23 @@ class IosBaseCompiler(RouterCompiler):
         self.vrf(node)
 
     def interfaces(self, node):
-        ipv4_cidr = ipv6_address = ipv4_address = ipv4_loopback_subnet = None
+        phy_loopback_zero = self.anm['phy'].interface(node.loopback_zero)
+        node.loopback_zero.id = self.lo_interface
+        node.loopback_zero.description = "Loopback"
+
         if node.ip.use_ipv4:
-            ipv4_node = self.anm['ipv4'].node(node)
-            ipv4_address = ipv4_node.loopback
             ipv4_loopback_subnet = netaddr.IPNetwork("0.0.0.0/32")
-            ipv4_cidr = address_prefixlen_to_network(
-                ipv4_address, ipv4_loopback_subnet.prefixlen)
+            ipv4_loopback_zero = phy_loopback_zero['ipv4']
+            ipv4_address = ipv4_loopback_zero.ip_address
+            node.loopback_zero.ipv4_address = ipv4_address
+            node.loopback_zero.ipv4_subnet = ipv4_loopback_subnet
+            node.loopback_zero.ipv4_cidr = address_prefixlen_to_network(
+                    ipv4_address, ipv4_loopback_subnet.prefixlen)
+
         if node.ip.use_ipv6:
-            ipv6_node = self.anm['ipv6'].node(node)
-            ipv6_address = address_prefixlen_to_network(
-                ipv6_node.loopback, 128)
+            ipv6_loopback_zero = phy_loopback_zero['ipv6']
+            node.loopback_zero.ipv6_address = address_prefixlen_to_network(
+                ipv6_loopback_zero.ip_address, 128)
 
 # TODO: strip out returns from super
         super(IosBaseCompiler, self).interfaces(node)
@@ -356,27 +351,32 @@ class IosBaseCompiler(RouterCompiler):
         g_ospf = self.anm['ospf']
         g_isis = self.anm['isis']
 
-        for interface in node.interfaces:
-            ospf_link = g_ospf.edge(
-                interface._edge_id)  # find link in OSPF with this ID
-            if ospf_link:
-                #TODO: this shpuld for in the ospf function below
-                interface['ospf_cost'] = int(ospf_link.cost)
-                interface['ospf_use_ivp4'] = node.ospf.use_ipv4
-                interface['ospf_use_ivp6'] = node.ospf.use_ipv6
-            isis_link = g_isis.edge(
-                interface._edge_id)  # find link in OSPF with this ID
-            if isis_link:  # only configure if has ospf interface
-                #TODO: this shpuld for in the isis function below
-                interface['isis'] = True
-                isis_node = g_isis.node(node)
-                interface['isis_process_id'] = isis_node.process_id
-                interface['isis_metric'] = isis_link.metric
-                interface['isis_use_ivp4'] = node.isis.use_ipv4
-                interface['isis_use_ivp6'] = node.isis.use_ipv6
+        for interface in node.get_interfaces(type = "physical"):
+            phy_int = self.anm['phy'].interface(interface)
 
-# TODO: update this to new format
-        is_isis_node = bool(g_isis.node(node))  # if node is in ISIS graph
+            ospf_int = phy_int['ospf']
+            if ospf_int and ospf_int.is_bound:
+                ospf_node = g_ospf.node(node)
+                interface.ospf = {
+                        'cost': ospf_int.cost,
+                        'process_id': ospf_node.process_id,
+                        'use_ipv4': node.use_ipv4,
+                        'use_ipv6': node.use_ipv6,
+                        } #TODO: add wrapper for this
+
+            isis_int = phy_int['isis']
+            if isis_int and isis_int.is_bound:
+                isis_node = g_isis.node(node)
+                interface.isis = {
+                        'cost': isis_int.cost,
+                        'process_id': isis_node.process_id,
+                        'use_ipv4': node.use_ipv4,
+                        'use_ipv6': node.use_ipv6,
+                        } #TODO: add wrapper for this
+
+
+#TODO replace with node in g_isis
+        """
         node.interfaces.append(
             id=self.lo_interface,
             description="Loopback",
@@ -387,6 +387,7 @@ class IosBaseCompiler(RouterCompiler):
             isis=is_isis_node,
             physical=False,
         )
+        """
 
     def bgp(self, node):
         node.bgp.lo_interface = self.lo_interface
@@ -417,49 +418,6 @@ class IosBaseCompiler(RouterCompiler):
                     use_ipv4=node.ip.use_ipv4,
                     use_ipv6=node.ip.use_ipv6,
                 )
-
-    def ospf(self, node):
-        super(IosBaseCompiler, self).ospf(node)
-        for interface in node.interfaces:
-            # get ospf info for this id
-            ospf_link = self.anm['ospf'].edge(
-                interface._edge_id)  # find link in OSPF with this ID
-            if ospf_link:
-                area = str(ospf_link.area) # TODO: check why area is string not int
-                interface['ospf'] = {
-                    'area': area,
-                    'process_id': node.ospf.process_id,  # from super ospf config
-                    'multipoint': ospf_link.multipoint,
-                }
-            elif interface.physical:
-                # see if connected to switch, and if so, if can't find due to edge_id clobber
-                # when merging
-                # test if this link has lost interface ID
-                # workaround for not having full interfaces
-                #TODO: remove this code
-                #TODO: check handling eBGP links correctly
-                phy_link = self.anm['phy'].edge(interface._edge_id)
-#TODO: need to find OSPF area
-                switch = None
-                if phy_link.src.is_switch:
-                    switch = phy_link.src
-                elif phy_link.dst.is_switch:
-                    switch = phy_link.dst
-
-                if switch:
-                    #TODO: merge the next 3 lines back into the interface['ospf'] block
-                    ospf_cost = 1
-                    interface['ospf_cost'] = ospf_cost
-                    interface['ospf_use_ivp4'] = node.ospf.use_ipv4
-                    interface['ospf_use_ivp6'] = node.ospf.use_ipv6
-                    area = 1
-                    log.debug("Unable to find corresponding multipoint OSPF links for %s, "
-                            "using default area=1, cost=1 to connected switch %s" % (phy_link, switch))
-                    interface['ospf'] = {
-                            'area': area,
-                            'process_id': node.ospf.process_id,  # from super ospf config
-                            'multipoint': True,
-                    }
 
     def vrf(self, node):
         g_vrf = self.anm['vrf']
