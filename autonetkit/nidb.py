@@ -443,6 +443,10 @@ class nidb_node(object):
     @property
     def _interface_ids(self):
         return self._graph.node[self.node_id]["_interfaces"].keys()
+
+    def interfaces(self, *args, **kwargs):
+        #TODO: sort by interface name
+        return self.get_interfaces(*args, **kwargs)
     
     def get_interfaces(self, *args, **kwargs):
         """Public function to view interfaces
