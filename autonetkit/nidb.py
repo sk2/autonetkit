@@ -172,6 +172,9 @@ class overlay_interface(object):
         """
         return len(self._interface) > 0  # if interface data set
 
+    def __eq__(self, other):
+        return (self.node_id, self.interface_id) == (other.node_id, other.interface_id)
+
     def __str__(self):
         return self.__repr__()
 
@@ -202,6 +205,7 @@ class overlay_interface(object):
 
     @property
     def is_loopback_zero(self):
+        # by convention, loopback_zero is at id 0
         return self.interface_id == 0 and self.is_loopback
 
     @property

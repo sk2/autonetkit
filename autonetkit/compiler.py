@@ -88,10 +88,20 @@ class RouterCompiler(object):
                     interface.ipv6_subnet.prefixlen)
 
 
-        for index, interface in enumerate(phy_node.interfaces("is_loopback")):
+        for interface in node.get_interfaces("is_loopback"):
+            #TODO: check if nonzero is different to __eq__
+            if interface == node.loopback_zero:
+                continue
+            else:
+                #print "here for non zero", interface.id
+                vrf_interface = self.anm['vrf'].interface(interface)
+                #TODO: check why vrf names not showing up for all
+                #print vrf_interface.vrf_name
+                pass
+
             continue
-            ip_interface = g_ipv4.node(node).interface(interface)
-            vrf_interface = self.anm['vrf'].node(node).interface(interface)
+            ip_interface = g_ipv4.interface(interface)
+            vrf_interface = self.anm['vrf'].interface(interface)
             index = index + 1  # loopback0 (ie index 0) is reserved
             interface_id = "%s%s" % (self.lo_interface_prefix, index)
             node.interfaces.append(
@@ -121,7 +131,8 @@ class RouterCompiler(object):
             ipv4_int = g_ipv4.interface(interface)
             ospf_int = g_ospf.interface(interface)
             network = ipv4_int.subnet
-            if network not in added_networks:  # don't add more than once
+            if (ospf_int and ospf_int.is_bound
+                    and network not in added_networks):  # don't add more than once
                 added_networks.add(network)
                 node.ospf.ospf_links.append(
                     network=network,
@@ -162,6 +173,8 @@ class RouterCompiler(object):
                     % session)
                 return
 
+            #TODO: Split out ebgp and ibgp
+
             if session.type == "ibgp":
                 data = {
                     'neighbor': neigh.label,
@@ -170,7 +183,7 @@ class RouterCompiler(object):
                     'asn': neigh.asn,
                     'loopback': neigh_ip.loopback,
                     # TODO: this is platform dependent???
-                    'update_source': "loopback 0",
+                    'update_source': node.loopback_zero.id,
                 }
                 if session.direction == 'down':
                     # ibgp_rr_clients[key] = data
@@ -192,7 +205,7 @@ class RouterCompiler(object):
                     'local_int_ip': local_int_ip,
                     'dst_int_ip': dst_int_ip,
                     # TODO: change templates to access from node.bgp.lo_int
-                    'update_source': self.lo_interface,
+                    'update_source': node.loopback_zero.id,
                 })
 
         for session in g_bgp.edges(phy_node):
@@ -626,6 +639,12 @@ class CiscoCompiler(PlatformCompiler):
         # super(CiscoCompiler, self).__init__(nidb, anm, host)
 
     @staticmethod
+    def loopback_interface_ids():
+        for x in itertools.count(100):
+            prefix = IosBaseCompiler.lo_interface_prefix
+            yield "%s%s" % (prefix, x)
+
+    @staticmethod
     def interface_ids_ios_by_slot():
         id_pairs = ((slot, 0) for slot in itertools.count(0))
         for (slot, port) in id_pairs:
@@ -684,6 +703,16 @@ class CiscoCompiler(PlatformCompiler):
             dst_folder = "rendered/%s/%s" % (self.host, "cisco")
 # TODO: merge common router code, so end up with three loops: routers, ios
 # routers, ios2 routers
+
+        for phy_node in g_phy.nodes('is_router', host=self.host):
+            loopback_ids = self.loopback_interface_ids()
+            # allocate loopbacks to routes (same for all ios variants)
+            nidb_node = self.nidb.node(phy_node)
+
+            for interface in nidb_node.get_interfaces("is_loopback"):
+                if interface != nidb_node.loopback_zero:
+                    interface.id = loopback_ids.next()
+
         for phy_node in g_phy.nodes('is_router', host=self.host, syntax='ios'):
             nidb_node = self.nidb.node(phy_node)
             nidb_node.render.template = "templates/ios.mako"
