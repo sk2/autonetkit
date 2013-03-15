@@ -12,6 +12,48 @@ try:
 except ImportError:
     import pickle
 
+class interface_data_dict(collections.MutableMapping):
+    """A dictionary which allows access as dict.key as well as dict['key']
+    Based on http://stackoverflow.com/questions/3387691
+    only allows read only acess
+    """
+
+    def __repr__(self):
+        return ", ".join(self.store.keys())
+
+    def __init__(self, data):
+#Note this won't allow updates in place
+        self.store = data
+        #self.data = parent[index]
+        #self.update(dict(*args, **kwargs)) # use the free update to set keys
+#TODO: remove duplicate of self.store and parent
+
+    def __getitem__(self, key):
+        return self.store[self.__keytransform__(key)]
+
+    def __setitem__(self, key, value):
+        self.store[key] = value # store locally
+
+    def __delitem__(self, key):
+        del self.store[self.__keytransform__(key)]
+
+    def __iter__(self):
+        return iter(self.store)
+
+    def __len__(self):
+        return len(self.store)
+
+    def __keytransform__(self, key):
+        return key
+
+    def __getattr__(self, key):
+        return self.store.get(key)
+
+#TODO: fix __setattr__ so doesn't cause recursion - and so doesn't silently not set values in compiler
+
+    def dump(self):
+        return self.store
+
 class overlay_data_dict(collections.MutableMapping):
     """A dictionary which allows access as dict.key as well as dict['key']
     Based on http://stackoverflow.com/questions/3387691
@@ -173,9 +215,14 @@ class overlay_interface(object):
     def __getattr__(self, key):
         """Returns interface property"""
         try:
-            return self._interface.get(key)
+            data = self._interface.get(key)
         except KeyError:
             return
+
+        if isinstance(data, dict):
+            return interface_data_dict(data)
+
+        return data
 
     def get(self, key):
         """For consistency, node.get(key) is neater 
@@ -680,7 +727,8 @@ class NIDB_base(object):
                 pprint.pformat(self._graph.edges(data=True))
                 )
 
-    def save(self):
+    def save(self, timestamp = True, use_gzip = True):
+        timestamp = use_gzip = False
         import os
         import gzip
         archive_dir = os.path.join("versions", "nidb")
@@ -689,11 +737,19 @@ class NIDB_base(object):
 
         data = ank_json.ank_json_dumps(self._graph)
 #TODO: should this use the ank_json.jsonify_nidb() ?
-        json_file = "nidb_%s.json.gz" % self.timestamp
+        if timestamp:
+            json_file = "nidb_%s.json.gz" % self.timestamp
+        else:
+            json_file = "nidb.json"
         json_path = os.path.join(archive_dir, json_file)
         log.debug("Saving to %s" % json_path)
-        with gzip.open(json_path, "wb") as json_fh:
-            json_fh.write(data)
+        if use_gzip:
+            with gzip.open(json_path, "wb") as json_fh:
+                json_fh.write(data)
+        else:
+            with open(json_path, "wb") as json_fh:
+                json_fh.write(data)
+
 
     def restore_latest(self, directory = None):
         import os

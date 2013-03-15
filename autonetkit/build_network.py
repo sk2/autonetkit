@@ -569,6 +569,13 @@ def build_phy(anm):
     # TODO: make this automatic if adding to the physical graph?
     g_phy.allocate_interfaces() 
 
+    specified_int_names = g_in.data.specified_int_names
+    if specified_int_names:
+        for node in g_phy:
+            for interface in node:
+                edge = interface.edges()[0]
+                directed_edge = anm['input_directed'].edge(edge)
+                interface.name = directed_edge.name
 
 def build_conn(anm):
     """Build connectivity overlay"""
@@ -745,6 +752,12 @@ def build_isis(anm):
     for link in g_isis.edges():
         link.metric = 1  # default
         # link.hello = 5 # for debugging, TODO: read from graph
+
+
+    for edge in g_isis.edges():
+        for interface in edge.interfaces():
+            interface.metric = edge.metric
+            interface.multipoint = edge.multipoint
 
 
 def update_messaging(anm):

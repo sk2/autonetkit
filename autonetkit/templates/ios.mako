@@ -37,35 +37,37 @@ interface ${interface.id}
   % if node.ip.use_ipv4:
   ip address ${interface.ipv4_address} ${interface.ipv4_subnet.netmask}   
   %endif
-  % if interface.ipv6_address:
+  % if node.ip.use_ipv6:
   ipv6 address ${interface.ipv6_address} 
   %endif
-  % if interface.ospf_use_ivp4:
-      % if not interface.ospf['multipoint']:
+  % if interface.ospf:
+    %if interface.ospf.use_ipv4:
+      %if not interface.ospf.multipoint:
   ip ospf network point-to-point
-      % endif
-  ip ospf cost ${interface.ospf_cost}
-  % endif
-  % if interface.ospf_use_ivp6:
-      % if not interface.ospf['multipoint']:
+      %endif
+  ip ospf cost ${interface.ospf.cost}
+    %endif
+    %if interface.ospf.use_ipv6:
+      %if not interface.ospf.multipoint:
   ipv6 ospf network point-to-point
-      % endif
-  ipv6 ospf cost ${interface.ospf_cost}
-  ipv6 ospf ${interface.ospf['process_id']} area ${interface.ospf['area']}
-  % endif
+      %endif
+  ipv6 ospf cost ${interface.ospf.cost}
+  ipv6 ospf ${interface.ospf.process_id} area ${interface.ospf.area}
+    %endif
+  %endif
   % if interface.isis:
-  % if interface.isis_use_ivp4:
+  % if interface.isis.use_ipv4:
   ip router isis ${node.isis.process_id}
     % if interface.physical:
-    isis circuit-type level-2-only
-    isis network point-to-point
-    isis metric ${interface.isis_metric}
+  isis circuit-type level-2-only
+  isis network point-to-point
+  isis metric ${interface.isis.metric}
     % endif
   % endif
-  % if interface.isis_use_ivp6:
+  % if interface.isis.use_ivp6:
   ipv6 router isis ${node.isis.process_id}
     % if interface.physical:
-    isis ipv6 metric ${interface.isis_metric}
+  isis ipv6 metric ${interface.isis.metric}
     % endif
   % endif
   % endif
