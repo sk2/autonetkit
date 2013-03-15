@@ -60,7 +60,9 @@ interface ${interface.id}
   ip router isis ${node.isis.process_id}
     % if interface.physical:
   isis circuit-type level-2-only
+      %if not interface.isis.multipoint:
   isis network point-to-point
+    % endif
   isis metric ${interface.isis.metric}
     % endif
   % endif
@@ -95,7 +97,7 @@ router ospfv3 ${node.ospf.process_id}
   router-id ${node.loopback}
   !
   address-family ipv6 unicast
-  exist address-family
+  exit address-family
 % endif  
 % endif           
 ## ISIS

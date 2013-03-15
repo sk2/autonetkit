@@ -229,12 +229,6 @@ def build_vrf(anm):
         # Set the vrf of the edge to be that of the CE device (either src or dst)
         edge.vrf = edge.src.vrf if edge.src.vrf_role is "CE" else edge.dst.vrf
 
-    for node in g_vrf:
-        for interface in node:
-            interface.color="red"
-
-# Create route-targets
-
 
 def three_tier_ibgp_l1_l3_clusters(rtrs):
     """Calculate edges for iBGP l3 clusters that don't contain a HRR.

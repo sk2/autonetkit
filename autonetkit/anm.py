@@ -34,6 +34,9 @@ class overlay_interface(object):
         description = self.description or self.interface_id
         return "(%s, %s)" % (self.node_id, description)
 
+    def __eq__(self, other):
+        return (self.node_id, self.interface_id) == (other.node_id, other.interface_id)
+
     def __nonzero__(self):
         return len(self._interface) > 0  # if interface data set
 
@@ -113,15 +116,19 @@ class overlay_interface(object):
     def type(self):
         """"""
 #TODO: make 0 correctly access interface 0 -> copying problem
-# TODO: this needs a bugfix rather than the below workaround
+# TODO: this needs a bugfix rather than the below hard-coded workaround
         if self.interface_id == 0:
             return "loopback"
+
+        if self.overlay_id != "phy":  # prevent recursion
+            return self.phy._interface.get("type")
+
         retval = self._interface.get("type")
         if retval:
             return retval
 
         if self.overlay_id != "phy":  # prevent recursion
-            self.phy._interface.get("type")
+            return self.phy._interface.get("type")
 
     @property
     def node(self):
