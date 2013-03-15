@@ -728,7 +728,6 @@ class NIDB_base(object):
                 )
 
     def save(self, timestamp = True, use_gzip = True):
-        timestamp = use_gzip = False
         import os
         import gzip
         archive_dir = os.path.join("versions", "nidb")

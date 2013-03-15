@@ -22,6 +22,7 @@ class OverlayNotFound(AutoNetkitException):
     def __str__(self):
         return "Overlay %s not found" % self.Errors
 
+#TODO: rename to OverlayInterface
 class overlay_interface(object):
     def __init__(self, anm, overlay_id, node_id, interface_id):
         object.__setattr__(self, 'anm', anm)
@@ -485,6 +486,18 @@ class OverlayEdge(object):
     def dst(self):
         """Destination node of edge"""
         return OverlayNode(self.anm, self.overlay_id, self.dst_id)
+
+    @property
+    def src_int(self):
+        """Interface bound to source node of edge"""
+        src_int_id = self._interfaces[self.src_id]
+        return overlay_interface(self.anm, self.overlay_id, self.src_id, src_int_id) 
+
+    @property
+    def dst_int(self):
+        """Interface bound to destination node of edge"""
+        dst_int_id = self._interfaces[self.dst_id]
+        return overlay_interface(self.anm, self.overlay_id, self.dst_id, dst_int_id) 
 
     def attr_equal(self, *args):
         """Return edges which both src and dst have attributes equal"""
