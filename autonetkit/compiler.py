@@ -64,12 +64,11 @@ class RouterCompiler(object):
         for interface in node.get_interfaces(type = "physical"):
             phy_int = self.anm['phy'].interface(interface)
 
-            interface.ospf = {'a': 1}
-
             phy_link = phy_int.edges()[0] # first (only) edge
             interface.description = "%s to %s" % (node, phy_link.dst)
 
             interface.physical = True
+            #TODO: allocate ID in platform compiler
 
             ipv4_int = phy_int['ipv4']
             interface.ipv4_address = ipv4_int.ip_address
@@ -99,8 +98,6 @@ class RouterCompiler(object):
             )
 
             #node.interfaces.sort("id")
-
-        print list(node.interfaces)
 
     def ospf(self, node):
         """Returns OSPF links, also sets process_id
@@ -297,10 +294,8 @@ class QuaggaCompiler(RouterCompiler):
         isis_node = g_isis.node(node)
         node.isis.net = isis_node.net
         node.isis.process_id = isis_node.process_id
-        
 
 # TODO: Don't render netkit lab topology if no netkit hosts
-
 
 class IosBaseCompiler(RouterCompiler):
     """Base IOS compiler"""
@@ -348,31 +343,7 @@ class IosBaseCompiler(RouterCompiler):
 # TODO: strip out returns from super
         super(IosBaseCompiler, self).interfaces(node)
         # OSPF cost
-        g_ospf = self.anm['ospf']
-        g_isis = self.anm['isis']
 
-        for interface in node.get_interfaces(type = "physical"):
-            phy_int = self.anm['phy'].interface(interface)
-
-            ospf_int = phy_int['ospf']
-            if ospf_int and ospf_int.is_bound:
-                ospf_node = g_ospf.node(node)
-                interface.ospf = {
-                        'cost': ospf_int.cost,
-                        'process_id': ospf_node.process_id,
-                        'use_ipv4': node.use_ipv4,
-                        'use_ipv6': node.use_ipv6,
-                        } #TODO: add wrapper for this
-
-            isis_int = phy_int['isis']
-            if isis_int and isis_int.is_bound:
-                isis_node = g_isis.node(node)
-                interface.isis = {
-                        'cost': isis_int.cost,
-                        'process_id': isis_node.process_id,
-                        'use_ipv4': node.use_ipv4,
-                        'use_ipv6': node.use_ipv6,
-                        } #TODO: add wrapper for this
 
 
 #TODO replace with node in g_isis
@@ -394,16 +365,9 @@ class IosBaseCompiler(RouterCompiler):
         super(IosBaseCompiler, self).bgp(node)
 
         if node.ip.use_ipv4:
-            ipv4_address = self.anm['ipv4'].node(node).loopback
-            ipv4_loopback_subnet = netaddr.IPNetwork("0.0.0.0/32")
-            ipv4_cidr = address_prefixlen_to_network(
-                ipv4_address, ipv4_loopback_subnet.prefixlen)
-            node.bgp.ipv4_advertise_subnets = [ipv4_cidr]
+            node.bgp.ipv4_advertise_subnets = [node.loopback_zero.ipv4_cidr]
         if node.ip.use_ipv6:
-            ipv6_node = self.anm['ipv6'].node(node)
-            ipv6_address = address_prefixlen_to_network(
-                ipv6_node.loopback, 128)
-            node.bgp.ipv6_advertise_subnets = [ipv6_address]
+            node.bgp.ipv6_advertise_subnets = [node.loopback_zero.ipv6_address]
 
         # vrf
         node.bgp.vrfs = []
@@ -440,26 +404,48 @@ class IosBaseCompiler(RouterCompiler):
         node.vrf.use_ipv6 = node.ip.use_ipv6
         node.vrf.vrfs.sort("vrf")
 
+    def ospf(self, node):
+        super(IosBaseCompiler, self).ospf(node)
+        for interface in node.get_interfaces(type = "physical"):
+            phy_int = self.anm['phy'].interface(interface)
+
+            ospf_int = phy_int['ospf']
+            if ospf_int and ospf_int.is_bound:
+                interface.ospf = {
+                        'cost': ospf_int.cost,
+                        'area': ospf_int.area,
+                        'process_id': node.ospf.process_id,
+                        'use_ipv4': node.ip.use_ipv4,
+                        'use_ipv6': node.ip.use_ipv6,
+                        'multipoint': ospf_int.multipoint,
+                        } #TODO: add wrapper for this
+
     def isis(self, node):
         # TODO: this needs to go into IOS2 for neatness
         """Sets ISIS links
         """
+        g_isis = self.anm['isis']
+
+        for interface in node.get_interfaces(type = "physical"):
+            phy_int = self.anm['phy'].interface(interface)
+
+            isis_int = phy_int['isis']
+            if isis_int and isis_int.is_bound:
+                isis_node = g_isis.node(node)
+                interface.isis = {
+                        'metric': isis_int.metric,
+                        'process_id': node.isis.process_id,
+                        'use_ipv4': node.ip.use_ipv4,
+                        'use_ipv6': node.ip.use_ipv6,
+                        'multipoint': isis_int.multipoint,
+                        } #TODO: add wrapper for this
+
         g_isis = self.anm['isis']
         isis_node = self.anm['isis'].node(node)
         node.isis.net = isis_node.net
         node.isis.process_id = isis_node.process_id
         node.isis.lo_interface = self.lo_interface
         node.isis.isis_links = []
-
-        for interface in node.interfaces:
-            isis_link = g_isis.edge(
-                interface._edge_id)  # find link in OSPF with this ID
-            if isis_link:  # only configure if has ospf interface
-                node.isis.isis_links.append(
-                    id=interface.id,
-                    metric=isis_link.metric,
-                )
-
 
 class IosClassicCompiler(IosBaseCompiler):
     def compile(self, node):
@@ -698,6 +684,7 @@ class CiscoCompiler(PlatformCompiler):
 
     @staticmethod
     def interface_ids_ios():
+        #TODO: make this skip if in list of allocated ie [interface.name for interface in node]
         for x in itertools.count(0):
             yield "GigabitEthernet0/%s" % x
 
@@ -733,6 +720,7 @@ class CiscoCompiler(PlatformCompiler):
         G_in = self.anm['input']
         G_in_directed = self.anm['input_directed']
         specified_int_names = G_in.data.specified_int_names
+#TODO: need to copy across the interface name from edge to the interface
         g_phy = self.anm['phy']
 
         log.info("Compiling Cisco for %s" % self.host)
@@ -759,14 +747,17 @@ class CiscoCompiler(PlatformCompiler):
             # Assign interfaces
             int_ids = self.interface_ids_ios()
             int_ids.next()  # 0/0 is used for management ethernet
-            for edge in sorted(self.nidb.edges(nidb_node), key=self.edge_id_numeric):
+            for interface in nidb_node.get_interfaces(type="physical"):
                 if specified_int_names:
-                    directed_edge = G_in_directed.edge(edge)
-                    edge.id = directed_edge.name
+                    interface.id = phy_node.interface(interface).name
+                # TODO: need to determine if interface name already specified
                 else:
-                    edge.id = int_ids.next()
+                    interface.id = int_ids.next()
 
             ios_compiler.compile(nidb_node)
+            for interface in nidb_node.interfaces:
+                if interface.isis:
+                        print bool(interface.isis.use_ipv4)
 
         ios2_compiler = Ios2Compiler(self.nidb, self.anm)
         for phy_node in g_phy.nodes('is_router', host=self.host, syntax='ios2'):
@@ -781,12 +772,12 @@ class CiscoCompiler(PlatformCompiler):
 
             # Assign interfaces
             int_ids = self.interface_ids_ios2()
-            for edge in sorted(self.nidb.edges(nidb_node), key=self.edge_id_numeric):
+            for interface in nidb_node.get_interfaces(type="physical"):
                 if specified_int_names:
-                    directed_edge = G_in_directed.edge(edge)
-                    edge.id = directed_edge.name
+                    interface.id = phy_node.interface(interface).name
+                # TODO: need to determine if interface name already specified
                 else:
-                    edge.id = int_ids.next()
+                    interface.id = int_ids.next()
 
             ios2_compiler.compile(nidb_node)
 

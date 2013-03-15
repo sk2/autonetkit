@@ -12,10 +12,8 @@ try:
 except ImportError:
     import pickle
 
-
 class AutoNetkitException(Exception):
     pass
-
 
 class OverlayNotFound(AutoNetkitException):
     def __init__(self, errors):
@@ -23,7 +21,6 @@ class OverlayNotFound(AutoNetkitException):
 
     def __str__(self):
         return "Overlay %s not found" % self.Errors
-
 
 class overlay_interface(object):
     def __init__(self, anm, overlay_id, node_id, interface_id):
@@ -42,7 +39,7 @@ class overlay_interface(object):
     @property
     def is_bound(self):
         """Returns if this interface is bound to an edge on this layer"""
-        return len(self.edges())
+        return len(self.edges()) > 0
 
     def __str__(self):
         return self.__repr__()
@@ -882,7 +879,8 @@ class OverlayGraph(OverlayBase):
         self._init_interfaces()
 
         ebunch = (e for e in self.edges())
-        for edge in ebunch:
+
+        for edge in sorted(ebunch, key = lambda e: e.edge_id):
             src = edge.src
             dst = edge.dst
             src_int_id = src._add_interface('link to %s' % dst)
