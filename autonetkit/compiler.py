@@ -177,25 +177,8 @@ class RouterCompiler(object):
                 else:
                     node.bgp.ibgp_neighbors.append(data)
             else:
-                # TODO: fix this: this is a workaround for Quagga next-hop
-                # denied for loopback (even with static route)
-                if session.multipoint:
-                    #TODO: should this also support IPv6?
-                    log.debug("Multipoint BGP for %s" % node)
-                    #TODO: remove this once IP addresses are on interfaces
-                    # Find the CD that connects both nodes
-                    collision_domains = [cd for cd in g_ipv4.nodes("collision_domain")
-                            if node in cd.neighbors() and neigh in cd.neighbors() ]
-                    collision_domain = collision_domains[0]
-                    ip_link = collision_domain.edges(node).next()
-                    neigh_ip_link = collision_domain.edges(neigh).next()
-                    dst_int_ip = neigh_ip_link.ip_address
-                    # need to find (switch, neigh) in g_ipv4 from (node, switch)
-                else:
-                    ip_link = g_ipv4.edge(session)
-                    dst_int_ip = g_ipv4.edges(ip_link.dst, neigh).next(
-                            ).ip_address  # TODO: split this to a helper function
-
+                local_int_ip = session.src_int['ipv4'].ip_address
+                dst_int_ip = session.dst_int['ipv4'].ip_address
                 # TODO: make this a returned value
                 node.bgp.ebgp_neighbors.append({
                     'neighbor': neigh.label,
@@ -203,7 +186,7 @@ class RouterCompiler(object):
                     'use_ipv6': use_ipv6,
                     'asn': neigh.asn,
                     'loopback': neigh_ip.loopback,
-                    'local_int_ip': ip_link.ip_address,
+                    'local_int_ip': local_int_ip,
                     'dst_int_ip': dst_int_ip,
                     # TODO: change templates to access from node.bgp.lo_int
                     'update_source': self.lo_interface,
@@ -458,27 +441,25 @@ class IosClassicCompiler(IosBaseCompiler):
 
 class Ios2Compiler(IosBaseCompiler):
     def ospf(self, node):
-# need to aggregate areas
         super(Ios2Compiler, self).ospf(node)
         g_ospf = self.anm['ospf']
-
         interfaces_by_area = defaultdict(list)
 
-        for interface in node.interfaces:
-            ospf_link = g_ospf.edge(
-                interface._edge_id)  # find link in OSPF with this ID
-            if ospf_link:
-                area = str(ospf_link.area)
+        for interface in node.get_interfaces(type="physical"):
+            ospf_int = g_ospf.interface(interface)
+            if ospf_int and ospf_int.is_bound:
+                area = ospf_int.area
                 interfaces_by_area[area].append({
                     'id': interface.id,
-                    'cost': int(ospf_link.cost),
+                    'cost': int(ospf_int.cost),
                     'passive': False,
                 })
-        # TODO: make this use the same parameter format as other appends...
 
-        router_area = str(g_ospf.node(node).area)
+        loopback_zero = node.loopback_zero
+        ospf_loopback_zero = g_ospf.interface(loopback_zero)
+        router_area = ospf_loopback_zero.area # area assigned to router
         interfaces_by_area[router_area].append({
-            'id': self.lo_interface,
+            'id': node.loopback_zero.id,
             'cost': 0,
             'passive': True,
         })
@@ -755,9 +736,6 @@ class CiscoCompiler(PlatformCompiler):
                     interface.id = int_ids.next()
 
             ios_compiler.compile(nidb_node)
-            for interface in nidb_node.interfaces:
-                if interface.isis:
-                        print bool(interface.isis.use_ipv4)
 
         ios2_compiler = Ios2Compiler(self.nidb, self.anm)
         for phy_node in g_phy.nodes('is_router', host=self.host, syntax='ios2'):

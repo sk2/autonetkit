@@ -282,6 +282,10 @@ def deploy_network(anm, nidb, input_graph_string):
     deploy_hosts = config.settings['Deploy Hosts']
     for hostname, host_data in deploy_hosts.items():
         for platform, platform_data in host_data.items():
+            if not any(nidb.nodes(host=hostname, platform=platform)):
+                log.debug("No hosts for (host, platform) (%s, %s), skipping deployment"
+                        % (hostname, platform))
+                continue
 
             if not platform_data['deploy']:
                 log.debug("Not deploying to %s on %s" % (platform, hostname))

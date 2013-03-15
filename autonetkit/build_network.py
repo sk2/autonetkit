@@ -703,6 +703,10 @@ def build_ospf(anm):
             interface.area = edge.area
             interface.multipoint = edge.multipoint
 
+    for router in g_ospf:
+        router.loopback_zero.area = router.area
+        router.loopback_zero.cost = 0
+
 def ip_to_net_ent_title_ios(ip_addr):
     """ Converts an IP address into an OSI Network Entity Title
     suitable for use in IS-IS on IOS.
