@@ -898,13 +898,16 @@ class OverlayGraph(OverlayBase):
         # int_counter = (n for n in itertools.count() if n not in
         self._init_interfaces()
 
-        ebunch = (e for e in self.edges())
+        def numeric_id(edge):
+            return int(edge.edge_id.split("_")[0])
 
-        for edge in sorted(ebunch, key = lambda e: e.edge_id):
+        ebunch = sorted(self.edges(), key = numeric_id)
+
+        for edge in ebunch:
             src = edge.src
             dst = edge.dst
-            src_int_id = src._add_interface('link to %s' % dst)
-            dst_int_id = dst._add_interface('link to %s' % src)
+            src_int_id = src._add_interface('%s to %s' % (src, dst))
+            dst_int_id = dst._add_interface('%s to %s' % (dst, src))
             edge._interfaces = {}
             edge._interfaces[src.id] = src_int_id
             edge._interfaces[dst.id] = dst_int_id
