@@ -193,13 +193,14 @@ def split(OverlayGraph, edges, retain = []):
         cd_id = "cd_%s_%s" % (src, dst)
         interfaces = graph[src][dst]["_interfaces"]
         data = dict( (key, graph[src][dst][key]) for key in retain)
+        #TODO: check how this behaves for directed graphs
         src_data = data.copy()
         if src in interfaces:
             src_int_id = interfaces[src]
             src_data['_interfaces'] = {src: src_int_id}
         dst_data = data.copy()
         if dst in interfaces:
-            dst_int_id = interfaces[src]
+            dst_int_id = interfaces[dst]
             dst_data['_interfaces'] = {dst: dst_int_id}
         edges_to_add.append( (src, cd_id, src_data))
         edges_to_add.append( (dst, cd_id, dst_data))
@@ -230,7 +231,7 @@ def explode_nodes(OverlayGraph, nodes, retain = []):
 #TODO: if graph is bidirectional, need to explode here too
 #TODO: how do we handle explode for multi graphs?
     for node in nodes:
-        log.info("Exploding from %s" % node)
+        log.debug("Exploding from %s" % node)
         neighbors = graph.neighbors(node)
         neigh_edge_pairs = ( (s,t) for s in neighbors for t in neighbors if s != t)
         neigh_edge_pairs = list(neigh_edge_pairs)
@@ -238,7 +239,14 @@ def explode_nodes(OverlayGraph, nodes, retain = []):
         for (src, dst) in neigh_edge_pairs:
             src_to_node_data = dict( (key, graph[src][node][key]) for key in retain)
             node_to_dst_data = dict( (key, graph[node][dst][key]) for key in retain)
+
+            # copy interfaces
+            src_int_id = graph[src][node]["_interfaces"][src]
+            dst_int_id = graph[node][dst]["_interfaces"][dst]
+            src_to_node_data["_interfaces"] = {src: src_int_id, dst: dst_int_id}
+
             src_to_node_data.update(node_to_dst_data)
+            #TODO: handle interfaces for explode
             edges_to_add.append((src, dst, src_to_node_data))
 
         graph.add_edges_from(edges_to_add)
@@ -282,21 +290,29 @@ def aggregate_nodes(OverlayGraph, nodes, retain = []):
                 else:
                     if src in nodes_to_remove:
                         # edge from component to outside
+                        interfaces = graph[src][dst]["_interfaces"]
+                        dst_int_id = interfaces[dst]
                         data = dict( (key, graph[src][dst][key]) for key in retain)
+                        data['_interfaces'] = {dst: dst_int_id}
                         edges_to_add.append((base, dst, data))
                         if graph.is_directed():
                             # other direction
                             #TODO: check which data should be copied
                             dst_data = dict( (key, graph[src][dst][key]) for key in retain)
+                            dst_data['_interfaces'] = {dst: dst_int_id}
                             edges_to_add.append((dst, base, dst_data))
                     else:
                         # edge from outside into component
+                        interfaces = graph[dst][src]["_interfaces"]
+                        src_int_id = interfaces[src]
                         data = dict( (key, graph[dst][src][key]) for key in retain)
+                        data['_interfaces'] = {src: src_int_id}
                         edges_to_add.append((base, src, data))
                         if graph.is_directed():
                             # other direction
                             #TODO: check which data should be copied
                             dst_data = dict( (key, graph[src][dst][key]) for key in retain)
+                            dst_data['_interfaces'] = {src: src_int_id}
                             edges_to_add.append((src, base, dst_data))
                         
             graph.add_edges_from(edges_to_add)
