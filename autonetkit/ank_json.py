@@ -22,10 +22,16 @@ class AnkEncoder(json.JSONEncoder):
         if isinstance(obj, autonetkit.plugins.ipv4.TreeNode):
             #TODO: add documentation about serializing anm nodes
             return str(obj)
-        if isinstance(obj, autonetkit.anm.overlay_edge):
+        if isinstance(obj, autonetkit.anm.OverlayEdge):
             #TODO: add documentation about serializing anm nodes
             log.warning("%s is anm overlay_edge. Use attribute rather than object in compiler." % obj)
             return str(obj)
+        if isinstance(obj, autonetkit.nidb.nidb_node_category):
+            #TODO: add documentation about serializing anm nodes
+            log.debug("%s is nidb nidb_node_category. Use attribute rather than object in compiler." % obj)
+            return str(obj)
+
+        
 
         return json.JSONEncoder.default(self, obj)
 
