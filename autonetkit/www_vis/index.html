@@ -89,7 +89,7 @@ var current_translate = "0,0";
           for(i=0; (a = document.getElementsByTagName("link")[i]); i++) {
             if(a.getAttribute("rel").indexOf("style") != -1
                 && a.getAttribute("title")) {
-              a.disabled = true;
+              //a.disabled = true;
               if(a.getAttribute("title") == title) a.disabled = false;
             }
           }
@@ -150,7 +150,6 @@ var interface_label_select = d3.select("#interface_label_select")
 .attr("title", "Interface Label")
 .on("change", function() {
     interface_label_id = this.value;
-    console.log(interface_label_id);
     redraw();
     })
 
@@ -159,7 +158,6 @@ var interface_label_select = d3.select("#interface_label_select")
 d3.select("#display_interfaces")
 .on("change", function() {
         display_interfaces = d3.select(this).property("checked");
-        console.log(display_interfaces);
         redraw();
         })
 
