@@ -28,9 +28,8 @@ var graph_history = [];
 var ip_allocations = [];
 
 var node_label_id = "id";
-var edge_group_id = "";
+var edge_group_id = ""; //TODO: rename edge_label_id
 var interface_label_id = "";
-
 
 starting_hosts = [];
 
@@ -86,7 +85,7 @@ ws.onmessage = function (evt) {
         apply_highlight(data['highlight']);
     }
     else {
-        console.log("Received unknown data", data);
+        //console.log("Received unknown data", data);
         //TODO: work out why reaching here if passing the "graph in data" check above
     }
 }
@@ -110,7 +109,7 @@ var apply_highlight = function(data){
         return {'source': src_index, 'target': target_index};
     }
     )
-    redraw();
+        redraw();
 }
 
 var load_ip_allocations = function(d) {
@@ -254,7 +253,7 @@ var propagate_revision_dropdown = function(d) {
     } else {
         $('#revision_select').hide();
     }        
-        
+
     revision_dropdown
         .selectAll("option")
         .data(revisions)
@@ -406,7 +405,95 @@ var edge_stroke_colors = d3.scale.ordinal();
 
 var groupFill = function(d, i) { return fill(i); };
 var edgeStroke = function(d, i) { return fill(d); };
+
+var interface_angle = function(d){
+    //common to interface_x and interface_y
+    s_x = node_x(d.node);
+    s_y = node_y(d.node);
+    t_x = node_x(d.target);
+    t_y = node_y(d.target);
+
+    angle = Math.atan2( (t_x - s_x), (t_y - s_y));
+    return angle;
+}
+
+
+var interface_width = 15;
+var interface_height = 10;
+
+var interface_hypotenuse = (icon_width + icon_height)/2;
+
+var interface_x = function(d) {
+
+    if (jsondata.directed) {
+        return directed_edge_offset_x(d.node, d.target, interface_hypotenuse) - interface_width/2;
+    }
+
+    angle = interface_angle(d);
+    offset_x = interface_hypotenuse * Math.sin(angle);
+    return node_x(d.node) + offset_x - interface_width/2;
+}
+
+var interface_y = function(d) {
+
+    if (jsondata.directed) {
+        return directed_edge_offset_y(d.node, d.target, interface_hypotenuse) - interface_height/2;
+    }
+
+    angle = interface_angle(d);
+    offset_y =interface_hypotenuse * Math.cos(angle);
+    return node_y(d.node) + offset_y - interface_height/2;
+}
+
+
 var groupPath = function(d) {
+
+    if (display_interfaces && overlay_id == "ospf") {
+        if (d.values.length  == 1) {
+            //This shouldn't occur for single ospf interface!
+            node = d.values[0];
+            offset = 2;
+            retval =  "M" ;
+            retval += (interface_x - offset  + icon_offset + x_offset) + "," + (interface_y - offset + icon_offset + y_offset) + "L";
+            retval += (interface_x + offset  + icon_offset + x_offset) + "," + (interface_y - offset + icon_offset + y_offset) + "L";
+            retval += (interface_x - offset  + icon_offset + x_offset) + "," + (interface_y + offset + icon_offset + y_offset) + "L";
+            retval += (interface_x + offset + icon_offset + x_offset) + "," + (interface_y + offset + icon_offset + y_offset);
+            retval += "Z";
+            return retval
+        } else if (d.values.length  == 2) {
+            interface1 = d.values[1];
+            interface2 = d.values[0];
+            //Note: upper_x goes with lower_y due to y ascending down, x ascending right
+            int1_x = interface_x(interface1);
+            int1_y = interface_y(interface1);
+            int2_x = interface_x(interface2);
+            int2_y = interface_y(interface2);
+            upper_x = Math.max(int1_x, int2_x);
+            upper_y = Math.max(int1_y, int2_y);
+            lower_x = Math.min(int1_x, int2_x);
+            lower_y = Math.min(int1_y, int2_y);
+
+            offset = 0.1;
+            retval =  "M" ;
+            retval += (upper_x - offset ) + "," + (upper_y - offset ) + "L";
+            retval += (upper_x + offset ) + "," + (upper_y - offset ) + "L";
+            retval += (lower_x + offset ) + "," + (lower_y + offset ) + "L";
+            retval += (lower_x - offset ) + "," + (lower_y + offset ) ;
+            retval += "Z";
+            return retval;
+        } else {
+            interface_offset = 5;
+            retval = "M" + 
+                d3.geom.hull(d.values.map(function(i) { 
+                    return [interface_x(i) + interface_offset, interface_y(i) + interface_offset]; 
+                }))
+            .join("L")
+                + "Z";
+            return retval;
+        }
+        return;
+    }
+
     if (d.values.length  == 1) {
         node = d.values[0];
         offset = 2;
@@ -424,6 +511,7 @@ var groupPath = function(d) {
         node1 = d.values[1];
         node2 = d.values[0];
         //Note: upper_x goes with lower_y due to y ascending down, x ascending right
+        ////TODO: do these get over written?
         upper_x = Math.max(node1.x, node2.x);
         upper_y = Math.max(node1.y, node2.y);
         lower_x = Math.min(node1.x, node2.x);
@@ -523,6 +611,8 @@ var interface_info = function(d) {
     int_data = d.node._interfaces[d.interface];
 
     text = "<ul>"; //begin the unordered list
+    text += "<li><b>node:</b> " + d.node.id + "</li>"; //add the key/val
+    text += "<li><b>interface:</b> " + d.interface + "</li>"; //add the key/val
     for (attr in int_data) {
         text += "<li><b>" + attr + ":</b> " + int_data[attr] + "</li>"; //add the key/val
     }
@@ -607,7 +697,7 @@ var graph_edge = function(d) {
     if (jsondata.directed) {
         var dx = target_x - source_x,
             dy = target_y - source_y,
-            dr = Math.sqrt(dx * dx + dy * dy);
+               dr = Math.sqrt(dx * dx + dy * dy);
         //dr = 1.2 * dr;
         //return "M" + source_x + "," + source_y + "A" + dr + "," + dr + " 0 0,1 " + target_x + "," + target_y;
         var points = [];
@@ -649,7 +739,7 @@ var directed_edge_offset_x = function(source, target, hypotenuse) {
     dr = Math.sqrt(dx * dx + dy * dy);
 
     hypotenuse = typeof hypotenuse !== 'undefined' ? hypotenuse : dr/4; //defaults to dr/4
-    
+
     angle = Math.atan2( (t_x - s_x), (t_y - s_y));
     angle = angle + alpha;
     offset_x = hypotenuse * Math.sin(angle);
@@ -823,8 +913,14 @@ var device_label = function(d) {
 }
 
 var interface_label = function(d) {
-    int_data = d.node._interfaces[d.interface];
-    return int_data[interface_label_id];
+    try {
+        int_data = d.node._interfaces[d.interface];
+        return int_data[interface_label_id];
+    }
+    catch (err) {
+        //console.log(err);
+        //console.log("error for", d.node.id, d.interface);
+    }
 }
 
 var zoom_fit = function() {
@@ -839,9 +935,9 @@ var zoom_fit = function() {
         var zoom_box = d3.select(".zoom_box")
 
             zoom_box.transition()
-                    .attr("transform", "scale(" + p + ")")
-                   .duration(500)
-        //redraw();
+            .attr("transform", "scale(" + p + ")")
+            .duration(500)
+            //redraw();
     }
 }
 
@@ -890,6 +986,17 @@ var icon_opacity = function(x) {
     return 0.2; //drop opacity for non filtered
 };
 
+var interface_opacity = function(x) {
+    if (filtered_nodes.length == 0) return 1;
+    //no filtered, so display all at full opacity
+
+    if (_.contains(filtered_nodes, x.node)) 
+    {
+        return 1; 
+    }//some are filtered, full opacity for these
+    return 0.2; //drop opacity for non filtered
+};
+
 var line_opacity = function(x) {
     if (filtered_nodes.length == 0) return 1; //no filtered, so display all at full opacity
 
@@ -907,9 +1014,9 @@ var edge_attributes = [];
 
 function redraw() {
     //TODO: tidy this up, not all functions need to be in here, move out those that do, and only pass required params. also avoid repeated calculations.
-    
+
     nodes = jsondata.nodes;
-        
+
     node_attributes = []; //reset
     nodes.forEach(function(node) {
         nodes_by_id[node.id] = node;
@@ -987,13 +1094,71 @@ function redraw() {
             return _.keys(interface);
         });
     });
-    interface_attributes = _.flatten(interface_attributes); //collapse from hierarchical nested structure
-    interface_attributes = _.uniq(interface_attributes);
-    propagate_interface_label_select(interface_attributes);
+    //collapse from hierarchical nested structure
+    interface_attributes_flattened = _.flatten(interface_attributes);
+    interface_attributes_unique = _.uniq(interface_attributes_flattened);
+    propagate_interface_label_select(interface_attributes_unique);
 
     node_attr_groups = d3.nest().key( node_group_id ).entries(nodes);
     edge_attr_groups = d3.nest().key(function(d) { return d[edge_group_id]; }).entries(jsondata.links);
     //TODO: use edge attr groups for edge colours
+
+    //If undirected graph, then need two interfaces per edge: one at each end
+    if (display_interfaces) {
+        //Undirected, need to handle for both src and dst
+        interface_data = _.map(jsondata.links, function(link) {
+            interface_data = link._interfaces;
+            src_node = nodes[link.source];
+            dst_node = nodes[link.target];
+            src_int_id = interface_data[src_node.id]; //interface id is indexed by the node id
+            dst_int_id = interface_data[dst_node.id]; //interface id is indexed by the node id
+
+            //Check for null interace ids: some nodes may not have interfaces (eg a collision domain)
+
+            //TODO: if a directed link, only return for source
+            //
+            retval = [];
+            if (src_int_id != null) {
+                retval.push( { 'node': src_node, 'interface':  src_int_id, 'target': dst_node, 'link': link });
+            }
+
+            if (!jsondata.directed && dst_int_id != null) {
+                //undirected, also include data for other interface
+                retval.push( { 'node': dst_node, 'interface':  dst_int_id, 'target': src_node, 'link': link });
+            }
+
+            return retval;
+
+        });
+
+        interface_data = _.flatten(interface_data); //collapse from hierarchical nested structure
+    } else {
+        interface_data = {}; //reset 
+    }
+
+
+    var interface_area = function(d) {
+        interface_id = d.interface;
+        asn = d.node['asn'];
+        area = d.node._interfaces[interface_id]['area'];
+        return asn + "," + area;
+    }
+
+    interface_attr_groups = d3.nest().key( interface_area ).entries(interface_data);
+
+    if (display_interfaces && overlay_id == "ospf") {
+        node_attr_groups = interface_attr_groups;
+    }
+
+    var hull_stroke_width = function() {
+
+        if (display_interfaces && overlay_id == "ospf") {
+            return 25;
+        }
+        return 80;
+
+    }
+
 
     //TODO: make group path change/exit with node data
     groupings = chart.selectAll(".attr_group")
@@ -1004,7 +1169,7 @@ function redraw() {
         .attr("d", groupPath)
         .style("fill", groupFill)
         .style("stroke", groupFill)
-        .style("stroke-width", 80)
+        .style("stroke-width", hull_stroke_width)
         .style("stroke-linejoin", "round")
         .style("opacity", 0.15)
         .on("mouseover", function(d){
@@ -1017,6 +1182,7 @@ function redraw() {
     groupings.transition()
         .duration(500)
         .attr("d", groupPath)
+        .style("stroke-width", hull_stroke_width)
 
         groupings.exit().transition()
         .duration(1000)
@@ -1035,9 +1201,7 @@ function redraw() {
 
     //TODO: filter the json data x and y ranges: store in nodes, and use this for the image plotting
 
-
-    
-        node_highlight = chart.selectAll(".node_highlight")
+    node_highlight = chart.selectAll(".node_highlight")
         .data(highlight_nodes, function(d) { return d.id;})
 
         node_highlight.enter().append("svg:rect")
@@ -1122,7 +1286,7 @@ function redraw() {
     });
 
 
-        var highlight_line = chart.selectAll(".highlight_line")
+    var highlight_line = chart.selectAll(".highlight_line")
         .data(highlight_edges)
 
         //line.enter().append("line")
@@ -1145,7 +1309,7 @@ function redraw() {
         //.style("fill", "rgb(113,119,254)")
         .style("fill", "none")
 
-    highlight_line.transition()
+        highlight_line.transition()
         .duration(500)
         .attr("d", graph_edge)
         .style("opacity", line_opacity)
@@ -1155,39 +1319,6 @@ function redraw() {
         .style("opacity",0)
         .remove();
 
-
-    //If undirected graph, then need two interfaces per edge: one at each end
-    if (display_interfaces) {
-        //Undirected, need to handle for both src and dst
-        interface_data = _.map(jsondata.links, function(link) {
-            interface_data = link._interfaces;
-            src_node = nodes[link.source];
-            dst_node = nodes[link.target];
-            src_int_id = interface_data[src_node.id]; //interface id is indexed by the node id
-            dst_int_id = interface_data[dst_node.id]; //interface id is indexed by the node id
-
-            //TODO: if a directed link, only return for source
-            //
-            retval = [];
-            retval.push( { 'node': src_node, 'interface':  src_int_id, 'target': dst_node, 'link': link });
-
-            if (!jsondata.directed) {
-                //undirected, also include data for other interface
-                retval.push( { 'node': dst_node, 'interface':  dst_int_id, 'target': src_node, 'link': link });
-                }
-
-            return retval;
-
-        });
-
-        interface_data = _.flatten(interface_data); //collapse from hierarchical nested structure
-    } else {
-        interface_data = {}; //reset 
-    }
-
-    //TODO: handle removing of interfaces
-
-    //TODO: handling if no interface id specified
     starting_circles = chart.selectAll(".starting_circle")
         .data(starting_hosts, function(d) { return d.id;})
 
@@ -1198,116 +1329,79 @@ function redraw() {
         .attr("cx", function(d) { return d.x + x_offset + icon_width/2 ; })
         .attr("cy", function(d) { return d.y + y_offset + icon_height/2; })
 
-
-    starting_circles.transition()
+        starting_circles.transition()
         .attr("r", 60)
         .style("opacity",0)
         .duration(4000);
 
-
-
     interface_icons = chart.selectAll(".interface_icon")
         //.data(interface_data) //TODO: check if need to provide an index
-        .data(interface_data, function(d) { return d.interface;})
+        //TODO: check if should return tuple of interface, node for uniqueness (esp for switching overlays)
+        .data(interface_data, function(d) { return (d.node, d.interface);})
 
-        var interface_width = 15;
-        var interface_height = 10;
-
-        var interface_angle = function(d){
-            //common to interface_x and interface_y
-            s_x = node_x(d.node);
-            s_y = node_y(d.node);
-            t_x = node_x(d.target);
-            t_y = node_y(d.target);
-
-            angle = Math.atan2( (t_x - s_x), (t_y - s_y));
-            return angle;
-        }
-
-        var interface_hypotenuse = (icon_width + icon_height)/2;
-
-        var interface_x = function(d) {
-
-            if (jsondata.directed) {
-                return directed_edge_offset_x(d.node, d.target, interface_hypotenuse) - interface_width/2;
-            }
-    
-            angle = interface_angle(d);
-            offset_x = interface_hypotenuse * Math.sin(angle);
-            return node_x(d.node) + offset_x - interface_width/2;
-        }
-        var interface_y = function(d) {
-
-            if (jsondata.directed) {
-                return directed_edge_offset_y(d.node, d.target, interface_hypotenuse) - interface_height/2;
-            }
-
-            angle = interface_angle(d);
-            offset_y =interface_hypotenuse * Math.cos(angle);
-            return node_y(d.node) + offset_y - interface_height/2;
-        }
-        
         var highlight_interfaces = function(d) {
             interfaces = d3.selectAll(".interface_icon");
-            //interfaces.filter(
-
         }
 
-        interface_icons.enter().append("svg:rect")
-            .attr("class", "interface_icon")
-            .attr("width", interface_width)
-            .attr("height", interface_height)
-            .attr("x", interface_x)
-            .attr("y", interface_y)
+    interface_icons.enter().append("svg:rect")
+        .attr("class", "interface_icon")
+        .attr("width", interface_width)
+        .attr("height", interface_height)
+        .attr("x", interface_x)
+        .attr("y", interface_y)
+        .style("opacity", 0)
 
-            interface_icons
-            //TODO: look if can return multiple attributes, ie x and y, from the same function, ie calculation
-            .attr("fill", "rgb(6,120,155)")
+        interface_icons
+        //TODO: look if can return multiple attributes, ie x and y, from the same function, ie calculation
+        .attr("fill", "rgb(6,120,155)")
+        .style("opacity", 0)
 
-            .on("mouseover", function(d){
-                highlight_interfaces(d);
-                d3.select(this).style("stroke", "orange");
-                d3.select(this).style("fill", "yellow");
-                d3.select(this).style("stroke-width", "2");
-                d3.select(this).attr("marker-end", "");
-            })
-        .on("mouseout", function(){
+        .on("mouseover", function(d){
+            highlight_interfaces(d);
+            d3.select(this).style("stroke", "orange");
+            d3.select(this).style("fill", "yellow");
             d3.select(this).style("stroke-width", "2");
-            d3.select(this).style("stroke", "none");
-            d3.select(this).style("fill", "rgb(6,120,155)");
-            //d3.select(this).attr("marker-end", marker_end);
+            d3.select(this).attr("marker-end", "");
         })
+    .on("mouseout", function(){
+        d3.select(this).style("stroke-width", "2");
+        d3.select(this).style("stroke", "none");
+        d3.select(this).style("fill", "rgb(6,120,155)");
+        //d3.select(this).attr("marker-end", marker_end);
+    })
 
-        $('.interface_icon').tipsy({ 
-            //based on http://bl.ocks.org/1373263
-            gravity: 'w', 
-        html: true, 
-        title: function() {
-            var d = this.__data__
-            return interface_info(d); 
-        }
-        });
+    $('.interface_icon').tipsy({ 
+        //based on http://bl.ocks.org/1373263
+        gravity: 'w', 
+    html: true, 
+    title: function() {
+        var d = this.__data__
+        return interface_info(d); 
+    }
+    });
 
-        interface_icons.transition()
-            .attr("x", interface_x)
-            .attr("y", interface_y)
-            .duration(500);
+    interface_icons.transition()
+        .attr("x", interface_x)
+        .attr("y", interface_y)
+        .style("opacity", interface_opacity)
+        .duration(500);
 
-        interface_icons.exit().transition()
-            .duration(500)
-            .style("opacity",0)
-            .remove();
+    interface_icons.exit().transition()
+        .duration(500)
+        .style("opacity",0)
+        .remove();
 
-        interface_labels = chart.selectAll(".interface_label")
+    interface_labels = chart.selectAll(".interface_label")
         .data(interface_data, function(d) { return d.interface;})
-        
+
         interface_labels.enter().append("text")
         .attr("x", interface_x)
         .attr("y", interface_y)
         .attr("class", "interface_label")
         .attr("text-anchor", "middle") 
         .attr("font-family", "helvetica") 
-        .attr("font-size", "small") 
+        //.attr("font-size", "small") 
+        .attr("font-size", 8) 
 
         //TODO: use a general accessor for x/y of nodes
         interface_labels 
@@ -1315,7 +1409,7 @@ function redraw() {
         .attr("dy", -interface_height + 3) // vertical-align: middle
         .text(interface_label);
 
-        interface_labels.transition()
+    interface_labels.transition()
         .attr("x", interface_x)
         .attr("y", interface_y)
         .duration(500)
@@ -1325,38 +1419,44 @@ function redraw() {
         .style("opacity",0)
         .remove();
 
-        //Link labels
+    //Link labels
+    link_labels = chart.selectAll(".link_label")
+        .data(jsondata.links, edge_id)
 
-        link_labels = chart.selectAll(".link_label")
-            .data(jsondata.links, edge_id)
+        link_labels.enter().append("text")
+        .attr("x",link_label_x)
+        .attr("y", link_label_y )
+        .attr("class", "link_label")
+        .attr("text-anchor", "middle") 
+        .attr("font-family", "helvetica") 
+        .attr("font-size", "small") 
 
-            link_labels.enter().append("text")
-            .attr("x",link_label_x)
-            .attr("y", link_label_y )
-            .attr("class", "link_label")
-            .attr("text-anchor", "middle") 
-            .attr("font-family", "helvetica") 
-            .attr("font-size", "small") 
+        //TODO: use a general accessor for x/y of nodes
+        link_labels 
+        .attr("dx", 0) // padding-right
+        .attr("dy", 0) // vertical-align: middle
+        .text(function (d) {
+            if (edge_group_id == "_interfaces") {
+                retval = "";
+                for (attr in d[edge_group_id]) {
+                    retval += "(" + attr + ", " + d[edge_group_id][attr] + ")";
+                }
+                return retval;
+            }
+            return d[edge_group_id];
+        });
 
-            //TODO: use a general accessor for x/y of nodes
-            link_labels 
-            .attr("dx", 0) // padding-right
-            .attr("dy", 0) // vertical-align: middle
-            .text(function (d) {
-                return d[edge_group_id];
-            });
+    link_labels.transition()
+        .attr("x",link_label_x)
+        .attr("y", link_label_y )
+        .duration(500)
 
-        link_labels.transition()
-            .attr("x",link_label_x)
-            .attr("y", link_label_y )
-            .duration(500)
+        link_labels.exit().transition()
+        .duration(1000)
+        .style("opacity",0)
+        .remove();
 
-            link_labels.exit().transition()
-            .duration(1000)
-            .style("opacity",0)
-            .remove();
-
-        var node_id = function(d) {
+    var node_id = function(d) {
         return d.label + d.network;
     }
 
@@ -1406,10 +1506,6 @@ function redraw() {
         }
     });
 
-
-
-
-
     device_labels = chart.selectAll(".device_label")
         .data(nodes, node_id)
 
@@ -1439,7 +1535,6 @@ function redraw() {
         .style("opacity",0)
         .remove();
     //});
-
         }
 
 function redraw_paths() {
@@ -1484,7 +1579,7 @@ function redraw_paths() {
         .style("opacity", 50)
         ;
 
-        path2.exit().transition()
+    path2.exit().transition()
         .duration(2000)
         .style("opacity",0)
         .remove();

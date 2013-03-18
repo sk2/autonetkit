@@ -233,21 +233,20 @@ def main():
 def compile_network(anm):
     nidb = NIDB()
     g_phy = anm['phy']
-    g_ipv4 = anm['ipv4']
+    g_ip = anm['ip']
     g_graphics = anm['graphics']
 # TODO: build this on a platform by platform basis
     nidb.add_nodes_from(
         g_phy, retain=['label', 'host', 'platform', 'Network', 'update'])
 
-    cd_nodes = [n for n in g_ipv4.nodes(
+    cd_nodes = [n for n in g_ip.nodes(
         "collision_domain") if not n.is_switch]  # Only add created cds - otherwise overwrite host of switched
     nidb.add_nodes_from(
         cd_nodes, retain=['label', 'host'], collision_domain=True)
 # add edges to switches
-    edges_to_add = [edge for edge in g_phy.edges(
-    ) if edge.src.is_switch or edge.dst.is_switch]
-    edges_to_add += [edge for edge in g_ipv4.edges(
-    ) if edge.src.collision_domain or edge.dst.collision_domain]
+    edges_to_add = [edge for edge in g_phy.edges()
+            if edge.src.is_switch or edge.dst.is_switch]
+    edges_to_add += [edge for edge in g_ip.edges() if edge.split] # cd edges from split
     nidb.add_edges_from(edges_to_add, retain='edge_id')
 
 # TODO: boundaries is still a work in progress...
@@ -283,6 +282,10 @@ def deploy_network(anm, nidb, input_graph_string):
     deploy_hosts = config.settings['Deploy Hosts']
     for hostname, host_data in deploy_hosts.items():
         for platform, platform_data in host_data.items():
+            if not any(nidb.nodes(host=hostname, platform=platform)):
+                log.debug("No hosts for (host, platform) (%s, %s), skipping deployment"
+                        % (hostname, platform))
+                continue
 
             if not platform_data['deploy']:
                 log.debug("Not deploying to %s on %s" % (platform, hostname))

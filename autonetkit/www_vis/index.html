@@ -89,7 +89,7 @@ var current_translate = "0,0";
           for(i=0; (a = document.getElementsByTagName("link")[i]); i++) {
             if(a.getAttribute("rel").indexOf("style") != -1
                 && a.getAttribute("title")) {
-              a.disabled = true;
+              //a.disabled = true;
               if(a.getAttribute("title") == title) a.disabled = false;
             }
           }
@@ -99,6 +99,9 @@ var current_translate = "0,0";
 //TODO: use icons that are updated for the zoom and Interfaces selectors
 
 var overlay_id = "phy";
+//var overlay_id = "ospf";
+var display_interfaces = false;
+//var display_interfaces = true;
 
 var overlay_dropdown = d3.select("#overlay_select")
 .attr("title", "Overlay graph")
@@ -147,17 +150,14 @@ var interface_label_select = d3.select("#interface_label_select")
 .attr("title", "Interface Label")
 .on("change", function() {
     interface_label_id = this.value;
-    console.log(interface_label_id);
     redraw();
     })
 
 
-var display_interfaces = false
 
 d3.select("#display_interfaces")
 .on("change", function() {
         display_interfaces = d3.select(this).property("checked");
-        console.log(display_interfaces);
         redraw();
         })
 

@@ -12,6 +12,48 @@ try:
 except ImportError:
     import pickle
 
+class interface_data_dict(collections.MutableMapping):
+    """A dictionary which allows access as dict.key as well as dict['key']
+    Based on http://stackoverflow.com/questions/3387691
+    only allows read only acess
+    """
+
+    def __repr__(self):
+        return ", ".join(self.store.keys())
+
+    def __init__(self, data):
+#Note this won't allow updates in place
+        self.store = data
+        #self.data = parent[index]
+        #self.update(dict(*args, **kwargs)) # use the free update to set keys
+#TODO: remove duplicate of self.store and parent
+
+    def __getitem__(self, key):
+        return self.store[self.__keytransform__(key)]
+
+    def __setitem__(self, key, value):
+        self.store[key] = value # store locally
+
+    def __delitem__(self, key):
+        del self.store[self.__keytransform__(key)]
+
+    def __iter__(self):
+        return iter(self.store)
+
+    def __len__(self):
+        return len(self.store)
+
+    def __keytransform__(self, key):
+        return key
+
+    def __getattr__(self, key):
+        return self.store.get(key)
+
+#TODO: fix __setattr__ so doesn't cause recursion - and so doesn't silently not set values in compiler
+
+    def dump(self):
+        return self.store
+
 class overlay_data_dict(collections.MutableMapping):
     """A dictionary which allows access as dict.key as well as dict['key']
     Based on http://stackoverflow.com/questions/3387691
@@ -130,6 +172,9 @@ class overlay_interface(object):
         """
         return len(self._interface) > 0  # if interface data set
 
+    def __eq__(self, other):
+        return (self.node_id, self.interface_id) == (other.node_id, other.interface_id)
+
     def __str__(self):
         return self.__repr__()
 
@@ -159,6 +204,11 @@ class overlay_interface(object):
         return self._interface.get("description")
 
     @property
+    def is_loopback_zero(self):
+        # by convention, loopback_zero is at id 0
+        return self.interface_id == 0 and self.is_loopback
+
+    @property
     def node(self):
         """Returns parent node of this interface"""
         return nidb_node(self.nidb, self.node_id)
@@ -169,9 +219,14 @@ class overlay_interface(object):
     def __getattr__(self, key):
         """Returns interface property"""
         try:
-            return self._interface.get(key)
+            data = self._interface.get(key)
         except KeyError:
             return
+
+        if isinstance(data, dict):
+            return interface_data_dict(data)
+
+        return data
 
     def get(self, key):
         """For consistency, node.get(key) is neater 
@@ -198,7 +253,6 @@ class overlay_interface(object):
                 if self.node_id in e._interfaces
                 and e._interfaces[self.node_id] == self.interface_id]
         return valid_edges
-
 
 class overlay_edge_accessor(object):
 #TODO: do we even need this?
@@ -443,7 +497,19 @@ class nidb_node(object):
     @property
     def _interface_ids(self):
         return self._graph.node[self.node_id]["_interfaces"].keys()
-    
+
+    @property
+    def interfaces(self):
+        return self.get_interfaces()
+
+    @property
+    def physical_interfaces(self):
+        return self.get_interfaces(type = "physical")
+
+    @property
+    def loopback_interfaces(self):
+        return self.get_interfaces(type = "loopback")
+
     def get_interfaces(self, *args, **kwargs):
         """Public function to view interfaces
 
@@ -462,6 +528,10 @@ class nidb_node(object):
             for interface_id in self._interface_ids)
         retval = (i for i in all_interfaces if filter_func(i))
         return retval
+
+    @property
+    def loopback_zero(self):
+        return (i for i in self.interfaces if i.is_loopback_zero).next()
 
     @property
     def _graph(self):
@@ -669,7 +739,7 @@ class NIDB_base(object):
                 pprint.pformat(self._graph.edges(data=True))
                 )
 
-    def save(self):
+    def save(self, timestamp = True, use_gzip = True):
         import os
         import gzip
         archive_dir = os.path.join("versions", "nidb")
@@ -678,11 +748,19 @@ class NIDB_base(object):
 
         data = ank_json.ank_json_dumps(self._graph)
 #TODO: should this use the ank_json.jsonify_nidb() ?
-        json_file = "nidb_%s.json.gz" % self.timestamp
+        if timestamp:
+            json_file = "nidb_%s.json.gz" % self.timestamp
+        else:
+            json_file = "nidb.json"
         json_path = os.path.join(archive_dir, json_file)
         log.debug("Saving to %s" % json_path)
-        with gzip.open(json_path, "wb") as json_fh:
-            json_fh.write(data)
+        if use_gzip:
+            with gzip.open(json_path, "wb") as json_fh:
+                json_fh.write(data)
+        else:
+            with open(json_path, "wb") as json_fh:
+                json_fh.write(data)
+
 
     def restore_latest(self, directory = None):
         import os
@@ -834,10 +912,10 @@ class NIDB_base(object):
         self._graph.add_nodes_from(nbunch, **kwargs)
 
         for node in nodes_to_add:
-            interface_ids = [i.interface_id for i in node.interfaces()]
-            # Initialise with blank dictionaries
             #TODO: add an interface_retain for attributes also
-            self._graph.node[node.node_id]["_interfaces"] = dict.fromkeys(interface_ids, {})
+            int_dict = {i.interface_id: {'type': i.type, 'layer': i.overlay_id} for i in node.interfaces()}
+            int_dict = {i.interface_id: {'type': i.type} for i in node.interfaces()}
+            self._graph.node[node.node_id]["_interfaces"] = int_dict
 
     def add_edge(self, src, dst, retain=[], **kwargs):
         self.add_edges_from([(src, dst)], retain, **kwargs)
