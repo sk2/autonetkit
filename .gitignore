@@ -69,3 +69,5 @@ script.profile
 *.graphml4
 
 *.graphml5
+
+autonetkit/www_vis/icons/collision_domain2.svg
