@@ -502,6 +502,14 @@ class nidb_node(object):
     def interfaces(self):
         return self.get_interfaces()
 
+    @property
+    def physical_interfaces(self):
+        return self.get_interfaces(type = "physical")
+
+    @property
+    def loopback_interfaces(self):
+        return self.get_interfaces(type = "loopback")
+
     def get_interfaces(self, *args, **kwargs):
         """Public function to view interfaces
 
