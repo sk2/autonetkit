@@ -189,8 +189,13 @@ class RouterCompiler(object):
                 else:
                     node.bgp.ibgp_neighbors.append(data)
             else:
-                local_int_ip = session.src_int['ipv4'].ip_address
-                dst_int_ip = session.dst_int['ipv4'].ip_address
+                if use_ipv4:
+                    local_int_ip = session.src_int['ipv4'].ip_address
+                    dst_int_ip = session.dst_int['ipv4'].ip_address
+                elif use_ipv6:
+                    local_int_ip = session.src_int['ipv6'].ip_address
+                    dst_int_ip = session.dst_int['ipv6'].ip_address
+
                 # TODO: make this a returned value
                 node.bgp.ebgp_neighbors.append({
                     'neighbor': neigh.label,

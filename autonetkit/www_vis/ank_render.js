@@ -1400,7 +1400,8 @@ function redraw() {
         .attr("class", "interface_label")
         .attr("text-anchor", "middle") 
         .attr("font-family", "helvetica") 
-        .attr("font-size", "small") 
+        //.attr("font-size", "small") 
+        .attr("font-size", 8) 
 
         //TODO: use a general accessor for x/y of nodes
         interface_labels 
