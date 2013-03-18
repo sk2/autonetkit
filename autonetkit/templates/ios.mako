@@ -66,17 +66,18 @@ interface ${interface.id}
   isis metric ${interface.isis.metric}
     % endif
   % endif
-  % if interface.isis.use_ivp6:
+  % if interface.isis.use_ipv6:
   ipv6 router isis ${node.isis.process_id}
     % if interface.physical:
   isis ipv6 metric ${interface.isis.metric}
     % endif
   % endif
   % endif
+  % if interface.physical:
   duplex auto
   speed auto
-  ##TODO: don't set speed/duplex for loopback interfaces
   no shutdown
+  %endif
 !
 % endfor 
 !               
