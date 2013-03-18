@@ -611,7 +611,8 @@ var interface_info = function(d) {
     int_data = d.node._interfaces[d.interface];
 
     text = "<ul>"; //begin the unordered list
-    text += "<li><b>id:</b> " + d.interface + "</li>"; //add the key/val
+    text += "<li><b>node:</b> " + d.node.id + "</li>"; //add the key/val
+    text += "<li><b>interface:</b> " + d.interface + "</li>"; //add the key/val
     for (attr in int_data) {
         text += "<li><b>" + attr + ":</b> " + int_data[attr] + "</li>"; //add the key/val
     }
@@ -986,8 +987,13 @@ var icon_opacity = function(x) {
 };
 
 var interface_opacity = function(x) {
-    if (filtered_nodes.length == 0) return 1; //no filtered, so display all at full opacity
-    if (_.contains(filtered_nodes, x)) return 1; //some are filtered, full opacity for these
+    if (filtered_nodes.length == 0) return 1;
+    //no filtered, so display all at full opacity
+
+    if (_.contains(filtered_nodes, x.node)) 
+    {
+        return 1; 
+    }//some are filtered, full opacity for these
     return 0.2; //drop opacity for non filtered
 };
 
@@ -1331,7 +1337,7 @@ function redraw() {
     interface_icons = chart.selectAll(".interface_icon")
         //.data(interface_data) //TODO: check if need to provide an index
         //TODO: check if should return tuple of interface, node for uniqueness (esp for switching overlays)
-        .data(interface_data, function(d) { return d.interface;})
+        .data(interface_data, function(d) { return (d.node, d.interface);})
 
         var highlight_interfaces = function(d) {
             interfaces = d3.selectAll(".interface_icon");
@@ -1343,11 +1349,12 @@ function redraw() {
         .attr("height", interface_height)
         .attr("x", interface_x)
         .attr("y", interface_y)
-        .style("opacity", 0.51)
+        .style("opacity", 0)
 
         interface_icons
         //TODO: look if can return multiple attributes, ie x and y, from the same function, ie calculation
         .attr("fill", "rgb(6,120,155)")
+        .style("opacity", 0)
 
         .on("mouseover", function(d){
             highlight_interfaces(d);
@@ -1376,6 +1383,7 @@ function redraw() {
     interface_icons.transition()
         .attr("x", interface_x)
         .attr("y", interface_y)
+        .style("opacity", interface_opacity)
         .duration(500);
 
     interface_icons.exit().transition()
