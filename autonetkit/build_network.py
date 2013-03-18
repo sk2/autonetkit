@@ -230,17 +230,24 @@ def build_vrf(anm):
         edge.vrf = edge.src.vrf if edge.src.vrf_role is "CE" else edge.dst.vrf
 
 
-def three_tier_ibgp_l1_l3_clusters(rtrs):
+def three_tier_ibgp_corner_cases(rtrs):
     """Calculate edges for iBGP l3 clusters that don't contain a HRR.
     Connects l1 to l3 directly"""
     up_links = []
     down_links = []
+    over_links = []
     for l3_cluster, l3d in ank_utils.groupby("ibgp_l3_cluster", rtrs):
         for l2_cluster, l2d in ank_utils.groupby("ibgp_l2_cluster", l3d):
             l2d = list(l2d)
             if any(r.ibgp_level == 2 for r in l2d):
                 log.debug("Cluster (%s, %s) has l2 devices, not "
                           "adding extra links" % (l3_cluster, l2_cluster))
+            elif all(r.ibgp_level == 1 for r in l2d):
+                # No l2 or l3 routers -> full-mesh of l1 routers
+                over_links += [(s, t) for s in l2d for t in l2d if s != t]
+                log.debug("Cluster (%s, %s) has no level 2 or 3 iBGP routers."
+                        "Connecting l1 routers (%s) in full-mesh"
+                        % (l3_cluster, l2_cluster, l2d))
             else:
                 l1_rtrs = [r for r in l2d if r.ibgp_level == 1]
                 l3_rtrs = [r for r in l2d if r.ibgp_level == 3]
@@ -254,9 +261,7 @@ def three_tier_ibgp_l1_l3_clusters(rtrs):
                 up_links += l1_l3_up_links
                 down_links += [(t, s) for (s, t) in l1_l3_up_links]
 
-    return up_links, down_links
-
-
+    return up_links, down_links, over_links
 
 def three_tier_ibgp_edges(routers):
     """Constructs three-tier ibgp"""
@@ -288,9 +293,10 @@ def three_tier_ibgp_edges(routers):
                    if s.ibgp_level == t.ibgp_level == 3]  # l3 peer links
 
 # also check for any clusters which only contain l1 and l3 links
-    l1_l3_up_links, l1_l3_down_links = three_tier_ibgp_l1_l3_clusters(routers)
+    l1_l3_up_links, l1_l3_down_links, l1_l3_over_links = three_tier_ibgp_corner_cases(routers)
     up_links += l1_l3_up_links
     down_links += l1_l3_down_links
+    over_links += l1_l3_over_links
   
     return up_links, down_links, over_links
 
@@ -346,6 +352,8 @@ def build_bgp(anm):
         if node.ibgp_level == "None":  # if unicode string from yEd
             node.ibgp_level = 1
 
+#TODO CHECK FOR IBGP NONE
+
         node.ibgp_level = int(node.ibgp_level)  # ensure is numeric
 
         if not node.ibgp_l2_cluster or node.ibgp_l2_cluster == "None":
@@ -362,18 +370,21 @@ def build_bgp(anm):
         ibgp_levels = {int(r.ibgp_level) for r in routers}
         max_level = max(ibgp_levels)
         # all possible edge src/dst pairs
-        all_pairs = [(s, t) for s in routers for t in routers if s != t]
+        ibgp_routers = [r for r in routers if r.ibgp_level > 0]
+        all_pairs = [(s, t) for s in ibgp_routers for t in ibgp_routers if s != t]
         if max_level == 3:
-            up_links, down_links, over_links = three_tier_ibgp_edges(routers)
+            up_links, down_links, over_links = three_tier_ibgp_edges(ibgp_routers)
 
         elif max_level == 2:
-            up_links, down_links, over_links = build_two_tier_ibgp(routers)
+            up_links, down_links, over_links = build_two_tier_ibgp(ibgp_routers)
 
         elif max_level == 1:
             up_links = []
             down_links = []
             over_links = [(s, t) for (s, t) in all_pairs
-                             if s.ibgp_l3_cluster == t.ibgp_l3_cluster]
+                             if s.ibgp_l3_cluster == t.ibgp_l3_cluster
+                             and s.ibgp_l2_cluster == t.ibgp_l2_cluster
+                             ]
         else:
             # no iBGP
             up_links = []
@@ -401,6 +412,10 @@ def build_bgp(anm):
     ebgp_nodes = [d for d in g_bgp if any(
         edge.type == 'ebgp' for edge in d.edges())]
     g_bgp.update(ebgp_nodes, ebgp=True)
+
+    for ebgp_edge in g_bgp.edges(type = "ebgp"):
+        for interface in ebgp_edge.interfaces():
+            interface.ebgp = True
 
     for edge in g_bgp.edges(type='ibgp'):
         # TODO: need interface querying/selection. rather than hard-coded ids
