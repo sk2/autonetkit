@@ -71,17 +71,19 @@ class RouterCompiler(object):
             interface.physical = True
             #TODO: allocate ID in platform compiler
 
-            ipv4_int = phy_int['ipv4']
-            interface.ipv4_address = ipv4_int.ip_address
-            interface.ipv4_subnet = ipv4_int.subnet
-            interface.ipv4_cidr = address_prefixlen_to_network(interface.ipv4_address,
-                    interface.ipv4_subnet.prefixlen)
+            if node.ip.use_ipv4:
+                ipv4_int = phy_int['ipv4']
+                interface.ipv4_address = ipv4_int.ip_address
+                interface.ipv4_subnet = ipv4_int.subnet
+                interface.ipv4_cidr = address_prefixlen_to_network(interface.ipv4_address,
+                        interface.ipv4_subnet.prefixlen)
 
-            ipv6_int = phy_int['ipv6']
+            if node.ip.use_ipv6:
+                ipv6_int = phy_int['ipv6']
 #TODO: for consistency, make ipv6_cidr
-            interface.ipv6_subnet = ipv6_int.subnet
-            interface.ipv6_address = address_prefixlen_to_network(ipv6_int.ip_address,
-                    interface.ipv6_subnet.prefixlen)
+                interface.ipv6_subnet = ipv6_int.subnet
+                interface.ipv6_address = address_prefixlen_to_network(ipv6_int.ip_address,
+                        interface.ipv6_subnet.prefixlen)
 
 
         for interface in node.loopback_interfaces:
@@ -96,6 +98,7 @@ class RouterCompiler(object):
                 pass
 
             continue
+            #TODO: reinstate this code once return to vrf setup
             ip_interface = g_ipv4.interface(interface)
             vrf_interface = self.anm['vrf'].interface(interface)
             index = index + 1  # loopback0 (ie index 0) is reserved
@@ -140,7 +143,6 @@ class RouterCompiler(object):
         phy_node = self.anm['phy'].node(node)
         g_bgp = self.anm['bgp']
         g_ipv4 = self.anm['ipv4']
-        g_ipv6 = self.anm['ipv6']
         asn = phy_node.asn
         node.asn = asn
         node.bgp.ipv4_advertise_subnets = []
@@ -149,6 +151,7 @@ class RouterCompiler(object):
                 asn) or []  # could be none (if one-node AS) default empty list
         node.bgp.ipv6_advertise_subnets = []
         if node.ip.use_ipv6:
+            g_ipv6 = self.anm['ipv6']
             node.bgp.ipv6_advertise_subnets = g_ipv6.data.infra_blocks.get(
                 asn) or []
 
@@ -162,7 +165,7 @@ class RouterCompiler(object):
             if use_ipv4:
                 neigh_ip = g_ipv4.node(neigh)
             elif use_ipv6:
-                neigh_ip = g_ipv6.node(neigh)
+                neigh_ip = self.anm['ipv6'].node(neigh)
             else:
                 log.debug(
                     "Neither v4 nor v6 selected for BGP session %s, skipping"
