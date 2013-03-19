@@ -31,6 +31,11 @@ var node_label_id = "id";
 var edge_group_id = ""; //TODO: rename edge_label_id
 var interface_label_id = "";
 
+var interface_overlay_groupings = {
+    'ospf': 'area',
+    'vrf': 'vrf_name',
+}
+
 starting_hosts = [];
 
 ws.onmessage = function (evt) {
@@ -448,7 +453,7 @@ var interface_y = function(d) {
 
 var groupPath = function(d) {
 
-    if (display_interfaces && overlay_id == "ospf") {
+    if (display_interfaces && overlay_id in interface_overlay_groupings) {
         if (d.values.length  == 1) {
             //This shouldn't occur for single ospf interface!
             node = d.values[0];
@@ -875,7 +880,8 @@ $(document).keydown(function(e){
 var group_attr = "asn";
 
 var group_info = function(d) {
-    if (overlay_id == "ospf") {
+    if (overlay_id in interface_overlay_groupings) {
+        //string tuple of "asn,grouping_attr"
         var data = d.key.split(",");
         text = ("Group: <ul><li>" + data[0] +  "</li><li>area: " + data[1] + "</li></ul>");
     } else {
@@ -894,8 +900,9 @@ var node_group_id = function(d) {
     else if (overlay_id == "conn") {
         group_attr = "device";
     }
-    else if (overlay_id == "ospf") {
-        return ([d['asn'], d['area']]);
+    else if (overlay_id in interface_overlay_groupings) {
+        attr = interface_overlay_groupings[overlay_id];
+        return ([d['asn'], d[attr]]);
     }
     else if (overlay_id == "vrf") {
         return ([d['asn'], d['vrf']]);
@@ -1138,21 +1145,23 @@ function redraw() {
 
 
     var interface_area = function(d) {
+        //TODO: should this only be called if display_interfaces && overlay_id in interface_overlay_groupings?
         interface_id = d.interface;
         asn = d.node['asn'];
-        area = d.node._interfaces[interface_id]['area'];
+        attr = interface_overlay_groupings[overlay_id];
+        area = d.node._interfaces[interface_id][attr];
         return asn + "," + area;
     }
 
     interface_attr_groups = d3.nest().key( interface_area ).entries(interface_data);
 
-    if (display_interfaces && overlay_id == "ospf") {
+    if (display_interfaces && overlay_id in interface_overlay_groupings) {
         node_attr_groups = interface_attr_groups;
     }
 
     var hull_stroke_width = function() {
 
-        if (display_interfaces && overlay_id == "ospf") {
+        if (display_interfaces && overlay_id in interface_overlay_groupings) {
             return 25;
         }
         return 80;
