@@ -59,7 +59,7 @@ class overlay_interface(object):
 
     @property
     def _node(self):
-        """Return graph the node belongs to"""
+        """Return graph data the node belongs to"""
         return self._graph.node[self.node_id]
 
     @property
