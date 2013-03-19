@@ -92,7 +92,22 @@ class RouterCompiler(object):
                 continue
             else:
                 #print "here for non zero", interface.id
-                vrf_interface = self.anm['vrf'].interface(interface)
+                phy_int = self.anm['phy'].interface(interface)
+                if node.ip.use_ipv4:
+                    ipv4_int = phy_int['ipv4']
+                    interface.ipv4_address = ipv4_int.loopback
+                    interface.ipv4_subnet = node.loopback_subnet
+                    interface.ipv4_cidr = address_prefixlen_to_network(interface.ipv4_address,
+                            interface.ipv4_subnet.prefixlen)
+
+                if node.ip.use_ipv6:
+                    ipv6_int = phy_int['ipv6']
+#TODO: for consistency, make ipv6_cidr
+                    #interface.ipv6_subnet = ipv6_int.loopback # TODO: do we need for consistency?
+                    interface.ipv6_address = address_prefixlen_to_network(
+                            ipv6_int.loopback, 128)
+
+                # secondary loopbacks
                 #TODO: check why vrf names not showing up for all
                 #print vrf_interface.vrf_name
                 pass
