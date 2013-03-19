@@ -219,6 +219,14 @@ class OverlayNode(object):
     def loopback_zero(self):
         return (i for i in self.interfaces("is_loopback_zero")).next()
 
+    @property
+    def physical_interfaces(self):
+        return self.interfaces(type = "physical")
+
+    @property
+    def loopback_interfaces(self):
+        return self.interfaces(type = "loopback")
+
     def __lt__(self, other):
 # want [r1, r2, ..., r11, r12, ..., r21, r22] not [r1, r11, r12, r2, r21, r22]
 # so need to look at numeric part
