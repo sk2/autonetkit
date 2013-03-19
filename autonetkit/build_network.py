@@ -203,8 +203,21 @@ def build_vrf(anm):
 
     vrf_add_edges = (e for e in g_in.edges()
             if e.src.asn == e.dst.asn and is_pe_ce_edge(e))
-
+    #TODO: should mark as being towards PE or CE
     g_vrf.add_edges_from(vrf_add_edges, retain=['edge_id'])
+
+    def is_pe_p_edge(edge):
+        src_vrf_role = g_vrf.node(edge.src).vrf_role
+        dst_vrf_role = g_vrf.node(edge.dst).vrf_role
+        return (src_vrf_role, dst_vrf_role) in (("PE", "P"), ("P", "PE"))
+    vrf_add_edges = (e for e in g_in.edges()
+            if e.src.asn == e.dst.asn and is_pe_p_edge(e))
+    g_vrf.add_edges_from(vrf_add_edges, retain=['edge_id'])
+    for node in g_vrf.nodes(vrf_role="PE"):
+        for edge in node.edges():
+            if edge.dst.vrf_role == "P":
+                edge.src_int.towards_p = True
+    # add PE to P edges
 
     add_vrf_loopbacks(g_vrf)
     # allocate route-targets per AS
