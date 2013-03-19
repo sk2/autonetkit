@@ -40,6 +40,10 @@ class overlay_interface(object):
     def __nonzero__(self):
         return len(self._interface) > 0  # if interface data set
 
+    def __lt__(self, other):
+        #TODO: check how is comparing the nodes
+        return ((self.node, self.interface_id) < (other.node, other.interface_id))
+
     @property
     def is_bound(self):
         """Returns if this interface is bound to an edge on this layer"""
