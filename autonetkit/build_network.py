@@ -98,7 +98,7 @@ def build(input_graph):
     autonetkit.update_http(anm)
     g_phy = anm['phy']
 
-    build_vrf(anm)
+    build_vrf(anm) # need to do before to add loopbacks before ip allocations
     build_ip(anm) # ip infrastructure topology
     autonetkit.update_http(anm)
 
@@ -166,7 +166,7 @@ def add_vrf_loopbacks(g_vrf):
                               description="loopback for vrf %s" % vrf_name)
 
     for node in g_vrf.nodes(vrf_role="CE"):
-        node.add_loopback(vrf_name = node.vrf_name,
+        node.add_loopback(vrf_name = node.vrf,
                           description="loopback for vrf %s" % node.vrf_name)
 
 def vrf_edges(g_vrf):
@@ -203,8 +203,21 @@ def build_vrf(anm):
 
     vrf_add_edges = (e for e in g_in.edges()
             if e.src.asn == e.dst.asn and is_pe_ce_edge(e))
-
+    #TODO: should mark as being towards PE or CE
     g_vrf.add_edges_from(vrf_add_edges, retain=['edge_id'])
+
+    def is_pe_p_edge(edge):
+        src_vrf_role = g_vrf.node(edge.src).vrf_role
+        dst_vrf_role = g_vrf.node(edge.dst).vrf_role
+        return (src_vrf_role, dst_vrf_role) in (("PE", "P"), ("P", "PE"))
+    vrf_add_edges = (e for e in g_in.edges()
+            if e.src.asn == e.dst.asn and is_pe_p_edge(e))
+    g_vrf.add_edges_from(vrf_add_edges, retain=['edge_id'])
+    for node in g_vrf.nodes(vrf_role="PE"):
+        for edge in node.edges():
+            if edge.dst.vrf_role == "P":
+                edge.src_int.towards_p = True
+    # add PE to P edges
 
     add_vrf_loopbacks(g_vrf)
     # allocate route-targets per AS
@@ -227,6 +240,11 @@ def build_vrf(anm):
     for edge in g_vrf.edges():
         # Set the vrf of the edge to be that of the CE device (either src or dst)
         edge.vrf = edge.src.vrf if edge.src.vrf_role is "CE" else edge.dst.vrf
+
+    # map attributes to interfaces
+    for edge in g_vrf.edges():
+        for interface in edge.interfaces():
+            interface.vrf_name = edge.vrf
 
 
 def three_tier_ibgp_corner_cases(rtrs):
@@ -581,6 +599,10 @@ def build_ipv4(anm, infrastructure=True):
         import autonetkit.plugins.ipv4 as ipv4
         ipv4.allocate_ips(g_ipv4, infrastructure = False, loopbacks = True)
         #ank_utils.save(g_ipv4)
+
+    #TODO: need to also support secondary_loopbacks for IPv6
+    ipv4.allocate_ips(g_ipv4, infrastructure = False, loopbacks = False,
+            secondary_loopbacks = True)
 
     autonetkit.update_http(anm)
 

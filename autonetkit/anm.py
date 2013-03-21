@@ -40,6 +40,10 @@ class overlay_interface(object):
     def __nonzero__(self):
         return len(self._interface) > 0  # if interface data set
 
+    def __lt__(self, other):
+        #TODO: check how is comparing the nodes
+        return ((self.node, self.interface_id) < (other.node, other.interface_id))
+
     @property
     def is_bound(self):
         """Returns if this interface is bound to an edge on this layer"""
@@ -55,7 +59,7 @@ class overlay_interface(object):
 
     @property
     def _node(self):
-        """Return graph the node belongs to"""
+        """Return graph data the node belongs to"""
         return self._graph.node[self.node_id]
 
     @property
@@ -214,6 +218,14 @@ class OverlayNode(object):
     @property
     def loopback_zero(self):
         return (i for i in self.interfaces("is_loopback_zero")).next()
+
+    @property
+    def physical_interfaces(self):
+        return self.interfaces(type = "physical")
+
+    @property
+    def loopback_interfaces(self):
+        return self.interfaces(type = "loopback")
 
     def __lt__(self, other):
 # want [r1, r2, ..., r11, r12, ..., r21, r22] not [r1, r11, r12, r2, r21, r22]
