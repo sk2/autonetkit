@@ -1,10 +1,15 @@
 import pkg_resources
-import validate
 import ConfigParser
 from configobj import ConfigObj, flatten_errors
-validator = validate.Validator()
-import os.path
+import validate
 
+# work around configobj choosing the horribly generic package name of "validate"
+# based on http://www.velocityreviews.com/forums/t335633-package-module-import-name-clash-with-global-package.html
+import imp
+validate = imp.load_module('validate',*imp.find_module('validate'))
+validator = validate.Validator()
+
+import os.path
 #TODO: check this works on Windows
 ank_user_dir = os.path.join(os.path.expanduser("~"),  ".autonetkit")
 
