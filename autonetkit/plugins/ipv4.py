@@ -493,7 +493,7 @@ def allocate_ips(g_ip, infrastructure = True, loopbacks = True, secondary_loopba
     jsontree = json.dumps(total_tree, cls=autonetkit.ank_json.AnkEncoder, indent = 4)
 
     body = json.dumps({"ip_allocations": jsontree})
-    messaging.publish_compressed("www", "client", body)
+    #messaging.publish_compressed("www", "client", body)
 
 #TODO: need to update with loopbacks if wish to advertise also - or subdivide blocks?
     g_ip.data.infra_blocks = ip_tree.group_allocations()
