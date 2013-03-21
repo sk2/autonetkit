@@ -392,6 +392,15 @@ class OverlayNode(object):
         neighs = self._overlay.neighbors(self)
         return self._overlay.filter(neighs, *args, **kwargs)
 
+    def neighbor_interfaces(self, *args, **kwargs):
+        #TODO: implement filtering for args and kwargs
+        if len(args) or len(kwargs):
+            log.warning("Attribute-based filtering not currently supported" 
+                    " for neighbor_interfaces")
+
+        return iter(edge.dst_int for edge in self.edges())
+
+
     @property
     def label(self):
         """Returns node label (mapped from ANM)"""
