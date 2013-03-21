@@ -199,6 +199,11 @@ class overlay_interface(object):
         return self.type == "loopback" or self.phy.type == "loopback"
 
     @property
+    def is_physical(self):
+        """"""
+        return self.type == "physical" or self.phy.type == "physical"
+
+    @property
     def description(self):
         """"""
         return self._interface.get("description")

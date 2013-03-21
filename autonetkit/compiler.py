@@ -92,7 +92,22 @@ class RouterCompiler(object):
                 continue
             else:
                 #print "here for non zero", interface.id
-                vrf_interface = self.anm['vrf'].interface(interface)
+                phy_int = self.anm['phy'].interface(interface)
+                if node.ip.use_ipv4:
+                    ipv4_int = phy_int['ipv4']
+                    interface.ipv4_address = ipv4_int.loopback
+                    interface.ipv4_subnet = node.loopback_subnet
+                    interface.ipv4_cidr = address_prefixlen_to_network(interface.ipv4_address,
+                            interface.ipv4_subnet.prefixlen)
+
+                if node.ip.use_ipv6:
+                    ipv6_int = phy_int['ipv6']
+#TODO: for consistency, make ipv6_cidr
+                    #interface.ipv6_subnet = ipv6_int.loopback # TODO: do we need for consistency?
+                    interface.ipv6_address = address_prefixlen_to_network(
+                            ipv6_int.loopback, 128)
+
+                # secondary loopbacks
                 #TODO: check why vrf names not showing up for all
                 #print vrf_interface.vrf_name
                 pass
@@ -127,6 +142,8 @@ class RouterCompiler(object):
         node.ospf.ospf_links = []
         added_networks = set()
         for interface in node.physical_interfaces:
+            if interface.exclude_igp:
+                continue # don't configure IGP for this interface
             ipv4_int = g_ipv4.interface(interface)
             ospf_int = g_ospf.interface(interface)
             network = ipv4_int.subnet
@@ -137,7 +154,6 @@ class RouterCompiler(object):
                     network=network,
                     area=ospf_int.area,
                 )
-
 
     def bgp(self, node):
         phy_node = self.anm['phy'].node(node)
@@ -226,6 +242,9 @@ class RouterCompiler(object):
         node.isis.isis_links = []
 
         for interface in node.physical_interfaces:
+            if interface.exclude_igp:
+                continue # don't configure IGP for this interface
+
             phy_int = self.anm['phy'].interface(interface)
 
             isis_int = phy_int['isis']
@@ -288,6 +307,9 @@ class QuaggaCompiler(RouterCompiler):
         node.ospf.passive_interfaces = []
 
         for interface in node.physical_interfaces:
+            if interface.exclude_igp:
+                continue # don't configure IGP for this interface
+
             bgp_int = self.anm['bgp'].interface(interface)
             if bgp_int.ebgp: # ebgp interface
                 node.ospf.passive_interfaces.append(
@@ -317,6 +339,7 @@ class IosBaseCompiler(RouterCompiler):
     lo_interface = "%s%s" % (lo_interface_prefix, 0)
 
     def compile(self, node):
+        self.vrf_igp_interfaces(node)
         phy_node = self.anm['phy'].node(node)
 
         if node in self.anm['ospf']:
@@ -332,6 +355,10 @@ class IosBaseCompiler(RouterCompiler):
             self.isis(node)
 
         node.label = self.anm['phy'].node(node).label
+        """Note:
+        VRFs are either: before, and mark IGP interfaces to skip;
+        or after, and remove IGP interfaces
+        """
         self.vrf(node)
 
     def interfaces(self, node):
@@ -363,6 +390,7 @@ class IosBaseCompiler(RouterCompiler):
             node.bgp.ipv6_advertise_subnets = [node.loopback_zero.ipv6_address]
 
         # vrf
+        #TODO: this should be inside vrf section?
         node.bgp.vrfs = []
         vrf_node = self.anm['vrf'].node(node)
         if vrf_node.vrf_role is "PE":
@@ -376,11 +404,22 @@ class IosBaseCompiler(RouterCompiler):
                     use_ipv6=node.ip.use_ipv6,
                 )
 
+    def vrf_igp_interfaces(self, node):
+        # marks physical interfaces to exclude from IGP
+        vrf_node = self.anm['vrf'].node(node)
+        if vrf_node.vrf_role is "PE":
+            for interface in node.physical_interfaces:
+                vrf_int = self.anm['vrf'].interface(interface)
+                if vrf_int.vrf_name:
+                    interface.exclude_igp = True
+
     def vrf(self, node):
         g_vrf = self.anm['vrf']
         vrf_node = self.anm['vrf'].node(node)
         node.vrf.vrfs = []
         if vrf_node.vrf_role is "PE":
+            #TODO: check if mpls ldp already set elsewhere
+            node.mpls.ldp_interfaces = []
             for vrf in vrf_node.node_vrf_names:
                 route_target = g_vrf.data.route_targets[node.asn][vrf]
                 node.vrf.vrfs.append({
@@ -388,10 +427,21 @@ class IosBaseCompiler(RouterCompiler):
                     'route_target': route_target,
                 })
 
-            for interface in node.interfaces:
-                vrf_link = self.anm['vrf'].edge(interface._edge_id)
-                if vrf_link:
-                    interface['vrf'] = vrf_link.vrf # mark interface as being part of vrf
+            for interface in node.physical_interfaces:
+                vrf_int = self.anm['vrf'].interface(interface)
+                if vrf_int.vrf_name:
+                    interface.vrf = vrf_int.vrf_name # mark interface as being part of vrf
+                    interface.description += " (vrf %s)" % vrf_int.vrf_name
+
+                # Add PE -> P interfaces to MPLS LDP
+                if vrf_int.towards_p:
+                    node.mpls.ldp_interfaces.append(interface.id)
+
+
+        if vrf_node.vrf_role is "P":
+            node.mpls.ldp_interfaces = []
+            for interface in node.physical_interfaces:
+                node.mpls.ldp_interfaces.append(interface.id)
 
         node.vrf.use_ipv4 = node.ip.use_ipv4
         node.vrf.use_ipv6 = node.ip.use_ipv6
@@ -404,6 +454,9 @@ class IosBaseCompiler(RouterCompiler):
 
             ospf_int = phy_int['ospf']
             if ospf_int and ospf_int.is_bound:
+                if interface.exclude_igp:
+                    continue # don't configure IGP for this interface
+
                 interface.ospf = {
                         'cost': ospf_int.cost,
                         'area': ospf_int.area,
@@ -428,6 +481,9 @@ class Ios2Compiler(IosBaseCompiler):
         interfaces_by_area = defaultdict(list)
 
         for interface in node.physical_interfaces:
+            if interface.exclude_igp:
+                continue # don't configure IGP for this interface
+
             ospf_int = g_ospf.interface(interface)
             if ospf_int and ospf_int.is_bound:
                 area = ospf_int.area

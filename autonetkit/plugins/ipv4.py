@@ -435,8 +435,10 @@ def assign_asn_to_interasn_cds(g_ip):
 
     return
 
-def allocate_ips(g_ip, infrastructure = True, loopbacks = True):
+def allocate_ips(g_ip, infrastructure = True, loopbacks = True, secondary_loopbacks = False):
+    #TODO: tidy up the below comment and make all arguments default to False
     """Can disable infrastructure, eg for ipv6, still want to alloc ipv4 loopbacks for router ids"""
+    loopback_tree = []
     if loopbacks:
         log.info("Allocating v4 Primary Host loopback IPs")
         ip_tree = IpTree("192.168.1.0")
@@ -449,23 +451,26 @@ def allocate_ips(g_ip, infrastructure = True, loopbacks = True):
         ip_tree.assign()
         g_ip.data.loopback_blocks = ip_tree.group_allocations()
 
-    log.debug("Allocating v4 Secondary Host loopback IPs")
-    ip_tree = IpTree("172.16.0.0")
-    secondary_loopbacks = []
-    for n in g_ip.nodes():
-        for i in n.interfaces("is_loopback"):
-            secondary_loopbacks.append(i)
+    secondary_loopback_tree = []
+    if secondary_loopbacks:
+        log.info("Allocating v4 Secondary Host loopback IPs")
+        #TODO: trim g_ip.nodes() to g_ip
+        ip_tree = IpTree("172.16.0.0")
+        secondary_loopbacks = [i for n in g_ip.nodes()
+                for i in n.loopback_interfaces
+                if not i.is_loopback_zero]
 
-    ip_tree.add_nodes(secondary_loopbacks)
-    ip_tree.build()
-    secondary_loopback_tree = ip_tree.json()
-   # json.dumps(ip_tree.json(), cls=autonetkit.ank_json.AnkEncoder, indent = 4)
-    #body = json.dumps({"ip_allocations": jsontree})
-    #messaging.publish_compressed("www", "client", body)
-    ip_tree.assign()
-    #g_ip.data.loopback_blocks = ip_tree.group_allocations()
+        ip_tree.add_nodes(secondary_loopbacks)
+        ip_tree.build()
+        secondary_loopback_tree = ip_tree.json()
+    # json.dumps(ip_tree.json(), cls=autonetkit.ank_json.AnkEncoder, indent = 4)
+        #body = json.dumps({"ip_allocations": jsontree})
+        #messaging.publish_compressed("www", "client", body)
+        ip_tree.assign()
+        #g_ip.data.loopback_blocks = ip_tree.group_allocations()
 
 
+    cd_tree = []
     if infrastructure:
         log.info("Allocating v4 Infrastructure IPs")
         ip_tree = IpTree("10.0.0.0")
@@ -480,8 +485,8 @@ def allocate_ips(g_ip, infrastructure = True, loopbacks = True):
     total_tree = {
             'name': "ip",
             'children': 
-            #[loopback_tree, secondary_loopback_tree, cd_tree],
-            [cd_tree],
+            [loopback_tree, secondary_loopback_tree, cd_tree],
+            #[cd_tree],
             #[secondary_loopback_tree],
                 #[loopback_tree],
             }
