@@ -131,8 +131,8 @@ def parse_options():
                         default=False, help="Compile")
     parser.add_argument(
         '--build', action="store_true", default=False, help="Build")
-    parser.add_argument('--render', action="store_true",
-                        default=False, help="Compile")
+    parser.add_argument('--render', action="store_true", default=False, help="Compile")
+    parser.add_argument('--validate', action="store_true", default=False, help="Validate")
     parser.add_argument('--deploy', action="store_true",
                         default=False, help="Deploy")
     parser.add_argument('--archive', action="store_true", default=False,
