@@ -221,6 +221,11 @@ class overlay_interface(object):
     def dump(self):
         return str(self._interface.items())
 
+    def dict(self):
+        """Returns shallow copy of dictionary used.
+        Note not a deep copy: modifying values may have impact"""
+        return dict(self._interface.items())
+
     def __getattr__(self, key):
         """Returns interface property"""
         try:

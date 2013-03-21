@@ -6,6 +6,44 @@ import string
 import autonetkit.anm
 import autonetkit.log as log
 
+class NidbEncoder(json.JSONEncoder):
+    #TODO: would be better to build this as a graph and then use normal JSON serialization
+    """Recursive handling and formatting for BGP Policy export in JSON format"""
+    def default(self, obj):
+
+        if isinstance(obj, netaddr.IPAddress):
+            return str(obj)
+        if isinstance(obj, netaddr.IPNetwork):
+            return str(obj)
+
+        if isinstance(obj, autonetkit.nidb.NIDB):
+            #TODO: add documentation about serializing anm nodes
+            return {'name': 'nidb',
+                    'children': list(obj.nodes("is_l3device"))}
+
+        if isinstance(obj, autonetkit.nidb.nidb_node):
+            return {'name': obj.id,
+                    'children': list(obj.get_interfaces())}
+            #TODO: also need to return non interface blocks
+# use keys of node
+            return str(obj)
+
+        if isinstance(obj, autonetkit.nidb.overlay_interface):
+            return [{'name': obj.id,
+                'children': list(obj.dict())}]
+        #return str(obj)
+
+        if isinstance(obj, dict):
+            return str(obj) #TODO: need to handle as list of children
+            #return [{"name": k, "value": v} for k, v in obj.items
+
+        print "objs is", type(obj)
+        return json.JSONEncoder.default(self, obj)
+
+def ank_nidb_tree(nidb, indent = 4):
+    data = json.dumps(nidb, cls=NidbEncoder, indent = indent)
+    return data
+
 class AnkEncoder(json.JSONEncoder):
     """Handles netaddr objects by converting to string form"""
     def default(self, obj):
@@ -31,8 +69,6 @@ class AnkEncoder(json.JSONEncoder):
             log.debug("%s is nidb nidb_node_category. Use attribute rather than object in compiler." % obj)
             return str(obj)
 
-        
-
         return json.JSONEncoder.default(self, obj)
 
 def ank_json_dumps(graph, indent = 4):
@@ -40,7 +76,6 @@ def ank_json_dumps(graph, indent = 4):
 #TODO: use regex to convert IPAddress and IPNetwork back to respective form in decoder
     data = json.dumps(data, cls=AnkEncoder, indent = indent)
     return data
-
 
 def string_to_netaddr(val):
     retval = None
