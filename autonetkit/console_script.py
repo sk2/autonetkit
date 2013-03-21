@@ -60,6 +60,10 @@ def manage_network(input_graph_string, timestamp, build_options, reload_build=Fa
             body = ank_json.dumps(anm)
             messaging.publish_compressed("www", "client", body)
 
+    if build_options['validate']:
+        import validate
+        validate.validate(anm)
+
     if build_options['compile']:
         if build_options['archive']:
             anm.save()
@@ -162,6 +166,7 @@ def main():
     build_options = {
         'compile': options.compile or settings['General']['compile'],
         'render': options.render or settings['General']['render'],
+        'validate': options.validate or settings['General']['validate'],
         'build': options.build or settings['General']['build'],
         'deploy': options.deploy or settings['General']['deploy'],
         'measure': options.measure or settings['General']['measure'],

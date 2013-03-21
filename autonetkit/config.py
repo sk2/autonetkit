@@ -1,7 +1,6 @@
 import pkg_resources
 import ConfigParser
 from configobj import ConfigObj, flatten_errors
-import validate
 
 # work around configobj choosing the horribly generic package name of "validate"
 # based on http://www.velocityreviews.com/forums/t335633-package-module-import-name-clash-with-global-package.html
