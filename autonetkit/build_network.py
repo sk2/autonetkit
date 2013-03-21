@@ -493,6 +493,8 @@ def manual_ipv4_infrastructure_allocation(anm):
                 subnet = netaddr.IPNetwork(cidr_string)
                 collision_domain.subnet = subnet
 
+    #TODO: assign directly to interfaces
+
     # also need to form aggregated IP blocks (used for e.g. routing prefix
     # advertisement)
     infra_blocks = {}
