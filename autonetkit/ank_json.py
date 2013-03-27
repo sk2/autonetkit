@@ -145,7 +145,13 @@ def jsonify_anm(anm):
     return json.dumps(anm_json)
 
 
-def jsonify_anm_with_graphics(anm):
+def shortened_interface(name):
+    """Condenses interface name. Not canonical - mainly for brevity"""
+    name = name.replace("GigabitEthernet", "ge")
+    name = name.replace("0/0/0/", "")
+    return name
+
+def jsonify_anm_with_graphics(anm, nidb = None):
     """ Returns a dictionary of json-ified overlay graphs, with graphics data appended to each overlay"""
     anm_json = {}
     graphics_graph = anm["graphics"]._graph.copy()
@@ -168,6 +174,26 @@ def jsonify_anm_with_graphics(anm):
                 del OverlayGraph.node[n]['id']
             except KeyError:
                 pass
+
+            if nidb:
+                nidb_graph = nidb._graph
+                if n in nidb:
+                    nidb_node_data = nidb_graph.node[n]
+                    try:
+                        #TODO: check why not all nodes have _interfaces initialised
+                        overlay_interfaces = OverlayGraph.node[n]["_interfaces"]
+                    except KeyError:
+                        continue # skip copying interface data for this node
+
+                    for interface_id in overlay_interfaces.keys():
+                        try:
+                            nidb_interface_id = nidb_node_data['_interfaces'][interface_id]['id']
+                        except KeyError:
+                            #TODO: check why arrive here - something not initialised?
+                            continue
+                        OverlayGraph.node[n]['_interfaces'][interface_id]['id'] = nidb_interface_id
+                        id_brief = shortened_interface(nidb_interface_id)
+                        OverlayGraph.node[n]['_interfaces'][interface_id]['id_brief'] = id_brief
 
 #TODO: combine these, and round as necessary
         x = (OverlayGraph.node[n]['x'] for n in OverlayGraph)
@@ -195,6 +221,11 @@ def jsonify_nidb(nidb):
         graph.node[node]['device_type'] = graph.node[node]['graphics']['device_type']
         graph.node[node]['device_subtype'] = graph.node[node]['graphics']['device_subtype']
 
+        for interface_index in graph.node[node]['_interfaces']:
+            interface_id = graph.node[node]["_interfaces"][interface_index]['id']
+            id_brief = shortened_interface(interface_id)
+            graph.node[node]["_interfaces"][interface_index]['id_brief'] = id_brief
+
     x = (graph.node[n]['x'] for n in graph)
     y = (graph.node[n]['y'] for n in graph)
     x_min = min(x)
@@ -207,7 +238,7 @@ def jsonify_nidb(nidb):
     return data
 
 def dumps(anm, nidb = None):
-    data = jsonify_anm_with_graphics(anm)
+    data = jsonify_anm_with_graphics(anm, nidb)
     if nidb:
         data['nidb'] = jsonify_nidb(nidb)
 #TODO: need to update messaging format when have nidb also (as 'anm': won't be correct)
