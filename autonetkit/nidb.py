@@ -928,8 +928,12 @@ class NIDB_base(object):
 
         for node in nodes_to_add:
             #TODO: add an interface_retain for attributes also
-            int_dict = {i.interface_id: {'type': i.type, 'layer': i.overlay_id} for i in node.interfaces()}
-            int_dict = {i.interface_id: {'type': i.type} for i in node.interfaces()}
+            int_dict = {i.interface_id: {'type': i.type, 
+                'description': i.description,
+                'layer': i.overlay_id} for i in node.interfaces()}
+            int_dict = {i.interface_id: {'type': i.type,
+                'description': i.description,
+                } for i in node.interfaces()}
             self._graph.node[node.node_id]["_interfaces"] = int_dict
 
     def add_edge(self, src, dst, retain=[], **kwargs):
