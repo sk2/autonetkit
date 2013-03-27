@@ -213,7 +213,7 @@ class OverlayNode(object):
         try:
             return self.node_id == other.node_id
         except AttributeError:
-            return self.node_id == other
+            return self.node_id == other # eg compare Node to label
 
     @property
     def loopback_zero(self):
@@ -258,13 +258,15 @@ class OverlayNode(object):
                 return int_id
 
     # TODO: interface function access needs to be cleaned up
-    def _add_interface(self, description=None, type="physical", **kwargs):
+    def _add_interface(self, description=None, type="physical", *args, **kwargs):
         data = dict(kwargs)
 
         if self.overlay_id != 'phy' and self.phy:
             next_id = self.phy._next_int_id
             self.phy._interfaces[next_id] = {'type': type,
                                              'description': description} 
+            #TODO: fix this workaround for not returning description from phy graph
+            data['description'] = description
         else:
             next_id = self._next_int_id
             data['type'] = type  # store type on node
@@ -274,12 +276,12 @@ class OverlayNode(object):
         return next_id
 
     def add_loopback(self, *args, **kwargs):
-        """Public function to add  a loopback interface"""
+        """Public function to add a loopback interface"""
         self._add_interface(type="loopback", *args, **kwargs)
 
-    def add_interface(self, **kwargs):
+    def add_interface(self,*args,  **kwargs):
         """Public function to add interface"""
-        interface_id = self._add_interface(**kwargs)
+        interface_id = self._add_interface(*args, **kwargs)
         return overlay_interface(self.anm, self.overlay_id, 
                 self.node_id, interface_id)
 
