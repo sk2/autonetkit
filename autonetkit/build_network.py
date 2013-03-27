@@ -11,6 +11,8 @@ import networkx as nx
 import autonetkit.ank as ank_utils
 import itertools
 
+#TODO: remove retain edge_id once removed from compiler
+
 __all__ = ['build']
 
 MESSAGING = ank_messaging.AnkMessaging()
@@ -128,6 +130,7 @@ def build(input_graph):
     build_ospf(anm)
     build_isis(anm)
     build_bgp(anm)
+    build_ibgp_vpn_v4(anm) # build after bgp as is based on
     autonetkit.update_http(anm)
 
     return anm
@@ -146,7 +149,7 @@ def allocate_vrf_roles(g_vrf):
     for node in non_ce_nodes:
         phy_neighbors = g_phy.node(node).neighbors("is_router")  
         # neighbors from physical graph for connectivity
-        phy_neighbors = [neigh for neigh in phy_neighbors if neigh.asn == node.asn]
+        phy_neighbors = [neigh for neigh in phy_neighbors]
             # filter to just this asn
         if any(g_vrf.node(neigh).vrf_role == "CE" for neigh in phy_neighbors):
             # phy neigh has vrf set in this graph
@@ -188,6 +191,97 @@ def vrf_edges(g_vrf):
 
     return pe_to_ce_edges, ce_to_pe_edges
 
+def build_ibgp_vpn_v4(anm):
+    #TODO: remove the bgp layer and have just ibgp and ebgp
+    # TODO: build from design rules, currently just builds from ibgp links in bgp layer
+    g_bgp = anm['bgp']
+    g_vrf = anm['vrf']
+    g_phy = anm['phy']
+    g_ibgp_vpn_v4= anm.add_overlay("ibgp_vpn_v4", directed=True)
+    g_ibgp_vpn_v4.add_nodes_from(g_bgp.nodes("is_router"))
+    g_ibgp_vpn_v4.add_edges_from(g_bgp.edges(type="ibgp"), retain = "direction", bidirectional=True)
+
+    ank_utils.copy_attr_from(g_vrf, g_ibgp_vpn_v4, "vrf_role")
+    ank_utils.copy_attr_from(g_vrf, g_ibgp_vpn_v4, "vrf")
+
+    ce_nodes = set(g_vrf.nodes(vrf_role = "CE"))
+    ce_edges = [e for e in g_ibgp_vpn_v4.edges()
+            if e.src in ce_nodes or e.dst in ce_nodes]
+    g_ibgp_vpn_v4.remove_edges_from(ce_edges)
+
+# add CE -> PE links based on physical connectivity
+#Note: this could later look at 
+    ce_to_pe_edges = []
+    ce_phy_nodes = {g_phy.node(n) for n in ce_nodes}
+    pe_phy_nodes = {g_phy.node(n) for n in g_vrf.nodes(vrf_role = "PE")}
+    ce_to_pe_edges += (e for e in g_phy.edges()
+            if (e.src in ce_phy_nodes and e.dst in pe_phy_nodes)
+            or (e.src in pe_phy_nodes and e.dst in ce_phy_nodes))
+
+    g_ibgp_vpn_v4.add_edges_from(ce_to_pe_edges, type="ibgp", bidirectional = True)
+
+    # mark ibgp direction
+    ce_pe_edges = []
+    pe_ce_edges = []
+    for edge in g_ibgp_vpn_v4.edges():
+        if (edge.src.vrf_role, edge.dst.vrf_role) == ("CE", "PE"):
+            edge.direction = "up"
+            edge.vrf = edge.src.vrf
+            ce_pe_edges.append(edge)
+        elif (edge.src.vrf_role, edge.dst.vrf_role) == ("PE", "CE"):
+            edge.direction = "down"
+            edge.vrf = edge.dst.vrf
+            pe_ce_edges.append(edge)
+
+
+    g_ibgpv4 = anm['ibgp_v4']
+    g_ibgpv6 = anm['ibgp_v6']
+    g_ibgpv4.remove_edges_from(ce_edges)
+    g_ibgpv6.remove_edges_from(ce_edges)
+    g_ibgpv4.add_edges_from(ce_pe_edges, retain = ["direction", "vrf"])
+    g_ibgpv4.add_edges_from(pe_ce_edges, retain = ["direction", "vrf"])
+    g_ibgpv6.add_edges_from(ce_pe_edges, retain = ["direction", "vrf"])
+    g_ibgpv6.add_edges_from(pe_ce_edges, retain = ["direction", "vrf"])
+
+# legacy
+    g_bgp = anm['bgp']
+    g_bgp.remove_edges_from(ce_edges)
+    g_bgp.add_edges_from(ce_pe_edges, retain = ["direction", "vrf", "type"])
+    g_bgp.add_edges_from(pe_ce_edges, retain = ["direction", "vrf", "type"])
+
+
+    # also need to modify the ibgp_v4 and ibgp_v6 graphs
+
+def build_mpls_ldp(anm):
+    """Builds MPLS LDP"""
+    g_in = anm['input']
+    g_vrf = anm['vrf']
+    g_mpls_ldp = anm.add_overlay("mpls_ldp")
+    g_mpls_ldp.add_nodes_from(g_in.nodes("is_router"), retain=["vrf_role", "vrf"])
+
+    # store as set for faster lookup
+    pe_nodes = set(g_vrf.nodes(vrf_role = "PE"))
+    p_nodes = set(g_vrf.nodes(vrf_role = "P"))
+
+    pe_to_pe_edges = (e for e in g_in.edges()
+            if e.src in pe_nodes and e.dst in pe_nodes)
+    g_mpls_ldp.add_edges_from(pe_to_pe_edges)
+    pe_to_p_edges = (e for e in g_in.edges()
+            if e.src in pe_nodes and e.dst in p_nodes
+            or e.src in p_nodes and e.dst in pe_nodes)
+    g_mpls_ldp.add_edges_from(pe_to_p_edges)
+
+
+    
+
+
+    for node in g_vrf.nodes(vrf_role="PE"):
+        for edge in node.edges():
+            if edge.dst.vrf_role == "P":
+                edge.src_int.towards_p = True
+            elif edge.dst.vrf_role == "PE":
+                edge.src_int.towards_pe = True
+
 def build_vrf(anm):
     """Build VRF Overlay"""
     g_in = anm['input']
@@ -202,7 +296,7 @@ def build_vrf(anm):
         return (src_vrf_role, dst_vrf_role) in (("PE", "CE"), ("CE", "PE"))
 
     vrf_add_edges = (e for e in g_in.edges()
-            if e.src.asn == e.dst.asn and is_pe_ce_edge(e))
+           if is_pe_ce_edge(e))
     #TODO: should mark as being towards PE or CE
     g_vrf.add_edges_from(vrf_add_edges, retain=['edge_id'])
 
@@ -211,12 +305,19 @@ def build_vrf(anm):
         dst_vrf_role = g_vrf.node(edge.dst).vrf_role
         return (src_vrf_role, dst_vrf_role) in (("PE", "P"), ("P", "PE"))
     vrf_add_edges = (e for e in g_in.edges()
-            if e.src.asn == e.dst.asn and is_pe_p_edge(e))
+            if is_pe_p_edge(e))
     g_vrf.add_edges_from(vrf_add_edges, retain=['edge_id'])
+
+    # Mark role on interface for convenience in compilation
+    #TODO: remove this and move into build_mpls_ldp and update compiler
     for node in g_vrf.nodes(vrf_role="PE"):
         for edge in node.edges():
             if edge.dst.vrf_role == "P":
                 edge.src_int.towards_p = True
+            elif edge.dst.vrf_role == "PE":
+                edge.src_int.towards_pe = True
+
+    build_mpls_ldp(anm)
     # add PE to P edges
 
     add_vrf_loopbacks(g_vrf)
@@ -245,6 +346,14 @@ def build_vrf(anm):
     for edge in g_vrf.edges():
         for interface in edge.interfaces():
             interface.vrf_name = edge.vrf
+
+    for node in g_vrf:
+        #print node
+        for interface in node.loopback_interfaces:
+            if interface.is_loopback_zero:
+                continue
+            phy_int = interface['phy']
+            #print "phy desc", phy_int.description
 
 
 def three_tier_ibgp_corner_cases(rtrs):
@@ -331,6 +440,24 @@ def build_two_tier_ibgp(routers):
                   if s.ibgp_level == t.ibgp_level == 2
                   and s.ibgp_l3_cluster == t.ibgp_l3_cluster]
     return up_links, down_links, over_links
+
+
+def build_ibgp_v4(anm):
+    #TODO: remove the bgp layer and have just ibgp and ebgp
+    # TODO: build from design rules, currently just builds from ibgp links in bgp layer
+    g_bgp = anm['bgp']
+    g_ibgpv4 = anm.add_overlay("ibgp_v4", directed=True)
+    g_ibgpv4.add_nodes_from(g_bgp.nodes("is_router"))
+    g_ibgpv4.add_edges_from(g_bgp.edges(type="ibgp"), retain="direction", bidirectional=True)
+
+def build_ibgp_v6(anm):
+    #TODO: remove the bgp layer and have just ibgp and ebgp
+    # TODO: build from design rules, currently just builds from ibgp links in bgp layer
+    g_bgp = anm['bgp']
+    g_ibgpv6 = anm.add_overlay("ibgp_v6", directed=True)
+    g_ibgpv6.add_nodes_from(g_bgp.nodes("is_router"))
+    g_ibgpv6.add_edges_from(g_bgp.edges(type="ibgp"), retain="direction", bidirectional=True)
+
 
 def build_bgp(anm):
     """Build iBGP end eBGP overlays"""
@@ -442,6 +569,9 @@ def build_bgp(anm):
     for node in g_bgp:
         for interface in node.interfaces():
             interface.multipoint = any(e.multipoint for e in interface.edges())
+
+    build_ibgp_v4(anm)
+    build_ibgp_v6(anm)
 
 def build_ipv6(anm):
     """Builds IPv6 graph, using nodes and edges from IPv4 graph"""
