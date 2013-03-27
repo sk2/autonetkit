@@ -97,12 +97,10 @@ def build(input_graph):
                               'device_subtype', 'pop', 'asn'])
 
     build_phy(anm)
-    autonetkit.update_http(anm)
     g_phy = anm['phy']
 
     build_vrf(anm) # need to do before to add loopbacks before ip allocations
     build_ip(anm) # ip infrastructure topology
-    autonetkit.update_http(anm)
 
     address_family = g_in.data.address_family or "v4" # default is v4
 #TODO: can remove the infrastructure now create g_ip seperately
@@ -130,6 +128,9 @@ def build(input_graph):
     build_ospf(anm)
     build_isis(anm)
     build_bgp(anm)
+
+# post-processing
+    mark_ebgp_vrf(anm)
     build_ibgp_vpn_v4(anm) # build after bgp as is based on
     autonetkit.update_http(anm)
 
@@ -215,8 +216,11 @@ def build_ibgp_vpn_v4(anm):
     ce_phy_nodes = {g_phy.node(n) for n in ce_nodes}
     pe_phy_nodes = {g_phy.node(n) for n in g_vrf.nodes(vrf_role = "PE")}
     ce_to_pe_edges += (e for e in g_phy.edges()
-            if (e.src in ce_phy_nodes and e.dst in pe_phy_nodes)
-            or (e.src in pe_phy_nodes and e.dst in ce_phy_nodes))
+            if 
+            e.src.asn == e.dst.asn 
+            and
+            ((e.src in ce_phy_nodes and e.dst in pe_phy_nodes)
+            or (e.src in pe_phy_nodes and e.dst in ce_phy_nodes)))
 
     g_ibgp_vpn_v4.add_edges_from(ce_to_pe_edges, type="ibgp", bidirectional = True)
 
@@ -271,16 +275,27 @@ def build_mpls_ldp(anm):
             or e.src in p_nodes and e.dst in pe_nodes)
     g_mpls_ldp.add_edges_from(pe_to_p_edges)
 
-
-    
-
-
     for node in g_vrf.nodes(vrf_role="PE"):
         for edge in node.edges():
             if edge.dst.vrf_role == "P":
                 edge.src_int.towards_p = True
             elif edge.dst.vrf_role == "PE":
                 edge.src_int.towards_pe = True
+
+def mark_ebgp_vrf(anm):
+    g_ebgp = anm['ebgp']
+    g_vrf = anm['vrf']
+    pe_nodes = set(g_vrf.nodes(vrf_role = "PE"))
+    ce_nodes = set(g_vrf.nodes(vrf_role = "CE"))
+    for edge in g_ebgp.edges():
+        if (edge.src in pe_nodes and edge.dst in ce_nodes):
+            edge.vrf = edge.dst['vrf'].vrf
+            anm['bgp'].edge(edge).vrf = edge.vrf #TODO: remove legacy
+        #TODO: check if need to mark CE -> PE or is this standard?
+        #if (edge.dst in pe_nodes and edge.src in ce_nodes):
+            #edge.vrf = edge.src['vrf'].vrf
+            #anm['bgp'].edge(edge).vrf = edge.vrf #TODO: remove legacy
+
 
 def build_vrf(anm):
     """Build VRF Overlay"""
@@ -449,12 +464,37 @@ def build_ibgp_v6(anm):
     g_ibgpv6.add_nodes_from(g_bgp.nodes("is_router"))
     g_ibgpv6.add_edges_from(g_bgp.edges(type="ibgp"), retain="direction", bidirectional=True)
 
+def build_ebgp(anm):
+    g_in = anm['input']
+    g_phy = anm['phy']
+    g_ebgp = anm.add_overlay("ebgp", directed=True)
+    g_ebgp.add_nodes_from(g_in.nodes("is_router"))
+    ebgp_edges = [e for e in g_in.edges() if not e.attr_equal("asn")]
+    g_ebgp.add_edges_from(ebgp_edges, bidirectional=True, type='ebgp')
+
+    ebgp_switches = [n for n in g_in.nodes("is_switch")
+            if not ank_utils.neigh_equal(g_phy, n, "asn")]
+    g_ebgp.add_nodes_from(ebgp_switches, retain=['asn'])
+    log.debug("eBGP switches are %s" % ebgp_switches)
+    g_ebgp.add_edges_from((e for e in g_in.edges()
+            if e.src in ebgp_switches or e.dst in ebgp_switches), bidirectional=True, type='ebgp')
+    ank_utils.aggregate_nodes(g_ebgp, ebgp_switches, retain="edge_id")
+    ebgp_switches = list(g_ebgp.nodes("is_switch")) # need to recalculate as may have aggregated
+    log.debug("aggregated eBGP switches are %s" % ebgp_switches)
+    exploded_edges = ank_utils.explode_nodes(g_ebgp, ebgp_switches,
+            retain="edge_id")
+    for edge in exploded_edges:
+        edge.multipoint = True
 
 def build_bgp(anm):
     """Build iBGP end eBGP overlays"""
     # eBGP
     g_in = anm['input']
     g_phy = anm['phy']
+
+    build_ebgp(anm)
+
+    """TODO: remove from here once compiler updated"""
     g_bgp = anm.add_overlay("bgp", directed=True)
     g_bgp.add_nodes_from(g_in.nodes("is_router"))
     ebgp_edges = [edge for edge in g_in.edges() if not edge.attr_equal("asn")]
@@ -474,6 +514,7 @@ def build_bgp(anm):
             retain="edge_id")
     for edge in exploded_edges:
         edge.multipoint = True
+    """TODO: remove up to here once compiler updated"""
 
 # now iBGP
     ank_utils.copy_attr_from(g_in, g_bgp, "ibgp_level")
@@ -573,7 +614,6 @@ def build_ipv6(anm):
     g_ipv6.add_nodes_from(
         g_ip, retain="collision_domain")  # retain if collision domain or not
     g_ipv6.add_edges_from(g_ip.edges())
-    autonetkit.update_http(anm)
 
     ipv6.allocate_ips(g_ipv6)
 
@@ -706,7 +746,6 @@ def build_ipv4(anm, infrastructure=True):
     # Copy ASN attribute chosen for collision domains (used in alloc algorithm)
     ank_utils.copy_attr_from(g_ip, g_ipv4, "asn", nbunch = g_ipv4.nodes("collision_domain"))
     g_ipv4.add_edges_from(g_ip.edges())
-    autonetkit.update_http(anm)
 
     #TODO: need to set allocate_ipv4 by default in the readers
     if g_in.data.alloc_ipv4_infrastructure is False:
@@ -727,7 +766,6 @@ def build_ipv4(anm, infrastructure=True):
     ipv4.allocate_ips(g_ipv4, infrastructure = False, loopbacks = False,
             secondary_loopbacks = True)
 
-    autonetkit.update_http(anm)
 
     #TODO: replace this with direct allocation to interfaces in ip alloc plugin
     for node in g_ipv4.nodes("is_l3device"):
@@ -740,7 +778,6 @@ def build_ipv4(anm, infrastructure=True):
                 interface.subnet = edge.dst.subnet # from collision domain
 
     # TODO: also map loopbacks to loopback interface 0
-    autonetkit.update_http(anm)
 
 def build_phy(anm):
     """Build physical overlay"""

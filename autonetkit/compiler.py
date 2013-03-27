@@ -86,7 +86,6 @@ class RouterCompiler(object):
                 interface.ipv6_address = address_prefixlen_to_network(ipv6_int.ip_address,
                         interface.ipv6_subnet.prefixlen)
 
-
         for interface in node.loopback_interfaces:
             #TODO: check if nonzero is different to __eq__
             if interface == node.loopback_zero:
@@ -194,6 +193,7 @@ class RouterCompiler(object):
 
             if session.type == "ibgp":
                 if session.vrf:
+                    log.debug("Skipping VRF ibgp session %s" % session)
                     return
 
                 data = {
@@ -213,6 +213,11 @@ class RouterCompiler(object):
                 else:
                     node.bgp.ibgp_neighbors.append(data)
             else:
+                # ebgp
+                if session.vrf:
+                    log.debug("Skipping VRF ebgp session %s" % session)
+                    return
+
                 if use_ipv4:
                     local_int_ip = session.src_int['ipv4'].ip_address
                     dst_int_ip = session.dst_int['ipv4'].ip_address
@@ -280,7 +285,6 @@ class RouterCompiler(object):
                         'use_ipv4': node.ip.use_ipv4,
                         'use_ipv6': node.ip.use_ipv6,
                         } #TODO: add wrapper for this
-
 
 class QuaggaCompiler(RouterCompiler):
     """Base Quagga compiler"""
@@ -403,7 +407,7 @@ class IosBaseCompiler(RouterCompiler):
         if vrf_node.vrf_role is "PE":
             for vrf in vrf_node.node_vrf_names:
                 rd_index = vrf_node.rd_indices[vrf]
-                rd = "%s:%s" % (node.loopback, rd_index)
+                rd = "%s:%s" % (node.asn, rd_index)
                 node.bgp.vrfs.append(
                     vrf=vrf,
                     rd=rd,
@@ -462,11 +466,12 @@ class IosBaseCompiler(RouterCompiler):
                     'route_target': route_target,
                 })
 
-            for interface in node.physical_interfaces:
+            for interface in node.interfaces:
                 vrf_int = self.anm['vrf'].interface(interface)
                 if vrf_int.vrf_name:
                     interface.vrf = vrf_int.vrf_name # mark interface as being part of vrf
-                    interface.description += " vrf %s" % vrf_int.vrf_name
+                    if interface.physical:
+                        interface.description += " vrf %s" % vrf_int.vrf_name
 
         if vrf_node.vrf_role in ("P", "PE"):
             # Add PE -> P, PE -> PE interfaces to MPLS LDP
