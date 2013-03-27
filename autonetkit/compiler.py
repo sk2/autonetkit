@@ -114,6 +114,7 @@ class RouterCompiler(object):
 
             continue
             #TODO: reinstate this code once return to vrf setup
+            #TODO: do we need this?
             ip_interface = g_ipv4.interface(interface)
             vrf_interface = self.anm['vrf'].interface(interface)
             index = index + 1  # loopback0 (ie index 0) is reserved
@@ -178,6 +179,7 @@ class RouterCompiler(object):
         #TODO: update this to use ibgp_v4 and ibgp_v6 overlays
 
         def format_session(session, use_ipv4=False, use_ipv6=False):
+            #TODO: make this return the appropriate dict rather than setting on node
             neigh = session.dst
             if use_ipv4:
                 neigh_ip = g_ipv4.node(neigh)
@@ -405,6 +407,49 @@ class IosBaseCompiler(RouterCompiler):
 
         vrf_node = self.anm['vrf'].node(node)
         if vrf_node.vrf_role is "PE":
+
+            vrf_ebgp_sessions = defaultdict(list)
+
+            #TODO: need to add sessions here
+            g_ebgp = self.anm['ebgp']
+            for session in g_ebgp.edges():
+                if not session.vrf:
+                    continue
+
+                #TODO: use common function with "normal" bgp which returns a dict
+                use_ipv4 = node.ip.use_ipv4
+                use_ipv6 = node.ip.use_ipv6
+                neigh = session.dst
+
+                #TODO: need to repeat for each of v4 and v6
+                    
+                if use_ipv4:
+                    local_int_ip = session.src_int['ipv4'].ip_address
+                    dst_int_ip = session.dst_int['ipv4'].ip_address
+                elif use_ipv6:
+                    local_int_ip = session.src_int['ipv6'].ip_address
+                    dst_int_ip = session.dst_int['ipv6'].ip_address
+
+                if use_ipv4:
+                    neigh_ip = self.anm['ipv4'].node(neigh)
+                if use_ipv6:
+                    neigh_ip = self.anm['ipv6'].node(neigh)
+
+                # TODO: make this a returned value
+                vrf_ebgp_sessions[session.vrf].append({
+                    'neighbor': neigh.label,
+                    'use_ipv4': use_ipv4,
+                    'use_ipv6': use_ipv6,
+                    'asn': neigh.asn,
+                    'loopback': neigh_ip.loopback,
+                    'local_int_ip': local_int_ip,
+                    'dst_int_ip': dst_int_ip,
+                    # TODO: change templates to access from node.bgp.lo_int
+                    'update_source': node.loopback_zero.id,
+                })
+
+            print vrf_ebgp_sessions
+
             for vrf in vrf_node.node_vrf_names:
                 rd_index = vrf_node.rd_indices[vrf]
                 rd = "%s:%s" % (node.asn, rd_index)
@@ -415,9 +460,11 @@ class IosBaseCompiler(RouterCompiler):
                     use_ipv6=node.ip.use_ipv6,
                 )
 
+
             bgp_node = vrf_node['bgp']
             vrf_sessions = [s for s in bgp_node.edges(type = "ibgp") if s.vrf]
             for session in vrf_sessions:
+                #TODO: merge this with above ebgp code
                 #print session.vrf
                 neigh = session.dst
                 #TODO: also handle for ipv6: use ibgp_v4 and ibgp_v6 overlays
