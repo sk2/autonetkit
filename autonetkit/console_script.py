@@ -69,14 +69,6 @@ def manage_network(input_graph_string, timestamp, build_options, reload_build=Fa
             anm.save()
         nidb = compile_network(anm)
 
-        #TODO: remove testing of ip tree
-        data = ank_json.ank_nidb_tree(nidb)
-        print data
-        import json
-        body = json.dumps({"ip_allocations": data})
-        messaging.publish_compressed("www", "client", body)
-        raise SystemExit
-        
         body = ank_json.dumps(anm, nidb)
         messaging.publish_compressed("www", "client", body)
         log.debug("Sent ANM to web server")
