@@ -38,6 +38,7 @@ class overlay_interface(object):
         return (self.node_id, self.interface_id) == (other.node_id, other.interface_id)
 
     def __nonzero__(self):
+        #TODO: work out why description and type being set/copied to each overlay
         return len(self._interface) > 0  # if interface data set
 
     def __lt__(self, other):
