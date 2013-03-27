@@ -347,15 +347,6 @@ def build_vrf(anm):
         for interface in edge.interfaces():
             interface.vrf_name = edge.vrf
 
-    for node in g_vrf:
-        #print node
-        for interface in node.loopback_interfaces:
-            if interface.is_loopback_zero:
-                continue
-            phy_int = interface['phy']
-            #print "phy desc", phy_int.description
-
-
 def three_tier_ibgp_corner_cases(rtrs):
     """Calculate edges for iBGP l3 clusters that don't contain a HRR.
     Connects l1 to l3 directly"""
