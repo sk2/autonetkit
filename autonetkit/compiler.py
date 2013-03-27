@@ -473,8 +473,7 @@ class IosBaseCompiler(RouterCompiler):
             node.mpls.ldp_interfaces = []
             for interface in node.physical_interfaces:
                 mpls_ldp_int = self.anm['mpls_ldp'].interface(interface)
-                if mpls_ldp_int:
-                    print mpls_ldp_int
+                if mpls_ldp_int.is_bound:
                     node.mpls.ldp_interfaces.append(interface.id)
 
         if vrf_node.vrf_role is "P":
