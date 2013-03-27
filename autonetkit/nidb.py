@@ -772,6 +772,11 @@ class NIDB_base(object):
                 json_fh.write(data)
 
 
+    def interface(self, interface):
+        return overlay_interface(self,
+                interface.node_id, interface.interface_id)
+
+
     def restore_latest(self, directory = None):
         import os
         import glob
