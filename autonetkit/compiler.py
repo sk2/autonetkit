@@ -63,6 +63,7 @@ class RouterCompiler(object):
         node.loopback_zero.id = self.lo_interface
         node.loopback_zero.description = "Loopback"
 
+
         for interface in node.physical_interfaces:
             phy_int = self.anm['phy'].interface(interface)
 
@@ -175,6 +176,7 @@ class RouterCompiler(object):
         node.bgp.ibgp_rr_clients = []
         node.bgp.ibgp_rr_parents = []
         node.bgp.ebgp_neighbors = []
+        #TODO: update this to use ibgp_v4 and ibgp_v6 overlays
 
         def format_session(session, use_ipv4=False, use_ipv6=False):
             neigh = session.dst
@@ -191,6 +193,9 @@ class RouterCompiler(object):
             #TODO: Split out ebgp and ibgp
 
             if session.type == "ibgp":
+                if session.vrf:
+                    return
+
                 data = {
                     'neighbor': neigh.label,
                     'use_ipv4': use_ipv4,
@@ -392,6 +397,8 @@ class IosBaseCompiler(RouterCompiler):
         # vrf
         #TODO: this should be inside vrf section?
         node.bgp.vrfs = []
+        vrf_session_list = defaultdict(list)
+
         vrf_node = self.anm['vrf'].node(node)
         if vrf_node.vrf_role is "PE":
             for vrf in vrf_node.node_vrf_names:
@@ -403,6 +410,32 @@ class IosBaseCompiler(RouterCompiler):
                     use_ipv4=node.ip.use_ipv4,
                     use_ipv6=node.ip.use_ipv6,
                 )
+
+            bgp_node = vrf_node['bgp']
+            vrf_sessions = [s for s in bgp_node.edges(type = "ibgp") if s.vrf]
+            for session in vrf_sessions:
+                #print session.vrf
+                neigh = session.dst
+                #TODO: also handle for ipv6: use ibgp_v4 and ibgp_v6 overlays
+                if node.ip.use_ipv4:
+                    neigh_ip = self.anm['ipv4'].node(neigh)
+                elif node.ip.use_ipv6:
+                    neigh_ip = self.anm['ipv6'].node(neigh)
+
+                vrf_session_list[session.vrf].append({
+                    'neighbor': neigh.label,
+                    'use_ipv4': node.ip.use_ipv4,
+                    'use_ipv6': node.ip.use_ipv6,
+                    'asn': neigh.asn,
+                    'loopback': neigh_ip.loopback,
+                    # TODO: this is platform dependent???
+                    'update_source': node.loopback_zero.id,
+                    })
+
+                #TODO: also handle for eBGP
+
+            #print vrf_session_list
+
 
     def vrf_igp_interfaces(self, node):
         # marks physical interfaces to exclude from IGP
@@ -419,9 +452,11 @@ class IosBaseCompiler(RouterCompiler):
         node.vrf.vrfs = []
         if vrf_node.vrf_role is "PE":
             #TODO: check if mpls ldp already set elsewhere
-            node.mpls.ldp_interfaces = []
             for vrf in vrf_node.node_vrf_names:
                 route_target = g_vrf.data.route_targets[node.asn][vrf]
+                v4_neighbors = []
+                v6_neighbors = []
+
                 node.vrf.vrfs.append({
                     'vrf': vrf,
                     'route_target': route_target,
@@ -431,12 +466,16 @@ class IosBaseCompiler(RouterCompiler):
                 vrf_int = self.anm['vrf'].interface(interface)
                 if vrf_int.vrf_name:
                     interface.vrf = vrf_int.vrf_name # mark interface as being part of vrf
-                    interface.description += " (vrf %s)" % vrf_int.vrf_name
+                    interface.description += " vrf %s" % vrf_int.vrf_name
 
-                # Add PE -> P interfaces to MPLS LDP
-                if vrf_int.towards_p:
+        if vrf_node.vrf_role in ("P", "PE"):
+            # Add PE -> P, PE -> PE interfaces to MPLS LDP
+            node.mpls.ldp_interfaces = []
+            for interface in node.physical_interfaces:
+                mpls_ldp_int = self.anm['mpls_ldp'].interface(interface)
+                if mpls_ldp_int:
+                    print mpls_ldp_int
                     node.mpls.ldp_interfaces.append(interface.id)
-
 
         if vrf_node.vrf_role is "P":
             node.mpls.ldp_interfaces = []
