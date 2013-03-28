@@ -114,6 +114,8 @@ def build(input_graph):
     if address_family in ("v6", "dual_stack"):
         build_ipv6(anm)
         g_phy.update(g_phy, use_ipv6 = True)
+    else:
+        anm.add_overlay("ipv6") # placeholder for compiler logic
 
     default_igp = g_in.data.igp or "ospf" 
     non_igp_nodes = [n for n in g_in if not n.igp]
@@ -238,6 +240,7 @@ def build_ibgp_vpn_v4(anm):
             pe_ce_edges.append(edge)
 
 
+    #TODO: Document this
     g_ibgpv4 = anm['ibgp_v4']
     g_ibgpv6 = anm['ibgp_v6']
     g_ibgpv4.remove_edges_from(ce_edges)
@@ -275,26 +278,22 @@ def build_mpls_ldp(anm):
             or e.src in p_nodes and e.dst in pe_nodes)
     g_mpls_ldp.add_edges_from(pe_to_p_edges)
 
-    for node in g_vrf.nodes(vrf_role="PE"):
-        for edge in node.edges():
-            if edge.dst.vrf_role == "P":
-                edge.src_int.towards_p = True
-            elif edge.dst.vrf_role == "PE":
-                edge.src_int.towards_pe = True
-
 def mark_ebgp_vrf(anm):
     g_ebgp = anm['ebgp']
     g_vrf = anm['vrf']
+    g_ebgpv4= anm['ebgp_v4']
+    g_ebgpv6= anm['ebgp_v6']
     pe_nodes = set(g_vrf.nodes(vrf_role = "PE"))
     ce_nodes = set(g_vrf.nodes(vrf_role = "CE"))
-    for edge in g_ebgp.edges():
+    for edge in g_ebgpv4.edges():
         if (edge.src in pe_nodes and edge.dst in ce_nodes):
+            edge.exclude = True # exclude from "regular" ebgp (as put into vrf stanza)
             edge.vrf = edge.dst['vrf'].vrf
-            anm['bgp'].edge(edge).vrf = edge.vrf #TODO: remove legacy
-        #TODO: check if need to mark CE -> PE or is this standard?
-        #if (edge.dst in pe_nodes and edge.src in ce_nodes):
-            #edge.vrf = edge.src['vrf'].vrf
-            #anm['bgp'].edge(edge).vrf = edge.vrf #TODO: remove legacy
+
+    for edge in g_ebgpv6.edges():
+        if (edge.src in pe_nodes and edge.dst in ce_nodes):
+            edge.exclude = True # exclude from "regular" ebgp (as put into vrf stanza)
+            edge.vrf = edge.dst['vrf'].vrf
 
 
 def build_vrf(anm):
@@ -322,15 +321,6 @@ def build_vrf(anm):
     vrf_add_edges = (e for e in g_in.edges()
             if is_pe_p_edge(e))
     g_vrf.add_edges_from(vrf_add_edges, retain=['edge_id'])
-
-    # Mark role on interface for convenience in compilation
-    #TODO: remove this and move into build_mpls_ldp and update compiler
-    for node in g_vrf.nodes(vrf_role="PE"):
-        for edge in node.edges():
-            if edge.dst.vrf_role == "P":
-                edge.src_int.towards_p = True
-            elif edge.dst.vrf_role == "PE":
-                edge.src_int.towards_pe = True
 
     build_mpls_ldp(anm)
     # add PE to P edges
@@ -432,7 +422,6 @@ def three_tier_ibgp_edges(routers):
   
     return up_links, down_links, over_links
 
-
 def build_two_tier_ibgp(routers):
     """Constructs two-tier ibgp"""
     up_links = down_links = over_links = []
@@ -447,22 +436,47 @@ def build_two_tier_ibgp(routers):
                   and s.ibgp_l3_cluster == t.ibgp_l3_cluster]
     return up_links, down_links, over_links
 
-
 def build_ibgp_v4(anm):
     #TODO: remove the bgp layer and have just ibgp and ebgp
     # TODO: build from design rules, currently just builds from ibgp links in bgp layer
+    #TODO: base on generic ibgp graph, rather than bgp graph
     g_bgp = anm['bgp']
+    g_phy = anm['phy']
     g_ibgpv4 = anm.add_overlay("ibgp_v4", directed=True)
-    g_ibgpv4.add_nodes_from(g_bgp.nodes("is_router"))
-    g_ibgpv4.add_edges_from(g_bgp.edges(type="ibgp"), retain="direction", bidirectional=True)
+    ipv4_nodes = set(g_phy.nodes("is_router", "use_ipv4"))
+    g_ibgpv4.add_nodes_from(n for n in g_bgp if n in ipv4_nodes)
+    g_ibgpv4.add_edges_from(g_bgp.edges(type="ibgp"), retain="direction")
 
 def build_ibgp_v6(anm):
     #TODO: remove the bgp layer and have just ibgp and ebgp
     # TODO: build from design rules, currently just builds from ibgp links in bgp layer
+    #TODO: base on generic ibgp graph, rather than bgp graph
     g_bgp = anm['bgp']
+    g_phy = anm['phy']
     g_ibgpv6 = anm.add_overlay("ibgp_v6", directed=True)
-    g_ibgpv6.add_nodes_from(g_bgp.nodes("is_router"))
-    g_ibgpv6.add_edges_from(g_bgp.edges(type="ibgp"), retain="direction", bidirectional=True)
+    ipv6_nodes = set(g_phy.nodes("is_router", "use_ipv6"))
+    g_ibgpv6.add_nodes_from(n for n in g_bgp if n in ipv6_nodes)
+    g_ibgpv6.add_edges_from(g_bgp.edges(type="ibgp"), retain="direction")
+
+def build_ebgp_v4(anm):
+    #TODO: remove the bgp layer and have just ibgp and ebgp
+    # TODO: build from design rules, currently just builds from ibgp links in bgp layer
+    g_ebgp = anm['ebgp']
+    g_phy = anm['phy']
+    g_ebgpv4 = anm.add_overlay("ebgp_v4", directed=True)
+    ipv4_nodes = set(g_phy.nodes("is_router", "use_ipv4"))
+    g_ebgpv4.add_nodes_from(n for n in g_ebgp if n in ipv4_nodes)
+    g_ebgpv4.add_edges_from(g_ebgp.edges(), retain="direction")
+
+def build_ebgp_v6(anm):
+    #TODO: remove the bgp layer and have just ibgp and ebgp
+    # TODO: build from design rules, currently just builds from ibgp links in bgp layer
+    g_ebgp = anm['ebgp']
+    g_phy = anm['phy']
+    g_ebgpv6 = anm.add_overlay("ebgp_v6", directed=True)
+    ipv6_nodes = set(g_phy.nodes("is_router", "use_ipv6"))
+    g_ebgpv6.add_nodes_from(n for n in g_ebgp if n in ipv6_nodes)
+    g_ebgpv6.add_edges_from(g_ebgp.edges(), retain="direction")
 
 def build_ebgp(anm):
     g_in = anm['input']
@@ -493,6 +507,8 @@ def build_bgp(anm):
     g_phy = anm['phy']
 
     build_ebgp(anm)
+    build_ebgp_v4(anm)
+    build_ebgp_v6(anm)
 
     """TODO: remove from here once compiler updated"""
     g_bgp = anm.add_overlay("bgp", directed=True)
