@@ -249,6 +249,10 @@ def build_ibgp_vpn_v4(anm):
     g_ibgpv4.add_edges_from(pe_ce_edges, retain = ["direction", "vrf"])
     g_ibgpv6.add_edges_from(ce_pe_edges, retain = ["direction", "vrf"])
     g_ibgpv6.add_edges_from(pe_ce_edges, retain = ["direction", "vrf"])
+    for edge in pe_ce_edges:
+        # mark as exclude so don't include in standard ibgp config stanzas
+        edge['ibgp_v4'].exclude = True
+        edge['ibgp_v6'].exclude = True
 
 # legacy
     g_bgp = anm['bgp']
