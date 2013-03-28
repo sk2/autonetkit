@@ -202,14 +202,22 @@ def build_ibgp_vpn_v4(anm):
     g_phy = anm['phy']
     g_ibgp_vpn_v4= anm.add_overlay("ibgp_vpn_v4", directed=True)
     g_ibgp_vpn_v4.add_nodes_from(g_bgp.nodes("is_router"))
-    g_ibgp_vpn_v4.add_edges_from(g_bgp.edges(type="ibgp"), retain = "direction", bidirectional=True)
 
     ank_utils.copy_attr_from(g_vrf, g_ibgp_vpn_v4, "vrf_role")
     ank_utils.copy_attr_from(g_vrf, g_ibgp_vpn_v4, "vrf")
 
+    #Full mesh of PE routers
+    pe_nodes = set(g_vrf.nodes(vrf_role = "PE"))
+    pe_full_mesh = [(s, t) for s in pe_nodes for t in pe_nodes 
+            if s != t ]
+    g_ibgp_vpn_v4.add_edges_from(pe_full_mesh, bidirectional = True)
+
+
     ce_nodes = set(g_vrf.nodes(vrf_role = "CE"))
     ce_edges = [e for e in g_ibgp_vpn_v4.edges()
             if e.src in ce_nodes or e.dst in ce_nodes]
+    """
+    #TODO: do we still need this?
     g_ibgp_vpn_v4.remove_edges_from(ce_edges)
 
 # add CE -> PE links based on physical connectivity
@@ -225,6 +233,7 @@ def build_ibgp_vpn_v4(anm):
             or (e.src in pe_phy_nodes and e.dst in ce_phy_nodes)))
 
     g_ibgp_vpn_v4.add_edges_from(ce_to_pe_edges, type="ibgp", bidirectional = True)
+    """
 
     # mark ibgp direction
     ce_pe_edges = []
@@ -251,8 +260,10 @@ def build_ibgp_vpn_v4(anm):
     g_ibgpv6.add_edges_from(pe_ce_edges, retain = ["direction", "vrf"])
     for edge in pe_ce_edges:
         # mark as exclude so don't include in standard ibgp config stanzas
-        edge['ibgp_v4'].exclude = True
-        edge['ibgp_v6'].exclude = True
+        if g_ibgpv4.has_edge(edge):
+            edge['ibgp_v4'].exclude = True
+        if g_ibgpv6.has_edge(edge):
+            edge['ibgp_v6'].exclude = True
 
 # legacy
     g_bgp = anm['bgp']

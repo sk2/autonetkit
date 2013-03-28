@@ -923,7 +923,10 @@ class OverlayGraph(OverlayBase):
         self._init_interfaces()
 
         def numeric_id(edge):
-            return int(edge.edge_id.split("_")[0])
+            try:
+                return int(edge.edge_id.split("_")[0])
+            except ValueError:
+                return edge # can't casr to int
 
         ebunch = sorted(self.edges(), key = numeric_id)
 

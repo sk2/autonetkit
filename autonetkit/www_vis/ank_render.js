@@ -900,7 +900,11 @@ var node_group_id = function(d) {
     else if (overlay_id == "conn") {
         group_attr = "device";
     }
+    else if (overlay_id == "vrf") {
+        group_attr = "vrf";
+    }
     else if (overlay_id in interface_overlay_groupings) {
+        //TODO: don't want to have (asn, vrf) tuple for vrfs: just want (vrf)
         attr = interface_overlay_groupings[overlay_id];
         return ([d['asn'], d[attr]]);
     }
