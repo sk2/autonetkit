@@ -22,11 +22,66 @@ def dot_to_underscore(instring):
     """Replace dots with underscores"""
     return instring.replace(".", "_")
 
+
 class RouterCompiler(object):
     """Base router compiler"""
     lo_interface = "lo0"
     lo_interface_prefix = "lo"
 # and set per platform
+
+    @staticmethod
+    def ibgp_session_data(session, ip_version):
+        node = session.src
+        neigh = session.dst
+        if ip_version == 4:
+            neigh_ip = neigh['ipv4']
+            use_ipv4 = True
+            use_ipv6 = False
+        elif ip_version == 6:
+            neigh_ip = neigh['ipv6']
+            use_ipv4 = False
+            use_ipv6 = True
+
+        data = {
+            'neighbor': neigh.label,
+            'use_ipv4': use_ipv4,
+            'use_ipv6': use_ipv6,
+            'asn': neigh.asn,
+            'loopback': neigh_ip.loopback,
+            # TODO: this is platform dependent???
+            'update_source': node.loopback_zero.id,
+            }
+        return data
+
+    @staticmethod
+    def ebgp_session_data(session, ip_version):
+        node = session.src
+        neigh = session.dst
+        if ip_version == 4:
+            neigh_ip = neigh['ipv4']
+            local_int_ip = session.src_int['ipv4'].ip_address
+            dst_int_ip = session.dst_int['ipv4'].ip_address
+            use_ipv4 = True
+            use_ipv6 = False
+        elif ip_version == 6:
+            neigh_ip = neigh['ipv6']
+            local_int_ip = session.src_int['ipv6'].ip_address
+            dst_int_ip = session.dst_int['ipv6'].ip_address
+            use_ipv4 = False
+            use_ipv6 = True
+
+        data = {
+            'neighbor': neigh.label,
+            'use_ipv4': use_ipv4,
+            'use_ipv6': use_ipv6,
+            'asn': neigh.asn,
+            'loopback': neigh_ip.loopback,
+            'local_int_ip': local_int_ip,
+            'dst_int_ip': dst_int_ip,
+            # TODO: change templates to access from node.bgp.lo_int
+            'update_source': node.loopback_zero.id,
+            }
+        return data
 
     """Base Router compiler"""
     def __init__(self, nidb, anm):
@@ -160,6 +215,7 @@ class RouterCompiler(object):
         phy_node = self.anm['phy'].node(node)
         g_bgp = self.anm['bgp']
         g_ipv4 = self.anm['ipv4']
+        g_ipv6 = self.anm['ipv6']
         asn = phy_node.asn
         node.asn = asn
         node.bgp.ipv4_advertise_subnets = []
@@ -172,79 +228,92 @@ class RouterCompiler(object):
             node.bgp.ipv6_advertise_subnets = g_ipv6.data.infra_blocks.get(
                 asn) or []
 
-        node.bgp.ibgp_neighbors = []
-        node.bgp.ibgp_rr_clients = []
-        node.bgp.ibgp_rr_parents = []
-        node.bgp.ebgp_neighbors = []
+        ibgp_neighbors = []
+        ibgp_rr_clients = []
+        ibgp_rr_parents = []
+
+        # ibgp_v4
+        def ibgp_session_data(session, ip_version):
+            node = session.src
+            neigh = session.dst
+            if ip_version == 4:
+                neigh_ip = g_ipv4.node(neigh)
+                use_ipv4 = True
+                use_ipv6 = False
+            elif ip_version == 6:
+                neigh_ip = g_ipv6.node(neigh)
+                use_ipv4 = False
+                use_ipv6 = True
+
+            data = {
+                'neighbor': neigh.label,
+                'use_ipv4': use_ipv4,
+                'use_ipv6': use_ipv6,
+                'asn': neigh.asn,
+                'loopback': neigh_ip.loopback,
+                # TODO: this is platform dependent???
+                'update_source': node.loopback_zero.id,
+                }
+            return data
+
+        g_ibgp_v4 = self.anm['ibgp_v4']
+        for session in g_ibgp_v4.edges(phy_node):
+            if session.exclude:
+                log.debug("Skipping excluded ibgp session %s" % session)
+                continue # exclude from regular ibgp config (eg for VRF, VPLS, etc)
+
+            data = self.ibgp_session_data(session, ip_version = 4)
+
+            direction = session.direction
+            if direction == 'down':
+                ibgp_rr_clients.append(data)
+            elif direction == 'up':
+                ibgp_rr_parents.append(data)
+            else:
+                ibgp_neighbors.append(data)
+
+        #TODO: check v6 hierarchy only created if node set to being v4 or v6
+        g_ibgp_v6 = self.anm['ibgp_v6']
+        for session in g_ibgp_v6.edges(phy_node):
+            if session.exclude:
+                log.debug("Skipping excluded ibgp session %s" % session)
+                continue # exclude from regular ibgp config (eg for VRF, VPLS, etc)
+            data = self.ibgp_session_data(session, ip_version = 6)
+
+            direction = session.direction
+            if direction == 'down':
+                ibgp_rr_clients.append(data)
+            elif direction == 'up':
+                ibgp_rr_parents.append(data)
+            else:
+                ibgp_neighbors.append(data)
+
         #TODO: update this to use ibgp_v4 and ibgp_v6 overlays
 
-        def format_session(session, use_ipv4=False, use_ipv6=False):
-            #TODO: make this return the appropriate dict rather than setting on node
-            neigh = session.dst
-            if use_ipv4:
-                neigh_ip = g_ipv4.node(neigh)
-            elif use_ipv6:
-                neigh_ip = self.anm['ipv6'].node(neigh)
-            else:
-                log.debug(
-                    "Neither v4 nor v6 selected for BGP session %s, skipping"
-                    % session)
-                return
+        node.bgp.ibgp_neighbors = ibgp_neighbors
+        node.bgp.ibgp_rr_clients = ibgp_rr_clients 
+        node.bgp.ibgp_rr_parents = ibgp_rr_parents
 
-            #TODO: Split out ebgp and ibgp
+        #ebgp
 
-            if session.type == "ibgp":
-                if session.vrf:
-                    log.debug("Skipping VRF ibgp session %s" % session)
-                    return
+        ebgp_neighbors = []
+        g_ebgp_v4 = self.anm['ebgp_v4']
+        for session in g_ebgp_v4.edges(phy_node):
+            if session.exclude:
+                log.debug("Skipping excluded ebgp session %s" % session)
+                continue # exclude from regular ibgp config (eg for VRF, VPLS, etc)
+            data = self.ebgp_session_data(session, ip_version = 4)
+            ebgp_neighbors.append(data)
 
-                data = {
-                    'neighbor': neigh.label,
-                    'use_ipv4': use_ipv4,
-                    'use_ipv6': use_ipv6,
-                    'asn': neigh.asn,
-                    'loopback': neigh_ip.loopback,
-                    # TODO: this is platform dependent???
-                    'update_source': node.loopback_zero.id,
-                }
-                if session.direction == 'down':
-                    # ibgp_rr_clients[key] = data
-                    node.bgp.ibgp_rr_clients.append(data)
-                elif session.direction == 'up':
-                    node.bgp.ibgp_rr_parents.append(data)
-                else:
-                    node.bgp.ibgp_neighbors.append(data)
-            else:
-                # ebgp
-                if session.vrf:
-                    log.debug("Skipping VRF ebgp session %s" % session)
-                    return
+        g_ebgp_v6 = self.anm['ebgp_v6']
+        for session in g_ebgp_v6.edges(phy_node):
+            if session.exclude:
+                log.debug("Skipping excluded ebgp session %s" % session)
+                continue # exclude from regular ibgp config (eg for VRF, VPLS, etc)
+            data = self.ebgp_session_data(session, ip_version = 6)
+            ebgp_neighbors.append(data)
 
-                if use_ipv4:
-                    local_int_ip = session.src_int['ipv4'].ip_address
-                    dst_int_ip = session.dst_int['ipv4'].ip_address
-                elif use_ipv6:
-                    local_int_ip = session.src_int['ipv6'].ip_address
-                    dst_int_ip = session.dst_int['ipv6'].ip_address
-
-                # TODO: make this a returned value
-                node.bgp.ebgp_neighbors.append({
-                    'neighbor': neigh.label,
-                    'use_ipv4': use_ipv4,
-                    'use_ipv6': use_ipv6,
-                    'asn': neigh.asn,
-                    'loopback': neigh_ip.loopback,
-                    'local_int_ip': local_int_ip,
-                    'dst_int_ip': dst_int_ip,
-                    # TODO: change templates to access from node.bgp.lo_int
-                    'update_source': node.loopback_zero.id,
-                })
-
-        for session in g_bgp.edges(phy_node):
-            if node.ip.use_ipv4:
-                format_session(session, use_ipv4=True)
-            if node.ip.use_ipv6:
-                format_session(session, use_ipv6=True)
+        node.bgp.ebgp_neighbors = ebgp_neighbors
         node.bgp.ebgp_neighbors.sort("asn")
 
         return
@@ -403,52 +472,39 @@ class IosBaseCompiler(RouterCompiler):
         # vrf
         #TODO: this should be inside vrf section?
         node.bgp.vrfs = []
-        vrf_session_list = defaultdict(list)
 
         vrf_node = self.anm['vrf'].node(node)
         if vrf_node.vrf_role is "PE":
 
-            vrf_ebgp_sessions = defaultdict(list)
+            # iBGP sessions for this VRF
+            vrf_ibgp_neighbors = defaultdict(list)
 
-            #TODO: need to add sessions here
-            g_ebgp = self.anm['ebgp']
-            for session in g_ebgp.edges():
-                if not session.vrf:
-                    continue
+            g_ibgp_v4 = self.anm['ibgp_v4']
+            for session in g_ibgp_v4.edges(vrf_node):
+                if session.exclude and session.vrf:
+                    data = self.ibgp_session_data(session, ip_version = 4)
+                    vrf_ibgp_neighbors[session.vrf].append(data)
 
-                #TODO: use common function with "normal" bgp which returns a dict
-                use_ipv4 = node.ip.use_ipv4
-                use_ipv6 = node.ip.use_ipv6
-                neigh = session.dst
+            g_ibgp_v6 = self.anm['ibgp_v6']
+            for session in g_ibgp_v6.edges(vrf_node):
+                if session.exclude and session.vrf:
+                    data = self.ibgp_session_data(session, ip_version = 6)
+                    vrf_ibgp_neighbors[session.vrf].append(data)
 
-                #TODO: need to repeat for each of v4 and v6
-                    
-                if use_ipv4:
-                    local_int_ip = session.src_int['ipv4'].ip_address
-                    dst_int_ip = session.dst_int['ipv4'].ip_address
-                elif use_ipv6:
-                    local_int_ip = session.src_int['ipv6'].ip_address
-                    dst_int_ip = session.dst_int['ipv6'].ip_address
+            # eBGP sessions for this VRF
+            vrf_ebgp_neighbors = defaultdict(list)
 
-                if use_ipv4:
-                    neigh_ip = self.anm['ipv4'].node(neigh)
-                if use_ipv6:
-                    neigh_ip = self.anm['ipv6'].node(neigh)
+            g_ebgp_v4 = self.anm['ebgp_v4']
+            for session in g_ebgp_v4.edges(vrf_node):
+                if session.exclude and session.vrf:
+                    data = self.ebgp_session_data(session, ip_version = 4)
+                    vrf_ebgp_neighbors[session.vrf].append(data)
 
-                # TODO: make this a returned value
-                vrf_ebgp_sessions[session.vrf].append({
-                    'neighbor': neigh.label,
-                    'use_ipv4': use_ipv4,
-                    'use_ipv6': use_ipv6,
-                    'asn': neigh.asn,
-                    'loopback': neigh_ip.loopback,
-                    'local_int_ip': local_int_ip,
-                    'dst_int_ip': dst_int_ip,
-                    # TODO: change templates to access from node.bgp.lo_int
-                    'update_source': node.loopback_zero.id,
-                })
-
-            print vrf_ebgp_sessions
+            g_ebgp_v6 = self.anm['ebgp_v6']
+            for session in g_ebgp_v6.edges(vrf_node):
+                if session.exclude and session.vrf:
+                    data = self.ebgp_session_data(session, ip_version = 6)
+                    vrf_ebgp_neighbors[session.vrf].append(data)
 
             for vrf in vrf_node.node_vrf_names:
                 rd_index = vrf_node.rd_indices[vrf]
@@ -458,35 +514,10 @@ class IosBaseCompiler(RouterCompiler):
                     rd=rd,
                     use_ipv4=node.ip.use_ipv4,
                     use_ipv6=node.ip.use_ipv6,
+                    vrf_ebgp_neighbors = vrf_ebgp_neighbors[vrf],
+                    vrf_ibgp_neighbors = vrf_ibgp_neighbors[vrf],
                 )
-
-
-            bgp_node = vrf_node['bgp']
-            vrf_sessions = [s for s in bgp_node.edges(type = "ibgp") if s.vrf]
-            for session in vrf_sessions:
-                #TODO: merge this with above ebgp code
-                #print session.vrf
-                neigh = session.dst
-                #TODO: also handle for ipv6: use ibgp_v4 and ibgp_v6 overlays
-                if node.ip.use_ipv4:
-                    neigh_ip = self.anm['ipv4'].node(neigh)
-                elif node.ip.use_ipv6:
-                    neigh_ip = self.anm['ipv6'].node(neigh)
-
-                vrf_session_list[session.vrf].append({
-                    'neighbor': neigh.label,
-                    'use_ipv4': node.ip.use_ipv4,
-                    'use_ipv6': node.ip.use_ipv6,
-                    'asn': neigh.asn,
-                    'loopback': neigh_ip.loopback,
-                    # TODO: this is platform dependent???
-                    'update_source': node.loopback_zero.id,
-                    })
-
-                #TODO: also handle for eBGP
-
-            #print vrf_session_list
-
+            
 
     def vrf_igp_interfaces(self, node):
         # marks physical interfaces to exclude from IGP
@@ -505,8 +536,6 @@ class IosBaseCompiler(RouterCompiler):
             #TODO: check if mpls ldp already set elsewhere
             for vrf in vrf_node.node_vrf_names:
                 route_target = g_vrf.data.route_targets[node.asn][vrf]
-                v4_neighbors = []
-                v6_neighbors = []
 
                 node.vrf.vrfs.append({
                     'vrf': vrf,
