@@ -30,9 +30,11 @@ class RouterCompiler(object):
 # and set per platform
 
     @staticmethod
-    def ibgp_session_data(session, ip_version):
+    def ibgp_session_data(session, ip_version, vpn = False):
         node = session.src
         neigh = session.dst
+        use_vpnv4 = False
+
         if ip_version == 4:
             neigh_ip = neigh['ipv4']
             use_ipv4 = True
@@ -41,11 +43,16 @@ class RouterCompiler(object):
             neigh_ip = neigh['ipv6']
             use_ipv4 = False
             use_ipv6 = True
+        if vpn:
+            use_vpnv4 = True
+            use_ipv4 = False
+            use_ipv6 = False
 
         data = {
             'neighbor': neigh.label,
             'use_ipv4': use_ipv4,
             'use_ipv6': use_ipv6,
+            'use_vpn_v4': use_vpnv4,
             'asn': neigh.asn,
             'loopback': neigh_ip.loopback,
             # TODO: this is platform dependent???
@@ -476,6 +483,12 @@ class IosBaseCompiler(RouterCompiler):
         vrf_node = self.anm['vrf'].node(node)
         if vrf_node.vrf_role is "PE":
 
+            vpnv4_neighbors = []
+            g_ibgp_vpn_v4 = self.anm['ibgp_vpn_v4']
+            for session in g_ibgp_vpn_v4.edges(vrf_node):
+                data = self.ibgp_session_data(session, ip_version = 4, vpn = True)
+                vpnv4_neighbors.append(data)
+
             # iBGP sessions for this VRF
             vrf_ibgp_neighbors = defaultdict(list)
 
@@ -517,6 +530,12 @@ class IosBaseCompiler(RouterCompiler):
                     vrf_ebgp_neighbors = vrf_ebgp_neighbors[vrf],
                     vrf_ibgp_neighbors = vrf_ibgp_neighbors[vrf],
                 )
+
+            #TODO: check if set elsewhere: if so don't clobber
+            for data in vpnv4_neighbors: # can't concatenate list of dicts
+                #TODO: fix this in NIDB: use [] notation for direct access
+               node.bgp.ibgp_neighbors.append(data)
+               
             
 
     def vrf_igp_interfaces(self, node):
@@ -533,6 +552,7 @@ class IosBaseCompiler(RouterCompiler):
         vrf_node = self.anm['vrf'].node(node)
         node.vrf.vrfs = []
         if vrf_node.vrf_role is "PE":
+            node.bgp.vpnv4 = True
             #TODO: check if mpls ldp already set elsewhere
             for vrf in vrf_node.node_vrf_names:
                 route_target = g_vrf.data.route_targets[node.asn][vrf]
