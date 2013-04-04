@@ -46,6 +46,7 @@ def ank_nidb_tree(nidb, indent = 4):
 
 class AnkEncoder(json.JSONEncoder):
     """Handles netaddr objects by converting to string form"""
+    #TODO: look at using skipkeys = True to skip non-basic type keys (can we warn on this?)
     def default(self, obj):
         if isinstance(obj, set):
             return str(obj)
@@ -74,7 +75,7 @@ class AnkEncoder(json.JSONEncoder):
 def ank_json_dumps(graph, indent = 4):
     data =  json_graph.node_link_data(graph)
 #TODO: use regex to convert IPAddress and IPNetwork back to respective form in decoder
-    data = json.dumps(data, cls=AnkEncoder, indent = indent)
+    data = json.dumps(data, cls=AnkEncoder, indent = indent, sort_keys = True)
     return data
 
 def string_to_netaddr(val):
