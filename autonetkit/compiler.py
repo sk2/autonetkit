@@ -52,7 +52,7 @@ class RouterCompiler(object):
             'neighbor': neigh.label,
             'use_ipv4': use_ipv4,
             'use_ipv6': use_ipv6,
-            'use_vpn_v4': use_vpnv4,
+            'use_vpnv4': use_vpnv4,
             'asn': neigh.asn,
             'loopback': neigh_ip.loopback,
             # TODO: this is platform dependent???
