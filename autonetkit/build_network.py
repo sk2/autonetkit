@@ -138,6 +138,16 @@ def build(input_graph):
 
     return anm
 
+def vrf_pre_process(anm):
+    """Marks nodes in g_in as appropriate based on vrf roles.
+    CE nodes -> ibgp_level = 0, so not in ibgp (this is allocated later)
+    """
+    log.debug("Applying VRF pre-processing")
+    g_vrf = anm['vrf']
+    for node in g_vrf.nodes(vrf_role = "CE"):
+        log.debug("Marking CE node %s as non-ibgp" % node)
+        node['input'].ibgp_level = 0
+
 def allocate_vrf_roles(g_vrf):
     """Allocate VRF roles"""
     g_phy = g_vrf.anm['phy']
@@ -170,10 +180,6 @@ def add_vrf_loopbacks(g_vrf):
             node.rd_indices[vrf_name] = index
             node.add_loopback(vrf_name=vrf_name,
                               description="loopback for vrf %s" % vrf_name)
-
-    for node in g_vrf.nodes(vrf_role="CE"):
-        node.add_loopback(vrf_name = node.vrf,
-                          description="loopback for vrf %s" % node.vrf_name)
 
 def vrf_edges(g_vrf):
     """Calculate edges for vrf overlay"""
@@ -318,6 +324,8 @@ def build_vrf(anm):
     g_vrf.add_nodes_from(g_in.nodes("is_router"), retain=["vrf_role", "vrf"])
 
     allocate_vrf_roles(g_vrf)
+
+    vrf_pre_process(anm)
 
     def is_pe_ce_edge(edge):
         src_vrf_role = g_vrf.node(edge.src).vrf_role
