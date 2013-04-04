@@ -626,6 +626,7 @@ class Ios2Compiler(IosBaseCompiler):
             ospf_int = g_ospf.interface(interface)
             if ospf_int and ospf_int.is_bound:
                 area = ospf_int.area
+                area = str(area) # can't serialize IPAddress object to JSON
                 interfaces_by_area[area].append({
                     'id': interface.id,
                     'cost': int(ospf_int.cost),
@@ -635,6 +636,7 @@ class Ios2Compiler(IosBaseCompiler):
         loopback_zero = node.loopback_zero
         ospf_loopback_zero = g_ospf.interface(loopback_zero)
         router_area = ospf_loopback_zero.area # area assigned to router
+        router_area = str(router_area) # can't serialize IPAddress object to JSON
         interfaces_by_area[router_area].append({
             'id': node.loopback_zero.id,
             'cost': 0,
