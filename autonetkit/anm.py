@@ -178,6 +178,8 @@ class overlay_interface(object):
 
 @functools.total_ordering
 class OverlayNode(object):
+    """OverlayNode"""
+
     def __init__(self, anm, overlay_id, node_id):
 # Set using this method to bypass __setattr__
         object.__setattr__(self, 'anm', anm)
@@ -186,6 +188,7 @@ class OverlayNode(object):
         object.__setattr__(self, 'node_id', node_id)
 
     def __hash__(self):
+        """"""
         return hash(self.node_id)
 
     def __nonzero__(self):
@@ -197,6 +200,7 @@ class OverlayNode(object):
         return self.interfaces(type="physical")
 
     def __getnewargs__(self):
+        """"""
         return ()
 
     def __getstate__(self):
@@ -204,6 +208,7 @@ class OverlayNode(object):
         return (self.anm, self.overlay_id, self.node_id)
 
     def __setstate__(self, state):
+        """"""
         # Make self.history = state and last_change and value undefined
         (anm, overlay_id, node_id) = state
         object.__setattr__(self, 'anm', anm)
@@ -211,6 +216,7 @@ class OverlayNode(object):
         object.__setattr__(self, 'node_id', node_id)
 
     def __eq__(self, other):
+        """"""
         try:
             return self.node_id == other.node_id
         except AttributeError:
@@ -218,17 +224,21 @@ class OverlayNode(object):
 
     @property
     def loopback_zero(self):
+        """"""
         return (i for i in self.interfaces("is_loopback_zero")).next()
 
     @property
     def physical_interfaces(self):
+        """"""
         return self.interfaces(type = "physical")
 
     @property
     def loopback_interfaces(self):
+        """"""
         return self.interfaces(type = "loopback")
 
     def __lt__(self, other):
+        """"""
 # want [r1, r2, ..., r11, r12, ..., r21, r22] not [r1, r11, r12, r2, r21, r22]
 # so need to look at numeric part
         self_node_id = self.node_id
@@ -253,6 +263,7 @@ class OverlayNode(object):
 
     @property
     def _next_int_id(self):
+        """"""
 # returns next free interface ID
         for int_id in itertools.count(1):  # start at 1 as 0 is loopback
             if int_id not in self._interfaces:
@@ -260,6 +271,7 @@ class OverlayNode(object):
 
     # TODO: interface function access needs to be cleaned up
     def _add_interface(self, description=None, type="physical", *args, **kwargs):
+        """"""
         data = dict(kwargs)
 
         if self.overlay_id != 'phy' and self.phy:
@@ -475,6 +487,7 @@ class OverlayEdge(object):
         object.__setattr__(self, 'dst_id', dst_id)
 
     def __eq__(self, other):
+        """"""
         try:
             return (self.src_id, self.dst_id) == (other.src_id, other.dst_id)
         except AttributeError:
@@ -485,9 +498,11 @@ class OverlayEdge(object):
         return "%s: (%s, %s)" % (self.overlay_id, self.src, self.dst)
 
     def __getnewargs__(self):
+        """"""
         return ()
 
     def __getitem__(self, key):
+        """"""
         overlay = OverlayGraph(self.anm, key)
         return overlay.edge(self)
 
@@ -496,6 +511,7 @@ class OverlayEdge(object):
         return (self.anm, self.overlay_id, self.src_id, self.dst_id)
 
     def __lt__(self, other):
+        """"""
         return ((self.src.node_id, self.dst.node_id) < (other.src.node_id, 
             other.dst.node_id))
 
@@ -593,9 +609,11 @@ class OverlayGraphData(object):
         object.__setattr__(self, 'overlay_id', overlay_id)
 
     def __repr__(self):
+        """"""
         return "Data for (%s, %s)" % (self.anm, self.overlay_id)
 
     def dump(self):
+        """"""
         print str(self._graph.graph)
 
     @property
@@ -616,12 +634,14 @@ class OverlayBase(object):
     """Base class for overlays - overlay graphs, subgraphs, projections, etc"""
 
     def __init__(self, anm, overlay_id):
+        """"""
         if overlay_id not in anm.overlay_nx_graphs:
             raise OverlayNotFound(overlay_id)
         self._anm = anm
         self._overlay_id = overlay_id
 
     def __repr__(self):
+        """"""
         return self._overlay_id
 
     @property
@@ -630,9 +650,11 @@ class OverlayBase(object):
         return OverlayGraphData(self._anm, self._overlay_id)
 
     def __contains__(self, n):
+        """"""
         return n.node_id in self._graph
 
     def interface(self, interface):
+        """"""
         return overlay_interface(self._anm, self._overlay_id,
                 interface.node_id, interface.interface_id)
 
@@ -669,6 +691,7 @@ class OverlayBase(object):
                 pass  # no edge_id for this edge
 
     def __getitem__(self, key):
+        """"""
         return self.node(key)
 
     def node(self, key):
@@ -687,6 +710,7 @@ class OverlayBase(object):
             return None
 
     def degree(self, node):
+        """"""
         return node.degree()
 
     def neighbors(self, node):
@@ -699,12 +723,15 @@ class OverlayBase(object):
 
     @property
     def name(self):
+        """"""
         return self.__repr__()
 
     def node_label(self, node):
+        """"""
         return repr(OverlayNode(self._anm, self._overlay_id, node))
 
     def dump(self):
+        """"""
         self._anm.dump_graph(self)
 
     def has_edge(self, edge):
@@ -712,13 +739,16 @@ class OverlayBase(object):
         return self._graph.has_edge(edge.src, edge.dst)
 
     def __iter__(self):
+        """"""
         return iter(OverlayNode(self._anm, self._overlay_id, node)
                     for node in self._graph)
 
     def __len__(self):
+        """"""
         return len(self._graph)
 
     def nodes(self, *args, **kwargs):
+        """"""
         result = self.__iter__()
         if len(args) or len(kwargs):
             result = self.filter(result, *args, **kwargs)
@@ -753,6 +783,7 @@ class OverlayBase(object):
         return result
 
     def filter(self, nbunch=None, *args, **kwargs):
+        """"""
         if not nbunch:
             nbunch = self.nodes()
 
@@ -767,6 +798,7 @@ class OverlayBase(object):
         return (n for n in nbunch if filter_func(n))
 
     def edges(self, src_nbunch=None, dst_nbunch=None, *args, **kwargs):
+        """"""
 # nbunch may be single node
         if src_nbunch:
             try:
@@ -810,7 +842,10 @@ class OverlayBase(object):
 
 
 class OverlaySubgraph(OverlayBase):
+    """OverlaySubgraph"""
+
     def __init__(self, anm, overlay_id, graph, name=None):
+        """"""
         super(OverlaySubgraph, self).__init__(anm, overlay_id)
         self._graph = graph
         self._subgraph_name = name
@@ -824,14 +859,16 @@ class OverlayGraph(OverlayBase):
 
     @property
     def anm(self):
+        """Returns anm for this overlay"""
         return self._anm
 
     @property
     def _graph(self):
-        # access underlying graph for this OverlayNode
+        """Access underlying graph for this OverlayNode"""
         return self._anm.overlay_nx_graphs[self._overlay_id]
 
     def _replace_graph(self, graph):
+        """"""
         self._anm.overlay_nx_graphs[self._overlay_id] = graph
 
     # these work similar to their nx counterparts: just need to strip the
@@ -867,6 +904,7 @@ class OverlayGraph(OverlayBase):
         self._init_interfaces(node_ids)
 
     def add_node(self, node, retain=None, **kwargs):
+        """Adds node to overlay"""
         if not retain:
             retain = []
         try:
@@ -888,6 +926,7 @@ class OverlayGraph(OverlayBase):
         self._init_interfaces([node_id])
 
     def _init_interfaces(self, nbunch=None):
+        """Initialises interfaces"""
         if not nbunch:
             nbunch = [n for n in self._graph.nodes()]
 
@@ -940,9 +979,13 @@ class OverlayGraph(OverlayBase):
             edge._interfaces[dst.id] = dst_int_id
 
     def __delitem__(self, key):
+        """Alias for remove_node. Allows
+        >>> del overlay[node]
+        """
         self.remove_node(key)
 
     def remove_node(self, node):
+        """Removes a node from the overlay"""
         try:
             node_id = node.node_id
         except AttributeError:
@@ -950,6 +993,7 @@ class OverlayGraph(OverlayBase):
         self._graph.remove_node(node_id)
 
     def add_edge(self, src, dst, retain=None, **kwargs):
+        """Adds an edge to the overlay"""
         if not retain:
             retain = []
         try:
@@ -960,6 +1004,7 @@ class OverlayGraph(OverlayBase):
         self.add_edges_from([(src, dst)], retain, **kwargs)
 
     def remove_edges_from(self, ebunch):
+        """Removes set of edges from ebunch"""
         try:
             ebunch = unwrap_edges(ebunch)
         except AttributeError:
@@ -967,6 +1012,7 @@ class OverlayGraph(OverlayBase):
         self._graph.remove_edges_from(ebunch)
 
     def add_edges(self, *args, **kwargs):
+        """Adds a set of edges. Alias for add_edges_from"""
         self.add_edges_from(args, kwargs)
 
     def add_edges_from(self, ebunch, bidirectional=False,
@@ -1028,13 +1074,16 @@ class OverlayGraph(OverlayBase):
                 edge.set(key, value)
 
     def subgraph(self, nbunch, name=None):
+        """"""
         nbunch = (n.node_id for n in nbunch)  # only store the id in overlay
         return OverlaySubgraph(self._anm, self._overlay_id, 
                 self._graph.subgraph(nbunch), name)
 
 
 class AbstractNetworkModel(object):
+    """"""
     def __init__(self):
+        """"""
         self._overlays = {}
         self.add_overlay("phy")
         self.add_overlay("graphics")
@@ -1045,10 +1094,12 @@ class AbstractNetworkModel(object):
         self.timestamp = time.strftime("%Y%m%d_%H%M%S", time.localtime())
 
     def __repr__(self):
+        """"""
         return "ANM %s" % self.timestamp
 
     @staticmethod
     def __getnewargs__():
+        """"""
         return ()
 
     def __getstate__(self):
@@ -1057,9 +1108,11 @@ class AbstractNetworkModel(object):
 
     @property
     def overlay_nx_graphs(self):
+        """"""
         return self._overlays
 
     def has_overlay(self, overlay_id):
+        """"""
         return overlay_id in self._overlays
 
     def __setstate__(self, state):
@@ -1071,6 +1124,7 @@ class AbstractNetworkModel(object):
         self._build_node_label()
 
     def save(self):
+        """"""
         import autonetkit.ank_json as ank_json
         import os
         import gzip
@@ -1104,6 +1158,7 @@ class AbstractNetworkModel(object):
         self.restore(latest_file)
 
     def restore(self, pickle_file):
+        """"""
         import json
         import gzip
         import autonetkit.ank_json as ank_json
@@ -1116,6 +1171,7 @@ class AbstractNetworkModel(object):
 
     @property
     def _phy(self):
+        """"""
         return OverlayGraph(self, "phy")
 
     def initialise_graph(self, graph):
@@ -1158,12 +1214,15 @@ class AbstractNetworkModel(object):
         return overlay
 
     def overlays(self):
+        """"""
         return self._overlays.keys()
 
     def devices(self, *args, **kwargs):
+        """"""
         return self._phy.filter(*args, **kwargs)
 
     def __getitem__(self, key):
+        """"""
         return OverlayGraph(self, key)
 
     def node_label(self, node):
@@ -1171,6 +1230,7 @@ class AbstractNetworkModel(object):
         return self.default_node_label(node)
 
     def _build_node_label(self):
+        """"""
         def custom_label(node):
             return self.label_seperator.join(
                     str(self._overlays['phy'].node[node.node_id].get(val))
@@ -1181,6 +1241,7 @@ class AbstractNetworkModel(object):
         self.node_label = custom_label
 
     def set_node_label(self, seperator, label_attrs):
+        """"""
         try:
             label_attrs.lower()
             label_attrs = [label_attrs]  # was a string, put into list
@@ -1191,6 +1252,7 @@ class AbstractNetworkModel(object):
         self.label_attrs = label_attrs
 
     def dump_graph(self, graph):
+        """"""
         print "----Graph %s----" % graph
         print "Graph"
         print self.dump_graph_data(graph)
@@ -1201,18 +1263,21 @@ class AbstractNetworkModel(object):
 
     @staticmethod
     def dump_graph_data(graph):
+        """"""
         debug_data = dict((key, val)
                           for key, val in sorted(graph._graph.graph.items()))
         return pprint.pformat(debug_data)
 
     @staticmethod
     def dump_nodes(graph):
+        """"""
         debug_data = dict((graph.node_label(node), data)
                           for node, data in (graph._graph.nodes(data=True)))
         return pprint.pformat(debug_data)
 
     @staticmethod
     def dump_edges(graph):
+        """"""
         debug_data = dict(((graph.node_label(src), graph.node_label(dst)),
             data) for src, dst, data in (graph._graph.edges(data=True)))
         return pprint.pformat(debug_data)
