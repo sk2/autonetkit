@@ -1256,7 +1256,8 @@ function redraw() {
             return 2;
         })
     //.attr("marker-end", marker_end)
-    .style("stroke", "rgb(103,109,244)")
+    //.style("stroke", "rgb(103,109,244)")
+    .style("stroke", "rgb(2,106 ,155)")
         //.style("fill", "rgb(113,119,254)")
         .style("fill", "none")
 
