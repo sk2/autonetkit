@@ -505,12 +505,40 @@ class nidb_node(object):
             return 
 
     @property
+    def _next_int_id(self):
+        """"""
+# returns next free interface ID
+        import itertools
+        for int_id in itertools.count(1):  # start at 1 as 0 is loopback
+            if int_id not in self._interfaces:
+                return int_id
+
+    def add_interface(self, description = None, type = "physical", *args,  **kwargs):
+        """Public function to add interface"""
+        data = dict(kwargs)
+        interface_id = self._next_int_id
+        data['type'] = type  # store type on node
+        data['description'] = description
+        self._interfaces[interface_id] = data
+
+        return overlay_interface(self.nidb, self.node_id, interface_id)
+
+    @property
     def _interface_ids(self):
         return self._graph.node[self.node_id]["_interfaces"].keys()
 
     @property
     def interfaces(self):
-        return self.get_interfaces()
+        """Called by templates, sorts by ID"""
+        int_list = self.get_interfaces()
+
+        # Put loopbacks before physical interfaces
+        type_index = {"loopback": 0, "physical": 1}
+        #TODO: extend this based on medium type, etc
+
+        int_list = sorted(int_list, key = lambda x: x.id)
+        int_list = sorted(int_list, key = lambda x: type_index[x.type])
+        return int_list
 
     @property
     def physical_interfaces(self):
