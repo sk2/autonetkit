@@ -732,6 +732,7 @@ class NetkitCompiler(PlatformCompiler):
 
     def allocate_tap_ips(self):
         # TODO: take tap subnet parameter
+        #TODO: this should be tuple of self.host and platform
         lab_topology = self.nidb.topology[self.host]
             # TODO: also store platform
         from netaddr import IPNetwork
@@ -942,11 +943,14 @@ class CiscoCompiler(PlatformCompiler):
 
         # assign management IPs
         #TODO: make this a module
+        lab_topology = self.nidb.topology[self.host]
         oob_management_ips = {}
         from netaddr import IPNetwork
         management_subnet = IPNetwork("172.16.254.0/24")
         management_ips = management_subnet.iter_hosts()
-        for nidb_node in self.nidb.nodes('is_router', host=self.host):
+        oob_host_ip = management_ips.next()
+        oob_management_ips["host"] = oob_host_ip
+        for nidb_node in sorted(self.nidb.nodes('is_router', host=self.host)):
             for interface in nidb_node.physical_interfaces:
                 if interface.management:
                     interface.description = "OOB Management"
@@ -954,8 +958,7 @@ class CiscoCompiler(PlatformCompiler):
                     interface.ipv4_subnet = management_subnet
                     interface.physical = True
                     oob_management_ips[str(nidb_node)] = interface.ipv4_address
-        import pprint
-        pprint.pprint( oob_management_ips)
+        lab_topology.oob_management_ips = oob_management_ips
 
         other_nodes = [phy_node for phy_node in g_phy.nodes('is_router', host=self.host)
                        if phy_node.syntax not in ("ios", "ios2")]
@@ -1029,6 +1032,7 @@ class DynagenCompiler(PlatformCompiler):
     def lab_topology(self):
 # TODO: replace name/label and use attribute from subgraph
         lab_topology = self.nidb.topology[self.host]
+#TODO: this should be tuple of self.host and platform
         lab_topology.render_template = "templates/dynagen.mako"
         lab_topology.render_dst_folder = "rendered/%s/%s" % (
             self.host, "dynagen")
