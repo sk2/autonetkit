@@ -39,7 +39,12 @@ class overlay_interface(object):
 
     def __nonzero__(self):
         #TODO: work out why description and type being set/copied to each overlay
-        return len(self._interface) > 0  # if interface data set
+        try:
+            interface = self._interface
+        except KeyError:
+            return False
+
+        return len(interface) > 0  # if interface data set
 
     def __lt__(self, other):
         #TODO: check how is comparing the nodes
