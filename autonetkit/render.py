@@ -308,6 +308,11 @@ def render_topology(topology):
     except KeyError, error:
         return
 
+    if not render_template_file:
+        log.debug("No render template specified for topology %s, skipping" 
+                % topology)
+        return
+
     try:
         render_template = lookup.get_template(render_template_file)
     except SyntaxException, error:
