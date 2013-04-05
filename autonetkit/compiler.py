@@ -121,12 +121,14 @@ class RouterCompiler(object):
 
         for interface in node.physical_interfaces:
             phy_int = self.anm['phy'].interface(interface)
-
-            interface.description = phy_int.description
-
             interface.physical = True
             #TODO: allocate ID in platform compiler
 
+            if not phy_int:
+                # for instance if added as management interface to nidb in compile
+                continue
+                
+            interface.description = phy_int.description
             if node.ip.use_ipv4:
                 ipv4_int = phy_int['ipv4']
                 interface.ipv4_address = ipv4_int.ip_address
@@ -765,7 +767,7 @@ class NetkitCompiler(PlatformCompiler):
 
 # TODO: sort this numerically, not just by string
         lab_topology.machines = " ".join(alpha_sort(naming.network_hostname(phy_node)
-                                                    for phy_node in subgraph.nodes("is_l3device")))
+            for phy_node in subgraph.nodes("is_l3device")))
 
         lab_topology.config_items = []
         for node in sorted(subgraph.nodes("is_l3device")):
@@ -878,7 +880,8 @@ class CiscoCompiler(PlatformCompiler):
 
             # Assign interfaces
             int_ids = self.interface_ids_ios()
-            int_ids.next()  # 0/0 is used for management ethernet
+            mgmt_int_id = int_ids.next()  # 0/0 is used for management ethernet
+
             for interface in nidb_node.physical_interfaces:
                 if specified_int_names:
                     interface.id = phy_node.interface(interface).name
@@ -887,6 +890,8 @@ class CiscoCompiler(PlatformCompiler):
                     interface.id = int_ids.next()
 
             ios_compiler.compile(nidb_node)
+            mgmt_int = nidb_node.add_interface(management = True)
+            mgmt_int.id = mgmt_int_id
 
         ios2_compiler = Ios2Compiler(self.nidb, self.anm)
         for phy_node in g_phy.nodes('is_router', host=self.host, syntax='ios2'):
@@ -901,6 +906,7 @@ class CiscoCompiler(PlatformCompiler):
 
             # Assign interfaces
             int_ids = self.interface_ids_ios2()
+            mgmt_int_id = int_ids.next()  # 0/0 is used for management ethernet
             for interface in nidb_node.physical_interfaces:
                 if specified_int_names:
                     interface.id = phy_node.interface(interface).name
@@ -909,6 +915,8 @@ class CiscoCompiler(PlatformCompiler):
                     interface.id = int_ids.next()
 
             ios2_compiler.compile(nidb_node)
+            mgmt_int = nidb_node.add_interface(management = True)
+            mgmt_int.id = mgmt_int_id
 
         nxos_compiler = NxOsCompiler(self.nidb, self.anm)
         for phy_node in g_phy.nodes('is_router', host=self.host, syntax='nx_os'):
@@ -931,6 +939,23 @@ class CiscoCompiler(PlatformCompiler):
                     interface.id = int_ids.next()
 
             nxos_compiler.compile(nidb_node)
+
+        # assign management IPs
+        #TODO: make this a module
+        oob_management_ips = {}
+        from netaddr import IPNetwork
+        management_subnet = IPNetwork("172.16.254.0/24")
+        management_ips = management_subnet.iter_hosts()
+        for nidb_node in self.nidb.nodes('is_router', host=self.host):
+            for interface in nidb_node.physical_interfaces:
+                if interface.management:
+                    interface.description = "OOB Management"
+                    interface.ipv4_address = management_ips.next()
+                    interface.ipv4_subnet = management_subnet
+                    interface.physical = True
+                    oob_management_ips[str(nidb_node)] = interface.ipv4_address
+        import pprint
+        pprint.pprint( oob_management_ips)
 
         other_nodes = [phy_node for phy_node in g_phy.nodes('is_router', host=self.host)
                        if phy_node.syntax not in ("ios", "ios2")]
