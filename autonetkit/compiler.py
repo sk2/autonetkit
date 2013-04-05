@@ -29,11 +29,10 @@ class RouterCompiler(object):
     lo_interface_prefix = "lo"
 # and set per platform
 
-    @staticmethod
-    def ibgp_session_data(session, ip_version, vpn = False):
+    def ibgp_session_data(self, session, ip_version):
+        # Don't make staticmethod as may want to extend (e.g. in IOS compiler for vpnv4)
         node = session.src
         neigh = session.dst
-        use_vpnv4 = False
 
         if ip_version == 4:
             neigh_ip = neigh['ipv4']
@@ -43,16 +42,11 @@ class RouterCompiler(object):
             neigh_ip = neigh['ipv6']
             use_ipv4 = False
             use_ipv6 = True
-        if vpn:
-            use_vpnv4 = True
-            use_ipv4 = False
-            use_ipv6 = False
 
         data = {
             'neighbor': neigh.label,
             'use_ipv4': use_ipv4,
             'use_ipv6': use_ipv6,
-            'use_vpnv4': use_vpnv4,
             'asn': neigh.asn,
             'loopback': neigh_ip.loopback,
             # TODO: this is platform dependent???
@@ -60,8 +54,7 @@ class RouterCompiler(object):
             }
         return data
 
-    @staticmethod
-    def ebgp_session_data(session, ip_version):
+    def ebgp_session_data(self, session, ip_version):
         node = session.src
         neigh = session.dst
         if ip_version == 4:
@@ -239,29 +232,6 @@ class RouterCompiler(object):
         ibgp_rr_clients = []
         ibgp_rr_parents = []
 
-        # ibgp_v4
-        def ibgp_session_data(session, ip_version):
-            node = session.src
-            neigh = session.dst
-            if ip_version == 4:
-                neigh_ip = g_ipv4.node(neigh)
-                use_ipv4 = True
-                use_ipv6 = False
-            elif ip_version == 6:
-                neigh_ip = g_ipv6.node(neigh)
-                use_ipv4 = False
-                use_ipv6 = True
-
-            data = {
-                'neighbor': neigh.label,
-                'use_ipv4': use_ipv4,
-                'use_ipv6': use_ipv6,
-                'asn': neigh.asn,
-                'loopback': neigh_ip.loopback,
-                # TODO: this is platform dependent???
-                'update_source': node.loopback_zero.id,
-                }
-            return data
 
         g_ibgp_v4 = self.anm['ibgp_v4']
         for session in g_ibgp_v4.edges(phy_node):
@@ -425,6 +395,16 @@ class IosBaseCompiler(RouterCompiler):
     lo_interface_prefix = "Loopback"
     lo_interface = "%s%s" % (lo_interface_prefix, 0)
 
+    def ibgp_session_data(self, session, ip_version):
+        """Wraps RouterCompiler ibgp_session_data
+        adds vpnv4 = True if ip_version == 4 and session is in g_ibgp_vpn_v4"""
+        data = super(IosBaseCompiler, self).ibgp_session_data(session, ip_version)
+        if ip_version == 4:
+            g_ibgp_vpn_v4 = self.anm['ibgp_vpn_v4']
+            if g_ibgp_vpn_v4.has_edge(session):
+                data['use_vpnv4'] = True
+        return data
+
     def compile(self, node):
         self.vrf_igp_interfaces(node)
         phy_node = self.anm['phy'].node(node)
@@ -449,7 +429,6 @@ class IosBaseCompiler(RouterCompiler):
         self.vrf(node)
 
     def interfaces(self, node):
-
         phy_loopback_zero = self.anm['phy'].interface(node.loopback_zero)
         if node.ip.use_ipv4:
             ipv4_loopback_subnet = netaddr.IPNetwork("0.0.0.0/32")
@@ -482,12 +461,6 @@ class IosBaseCompiler(RouterCompiler):
 
         vrf_node = self.anm['vrf'].node(node)
         if vrf_node.vrf_role is "PE":
-
-            vpnv4_neighbors = []
-            g_ibgp_vpn_v4 = self.anm['ibgp_vpn_v4']
-            for session in g_ibgp_vpn_v4.edges(vrf_node):
-                data = self.ibgp_session_data(session, ip_version = 4, vpn = True)
-                vpnv4_neighbors.append(data)
 
             # iBGP sessions for this VRF
             vrf_ibgp_neighbors = defaultdict(list)
@@ -531,12 +504,13 @@ class IosBaseCompiler(RouterCompiler):
                     vrf_ibgp_neighbors = vrf_ibgp_neighbors[vrf],
                 )
 
-            #TODO: check if set elsewhere: if so don't clobber
-            for data in vpnv4_neighbors: # can't concatenate list of dicts
-                #TODO: fix this in NIDB: use [] notation for direct access
-               node.bgp.ibgp_neighbors.append(data)
-               
-            
+        # Retain route_target if in ibgp_vpn_v4 and RR or HRR (set in design)
+        vpnv4_node = self.anm['ibgp_vpn_v4'].node(node)
+        if vpnv4_node:
+            retain = False
+            if vpnv4_node.retain_route_target:
+                retain = True
+            node.bgp.vpnv4 = {'retain_route_target': retain}
 
     def vrf_igp_interfaces(self, node):
         # marks physical interfaces to exclude from IGP
@@ -552,7 +526,6 @@ class IosBaseCompiler(RouterCompiler):
         vrf_node = self.anm['vrf'].node(node)
         node.vrf.vrfs = []
         if vrf_node.vrf_role is "PE":
-            node.bgp.vpnv4 = True
             #TODO: check if mpls ldp already set elsewhere
             for vrf in vrf_node.node_vrf_names:
                 route_target = g_vrf.data.route_targets[node.asn][vrf]
@@ -581,6 +554,8 @@ class IosBaseCompiler(RouterCompiler):
             node.mpls.ldp_interfaces = []
             for interface in node.physical_interfaces:
                 node.mpls.ldp_interfaces.append(interface.id)
+
+        vrf_node = self.anm['vrf'].node(node)
 
         node.vrf.use_ipv4 = node.ip.use_ipv4
         node.vrf.use_ipv6 = node.ip.use_ipv6
