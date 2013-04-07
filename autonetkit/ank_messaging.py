@@ -43,7 +43,10 @@ def update_http(anm = None, nidb = None):
         log.info("Visualisation server running")
 
 
-def highlight(nodes, edges):
+def highlight(nodes, edges, paths = None):
+    if not paths:
+        paths = []
+
     def nfilter(n):
         try:
             return n.id
@@ -58,11 +61,16 @@ def highlight(nodes, edges):
 
     nodes = [nfilter(n) for n in nodes]
     edges = [efilter(e) for e in edges]
+    filtered_paths = []
+    for path in paths:
+        filtered_paths.append([nfilter(n) for n in path])
+
     import json
     body = json.dumps({
         'highlight': {
         'nodes': nodes,
         'edges': edges,
+        'paths': filtered_paths,
         }
         })
 
