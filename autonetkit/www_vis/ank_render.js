@@ -100,6 +100,7 @@ highlight_edges = [];
 
 var apply_highlight = function(data){
 
+
     highlight_nodes = _.map(data['nodes'], function(n) {
         return nodes_by_id[n];
     })
@@ -115,6 +116,19 @@ var apply_highlight = function(data){
     }
     )
         redraw();
+
+
+    //draw paths after redraw -> z-ordering means overlayed
+    if (data.paths.length > 0) {
+        for (index in data.paths) {
+            path = data.paths[index];
+            //path_nodes = _.map(path, function(n) {
+                //return nodes_by_id[n];
+            //})
+            pathinfo.push(path);
+        }
+        redraw_paths();
+    }
 }
 
 var load_ip_allocations = function(d) {
@@ -550,7 +564,8 @@ var groupPath = function(d) {
 
 var path_x = function(d) {
     node = nodes_by_id[d];
-    return node.x+ icon_width/2 + x_offset;
+    console.log(node);
+    return node.x + icon_width/2 + x_offset;
 }
 
 var path_y = function(d) {
