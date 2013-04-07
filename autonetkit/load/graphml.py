@@ -153,6 +153,9 @@ def load_graphml(input_data):
     # and ensure asn is integer, x and y are floats
     for node in sorted(graph):
         graph.node[node]['asn'] = int(graph.node[node]['asn'])
+        if graph.node[node]['asn'] == 0:
+            log.debug("Node %s has ASN set to 0. Setting to 1" % graph.node[node]['label'])
+            graph.node[node]['asn'] = 1
         try:
             x = float(graph.node[node]['x'])
         except KeyError:
