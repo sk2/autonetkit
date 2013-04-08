@@ -113,12 +113,15 @@ var apply_highlight = function(data){
         target_index = nodes.indexOf(target);
 
         return {'source': src_index, 'target': target_index};
-    }
-    )
+    })
+
+    if ((data.nodes.length > 0) || (data.edges.length > 0)) {
         redraw();
+    }
 
 
     //draw paths after redraw -> z-ordering means overlayed
+    pathinfo = []; //reset
     if (data.paths.length > 0) {
         for (index in data.paths) {
             path = data.paths[index];
@@ -564,7 +567,6 @@ var groupPath = function(d) {
 
 var path_x = function(d) {
     node = nodes_by_id[d];
-    console.log(node);
     return node.x + icon_width/2 + x_offset;
 }
 
@@ -1575,10 +1577,12 @@ function redraw_paths() {
     //TODO: paths need to be updated when graph changes... or perhaps fade out as no longer relevant if topology changes?
     //TODO: set paths using css and transition style rather than all the attributes hard coded
 
-    path2 = chart.selectAll(".trace_path")
-        .data(pathinfo)
+    trace_path = chart.selectAll(".trace_path")
+        .data(pathinfo, function(path) {
+            return path.join("_");
+        })
 
-        path2.enter().append("svg:path")
+    trace_path.enter().append("svg:path")
         .attr("d", traceroute_line)
         .attr("class", "trace_path")
         .style("stroke-width", 10)
@@ -1597,20 +1601,15 @@ function redraw_paths() {
         d3.select(this).style("stroke", "yellow");
         clear_label();
     })
+
     .transition()
-        .duration(2000)
-        .style("stroke-width", 3)
-        //.style("stroke", "rgb(0,154,138)")
-        .style("stroke", "orange")
-        .style("opacity", 50)
-        ;
+    .duration(2000)
+    .style("stroke-width", 5)
+    .style("stroke", "rgb(55,55,55)")
+    .style("opacity", 50) ;
 
-    path2.exit().transition()
-        .duration(2000)
-        .style("opacity",0)
-        .remove();
-
-
-}
-
-
+    trace_path.exit().transition()
+    .duration(500)
+    .style("opacity",0)
+    .remove();
+    }
