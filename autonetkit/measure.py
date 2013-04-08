@@ -55,7 +55,9 @@ def send(nidb, command, hosts, server = "measure_client", threads = 3):
                 if command in parsing:
                     log.info( "%s %s" % (host, command))
                     parse_command = parsing[command]
-                    parse_command(nidb, command_result)
+                    host = process_data.reverse_tap_lookup(nidb, host)
+                    parse_command(host, nidb, command_result)
+                    channel.stop_consuming()
                 elif "traceroute" in command:
                     dst = command.split()[-1]   # last argument is the dst ip
                     src_host = process_data.reverse_tap_lookup(nidb, host)
