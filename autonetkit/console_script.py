@@ -250,6 +250,14 @@ def compile_network(anm):
         "collision_domain") if not n.is_switch]  # Only add created cds - otherwise overwrite host of switched
     nidb.add_nodes_from(
         cd_nodes, retain=['label', 'host'], collision_domain=True)
+
+    #TODO: write a helper functions to do this
+    for node in nidb.nodes("collision_domain"):
+        ipv4_node = anm['ipv4'].node(node)
+        node.ipv4_subnet = ipv4_node.subnet
+        node.ipv6_subnet = ipv4_node['ipv6'].subnet
+
+
 # add edges to switches
     edges_to_add = [edge for edge in g_phy.edges()
             if edge.src.is_switch or edge.dst.is_switch]
@@ -330,19 +338,27 @@ def deploy_network(anm, nidb, input_graph_string):
 def measure_network(nidb):
     import autonetkit.measure as measure
     log.info("Measuring network")
-    remote_hosts = [node.tap.ip for node in nidb.nodes("is_router")]
-    dest_node = random.choice([n for n in nidb.nodes("is_l3device")])
-    log.info("Tracing to randomly selected node: %s" % dest_node)
-    dest_ip = dest_node.interfaces[0].ipv4_address  # choose random interface on this node
-
-    command = "traceroute -n -a -U -w 0.5 %s" % dest_ip
-    measure.send(nidb, command, remote_hosts, threads = 10)
+    if 0:
+        remote_hosts = [node.tap.ip for node in nidb.nodes("is_router")]
+        dest_node = random.choice([n for n in nidb.nodes("is_l3device")])
+        log.info("Tracing to randomly selected node: %s" % dest_node)
+        dest_ip = dest_node.interfaces[0].ipv4_address  # choose random interface on this node
+        command = "traceroute -n -a -U -w 0.5 %s" % dest_ip
+        measure.send(nidb, command, remote_hosts, threads = 10)
     # abort after 10 fails, proceed on any success, 0.1 second timeout (quite aggressive)
-    #command = 'vtysh -c "show ip route"'
-    #measure.send(nidb, command, remote_hosts, threads = 5)
-    remote_hosts = [node.tap.ip for node in nidb.nodes(
-        "is_router") if node.bgp.ebgp_neighbors]
-    command = "cat /var/log/zebra/bgpd.log"
+    if 1:
+        command = 'vtysh -c "show ip route"'
+        #TODO: make auto take tap ip if netkit platform node
+        #TODO: auto make put into list if isinstance(remote_hosts, nidb_node)
+        start_node = random.choice([n for n in nidb.nodes("is_router")])
+        remote_hosts = [start_node.tap.ip]
+        measure.send(nidb, command, remote_hosts)
+
+    if 0:
+        #measure.send(nidb, command, remote_hosts, threads = 5)
+        remote_hosts = [node.tap.ip for node in nidb.nodes(
+            "is_router") if node.bgp.ebgp_neighbors]
+        command = "cat /var/log/zebra/bgpd.log"
 
 if __name__ == "__main__":
     try:
