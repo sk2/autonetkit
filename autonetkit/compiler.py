@@ -170,21 +170,6 @@ class RouterCompiler(object):
                 pass
 
             continue
-            #TODO: reinstate this code once return to vrf setup
-            #TODO: do we need this?
-            ip_interface = g_ipv4.interface(interface)
-            vrf_interface = self.anm['vrf'].interface(interface)
-            index = index + 1  # loopback0 (ie index 0) is reserved
-            interface_id = "%s%s" % (self.lo_interface_prefix, index)
-            node.interfaces.append(
-                id=interface_id,
-                description=interface.description,
-                ipv4_address=ip_interface.loopback,
-                ipv4_subnet=node.loopback_subnet,
-                vrf_name=vrf_interface.vrf_name,
-            )
-
-            #node.interfaces.sort("id")
 
     def ospf(self, node):
         """Returns OSPF links, also sets process_id
