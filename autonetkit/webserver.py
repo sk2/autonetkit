@@ -142,6 +142,7 @@ class MyWebHandler(tornado.web.RequestHandler):
             for listener in self.application.socket_listeners:
                 listener.write_message(data) 
         elif "highlight" in body_parsed:
+            print "Received highlight data"
             self.update_listeners(data) # could do extra processing here
             #TODO check why need to do following - should be automatic for update_listeners?
             for listener in self.application.socket_listeners:
