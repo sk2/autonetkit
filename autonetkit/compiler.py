@@ -189,6 +189,7 @@ class RouterCompiler(object):
                 continue # don't configure IGP for this interface
             ipv4_int = g_ipv4.interface(interface)
             ospf_int = g_ospf.interface(interface)
+            interface.ospf_cost = int(ospf_int.cost)
             network = ipv4_int.subnet
             if (ospf_int and ospf_int.is_bound
                     and network not in added_networks):  # don't add more than once
