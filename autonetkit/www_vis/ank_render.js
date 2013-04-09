@@ -1,5 +1,24 @@
 //TODO: see if can use underscore.js for other operations, to simplify mapping, iterationl etc
 //List concat based on http://stackoverflow.com/questions/5080028
+//
+
+var g_groupings = chart.append("svg:g")
+.attr("id", "g_groupings");
+
+var g_links = chart.append("svg:g")
+.attr("id", "g_links");
+
+var g_nodes = chart.append("svg:g")
+.attr("id", "g_nodes");
+
+var g_traces = chart.append("svg:g")
+.attr("id", "g_highlights");
+
+var g_highlights = chart.append("svg:g")
+.attr("id", "g_highlights");
+
+var g_interfaces = chart.append("svg:g")
+.attr("id", "g_interfaces");
 
 
 var jsondata;
@@ -162,7 +181,7 @@ function redraw_ip_allocations() {
         nodes = []; //otherwise have single root node always present
     }
 
-    var node = chart.selectAll("g.node")
+    var node = g_nodes.selectAll("g.node")
         .data(nodes, name)
         node.enter().append("svg:g")
         .attr("transform", function(d) { return "translate(" + (d.y + 80) + "," + d.x +  ")"; })
@@ -229,7 +248,7 @@ function redraw_ip_allocations() {
         .style("fill-opacity", 1e-6);
 
     // Update the links…
-    var link = chart.selectAll("path.link")
+    var link = g_links.selectAll("path.link")
         .data(layout.links(nodes, name), function(d) { return d.target.id; });
 
     // Enter any new links at the parent's previous position.
@@ -351,7 +370,7 @@ var clear_label = function() {
     status_label.html("");
 }
 
-var trace_paths = chart.append("svg:g")
+var trace_paths = g_highlights.append("svg:g")
 .attr("id", "path");
 
 var nodes = d3.map;
@@ -620,6 +639,7 @@ var link_info = function(d) {
     text = source.id + " - " + target.id; //TODO: make sure all have labels from graphics appended overlay
 
     for (attr in d) {
+        //TODO use list membership test here instead
         if (d[attr] != null && d[attr] != "None" && attr != "source" & attr != "target" && attr != "_interfaces" && attr != "edge_id") {
             text += ", " + attr + ": " + d[attr];
         }
@@ -1188,7 +1208,7 @@ function redraw() {
 
 
     //TODO: make group path change/exit with node data
-    groupings = chart.selectAll(".attr_group")
+    groupings = g_groupings.selectAll(".attr_group")
         .data(node_attr_groups)
 
         groupings.enter().insert("path")
@@ -1228,7 +1248,7 @@ function redraw() {
 
     //TODO: filter the json data x and y ranges: store in nodes, and use this for the image plotting
 
-    node_highlight = chart.selectAll(".node_highlight")
+    node_highlight = g_highlights.selectAll(".node_highlight")
         .data(highlight_nodes, function(d) { return d.id;})
 
         node_highlight.enter().append("svg:rect")
@@ -1253,7 +1273,7 @@ function redraw() {
         .remove();
 
 
-    var line = chart.selectAll(".link_edge")
+    var line = g_links.selectAll(".link_edge")
         .data(jsondata.links, edge_id)
 
         //line.enter().append("line")
@@ -1362,7 +1382,7 @@ function redraw() {
         .style("opacity",0)
         .duration(4000);
 
-    interface_icons = chart.selectAll(".interface_icon")
+    interface_icons = g_interfaces.selectAll(".interface_icon")
         //.data(interface_data) //TODO: check if need to provide an index
         //TODO: check if should return tuple of interface, node for uniqueness (esp for switching overlays)
         .data(interface_data, function(d) { return (d.node, d.interface);})
@@ -1419,7 +1439,7 @@ function redraw() {
         .style("opacity",0)
         .remove();
 
-    interface_labels = chart.selectAll(".interface_label")
+    interface_labels = g_interfaces.selectAll(".interface_label")
         .data(interface_data, function(d) { return d.interface;})
 
         interface_labels.enter().append("text")
@@ -1449,6 +1469,7 @@ function redraw() {
 
     //Link labels
     link_labels = chart.selectAll(".link_label")
+    link_labels = g_links.selectAll(".link_label")
         .data(jsondata.links, edge_id)
 
         link_labels.enter().append("text")
@@ -1488,7 +1509,7 @@ function redraw() {
         return d.label + d.network;
     }
 
-    var image = chart.selectAll(".device_icon")
+    var image = g_nodes.selectAll(".device_icon")
         .attr("xlink:href", icon)
         .data(nodes, node_id);
 
@@ -1577,7 +1598,7 @@ function redraw_paths() {
     //TODO: paths need to be updated when graph changes... or perhaps fade out as no longer relevant if topology changes?
     //TODO: set paths using css and transition style rather than all the attributes hard coded
 
-    trace_path = chart.selectAll(".trace_path")
+    trace_path = g_traces.selectAll(".trace_path")
         .data(pathinfo, function(path) {
             return path.join("_");
         })
