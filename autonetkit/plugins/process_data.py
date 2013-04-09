@@ -40,11 +40,12 @@ def reverse_tap_lookup(nidb, address):
             return node
 
 
-def sh_ip_route(host, nidb, data):
+def sh_ip_route(host, nidb, data, record_data = False):
     #TODO: Split this from being seperate module to being a workable function
     #TODO: need to copy across subnet to collision domain in nidb
 
     import pprint
+    log.debug("Parsed input data %s" % data)
 
     template_file = pkg_resources.resource_filename(__name__, "../textfsm/quagga/sh_ip_route")
     template = open(template_file)
@@ -102,7 +103,17 @@ def sh_ip_route(host, nidb, data):
     edges = []
     paths = [[start_node, r[1].node, r[0]] for r in mapped_routes]
     #pprint.pprint(paths)
+    log.debug("Parsed paths %s" % paths)
 
     import autonetkit.ank_messaging as ank_messaging
     ank_messaging.highlight(nodes, edges, paths)
-            
+
+    if record_data:
+        import time
+        import json
+        paths_str = [[str(start_node), str(r[1].node), str(r[0])] for r in mapped_routes]
+        json_file = "measured_%s.json" % time.strftime("%Y%m%d_%H%M%S", time.localtime())
+        with open(json_file, "wb") as json_fh:
+            json_fh.write(json.dumps(paths_str))
+
+    return paths
