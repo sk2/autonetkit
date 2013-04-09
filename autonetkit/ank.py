@@ -178,7 +178,7 @@ def in_edges(OverlayGraph, nodes=None):
     edges = graph.in_edges(nodes)
     return wrap_edges(OverlayGraph, edges)
 
-def split(OverlayGraph, edges, retain = []):
+def split(OverlayGraph, edges, retain = [], id_prepend = ""):
     try:
         retain.lower() #TODO: find more efficient operation to test if string-like
         retain = [retain] # was a string, put into list
@@ -190,7 +190,19 @@ def split(OverlayGraph, edges, retain = []):
     edges_to_add = []
     added_nodes = []
     for (src, dst) in edges:
-        cd_id = "cd_%s_%s" % (src, dst)
+        if graph.is_directed():
+            new_id = "%s%s_%s" % (id_prepend, src, dst)
+        else:
+            try:
+                if float(src) < float(dst):
+                    (node_a, node_b) = (src, dst) # numeric ordering
+                else:
+                    (node_a, node_b) = (dst, src) # numeric ordering
+            except ValueError:
+                # not numeric, use string sort
+                (node_a, node_b) = sorted([src, dst]) # use sorted for consistency
+            new_id = "%s%s_%s" % (id_prepend, node_a, node_b)
+
         interfaces = graph[src][dst]["_interfaces"]
         data = dict( (key, graph[src][dst][key]) for key in retain)
         #TODO: check how this behaves for directed graphs
@@ -202,9 +214,9 @@ def split(OverlayGraph, edges, retain = []):
         if dst in interfaces:
             dst_int_id = interfaces[dst]
             dst_data['_interfaces'] = {dst: dst_int_id}
-        edges_to_add.append( (src, cd_id, src_data))
-        edges_to_add.append( (dst, cd_id, dst_data))
-        added_nodes.append(cd_id)
+        edges_to_add.append( (src, new_id, src_data))
+        edges_to_add.append( (dst, new_id, dst_data))
+        added_nodes.append(new_id)
 
     graph.remove_edges_from(edges)
     graph.add_edges_from(edges_to_add)
