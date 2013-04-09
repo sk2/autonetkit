@@ -1516,7 +1516,6 @@ function redraw() {
 
     var image = g_nodes.selectAll(".device_icon")
         .attr("xlink:href", icon)
-        .data(nodes, node_id);
         .data(nodes, function(d) { return d.id});
 
     image.enter().append("image")
