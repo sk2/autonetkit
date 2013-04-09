@@ -6,7 +6,6 @@ import autonetkit.config as config
 import autonetkit.ank_messaging as ank_messaging
 import autonetkit.log as log
 
-
 def send(nidb, command, hosts, server = "measure_client", threads = 3):
 # netaddr IP addresses not JSON serializable
     hosts = [str(h) for h in hosts]
@@ -46,9 +45,18 @@ def send(nidb, command, hosts, server = "measure_client", threads = 3):
             "traceroute": process_data.traceroute,
             }
     
-    def callback(ch, method, properties, body):
-        #TODO: send update to tornado web queue...
+    parse_result = []
+
+    # wait for responses
+    result = channel.queue_declare(exclusive=True)
+    queue_name = result.method.queue
+    channel.queue_bind(exchange='measure',
+                       queue=queue_name,
+                       routing_key="result")
+
+    for method_frame, properties, body in channel.consume(queue_name):
         data = json.loads(body)
+        completed = False
         for host, host_data in data.items():
             for command, command_result in host_data.items():
                 command_result = command_result.replace("\\r\\n", "\n")
@@ -56,8 +64,9 @@ def send(nidb, command, hosts, server = "measure_client", threads = 3):
                     log.info( "%s %s" % (host, command))
                     parse_command = parsing[command]
                     host = process_data.reverse_tap_lookup(nidb, host)
-                    parse_command(host, nidb, command_result)
-                    channel.stop_consuming()
+                    parse_result = parse_command(host, nidb, command_result)
+                    completed = True
+
                 elif "traceroute" in command:
                     dst = command.split()[-1]   # last argument is the dst ip
                     src_host = process_data.reverse_tap_lookup(nidb, host)
@@ -68,6 +77,7 @@ def send(nidb, command, hosts, server = "measure_client", threads = 3):
                     trace_result = parse_command(nidb, command_result)
                     trace_result.insert(0, src_host) 
                     log.info(trace_result)
+                    parse_result.append(trace_result)
                     if str(trace_result[-1]) == str(dst_host[1]): #TODO: fix so direct comparison, not string, either here or in anm object comparison: eg compare on label?
 #TODO: make this use custom ANK serializer function
                         trace_result = [str(t.id) for t in trace_result if t] # make serializable
@@ -79,25 +89,17 @@ def send(nidb, command, hosts, server = "measure_client", threads = 3):
                     print "No parser defined for command %s" % command
                     print "Raw output:"
                     print command_result
+                    completed = True
 
-            if host in hosts_received:
-                hosts_received.remove(host) # remove from list of waiting hosts
+        if host in hosts_received:
+            hosts_received.remove(host) # remove from list of waiting hosts
 
-            if not len(hosts_received):
-                channel.stop_consuming()
+        if not len(hosts_received):
+            completed = True
 
+        if completed:
+            break
 
-    # wait for responses
-    result = channel.queue_declare(exclusive=True)
-    queue_name = result.method.queue
-    channel.queue_bind(exchange='measure',
-                       queue=queue_name,
-                       routing_key="result")
-
-    channel.basic_consume(callback,
-                      queue=queue_name,
-                      no_ack=True)
-
-    channel.start_consuming()
+    return parse_result
 
 
