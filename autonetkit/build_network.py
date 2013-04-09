@@ -754,7 +754,7 @@ def build_ip(anm):
     for edge in edges_to_split:
         edge.split = True # mark as split for use in building nidb
     split_created_nodes = list(
-        ank_utils.split(g_ip, edges_to_split, retain=['edge_id', 'split']))
+        ank_utils.split(g_ip, edges_to_split, retain=['edge_id', 'split'], id_prepend = "cd"))
     for node in split_created_nodes:
         node['graphics'].x = ank_utils.neigh_average(g_ip, node, "x",
                                                      g_graphics) + 0.1 # temporary fix for gh-90
@@ -780,8 +780,9 @@ def build_ip(anm):
         graphics_node = g_graphics.node(node)
         graphics_node.device_type = "collision_domain"
         if not node.is_switch:
-            label = "_".join(
-                sorted(ank_utils.neigh_attr(g_ip, node, "label", g_phy)))
+            # use node sorting, as accomodates for numeric/string names
+            neighbors = sorted(neigh for neigh in node.neighbors())
+            label = "_".join(neigh.label for neigh in neighbors) 
             cd_label = "cd_%s" % label  # switches keep their names
             node.label = cd_label
             node.cd_id = cd_label
@@ -883,7 +884,7 @@ def build_ospf(anm):
     g_ospf.add_edges_from(g_in.edges(), retain=['edge_id'])
 
     ank_utils.copy_attr_from(g_in, g_ospf, "ospf_area", dst_attr="area")
-    ank_utils.copy_edge_attr_from(g_in, g_ospf, "ospf_cost", dst_attr="cost")
+    ank_utils.copy_edge_attr_from(g_in, g_ospf, "ospf_cost", dst_attr="cost",  type=float)
 
     ank_utils.aggregate_nodes(g_ospf, g_ospf.nodes("is_switch"),
                               retain="edge_id")
