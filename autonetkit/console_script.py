@@ -106,10 +106,9 @@ def manage_network(input_graph_string, timestamp, build_options, reload_build=Fa
         deploy_network(anm, nidb, input_graph_string)
 
     if build_options['measure']:
-        measure_network(nidb)
+        measure_network(anm, nidb)
 
     log.info("Finished")
-
 
 def parse_options():
     """Parse user-provided options"""
@@ -335,8 +334,9 @@ def deploy_network(anm, nidb, input_graph_string):
                 cisco_deploy.package(config_path, "nklab")
 
 
-def measure_network(nidb):
+def measure_network(anm, nidb):
     import autonetkit.measure as measure
+    import autonetkit.verify as verify
     log.info("Measuring network")
     if 0:
         remote_hosts = [node.tap.ip for node in nidb.nodes("is_router")]
@@ -351,8 +351,14 @@ def measure_network(nidb):
         #TODO: make auto take tap ip if netkit platform node
         #TODO: auto make put into list if isinstance(remote_hosts, nidb_node)
         start_node = random.choice([n for n in nidb.nodes("is_router")])
+        start_node = nidb.node("8")
         remote_hosts = [start_node.tap.ip]
-        measure.send(nidb, command, remote_hosts)
+        result = measure.send(nidb, command, remote_hosts)
+        verified = verify.igp_routes(anm, result)
+        print verified
+
+
+
 
     if 0:
         #measure.send(nidb, command, remote_hosts, threads = 5)
