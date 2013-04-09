@@ -17,6 +17,7 @@ var g_traces = chart.append("svg:g")
 var g_highlights = chart.append("svg:g")
 .attr("id", "g_highlights");
 
+
 var g_interfaces = chart.append("svg:g")
 .attr("id", "g_interfaces");
 
@@ -671,7 +672,6 @@ g_traces.append("svg:defs").selectAll("marker")
 .data(["link_edge"])
 .enter().append("svg:marker")
 .attr("id", String)
-.attr("markerHeight", 7)
 .attr("refX", 2.4)
 .attr("refY", 2)
 .attr("fill", "rgb(25,52,65)")
@@ -1206,12 +1206,10 @@ function redraw() {
     }
 
     var hull_stroke_width = function() {
-
         if (display_interfaces && overlay_id in interface_overlay_groupings) {
             return 25;
         }
         return 80;
-
     }
 
 
@@ -1476,7 +1474,6 @@ function redraw() {
         .remove();
 
     //Link labels
-    link_labels = chart.selectAll(".link_label")
     link_labels = g_links.selectAll(".link_label")
         .data(jsondata.links, edge_id)
 
@@ -1520,6 +1517,7 @@ function redraw() {
     var image = g_nodes.selectAll(".device_icon")
         .attr("xlink:href", icon)
         .data(nodes, node_id);
+        .data(nodes, function(d) { return d.id});
 
     image.enter().append("image")
         .attr("class", "device_icon")
@@ -1621,7 +1619,6 @@ function redraw_paths() {
         //TODO: can use following to map to marker type
         //.attr("marker-end", function(d) { return "url(#" + d.type + ")"; });
         //.attr("marker-end", "url(#trace)")
-        clear_label();
         //.on("mouseover", function(d){
             //d3.select(this).style("stroke", "rgb(242,130,6)");
             //d3.select(this).style("stroke-width", "4");
