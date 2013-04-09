@@ -666,19 +666,22 @@ var interface_info = function(d) {
 //Markers from http://bl.ocks.org/1153292
 // Used for arrow-heads
 // Per-type markers, as they don't inherit styles.
-chart.append("svg:defs").selectAll("marker")
+//TODO: create separate markers for traces and links
+g_traces.append("svg:defs").selectAll("marker")
 .data(["link_edge"])
 .enter().append("svg:marker")
 .attr("id", String)
-.attr("viewBox", "0 0 12 12")
-.attr("refX", 35)
-.attr("refY", -4.5)
-.attr("overflow", "visible")
-.attr("markerWidth", 7)
 .attr("markerHeight", 7)
+.attr("refX", 2.4)
+.attr("refY", 2)
+.attr("fill", "rgb(25,52,65)")
+.attr("stroke", "rgb(25,52,65)")
+.attr("markerWidth", 20)
+.attr("markerHeight", 10)
+//.attr("markerUnits", "userSpaceOnUse")
 .attr("orient", "auto")
 .append("svg:path")
-.attr("d", "M0,-5L10,0L0,5");
+.attr("d", "M0,0 V4 L2,2 Z");
 
 var marker_end  = function(d) {
     if (jsondata.directed) {
@@ -1056,6 +1059,11 @@ var line_opacity = function(x) {
 // Store the attributes used for nodes and edges, to allow user to select
 var node_attributes = [];
 var edge_attributes = [];
+
+
+
+
+
 
 function redraw() {
     //TODO: tidy this up, not all functions need to be in here, move out those that do, and only pass required params. also avoid repeated calculations.
@@ -1555,8 +1563,8 @@ function redraw() {
         }
     });
 
-    device_labels = chart.selectAll(".device_label")
-        .data(nodes, node_id)
+    device_labels = g_nodes.selectAll(".device_label")
+        .data(nodes, function(d) { return d.id});
 
         device_labels.enter().append("text")
         .attr("x", function(d) { return d.x + x_offset; })
@@ -1606,31 +1614,63 @@ function redraw_paths() {
     trace_path.enter().append("svg:path")
         .attr("d", traceroute_line)
         .attr("class", "trace_path")
-        .style("stroke-width", 10)
-        .style("stroke", "yellow")
+        .style("stroke-width", 5)
+        .style("stroke", "rgb(25,52,65)")
         .style("fill", "none")
+        .attr("marker-end", "url(#link_edge)")
         //TODO: can use following to map to marker type
         //.attr("marker-end", function(d) { return "url(#" + d.type + ")"; });
         //.attr("marker-end", "url(#trace)")
-        .on("mouseover", function(d){
-            d3.select(this).style("stroke", "orange");
-            d3.select(this).style("stroke-width", "6");
-            path_info(d);
-        })
-    .on("mouseout", function(){
-        d3.select(this).style("stroke-width", "3");
-        d3.select(this).style("stroke", "yellow");
         clear_label();
-    })
+        //.on("mouseover", function(d){
+            //d3.select(this).style("stroke", "rgb(242,130,6)");
+            //d3.select(this).style("stroke-width", "4");
+            //path_info(d);
+        //})
+    //.on("mouseout", function(){
+        //d3.select(this).style("stroke-width", "3");
+        //d3.select(this).style("stroke", "yellow");
+        //clear_label();
+    //})
 
     .transition()
-    .duration(2000)
+    .duration(20)
     .style("stroke-width", 5)
-    .style("stroke", "rgb(55,55,55)")
-    .style("opacity", 50) ;
+    .style("stroke", "rgb(25,52,65)")
+    .style("opacity", 1) ;
 
     trace_path.exit().transition()
-    .duration(500)
+    .duration(5)
     .style("opacity",0)
     .remove();
+
+    //device_labels = g_nodes.selectAll(".device_label")
+        //.transition()
+        //.duration(50)
+        //.style("opacity",0.5);
+
+    //image = g_nodes.selectAll(".device_icon")
+    //.transition()
+        //.duration(50)
+        //.style("stroke","red")
+        //.style("opacity",0.5);
+
+    //g_links.selectAll(".link_edge")
+                //.transition()
+        //.duration(50)
+        //.style("opacity",0.5);
+
+    //g_links.selectAll(".link_label")
+                //.transition()
+        //.duration(50)
+        //.style("opacity",0.5);
+
+    //groupings = g_groupings.selectAll(".attr_group")
+        //.transition()
+        //.duration(50)
+        //.style("opacity",0.1);
+        //
+
+    //window.print();
+
     }
