@@ -1595,52 +1595,55 @@ var blah;
 
 function redraw_paths() {
 
-    var traceroute_line = d3.svg.line()
+
+
+    //TODO: paths need to be updated when graph changes... or perhaps fade out as no longer relevant if topology changes?
+    //TODO: set paths using css and transition style rather than all the attributes hard coded
+
+    //animation based on http://bl.ocks.org/duopixel/4063326
+    var svg_line = d3.svg.line()
         .x(path_x)
         .y(path_y)
         .interpolate("cardinal")
         .tension(0.7)
         ;
 
-    //TODO: paths need to be updated when graph changes... or perhaps fade out as no longer relevant if topology changes?
-    //TODO: set paths using css and transition style rather than all the attributes hard coded
-
     trace_path = g_traces.selectAll(".trace_path")
         .data(pathinfo, function(path) {
-            return path.join("_"); //id by path
+            return _.first(path) + "_" + _.last(path);;
         })
-
-
-    //animation based on http://bl.ocks.org/duopixel/4063326
+    
+    var path_total_length = function(d) {
+        return d.node().getTotalLength()
+    }
 
     trace_path.enter().append("svg:path")
-        .attr("d", traceroute_line)
+        .attr("d", svg_line)
         .attr("class", "trace_path")
         .style("stroke-width", 7)
         .style("stroke", "rgb(207,120,33)")
         .style("fill", "none")
-        //TODO: check interpolate to marker end too
-
-        var path_total_length = function(d) {
-            return d.node().getTotalLength()
-        }
-
-        trace_path
-        //.attr("stroke-dasharray", totalLength + " " + totalLength)
-        //.attr("stroke-dashoffset", function(x) { console.log(x); return totalLength(x);})
         .attr("stroke-dasharray", function(d) {
             return path_total_length(d3.select(this)) + " " + path_total_length(d3.select(this))})
         .attr("stroke-dashoffset", function(d) {
-                return path_total_length(d3.select(this))})
+            return path_total_length(d3.select(this))})
+
+        trace_path
+        .attr("d", svg_line)
+
         .transition()
         .style("stroke", "rgb(25,52,65)")
-        //TODO: check if calculating for *all* paths each time - ie O(N) or O(N^2)
-        //.attr("d", traceroute_line)
+        .attr("d", svg_line)
+        .attr("stroke-dasharray", function(d) {
+            return path_total_length(d3.select(this)) + " " + path_total_length(d3.select(this))})
         .ease("linear")
         .attr("stroke-dashoffset", 0)
-        .attr("marker-end", "url(#link_edge)")
         .duration(1000)
-
+        .transition()
+                .attr("stroke-dasharray", function(d) {
+            return path_total_length(d3.select(this)) + " " + path_total_length(d3.select(this))})
+        .attr("marker-end", "url(#link_edge)")
+        .duration(100)
 
         //TODO: chain arrow-head to appear after path is drawn (ie fire fade-in after previous event)
 
