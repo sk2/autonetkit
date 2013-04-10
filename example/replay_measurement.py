@@ -6,10 +6,10 @@ nodes = ["8"]
 
 import autonetkit.anm
 anm = autonetkit.anm.AbstractNetworkModel()
-anm.restore_latest()
+anm.restore("measurement_sh_ip_route/anm_20130409_200932.json.gz")
 g_ipv4 = anm['ipv4']
 
-for json_file in sorted(glob.glob('*.json')):
+for json_file in sorted(glob.glob('measurement_sh_ip_route/*.json')):
     with open(json_file, "r") as fh:
         data = json.loads(fh.read())
     print data

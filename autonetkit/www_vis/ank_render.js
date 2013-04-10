@@ -1591,6 +1591,8 @@ function redraw() {
     //});
         }
 
+var blah;
+
 function redraw_paths() {
 
     var traceroute_line = d3.svg.line()
@@ -1605,16 +1607,44 @@ function redraw_paths() {
 
     trace_path = g_traces.selectAll(".trace_path")
         .data(pathinfo, function(path) {
-            return path.join("_");
+            return path.join("_"); //id by path
         })
+
+
+    //animation based on http://bl.ocks.org/duopixel/4063326
 
     trace_path.enter().append("svg:path")
         .attr("d", traceroute_line)
         .attr("class", "trace_path")
-        .style("stroke-width", 5)
-        .style("stroke", "rgb(25,52,65)")
+        .style("stroke-width", 7)
+        .style("stroke", "rgb(207,120,33)")
         .style("fill", "none")
+        //TODO: check interpolate to marker end too
+
+        var path_total_length = function(d) {
+            return d.node().getTotalLength()
+        }
+
+        trace_path
+        //.attr("stroke-dasharray", totalLength + " " + totalLength)
+        //.attr("stroke-dashoffset", function(x) { console.log(x); return totalLength(x);})
+        .attr("stroke-dasharray", function(d) {
+            return path_total_length(d3.select(this)) + " " + path_total_length(d3.select(this))})
+        .attr("stroke-dashoffset", function(d) {
+                return path_total_length(d3.select(this))})
+        .transition()
+        .style("stroke", "rgb(25,52,65)")
+        //TODO: check if calculating for *all* paths each time - ie O(N) or O(N^2)
+        //.attr("d", traceroute_line)
+        .ease("linear")
+        .attr("stroke-dashoffset", 0)
         .attr("marker-end", "url(#link_edge)")
+        .duration(1000)
+
+
+        //TODO: chain arrow-head to appear after path is drawn (ie fire fade-in after previous event)
+
+
         //TODO: can use following to map to marker type
         //.attr("marker-end", function(d) { return "url(#" + d.type + ")"; });
         //.attr("marker-end", "url(#trace)")
@@ -1629,14 +1659,12 @@ function redraw_paths() {
         //clear_label();
     //})
 
-    .transition()
-    .duration(20)
-    .style("stroke-width", 5)
-    .style("stroke", "rgb(25,52,65)")
-    .style("opacity", 1) ;
+    //.style("stroke-width", 5)
+    //.style("stroke", "rgb(25,52,65)")
+    //.style("opacity", 1) ;
 
     trace_path.exit().transition()
-    .duration(5)
+    .duration(1000)
     .style("opacity",0)
     .remove();
 
