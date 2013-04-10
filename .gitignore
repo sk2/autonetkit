@@ -74,3 +74,5 @@ autonetkit/www_vis/icons/collision_domain2.svg
 
 example.graphml*
 test_out.txt
+
+example/measurement_sh_ip_route/*

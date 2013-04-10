@@ -1,7 +1,7 @@
 body
 {
   font-family:"Palatino Linotype", "Book Antiqua", Palatino, serif;
-  background-color: rgb(240, 239, 255);
+  background-color: rgb(255, 255, 255);
   color: #333;
 }
 
@@ -87,7 +87,7 @@ marker {
 }
 
 .chart_rect {
-  fill: rgb(240, 239, 255);
+  fill: rgb(255, 255, 255);
 }
 
 .size_box {
