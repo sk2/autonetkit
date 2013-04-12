@@ -493,7 +493,13 @@ class nidb_node(object):
 
     def interface(self, key):
         #TODO: also need to allow access interface for nidb and search on (node, interface id) tuple
-        return overlay_interface(self.nidb, self.node_id, key.interface_id)
+        try:
+            interface_id = key.interface_id # eg extract from interface
+        except AttributeError:
+            interface_id = key # eg string
+
+        return overlay_interface(self.nidb, self.node_id, interface_id)
+
 
     @property
     def _interfaces(self):
