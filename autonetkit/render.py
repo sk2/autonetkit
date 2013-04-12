@@ -122,7 +122,7 @@ def render_node(node, folder_cache):
 
             if node.render.to_memory:
 # Render directly to NIDB
-                node.render.to_memory = render_template.render(
+                node.render.render_output = render_template.render(
                             node = node,
                             ank_version = ank_version,
                             date = date,
