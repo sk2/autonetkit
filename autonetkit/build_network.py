@@ -66,8 +66,7 @@ def grid_2d(dim):
 
     return graph
 
-def build(input_graph):
-    """Main function to build network overlay topologies"""
+def initialise(input_graph):
     anm = autonetkit.anm.AbstractNetworkModel()
 
     input_undirected = nx.Graph(input_graph)
@@ -96,6 +95,13 @@ def build(input_graph):
     g_graphics = anm.add_overlay("graphics")  # plotting data
     g_graphics.add_nodes_from(g_in, retain=['x', 'y', 'device_type',
                               'device_subtype', 'pop', 'asn'])
+
+    return anm
+
+def build(input_graph):
+    """Main function to build network overlay topologies"""
+    anm = initialise(input_graph)
+    g_in = anm['input']
 
     build_phy(anm)
     g_phy = anm['phy']
