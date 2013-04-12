@@ -49,6 +49,7 @@ def grid_2d(dim):
         graph.node[n]['platform'] = 'cisco'
         graph.node[n]['syntax'] = 'ios2'
         graph.node[n]['host'] = 'internal'
+        graph.node[n]['ibgp_level'] = 0
 
     mapping = {n: "%s_%s" % (n[0], n[1]) for n in graph}
     nx.relabel_nodes(graph, mapping, copy=False) # Networkx wipes data if remap with same labels
