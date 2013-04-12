@@ -1281,6 +1281,8 @@ function redraw() {
 
     var line = g_links.selectAll(".link_edge")
         .data(jsondata.links, edge_id)
+        .data(jsondata.links, 
+                function(d) { return d.source + "_" +  d.target})
 
         //line.enter().append("line")
         line.enter().append("svg:path")
