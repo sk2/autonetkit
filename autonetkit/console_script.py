@@ -37,7 +37,6 @@ def file_monitor(filename):
             yield True
         yield False
 
-
 def manage_network(input_graph_string, timestamp, build_options, reload_build=False, grid = None):
     """Build, compile, render network as appropriate"""
     # import build_network_simple as build_network
@@ -144,7 +143,7 @@ def parse_options():
     parser.add_argument('--measure', action="store_true",
                         default=False, help="Measure")
     parser.add_argument('--webserver', action="store_true", default=False, help="Webserver")
-    parser.add_argument('--grid', type=int, help="Webserver")
+    parser.add_argument('--grid', type=int, help="Grid Size (n * n)")
     arguments = parser.parse_args()
     return arguments
 
@@ -331,6 +330,7 @@ def deploy_network(anm, nidb, input_graph_string):
                 netkit_deploy.extract(host, username, tar_file,
                                       config_path, timeout=60, key_filename=key_file)
             if platform == "cisco":
+                #TODO: check why using nklab here
                 cisco_deploy.package(config_path, "nklab")
 
 
