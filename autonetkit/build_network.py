@@ -134,7 +134,7 @@ def build(input_graph):
 # post-processing
     mark_ebgp_vrf(anm)
     build_ibgp_vpn_v4(anm) # build after bgp as is based on
-    autonetkit.update_http(anm)
+    #autonetkit.update_http(anm)
 
     return anm
 
