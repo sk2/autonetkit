@@ -932,7 +932,7 @@ class CiscoCompiler(PlatformCompiler):
         lab_topology = self.nidb.topology[self.host]
         oob_management_ips = {}
         from netaddr import IPNetwork
-        management_subnet = IPNetwork("172.16.254.0/24")
+        management_subnet = IPNetwork("172.16.254.0/16")
         management_ips = management_subnet.iter_hosts()
         oob_host_ip = management_ips.next()
         oob_management_ips["host"] = oob_host_ip
