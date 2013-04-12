@@ -668,14 +668,15 @@ var interface_info = function(d) {
 // Used for arrow-heads
 // Per-type markers, as they don't inherit styles.
 //TODO: create separate markers for traces and links
+//TODO: set marker properties by css
 g_traces.append("svg:defs").selectAll("marker")
-.data(["link_edge"])
+.data(["path_marker", "path_verified_marker"])
 .enter().append("svg:marker")
 .attr("id", String)
 .attr("refX", 2.4)
 .attr("refY", 2)
-.attr("fill", "rgb(25,52,65)")
-.attr("stroke", "rgb(25,52,65)")
+//.attr("fill", "rgb(25,52,65)")
+//.attr("stroke", "rgb(25,52,65)")
 .attr("markerWidth", 20)
 .attr("markerHeight", 10)
 //.attr("markerUnits", "userSpaceOnUse")
@@ -685,7 +686,7 @@ g_traces.append("svg:defs").selectAll("marker")
 
 var marker_end  = function(d) {
     if (jsondata.directed) {
-        return "url(#link_edge)";
+        return "url(#path_marker)";
     }
     return "";
 }
@@ -1280,7 +1281,6 @@ function redraw() {
 
 
     var line = g_links.selectAll(".link_edge")
-        .data(jsondata.links, edge_id)
         .data(jsondata.links, 
                 function(d) { return d.source + "_" +  d.target})
 
@@ -1288,10 +1288,10 @@ function redraw() {
         line.enter().append("svg:path")
         .attr("class", "link_edge")
         .style("opacity", line_opacity)
-        .attr("id", 
-                function(d) { 
-                    return "path"+d.source+"_"+d.target; 
-                }) 
+        //.attr("id", 
+                //function(d) { 
+                    //return "path"+d.source+"_"+d.target; 
+                //}) 
     .attr("d", graph_edge)
         .style("stroke-width", function() {
             //TODO: use this stroke-width function on mouseout too
@@ -1315,7 +1315,8 @@ function redraw() {
         })
     .on("mouseout", function(){
         d3.select(this).style("stroke-width", "2");
-        d3.select(this).style("stroke", "rgb(103,109,244)");
+        //d3.select(this).style("stroke", "rgb(103,109,244)");
+        d3.select(this).style("stroke", "rgb(2,106 ,155)");
         d3.select(this).style("fill", "none");
         //d3.select(this).attr("marker-end", marker_end);
         clear_label();
@@ -1399,18 +1400,20 @@ function redraw() {
             interfaces = d3.selectAll(".interface_icon");
         }
 
+    //TODO: fix issue with interface id changing -> interfaces appear/reappear
+
     interface_icons.enter().append("svg:rect")
         .attr("class", "interface_icon")
         .attr("width", interface_width)
         .attr("height", interface_height)
         .attr("x", interface_x)
         .attr("y", interface_y)
-        .style("opacity", 0)
+        //.style("opacity", 0)
 
         interface_icons
         //TODO: look if can return multiple attributes, ie x and y, from the same function, ie calculation
         .attr("fill", "rgb(6,120,155)")
-        .style("opacity", 0)
+        //.style("opacity", 0)
 
         .on("mouseover", function(d){
             highlight_interfaces(d);
@@ -1439,12 +1442,12 @@ function redraw() {
     interface_icons.transition()
         .attr("x", interface_x)
         .attr("y", interface_y)
-        .style("opacity", interface_opacity)
+        //.style("opacity", interface_opacity)
         .duration(500);
 
     interface_icons.exit().transition()
         .duration(500)
-        .style("opacity",0)
+        //.style("opacity",0)
         .remove();
 
     interface_labels = g_interfaces.selectAll(".interface_label")
@@ -1612,17 +1615,32 @@ function redraw_paths() {
 
     trace_path = g_traces.selectAll(".trace_path")
         .data(pathinfo, function(path) {
-            return _.first(path) + "_" + _.last(path);;
+            elements = path['path'];
+            return _.first(elements) + "_" + _.last(elements);;
         })
     
     var path_total_length = function(d) {
         return d.node().getTotalLength()
     }
 
+    var path_marker_end = function(d) { 
+        if ("verified" in d && d['verified'] == true) {
+            return "url(#path_verified_marker)";
+        }
+        return "url(#path_marker)";
+    }
+
+    var path_color = function(d) { 
+        if ("verified" in d && d['verified'] == true) {
+            return "rgb(0,128,64)";
+        }
+        return "rgb(25,52,65)";
+    }
+
     trace_path.enter().append("svg:path")
-        .attr("d", svg_line)
+        .attr("d", function(d) { return svg_line(d['path'])})
         .attr("class", "trace_path")
-        .style("stroke-width", 7)
+        .style("stroke-width", 5)
         .style("stroke", "rgb(207,120,33)")
         .style("fill", "none")
         .attr("stroke-dasharray", function(d) {
@@ -1631,21 +1649,30 @@ function redraw_paths() {
             return path_total_length(d3.select(this))})
 
         trace_path
-        .attr("d", svg_line)
-
         .transition()
-        .style("stroke", "rgb(25,52,65)")
-        .attr("d", svg_line)
-        .attr("stroke-dasharray", function(d) {
-            return path_total_length(d3.select(this)) + " " + path_total_length(d3.select(this))})
+        .style("stroke", path_color)
+        .attr("d", function(d) { return svg_line(d['path'])})
         .ease("linear")
         .attr("stroke-dashoffset", 0)
         .duration(1000)
         .transition()
-                .attr("stroke-dasharray", function(d) {
-            return path_total_length(d3.select(this)) + " " + path_total_length(d3.select(this))})
-        .attr("marker-end", "url(#link_edge)")
-        .duration(100)
+        .attr("stroke-dasharray", "0")
+        .attr("marker-end", path_marker_end)
+        .duration(1)
+
+        trace_path
+          .on("mouseover", function(d){
+            d3.select(this).style("stroke", "rgb(242,130,6)");
+            d3.select(this).style("stroke-width", "4");
+            //path_info(d);
+            console.log(d.verified);
+        })
+    .on("mouseout", function(){
+        d3.select(this).style("stroke-width", "3");
+        d3.select(this).style("stroke", "yellow");
+        //clear_label();
+    })
+
 
         //TODO: chain arrow-head to appear after path is drawn (ie fire fade-in after previous event)
 
