@@ -4,6 +4,7 @@ import pprint
 from collections import defaultdict
 
 def igp_routes(anm, measured):
+    #TODO: split up expected calculation and comparison so don't need to calculate SPF multiple times
     #TODO: allow choice of IGP - for now is just OSPF
     import networkx as nx
     g_ipv4 = anm['ipv4']
