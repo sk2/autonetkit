@@ -337,6 +337,8 @@ def deploy_network(anm, nidb, input_graph_string):
 def measure_network(anm, nidb):
     import autonetkit.measure as measure
     import autonetkit.verify as verify
+    import autonetkit
+
     log.info("Measuring network")
     if 0:
         remote_hosts = [node.tap.ip for node in nidb.nodes("is_router")]
@@ -351,13 +353,30 @@ def measure_network(anm, nidb):
         #TODO: make auto take tap ip if netkit platform node
         #TODO: auto make put into list if isinstance(remote_hosts, nidb_node)
         start_node = random.choice([n for n in nidb.nodes("is_router")])
-        start_node = nidb.node("8")
+        start_node = nidb.node("1")
         remote_hosts = [start_node.tap.ip]
         result = measure.send(nidb, command, remote_hosts)
-        verified = verify.igp_routes(anm, result)
-        print verified
 
+        processed = []
+        for line in result:
+            processed.append([anm['ipv4'].node(n) for n in line])
 
+        #TODO: move this into verify module
+        verification_results = verify.igp_routes(anm, processed)
+        processed_with_results = []
+        for line in processed:
+            prefix = str(line[-1].subnet)
+            try:
+                result = verification_results[prefix]
+            except KeyError:
+                result = False # couldn't find prefix
+            processed_with_results.append({
+                'path': line,
+                'verified': result,
+                })
+
+        autonetkit.update_http(anm, nidb)
+        ank_messaging.highlight([], [], processed_with_results)
 
 
     if 0:
