@@ -63,7 +63,17 @@ def highlight(nodes, edges, paths = None):
     edges = [efilter(e) for e in edges]
     filtered_paths = []
     for path in paths:
-        filtered_paths.append([nfilter(n) for n in path])
+        #TODO: tidy this logic
+        if isinstance(path, dict) and 'path' in path:
+            path_data = path # use as-s
+        else:
+            import random
+            is_verified = bool(random.randint(0,1))
+            path_data = {'path': path,
+                    'verified': is_verified}
+
+        path_data['path'] = [nfilter(n) for n in path_data['path']]
+        filtered_paths.append(path_data)
 
     import json
     body = json.dumps({
