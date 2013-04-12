@@ -9,6 +9,7 @@ import autonetkit.log as log
 def send(nidb, command, hosts, server = "measure_client", threads = 3):
 # netaddr IP addresses not JSON serializable
     hosts = [str(h) for h in hosts]
+    log.debug("Measure: %s %s" % (hosts, command))
 
     pika_host = config.settings['Rabbitmq']['server']
 
@@ -85,6 +86,12 @@ def send(nidb, command, hosts, server = "measure_client", threads = 3):
                         messaging.publish_json(body)
                     else:
                         log.info("Partial trace, not sending to webserver: %s", trace_result)
+                elif "show ip ospf interface" in command:
+                    print command_result
+                    completed = True
+                elif "conf t" in command:
+                    print command_result
+                    completed = True
                 else:
                     print "No parser defined for command %s" % command
                     print "Raw output:"
