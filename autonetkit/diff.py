@@ -66,6 +66,14 @@ def elem_diff(elem_a, elem_b):
     if elem_a != elem_b:
         return {1: elem_a, 2: elem_b }
 
+
+def compare_nidb(nidb_a, nidb_b):
+    graph_a = nidb_a._graph
+    graph_b = nidb_b._graph
+    diff = compare(graph_a, graph_b)
+    return diff
+
+
 def compare(graph_a, graph_b):
     diff = {}
 
