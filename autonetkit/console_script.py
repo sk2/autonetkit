@@ -234,8 +234,7 @@ def main():
             # TODO: need to close filehandles for input and output
             log.info("Exiting")
 
-
-def compile_network(anm):
+def create_nidb(anm):
     nidb = NIDB()
     g_phy = anm['phy']
     g_ip = anm['ip']
@@ -265,6 +264,12 @@ def compile_network(anm):
 # TODO: boundaries is still a work in progress...
     nidb.copy_graphics(g_graphics)
 
+    return nidb
+
+def compile_network(anm):
+    nidb = create_nidb(anm)
+    g_phy = anm['phy']
+
     for target, target_data in config.settings['Compile Targets'].items():
         host = target_data['host']
         platform = target_data['platform']
@@ -286,7 +291,7 @@ def compile_network(anm):
     return nidb
 
 
-def deploy_network(anm, nidb, input_graph_string):
+def deploy_network(anm, nidb, input_graph_string = None):
 
     # TODO: make this driven from config file
     log.info("Deploying network")
@@ -333,11 +338,44 @@ def deploy_network(anm, nidb, input_graph_string):
                 #TODO: check why using nklab here
                 cisco_deploy.package(config_path, "nklab")
 
+def collect_sh_ip_route(anm, nidb, start_node = None):
+    if not start_node:
+        start_node = random.choice([n for n in nidb.nodes("is_router")])
 
-def measure_network(anm, nidb):
+    #TODO: move this to another module, eg measure
     import autonetkit.measure as measure
     import autonetkit.verify as verify
     import autonetkit
+    command = 'vtysh -c "show ip route"'
+    #TODO: make auto take tap ip if netkit platform node
+    #TODO: auto make put into list if isinstance(remote_hosts, nidb_node)
+    remote_hosts = [start_node.tap.ip]
+    result = measure.send(nidb, command, remote_hosts)
+
+    processed = []
+    for line in result:
+        processed.append([anm['ipv4'].node(n) for n in line])
+
+    #TODO: move this into verify module
+    verification_results = verify.igp_routes(anm, processed)
+    processed_with_results = []
+    for line in processed:
+        prefix = str(line[-1].subnet)
+        try:
+            result = verification_results[prefix]
+        except KeyError:
+            result = False # couldn't find prefix
+        processed_with_results.append({
+            'path': line,
+            'verified': result,
+            })
+
+    autonetkit.update_http(anm, nidb)
+    ank_messaging.highlight([], [], processed_with_results)
+
+
+def measure_network(anm, nidb):
+    import autonetkit.measure as measure
 
     log.info("Measuring network")
     if 0:
@@ -349,35 +387,8 @@ def measure_network(anm, nidb):
         measure.send(nidb, command, remote_hosts, threads = 10)
     # abort after 10 fails, proceed on any success, 0.1 second timeout (quite aggressive)
     if 1:
-        command = 'vtysh -c "show ip route"'
-        #TODO: make auto take tap ip if netkit platform node
-        #TODO: auto make put into list if isinstance(remote_hosts, nidb_node)
-        start_node = random.choice([n for n in nidb.nodes("is_router")])
-        start_node = nidb.node("1")
-        remote_hosts = [start_node.tap.ip]
-        result = measure.send(nidb, command, remote_hosts)
-
-        processed = []
-        for line in result:
-            processed.append([anm['ipv4'].node(n) for n in line])
-
-        #TODO: move this into verify module
-        verification_results = verify.igp_routes(anm, processed)
-        processed_with_results = []
-        for line in processed:
-            prefix = str(line[-1].subnet)
-            try:
-                result = verification_results[prefix]
-            except KeyError:
-                result = False # couldn't find prefix
-            processed_with_results.append({
-                'path': line,
-                'verified': result,
-                })
-
-        autonetkit.update_http(anm, nidb)
-        ank_messaging.highlight([], [], processed_with_results)
-
+        collect_sh_ip_route(anm, nidb)
+        
 
     if 0:
         #measure.send(nidb, command, remote_hosts, threads = 5)
