@@ -692,6 +692,9 @@ class OverlayBase(object):
             try:
                 if self._graph[src][dst]['edge_id'] == search_id:
                     return OverlayEdge(self._anm, self._overlay_id, src, dst)
+                elif (src, dst) == (src_id, search_id): 
+                    # searching by nodes
+                    return OverlayEdge(self._anm, self._overlay_id, src, dst)
             except KeyError:
                 pass  # no edge_id for this edge
 
