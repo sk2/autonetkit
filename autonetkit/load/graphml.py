@@ -14,7 +14,6 @@ from collections import defaultdict
 def load_graphml(input_data):
     #TODO: allow default properties to be passed in as dicts
 
-
     try:
         graph = nx.read_graphml(input_data)
     except IOError, e:
@@ -35,7 +34,15 @@ def load_graphml(input_data):
         else:
             raise e
 
-    # remove selfloops
+    if graph.is_multigraph():
+        log.info("Input graph is multigraph. Converting to single-edge graph")
+        if graph.is_directed():
+            graph = nx.DiGraph(graph)
+        else:
+            graph = nx.Graph(graph)
+
+    #TODO: need to support edge index keying for multi graphs
+
     graph.remove_edges_from(edge for edge in graph.selfloop_edges())
 #TODO: if selfloops then log that are removing
 
