@@ -98,9 +98,7 @@ def initialise(input_graph):
 
     return anm
 
-def build(input_graph):
-    """Main function to build network overlay topologies"""
-    anm = initialise(input_graph)
+def apply_design_rules(anm):
     g_in = anm['input']
 
     build_phy(anm)
@@ -142,7 +140,13 @@ def build(input_graph):
     mark_ebgp_vrf(anm)
     build_ibgp_vpn_v4(anm) # build after bgp as is based on
     #autonetkit.update_http(anm)
+    return anm
 
+
+def build(input_graph):
+    """Main function to build network overlay topologies"""
+    anm = initialise(input_graph)
+    anm = apply_design_rules(anm)
     return anm
 
 def vrf_pre_process(anm):
