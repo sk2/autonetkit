@@ -890,6 +890,10 @@ class NIDB_base(object):
             for node in self:
                 if str(node) == key:
                     return node
+                elif node.id == key:
+                    # label could be "a b" -> "a_b" (ie folder safe, etc)
+                    #TODO: need to fix this discrepancy
+                    return node
             print "Unable to find node", key, "in", self
             return None
 
