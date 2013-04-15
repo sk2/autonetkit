@@ -36,7 +36,8 @@ class MyWebHandler(tornado.web.RequestHandler):
         if body_parsed.has_key("anm"):
             print "Received updated network topology"
             if False: # use to save the default.json
-                with open(os.path.join(www_dir, "default.json"), "w") as fh:
+                import gzip
+                with gzip.open(os.path.join(www_dir, "default.json.gz"), "w") as fh:
                     json.dump(body_parsed['anm'], fh)
             self.anm = data
             try:
@@ -299,7 +300,8 @@ class AnkAccessor():
         self.ip_allocation = {}
 # try loading from vis directory
         try:
-            fh = open(os.path.join(www_dir, "default.json"), "r")
+            import gzip
+            fh = gzip.open(os.path.join(www_dir, "default.json.gz"), "r")
             data = json.load(fh)
             #data = json.loads(loaded)
             self.anm = data
