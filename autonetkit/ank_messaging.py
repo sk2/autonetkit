@@ -7,10 +7,6 @@ use_rabbitmq = config.settings['Rabbitmq']['active']
 if use_rabbitmq:
     import pika
 
-use_message_pipe = config.settings['Message Pipe']['active']
-if use_message_pipe:
-    import telnetlib
-
 use_http_post = config.settings['Http Post']['active']
 if use_http_post:
     import urllib
@@ -113,14 +109,6 @@ class AnkMessaging(object):
                 self.publish = self.publish_pika
                 self.publish_compressed = self.publish_compressed_pika
 
-            if use_message_pipe:
-                #TODO: make message server also settable
-                port = config.settings['Message Pipe']['port']
-                self.telnet_port = port
-                self.publish = self.publish_telnet
-                self.publish_compressed = self.publish_telnet
-#TODO: support use of both at once....
-
             if use_http_post:
                 host = config.settings['Http Post']['server']
                 port = config.settings['Http Post']['port']
@@ -128,7 +116,7 @@ class AnkMessaging(object):
                 self.publish = self.publish_http_post
                 self.publish_compressed = self.publish_http_post
 
-            if not (use_rabbitmq or use_message_pipe or use_http_post):
+            if not (use_rabbitmq or use_http_post):
                 log.debug("Not using Rabbitmq or telnet")
                 self.publish = self.publish_blank_stub
                 self.publish_compressed = self.publish_blank_stub
@@ -159,14 +147,6 @@ class AnkMessaging(object):
         import json
         data = json.dumps(body, cls=autonetkit.ank_json.AnkEncoder, indent = 4)
         self.publish(None, None, data)
-
-    def publish_telnet(self, exchange, routing_key, body):
-        try:
-            tn = telnetlib.Telnet("localhost", self.telnet_port)
-            tn.write(body)
-            tn.close()
-        except socket.error:
-            log.warning("Unable to connect to telnet on localhost at %s" % self.telnet_port)
 
     def publish_compressed_telnet(self, exchange, routing_key, body):
         import zlib

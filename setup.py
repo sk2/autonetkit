@@ -34,7 +34,7 @@ setup (
          'mako==0.7.3',
          'networkx==1.7', 
          'configobj==4.7.2', 
-         'tornado==2.4.1', 
+         'tornado==3.0.1', 
          #'textfsm', 'pika',
          # 'exscript==0.0.1'
          ],
