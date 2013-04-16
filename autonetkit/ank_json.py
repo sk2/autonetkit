@@ -37,7 +37,6 @@ class NidbEncoder(json.JSONEncoder):
             return str(obj) #TODO: need to handle as list of children
             #return [{"name": k, "value": v} for k, v in obj.items
 
-        print "objs is", type(obj)
         return json.JSONEncoder.default(self, obj)
 
 def ank_nidb_tree(nidb, indent = 4):
@@ -69,6 +68,8 @@ class AnkEncoder(json.JSONEncoder):
             #TODO: add documentation about serializing anm nodes
             log.debug("%s is nidb nidb_node_category. Use attribute rather than object in compiler." % obj)
             return str(obj)
+        if isinstance(obj, nx.classes.Graph):
+            return json_graph.node_link_data(obj)
 
         return json.JSONEncoder.default(self, obj)
 
@@ -155,6 +156,7 @@ def shortened_interface(name):
 def jsonify_anm_with_graphics(anm, nidb = None):
     """ Returns a dictionary of json-ified overlay graphs, with graphics data appended to each overlay"""
     anm_json = {}
+    test_anm_data = {}
     graphics_graph = anm["graphics"]._graph.copy()
     for overlay_id in anm.overlays():
         OverlayGraph = anm[overlay_id]._graph.copy()
@@ -212,9 +214,15 @@ def jsonify_anm_with_graphics(anm, nidb = None):
             OverlayGraph.node[n]['y'] += - y_min
 
         anm_json[overlay_id] = ank_json_dumps(OverlayGraph)
-    return anm_json
+        test_anm_data[overlay_id] = OverlayGraph
 
-def jsonify_nidb(nidb):
+    if nidb:
+        test_anm_data['nidb'] = prepare_nidb(nidb)
+
+    result = json.dumps(test_anm_data, cls=AnkEncoder, indent = 4, sort_keys = True)
+    return result
+
+def prepare_nidb(nidb):
     graph = nidb._graph
     for node in graph:
         graph.node[node]['x'] = graph.node[node]['graphics']['x']
@@ -235,13 +243,12 @@ def jsonify_nidb(nidb):
         graph.node[n]['x'] += - x_min
         graph.node[n]['y'] += - y_min
 
+    return graph
+
+def jsonify_nidb(nidb):
+    graph = prepare_nidb(nidb)
     data = ank_json_dumps(graph)
     return data
 
-def dumps(anm, nidb = None):
-    data = jsonify_anm_with_graphics(anm, nidb)
-    if nidb:
-        data['nidb'] = jsonify_nidb(nidb)
-#TODO: need to update messaging format when have nidb also (as 'anm': won't be correct)
-    json_data = json.dumps({'anm': data})
-    return json_data
+def dumps(anm, nidb = None, indent = 4):
+    return jsonify_anm_with_graphics(anm, nidb)
