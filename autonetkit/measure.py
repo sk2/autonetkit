@@ -82,8 +82,8 @@ def send(nidb, command, hosts, server = "measure_client", threads = 3):
                     if str(trace_result[-1]) == str(dst_host[1]): #TODO: fix so direct comparison, not string, either here or in anm object comparison: eg compare on label?
 #TODO: make this use custom ANK serializer function
                         trace_result = [str(t.id) for t in trace_result if t] # make serializable
-                        body = {"path": trace_result}
-                        messaging.publish_json(body)
+                        import autonetkit.ank_messaging
+                        autonetkit.ank_messaging.highlight([], [], paths = [trace_result])
                     else:
                         log.info("Partial trace, not sending to webserver: %s", trace_result)
                 elif "show ip ospf interface" in command:

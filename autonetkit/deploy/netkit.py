@@ -56,21 +56,19 @@ def extract(host, username, tar_file, cd_dir, timeout = 45, key_filename = None,
     from Exscript import PrivateKey
     from Exscript.protocols.Exception import InvalidCommandException
 
-    messaging = ank_messaging.AnkMessaging()
+    messaging = ank_messaging
 
     def starting_host(protocol, index, data):
         m = re.search('\\"(\S+)\\"', data.group(index))
         if m:
             hostname = m.group(1)
             log.info(data.group(index)) #TODO: use regex to strip out just the machine name
-            body = {"starting": hostname}
             #TODO: use params and seperate call here than publish_json
-            messaging.publish_json(body)
+            messaging.publish_data(hostname, "starting_host")
 
     def lab_started(protocol, index, data):
         log.info("Lab started on %s" % host)
-        body = {"lab started": host}
-        messaging.publish_json(body)
+        messaging.publish_data(host, "lab started")
 
     def make_not_found(protocol, index, data):
         log.warning("Make not installed on remote host %s. Please install make and retry." % host)

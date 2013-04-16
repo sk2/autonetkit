@@ -1,9 +1,4 @@
 # based on http://reminiscential.wordpress.com/2012/04/07/realtime-notification-delivery-using-rabbitmq-tornado-and-websocket/
-try:
-    import pika
-    from pika.adapters.tornado_connection import TornadoConnection
-except ImportError:
-    pass # no pika installed, module will handle accordingly 
 import tornado
 import tornado.websocket as websocket
 import os
@@ -27,15 +22,11 @@ class MyWebHandler(tornado.web.RequestHandler):
     def post(self):
         data = self.get_argument('body', 'No data received')
         data_type = self.get_argument('type', 'No data received')
+        print "Received data of type %s" % data_type
         #self.write(data)
-        try:
-            body_parsed = json.loads(data)
-        except ValueError:
-            print "Unable to parse JSON for ", data
-            return
 
         if data_type == "anm":
-            print "Received updated network topology"
+            body_parsed = json.loads(data)
             if False: # use to save the default.json
                 import gzip
                 with gzip.open(os.path.join(www_dir, "default.json.gz"), "w") as fh:
@@ -48,32 +39,26 @@ class MyWebHandler(tornado.web.RequestHandler):
                 # TODO: find better way to replace object not just local reference, as need to replace for RequestHandler too
             except Exception, e:
                 print "Exception is", e
+
         elif data_type == "ip_allocations":
+            body_parsed = json.loads(data)
             alloc = body_parsed
             self.ank_accessor.ip_allocation = alloc
             self.update_listeners("ip_allocations")
-        elif "path" in body_parsed:
-            #TODO: check if need to write_message to listeners
-            self.update_listeners(data) # could do extra processing here
-#TODO: check if update_listeners is working correctly, why do need next line?
+
+        elif data_type == "starting_host":
+            self.update_listeners(data) 
             for listener in self.application.socket_listeners:
-                listener.write_message(data) 
-        elif "starting" in body_parsed:
-            #TODO: check if need to write_message to listeners
-            self.update_listeners(data) # could do extra processing here
-#TODO: check if update_listeners is working correctly, why do need next line?
+                #TODO: use a json format of {'type': type, 'data': data} in client-side script
+                listener.write_message({'starting': data}) 
+
+        elif data_type == "lab started":
+            self.update_listeners(data) 
             for listener in self.application.socket_listeners:
-                listener.write_message(data) 
-        elif "lab started" in body_parsed:
-            #TODO: check if need to write_message to listeners
-            self.update_listeners(data) # could do extra processing here
-#TODO: check if update_listeners is working correctly, why do need next line?
-            for listener in self.application.socket_listeners:
-                listener.write_message(data) 
+                listener.write_message({'lab started': data}) 
+
         elif data_type == "highlight":
-            print "Received highlight data"
-            self.update_listeners(data) # could do extra processing here
-            #TODO check why need to do following - should be automatic for update_listeners?
+            self.update_listeners(data) 
             for listener in self.application.socket_listeners:
                 listener.write_message(data) 
         else:
@@ -120,10 +105,8 @@ class MyWebSocketHandler(websocket.WebSocketHandler):
             self.application.pc.add_event_listener(self)
         except AttributeError:
             pass # no RabbitMQ server
-        #pika.log.info("WebSocket opened")
 
     def on_close(self):
-        #pika.log.info("WebSocket closed")
         self.application.socket_listeners.remove(self) 
         print "Client disconnected from %s" % self.request.remote_ip
         try:
@@ -212,7 +195,6 @@ def main():
 
     application.socket_listeners = set() # TODO: see if tornado provides access to listeners
 
-    #pika.log.setup(pika.log.WARNING, color=True)
     io_loop = tornado.ioloop.IOLoop.instance()
     # PikaClient is our rabbitmq consumer
   
@@ -232,9 +214,6 @@ def main():
 
     print "Visualisation server started"
     io_loop.start()
-    print "HERE"
-
-    #TODO: run main web server here too for HTTP
 
 if __name__ == '__main__':
     main()
