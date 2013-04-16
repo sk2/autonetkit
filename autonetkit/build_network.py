@@ -1051,10 +1051,3 @@ def build_isis(anm):
         for interface in edge.interfaces():
             interface.metric = edge.metric
             interface.multipoint = edge.multipoint
-
-
-def update_messaging(anm):
-    """Sends ANM to web server"""
-    log.debug("Sending anm to messaging")
-    body = autonetkit.ank_json.dumps(anm, None)
-    MESSAGING.publish_compressed("www", "client", body)

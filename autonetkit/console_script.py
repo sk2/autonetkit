@@ -3,6 +3,7 @@
 from autonetkit.nidb import NIDB
 import autonetkit.render as render
 import random
+from autonetkit import update_http
 import traceback
 from datetime import datetime
 import os
@@ -45,8 +46,6 @@ def manage_network(input_graph_string, timestamp, build_options, reload_build=Fa
 # remap?
         build_network = reload(build_network)
 
-    messaging = ank_messaging.AnkMessaging()
-
     if build_options['build']:
         if input_graph_string:
             graph = build_network.load(input_graph_string)
@@ -55,9 +54,7 @@ def manage_network(input_graph_string, timestamp, build_options, reload_build=Fa
 
         anm = build_network.build(graph)
         if not build_options['compile']:
-            # publish without nidb
-            body = ank_json.dumps(anm)
-            messaging.publish_compressed("www", "client", body)
+            update_http(anm)
 
         if build_options['validate']:
             import validate
@@ -68,8 +65,7 @@ def manage_network(input_graph_string, timestamp, build_options, reload_build=Fa
             anm.save()
         nidb = compile_network(anm)
 
-        body = ank_json.dumps(anm, nidb)
-        messaging.publish_compressed("www", "client", body)
+        update_http(anm, nidb)
         log.debug("Sent ANM to web server")
         if build_options['archive']:
             nidb.save()
@@ -84,8 +80,8 @@ def manage_network(input_graph_string, timestamp, build_options, reload_build=Fa
         anm.restore_latest()
         nidb = NIDB()
         nidb.restore_latest()
-        body = ank_json.dumps(anm, nidb)
-        messaging.publish_compressed("www", "client", body)
+        update_http(anm, nidb)
+        
 
     if build_options['diff']:
         import autonetkit.diff

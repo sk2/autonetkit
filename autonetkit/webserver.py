@@ -26,6 +26,7 @@ class MyWebHandler(tornado.web.RequestHandler):
 
     def post(self):
         data = self.get_argument('body', 'No data received')
+        data_type = self.get_argument('type', 'No data received')
         #self.write(data)
         try:
             body_parsed = json.loads(data)
@@ -33,15 +34,15 @@ class MyWebHandler(tornado.web.RequestHandler):
             print "Unable to parse JSON for ", data
             return
 
-        if body_parsed.has_key("anm"):
+        if data_type == "anm":
             print "Received updated network topology"
             if False: # use to save the default.json
                 import gzip
                 with gzip.open(os.path.join(www_dir, "default.json.gz"), "w") as fh:
-                    json.dump(body_parsed['anm'], fh)
+                    json.dump(body_parsed, fh)
             self.anm = data
             try:
-                self.ank_accessor.anm = body_parsed['anm']
+                self.ank_accessor.anm = body_parsed
                 #TODO: could process diff and only update client if data has changed -> more efficient client side
                 self.update_listeners("overlays")
                 # TODO: find better way to replace object not just local reference, as need to replace for RequestHandler too
@@ -69,7 +70,7 @@ class MyWebHandler(tornado.web.RequestHandler):
 #TODO: check if update_listeners is working correctly, why do need next line?
             for listener in self.application.socket_listeners:
                 listener.write_message(data) 
-        elif "highlight" in body_parsed:
+        elif data_type == "highlight":
             print "Received highlight data"
             self.update_listeners(data) # could do extra processing here
             #TODO check why need to do following - should be automatic for update_listeners?
@@ -160,139 +161,6 @@ class MyWebSocketHandler(websocket.WebSocketHandler):
         body = json.dumps({'ip_allocations': self.ank_accessor.ip_allocations()})
         self.write_message(body)
 
-class PikaClient(object):
-    def __init__(self, io_loop, ank_accessor, host_address):
-        #pika.log.info('PikaClient: __init__')
-        self.io_loop = io_loop
-        self.connected = False
-        self.connecting = False
-        self.connection = None
-        self.channel = None
-        self.event_listeners = set([])
-        self.queue_name = 'webserver-%i' % os.getpid()
-        self.ank_accessor = ank_accessor
-        self.host_address = host_address
- 
-    def connect(self):
-        if self.connecting:
-            #pika.log.info('PikaClient: Already connecting to RabbitMQ')
-            return
- 
-        #pika.log.info('PikaClient: Connecting to RabbitMQ')
-        self.connecting = True
- 
-        #cred = pika.PlainCredentials('guest', 'guest')
-        param = pika.ConnectionParameters(
-            host= self.host_address,
-            #port=5672,
-            #virtual_host='/',
-            #credentials=cred
-        )
- 
-        try:
-            self.connection = TornadoConnection(param,
-                    on_open_callback=self.on_connected)
-            self.connection.add_on_close_callback(self.on_closed)
-        except pika.exceptions.AMQPConnectionError:
-            print("Unable to connect to RabbitMQ")
- 
-    def on_connected(self, connection):
-        #pika.log.info('PikaClient: connected to RabbitMQ')
-        self.connected = True
-        self.connection = connection
-        self.connection.channel(self.on_channel_open)
- 
-    def on_channel_open(self, channel):
-        #pika.log.info('PikaClient: Channel open, Declaring exchange')
-
-        self.channel = channel
-        self.channel.exchange_declare(exchange='www',
-                                      type="direct",
-                                      callback=self.on_exchange_declared)
-
-        return
-
-    def on_exchange_declared(self, frame):
-        #pika.log.info('PikaClient: Exchange Declared, Declaring Queue')
-        self.channel.queue_declare(queue=self.queue_name,
-                                   auto_delete=True,
-                                   durable=False,
-                                   exclusive=False,
-                                   callback=self.on_queue_declared)
-        return
-
-    def on_queue_declared(self, frame):
-        #pika.log.info('PikaClient: Queue Declared, Binding Queue')
-        self.channel.queue_bind(exchange='www',
-                                queue=self.queue_name,
-                                routing_key='client',
-                                callback=self.on_queue_bound)
-
-    def on_queue_bound(self, frame):
-        #pika.log.info('PikaClient: Queue Bound, Issuing Basic Consume')
-        self.channel.basic_consume(consumer_callback=self.on_message,
-                                   queue=self.queue_name,
-                                   no_ack=True)
- 
-    def on_closed(self, connection):
-        #pika.log.info('PikaClient: rabbit connection closed')
-        self.io_loop.stop()
- 
-    def on_message(self, channel, method, header, body):
-        #pika.log.info('PikaClient: message received: %s' % body)
-        import zlib
-        try:
-            body = zlib.decompress(body)
-        except zlib.error:
-            pass # likely not compressed body
-        body_parsed = json.loads(body)
-        if body_parsed.has_key("anm"):
-            print "Received updated network topology"
-            try:
-                self.ank_accessor.anm = body_parsed['anm']
-                #TODO: could process diff and only update client if data has changed -> more efficient client side
-                self.update_listeners("overlays")
-                # TODO: find better way to replace object not just local reference, as need to replace for RequestHandler too
-            except Exception, e:
-                print "Exception is", e
-        elif body_parsed.has_key("ip_allocations"):
-            alloc = json.loads(body_parsed['ip_allocations'])
-            self.ank_accessor.ip_allocation = alloc
-            self.update_listeners("ip_allocations")
-        elif "path" in body_parsed:
-            self.notify_listeners(body) # could do extra processing here
-        else:
-            self.notify_listeners(body)
-
-    def send_message(self, body):
-        self.channel.basic_publish(exchange='www',
-                      routing_key='server',
-                      body=body)
- 
-    def notify_listeners(self, body):
-        for listener in self.event_listeners:
-            listener.write_message(body)
-            #pika.log.info('PikaClient: notified %s' % repr(listener))
-
-    def update_listeners(self, index):
-        for listener in self.event_listeners:
-            if index == "overlays":
-                listener.update_overlay()
-            elif index == "ip_allocations":
-                listener.update_ip_allocation()
-            #listener.write_message(body)
-
-    def add_event_listener(self, listener):
-        self.event_listeners.add(listener)
-        #pika.log.info('PikaClient: listener %s added' % repr(listener))
- 
-    def remove_event_listener(self, listener):
-        try:
-            self.event_listeners.remove(listener)
-            #pika.log.info('PikaClient: listener %s removed' % repr(listener))
-        except KeyError:
-            pass
-
 class AnkAccessor():
     """ Used to store published topologies"""
     def __init__(self):
@@ -347,22 +215,7 @@ def main():
     #pika.log.setup(pika.log.WARNING, color=True)
     io_loop = tornado.ioloop.IOLoop.instance()
     # PikaClient is our rabbitmq consumer
-    use_rabbitmq = ank_config.settings['Rabbitmq']['active']
-    try:
-        import pika
-    except ImportError:
-        use_rabbitmq = False # don't use pika
-#TODO: only import pika if need it
-    if use_rabbitmq:
-        host_address = ank_config.settings['Rabbitmq']['server']
-        pc = PikaClient(io_loop, ank_accessor, host_address)
-        application.pc = pc
-        application.pc.connect()
-    else:
-        #print "RabbitMQ disabled, exiting. Please set in config."
-        pass
-        #raise SystemExit
-
+  
     #listening for web clientshost_address
 #TODO: make this driven from config
     try:

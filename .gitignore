@@ -76,3 +76,5 @@ example.graphml*
 test_out.txt
 
 example/measurement_sh_ip_route/*
+
+test.*
