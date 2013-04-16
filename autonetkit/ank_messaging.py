@@ -26,7 +26,8 @@ def update_http(anm = None, nidb = None):
         body = json.dumps({}) # blank to test visualisation server running
 
     params = urllib.urlencode({
-        'body': body
+        'body': body,
+        'type': 'anm',
         })
     try:
         data = urllib.urlopen(http_url, params).read()
@@ -71,17 +72,17 @@ def highlight(nodes, edges, paths = None):
         path_data['path'] = [nfilter(n) for n in path_data['path']]
         filtered_paths.append(path_data)
 
+    #TODO: remove "highlight" from json, use as url params to distinguish
     import json
     body = json.dumps({
-        'highlight': {
         'nodes': nodes,
         'edges': edges,
         'paths': filtered_paths,
-        }
         })
 
     params = urllib.urlencode({
-        'body': body
+        'body': body,
+        'type': 'highlight',
         })
 
     #TODO: split this common function out, create at runtime so don't need to keep reading config
@@ -92,8 +93,6 @@ def highlight(nodes, edges, paths = None):
         data = urllib.urlopen(http_url, params).read()
     except IOError, e:
         log.info("Unable to connect to HTTP Server %s: e" % (http_url, e))
-
-
 
 class AnkMessaging(object):
 
@@ -171,8 +170,8 @@ class AnkMessaging(object):
 #TODO: log that not sending for debug purposes
         return
 
-
     def publish_http_post(self, exchange, routing_key, body):
+        print "called"
         params = urllib.urlencode({
             'body': body
             })
@@ -183,5 +182,4 @@ class AnkMessaging(object):
 
         #print data # can log response
 
-
-
+#TODO: write new module that sends to webserver and takes parameter to distinguish eg starting, ip_allocations, etc

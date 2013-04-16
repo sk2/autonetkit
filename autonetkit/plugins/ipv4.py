@@ -491,7 +491,8 @@ def allocate_ips(g_ip, infrastructure = True, loopbacks = True, secondary_loopba
         jsontree = json.dumps(total_tree, cls=autonetkit.ank_json.AnkEncoder, indent = 4)
 
         body = json.dumps({"ip_allocations": jsontree})
-        messaging.publish_compressed("www", "client", body)
+#TODO: use seperate call in post to pass "ip_allocations" rather than in json
+        #messaging.publish_compressed("www", "client", body)
 
     else:
         cd_tree = {}

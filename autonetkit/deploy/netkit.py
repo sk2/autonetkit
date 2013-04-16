@@ -64,6 +64,7 @@ def extract(host, username, tar_file, cd_dir, timeout = 45, key_filename = None,
             hostname = m.group(1)
             log.info(data.group(index)) #TODO: use regex to strip out just the machine name
             body = {"starting": hostname}
+            #TODO: use params and seperate call here than publish_json
             messaging.publish_json(body)
 
     def lab_started(protocol, index, data):
