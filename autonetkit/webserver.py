@@ -48,8 +48,8 @@ class MyWebHandler(tornado.web.RequestHandler):
                 # TODO: find better way to replace object not just local reference, as need to replace for RequestHandler too
             except Exception, e:
                 print "Exception is", e
-        elif body_parsed.has_key("ip_allocations"):
-            alloc = json.loads(body_parsed['ip_allocations'])
+        elif data_type == "ip_allocations":
+            alloc = body_parsed
             self.ank_accessor.ip_allocation = alloc
             self.update_listeners("ip_allocations")
         elif "path" in body_parsed:

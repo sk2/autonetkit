@@ -10,7 +10,7 @@ from collections import defaultdict
 import netaddr
 import functools
 
-messaging = autonetkit.ank_messaging.AnkMessaging()
+messaging = autonetkit.ank_messaging
 
 #TODO: allow slack in allocations: both for ASN (group level), and for collision domains to allow new nodes to be easily added
 
@@ -447,7 +447,6 @@ def allocate_ips(g_ip, infrastructure = True, loopbacks = True, secondary_loopba
         loopback_tree = ip_tree.json()
     # json.dumps(ip_tree.json(), cls=autonetkit.ank_json.AnkEncoder, indent = 4)
         #body = json.dumps({"ip_allocations": jsontree})
-        #messaging.publish_compressed("www", "client", body)
         ip_tree.assign()
         g_ip.data.loopback_blocks = ip_tree.group_allocations()
 
@@ -464,8 +463,6 @@ def allocate_ips(g_ip, infrastructure = True, loopbacks = True, secondary_loopba
         ip_tree.build()
         secondary_loopback_tree = ip_tree.json()
     # json.dumps(ip_tree.json(), cls=autonetkit.ank_json.AnkEncoder, indent = 4)
-        #body = json.dumps({"ip_allocations": jsontree})
-        #messaging.publish_compressed("www", "client", body)
         ip_tree.assign()
         #g_ip.data.loopback_blocks = ip_tree.group_allocations()
 
@@ -490,9 +487,7 @@ def allocate_ips(g_ip, infrastructure = True, loopbacks = True, secondary_loopba
                 }
         jsontree = json.dumps(total_tree, cls=autonetkit.ank_json.AnkEncoder, indent = 4)
 
-        body = json.dumps({"ip_allocations": jsontree})
 #TODO: use seperate call in post to pass "ip_allocations" rather than in json
-        #messaging.publish_compressed("www", "client", body)
 
     else:
         cd_tree = {}
@@ -506,9 +501,8 @@ def allocate_ips(g_ip, infrastructure = True, loopbacks = True, secondary_loopba
                 #[loopback_tree],
             }
     jsontree = json.dumps(total_tree, cls=autonetkit.ank_json.AnkEncoder, indent = 4)
+    messaging.publish_data(jsontree, "ip_allocations")
 
-    body = json.dumps({"ip_allocations": jsontree})
-    #messaging.publish_compressed("www", "client", body)
 
 #TODO: need to update with loopbacks if wish to advertise also - or subdivide blocks?
     g_ip.data.infra_blocks = ip_tree.group_allocations()
