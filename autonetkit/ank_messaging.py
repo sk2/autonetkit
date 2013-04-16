@@ -11,11 +11,14 @@ use_http_post = config.settings['Http Post']['active']
 if use_http_post:
     import urllib
 
+def format_http_url(settings):
+    host = settings['Http Post']['server']
+    port = settings['Http Post']['port']
+    return "http://%s:%s/publish" % (host, port)
+
+http_url = format_http_url(config.settings)
 
 def update_http(anm = None, nidb = None):
-    host = config.settings['Http Post']['server']
-    port = config.settings['Http Post']['port']
-    http_url = "http://%s:%s/publish" % (host, port)
 
     if anm and nidb:
         body = autonetkit.ank_json.dumps(anm, nidb)
@@ -86,9 +89,18 @@ def highlight(nodes, edges, paths = None):
         })
 
     #TODO: split this common function out, create at runtime so don't need to keep reading config
-    host = config.settings['Http Post']['server']
-    port = config.settings['Http Post']['port']
-    http_url = "http://%s:%s/publish" % (host, port)
+    try:
+        data = urllib.urlopen(http_url, params).read()
+    except IOError, e:
+        log.info("Unable to connect to HTTP Server %s: e" % (http_url, e))
+
+def publish_data(data, type_key):
+    params = urllib.urlencode({
+        'body': data,
+        'type': type_key,
+        })
+
+    #TODO: split this common function out, create at runtime so don't need to keep reading config
     try:
         data = urllib.urlopen(http_url, params).read()
     except IOError, e:
