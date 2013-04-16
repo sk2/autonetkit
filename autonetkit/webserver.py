@@ -119,8 +119,6 @@ class MyWebSocketHandler(websocket.WebSocketHandler):
             pass # no echo_server
 
     def on_message(self, message):
-        #TODO: look if can map request type here... - or even from the application ws/ mapping
-        #self.application.pc.send_message(message) # TODO: do we need to pass it on to rmq?
         if "overlay_id" in message:
             _, overlay_id = message.split("=") #TODO: form JSON on client side, use loads here
             self.overlay_id = overlay_id
