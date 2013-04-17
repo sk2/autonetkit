@@ -120,9 +120,6 @@ def build(input_graph):
 #TODO: should this be modifying g_in?
     g_in.update(non_igp_nodes, igp=default_igp) # store igp onto each node
 
-    anm.add_overlay("ospf")
-    anm.add_overlay("isis")
-
     ank_utils.copy_attr_from(g_in, g_phy, "include_csr")
 
     build_ospf(anm)
