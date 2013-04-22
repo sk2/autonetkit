@@ -5,7 +5,9 @@ route del default
 /sbin/ifconfig lo 127.0.0.1 up
 /etc/init.d/ssh start
 /etc/init.d/hostname.sh 
+% if node.zebra or node.bgp or node.rip or node.ospf6 or node.ospf or node.ripngd or node.isis:
 /etc/init.d/zebra start
+% endif
 % if node.ssh.use_key:
 chown -R root:root /root     
 chmod 755 /root

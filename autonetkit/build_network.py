@@ -89,6 +89,7 @@ def build(input_graph):
         g_in.nodes("is_router", platform="junosphere"), syntax="junos")
     g_in.update(g_in.nodes("is_router", platform="dynagen"), syntax="ios")
     g_in.update(g_in.nodes("is_router", platform="netkit"), syntax="quagga")
+    g_in.update(g_in.nodes("is_server", platform="netkit"), syntax="quagga")
 
     g_graphics = anm.add_overlay("graphics")  # plotting data
     g_graphics.add_nodes_from(g_in, retain=['x', 'y', 'device_type',
