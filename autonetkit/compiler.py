@@ -293,7 +293,7 @@ class QuaggaCompiler(RouterCompiler):
         super(QuaggaCompiler, self).interfaces(node)
         # OSPF cost
 
-        if phy_node.is_router:
+        if phy_node.is_l3device:
             node.loopback_zero.id = self.lo_interface
             node.loopback_zero.description = "Loopback"
             node.loopback_zero.ipv4_address=ipv4_node.loopback,
@@ -572,7 +572,7 @@ class NetkitCompiler(PlatformCompiler):
         g_phy = self.anm['phy']
         quagga_compiler = QuaggaCompiler(self.nidb, self.anm)
 # TODO: this should be all l3 devices not just routers
-        for phy_node in g_phy.nodes('is_router', host=self.host, syntax='quagga'):
+        for phy_node in g_phy.nodes('is_l3device', host=self.host, syntax='quagga'):
             folder_name = naming.network_hostname(phy_node)
             nidb_node = self.nidb.node(phy_node)
             nidb_node.render.base = "templates/quagga"
@@ -604,7 +604,8 @@ class NetkitCompiler(PlatformCompiler):
             quagga_compiler.compile(nidb_node)
 
             # TODO: move these into inherited BGP config
-            nidb_node.bgp.debug = True
+            if nidb_node.bgp:
+                nidb_node.bgp.debug = True
             static_routes = []
             nidb_node.zebra.static_routes = static_routes
 
