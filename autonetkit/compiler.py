@@ -584,11 +584,12 @@ class NetkitCompiler(PlatformCompiler):
             nidb_node.render.dst_file = "%s.startup" % folder_name
 
 # allocate zebra information
-            nidb_node.zebra.password = "1234"
-            hostname = folder_name
-            if hostname[0] in string.digits:
-                hostname = "r" + hostname
-            nidb_node.zebra.hostname = hostname  # can't have . in quagga hostnames
+            if nidb_node.is_router:
+                nidb_node.zebra.password = "1234"
+                hostname = folder_name
+                if hostname[0] in string.digits:
+                    hostname = "r" + hostname
+                nidb_node.zebra.hostname = hostname  # can't have . in quagga hostnames
             nidb_node.ssh.use_key = True  # TODO: make this set based on presence of key
 
             # Note this could take external data
@@ -606,8 +607,8 @@ class NetkitCompiler(PlatformCompiler):
             # TODO: move these into inherited BGP config
             if nidb_node.bgp:
                 nidb_node.bgp.debug = True
-            static_routes = []
-            nidb_node.zebra.static_routes = static_routes
+                static_routes = []
+                nidb_node.zebra.static_routes = static_routes
 
         # and lab.conf
         self.allocate_tap_ips()
