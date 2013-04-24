@@ -861,6 +861,8 @@ def build_anycastdns(anm):
                             retain=['asn', 'label', 'device_type', 'device_subtype'])
     non_resolvers = []
     resolvers = []
+    #TODO: cleaner way to retrieve global args
+    anycast_ip = g_in._graph.graph['anycast_dns_resolver_ip']
     for node in g_dns.nodes('is_l3device'):
         if node.device_subtype == 'dns_resolver':
             node.run_bind = True # only resolvers will have bind runnning
