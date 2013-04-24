@@ -1,3 +1,5 @@
+
+% if node.zebra:
 hostname ${node.zebra.hostname}
 password ${node.zebra.password}
 enable password ${node.zebra.password}      
@@ -16,3 +18,4 @@ ip address ${node.loopback}/32
 
 
 log file /var/log/zebra/zebra.log
+%endif
