@@ -129,6 +129,7 @@ def build(input_graph):
     build_ospf(anm)
     build_isis(anm)
     build_bgp(anm)
+    build_anycastdns(anm)
     autonetkit.update_http(anm)
 
     return anm
@@ -838,3 +839,52 @@ def update_messaging(anm):
     log.debug("Sending anm to messaging")
     body = autonetkit.ank_json.dumps(anm, None)
     MESSAGING.publish_compressed("www", "client", body)
+
+def find_closest_dns(graph, src, resolvers):
+    try:
+        closest = resolvers[0]
+    except:
+        return None
+    # Other ideas than exhaustive search would be welcome ...
+    min_cost = len(nx.shortest_path(graph, src, closest, weight='ospf_cost'))
+    for r in resolvers[1:]:
+        p = len(nx.shortest_path(graph, src, r, weight='ospf_cost'))
+        if p < min_cost:
+            min_cost = p
+            closest = r
+    return closest
+
+def build_anycastdns(anm):
+    g_in = anm['input']
+    g_dns = anm.add_overlay("DNS resolver")
+    g_dns.add_nodes_from(g_in.nodes("is_l3device"),
+                            retain=['asn', 'label', 'device_type', 'device_subtype'])
+    non_resolvers = []
+    resolvers = []
+    for node in g_dns.nodes('is_l3device'):
+        if node.device_subtype == 'dns_resolver':
+            node.run_bind = True # only resolvers will have bind runnning
+            for n in node.neighbors():
+                # Tell all routers in the neighborhood that they have to watch
+                # for (at least) this resolver
+                if n.device_subtype == 'dns_resolver' \
+                    or n.device_type == "router": continue
+                if not n.advertise_dns:
+                    n.advertise_dns = []
+                n.advertise_dns.append(node)
+            resolvers.append(node)
+        else:
+            non_resolvers.append(node)
+    if len(resolvers) == 0: # No use of dns resolvers in this graph
+        return
+    graph = ank_utils.unwrap_graph(anm['phy'])
+    for n in non_resolvers:
+        # Let's try to connect each node of an AS to the closest DNS resolver
+        resolver = find_closest_dns(graph, n,
+                                [r for r in resolvers if r.asn == n.asn])
+        if resolver:
+            # And create an edge if this AS has dns resolver(s)
+            g_dns.add_edges_from([(n, resolver), (resolver, n)], type='dns_resolver')
+            n.closest_dns_resolver = resolver.label
+        else:
+            n.closest_dns_resolver = None
