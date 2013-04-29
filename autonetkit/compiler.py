@@ -586,10 +586,10 @@ class NetkitCompiler(PlatformCompiler):
 # allocate zebra information
             if nidb_node.is_router:
                 nidb_node.zebra.password = "1234"
-                hostname = folder_name
-                if hostname[0] in string.digits:
-                    hostname = "r" + hostname
-                nidb_node.zebra.hostname = hostname  # can't have . in quagga hostnames
+            hostname = folder_name
+            if hostname[0] in string.digits:
+                hostname = "r" + hostname
+            nidb_node.hostname = hostname  # can't have . in quagga hostnames
             nidb_node.ssh.use_key = True  # TODO: make this set based on presence of key
 
             # Note this could take external data

@@ -1,1 +1,1 @@
-${node.zebra.hostname}
+${node.hostname}
