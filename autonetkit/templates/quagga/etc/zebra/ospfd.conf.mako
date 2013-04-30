@@ -1,4 +1,4 @@
-hostname ${node.zebra.hostname}
+hostname ${node.hostname}
 password ${node.zebra.password}   
 banner motd file /etc/quagga/motd.txt
 !
