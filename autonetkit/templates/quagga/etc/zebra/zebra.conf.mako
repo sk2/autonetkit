@@ -1,4 +1,5 @@
-hostname ${node.zebra.hostname}
+% if node.zebra:
+hostname ${node.hostname}
 password ${node.zebra.password}
 enable password ${node.zebra.password}      
 banner motd file /etc/quagga/motd.txt
@@ -16,3 +17,4 @@ ip address ${node.loopback}/32
 
 
 log file /var/log/zebra/zebra.log
+%endif
