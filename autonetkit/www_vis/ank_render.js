@@ -487,7 +487,6 @@ var interface_y = function(d) {
     return node_y(d.node) + offset_y - interface_height/2;
 }
 
-
 var groupPath = function(d) {
 
     if (display_interfaces && overlay_id in interface_overlay_groupings) {
@@ -538,7 +537,7 @@ var groupPath = function(d) {
 
     if (d.values.length  == 1) {
         node = d.values[0];
-        offset = 2;
+        offset = 5;
         retval =  "M" ;
         retval += (node.x - offset  + icon_offset + x_offset) + "," + (node.y - offset + icon_offset + y_offset) + "L";
         retval += (node.x + offset  + icon_offset + x_offset) + "," + (node.y - offset + icon_offset + y_offset) + "L";
