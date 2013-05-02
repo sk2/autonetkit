@@ -2,10 +2,7 @@ import pkg_resources
 import ConfigParser
 from configobj import ConfigObj, flatten_errors
 
-# work around configobj choosing the horribly generic package name of "validate"
-# based on http://www.velocityreviews.com/forums/t335633-package-module-import-name-clash-with-global-package.html
-import imp
-validate = imp.load_module('validate',*imp.find_module('validate'))
+import validate
 validator = validate.Validator()
 
 import os.path
