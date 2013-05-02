@@ -47,3 +47,5 @@ cache/*
 
 test.*
 *.graphml*
+
+.coverage
