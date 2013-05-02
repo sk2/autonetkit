@@ -11,6 +11,12 @@ var g_links = chart.append("svg:g")
 var g_nodes = chart.append("svg:g")
 .attr("id", "g_nodes");
 
+var g_node_labels = chart.append("svg:g")
+.attr("id", "g_node_labels");
+
+var g_link_labels = chart.append("svg:g")
+.attr("id", "g_link_labels");
+
 var g_traces = chart.append("svg:g")
 .attr("id", "g_highlights");
 
@@ -1478,7 +1484,7 @@ function redraw() {
         .remove();
 
     //Link labels
-    link_labels = g_links.selectAll(".link_label")
+    link_labels = g_link_labels.selectAll(".link_label")
         .data(jsondata.links, edge_id)
 
         link_labels.enter().append("text")
@@ -1564,7 +1570,7 @@ function redraw() {
         }
     });
 
-    device_labels = g_nodes.selectAll(".device_label")
+    device_labels = g_node_labels.selectAll(".device_label")
         .data(nodes, function(d) { return d.id});
 
         device_labels.enter().append("text")
@@ -1595,11 +1601,7 @@ function redraw() {
     //});
         }
 
-var blah;
-
 function redraw_paths() {
-
-
 
     //TODO: paths need to be updated when graph changes... or perhaps fade out as no longer relevant if topology changes?
     //TODO: set paths using css and transition style rather than all the attributes hard coded
