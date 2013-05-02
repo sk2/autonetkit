@@ -91,6 +91,7 @@ def initialise(input_graph):
         g_in.nodes("is_router", platform="junosphere"), syntax="junos")
     g_in.update(g_in.nodes("is_router", platform="dynagen"), syntax="ios")
     g_in.update(g_in.nodes("is_router", platform="netkit"), syntax="quagga")
+    g_in.update(g_in.nodes("is_server", platform="netkit"), syntax="quagga")
 
     g_graphics = anm.add_overlay("graphics")  # plotting data
     g_graphics.add_nodes_from(g_in, retain=['x', 'y', 'device_type',
@@ -127,14 +128,12 @@ def apply_design_rules(anm):
 #TODO: should this be modifying g_in?
     g_in.update(non_igp_nodes, igp=default_igp) # store igp onto each node
 
-    anm.add_overlay("ospf")
-    anm.add_overlay("isis")
-
     ank_utils.copy_attr_from(g_in, g_phy, "include_csr")
 
     build_ospf(anm)
     build_isis(anm)
     build_bgp(anm)
+    autonetkit.update_http(anm)
 
 # post-processing
     mark_ebgp_vrf(anm)
@@ -1051,3 +1050,9 @@ def build_isis(anm):
         for interface in edge.interfaces():
             interface.metric = edge.metric
             interface.multipoint = edge.multipoint
+
+def update_messaging(anm):
+    """Sends ANM to web server"""
+    log.debug("Sending anm to messaging")
+    body = autonetkit.ank_json.dumps(anm, None)
+    MESSAGING.publish_compressed("www", "client", body)

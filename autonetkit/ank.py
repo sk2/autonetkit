@@ -82,8 +82,8 @@ def copy_edge_attr_from(overlay_src, overlay_dst, src_attr, dst_attr = None, typ
                 val = float(val)
             elif type is int:
                 val = int(val)
-
-            graph_dst[src][dst][dst_attr] = val
+            if (src, dst) in graph_dst:
+                graph_dst[src][dst][dst_attr] = val
 
 def stringify_netaddr(graph):
     import netaddr

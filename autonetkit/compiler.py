@@ -348,7 +348,7 @@ class QuaggaCompiler(RouterCompiler):
         super(QuaggaCompiler, self).interfaces(node)
         # OSPF cost
 
-        if phy_node.is_router:
+        if phy_node.is_l3device:
             node.loopback_zero.id = self.lo_interface
             node.loopback_zero.description = "Loopback"
             node.loopback_zero.ipv4_address=ipv4_node.loopback
@@ -661,9 +661,8 @@ class JunosphereCompiler(PlatformCompiler):
         junos_compiler = JunosCompiler(self.nidb, self.anm)
         for phy_node in g_phy.nodes('is_router', host=self.host, syntax='junos'):
             nidb_node = self.nidb.node(phy_node)
-            nidb_node.render.template = "templates/junos.mako"
-            nidb_node.render.dst_folder = "rendered/%s/%s" % (
-                self.host, "junosphere")
+            nidb_node.render.template = os.path.join("templates","junos.mako")
+            nidb_node.render.dst_folder = os.path.join("rendered",self.host,"junosphere")
             nidb_node.render.dst_file = "%s.conf" % ank.name_folder_safe(
                 phy_node.label)
 
@@ -686,23 +685,22 @@ class NetkitCompiler(PlatformCompiler):
         g_phy = self.anm['phy']
         quagga_compiler = QuaggaCompiler(self.nidb, self.anm)
 # TODO: this should be all l3 devices not just routers
-        for phy_node in g_phy.nodes('is_router', host=self.host, syntax='quagga'):
+        for phy_node in g_phy.nodes('is_l3device', host=self.host, syntax='quagga'):
             folder_name = naming.network_hostname(phy_node)
             nidb_node = self.nidb.node(phy_node)
-            nidb_node.render.base = "templates/quagga"
-            nidb_node.render.template = "templates/netkit_startup.mako"
-            nidb_node.render.dst_folder = "rendered/%s/%s" % (
-                self.host, "netkit")
-            nidb_node.render.base_dst_folder = "rendered/%s/%s/%s" % (
-                self.host, "netkit", folder_name)
+            nidb_node.render.base = os.path.join("templates","quagga")
+            nidb_node.render.template = os.path.join("templates","netkit_startup.mako")
+            nidb_node.render.dst_folder = os.path.join("rendered", self.host, "netkit")
+            nidb_node.render.base_dst_folder = os.path.join("rendered", self.host, "netkit", folder_name)
             nidb_node.render.dst_file = "%s.startup" % folder_name
 
 # allocate zebra information
-            nidb_node.zebra.password = "1234"
+            if nidb_node.is_router:
+                nidb_node.zebra.password = "1234"
             hostname = folder_name
             if hostname[0] in string.digits:
                 hostname = "r" + hostname
-            nidb_node.zebra.hostname = hostname  # can't have . in quagga hostnames
+            nidb_node.hostname = hostname  # can't have . in quagga hostnames
             nidb_node.ssh.use_key = True  # TODO: make this set based on presence of key
 
             # Note this could take external data
@@ -718,9 +716,10 @@ class NetkitCompiler(PlatformCompiler):
             quagga_compiler.compile(nidb_node)
 
             # TODO: move these into inherited BGP config
-            nidb_node.bgp.debug = True
-            static_routes = []
-            nidb_node.zebra.static_routes = static_routes
+            if nidb_node.bgp:
+                nidb_node.bgp.debug = True
+                static_routes = []
+                nidb_node.zebra.static_routes = static_routes
 
         # and lab.conf
         self.allocate_tap_ips()
@@ -744,9 +743,8 @@ class NetkitCompiler(PlatformCompiler):
     def lab_topology(self):
 # TODO: replace name/label and use attribute from subgraph
         lab_topology = self.nidb.topology[self.host]
-        lab_topology.render_template = "templates/netkit_lab_conf.mako"
-        lab_topology.render_dst_folder = "rendered/%s/%s" % (
-            self.host, "netkit")
+        lab_topology.render_template = os.path.join("templates","netkit_lab_conf.mako")
+        lab_topology.render_dst_folder = os.path.join("rendered", self.host, "netkit")
         lab_topology.render_dst_file = "lab.conf"
         lab_topology.description = "AutoNetkit Lab"
         lab_topology.author = "AutoNetkit"
@@ -849,10 +847,9 @@ class CiscoCompiler(PlatformCompiler):
         now = datetime.now()
         if settings['Compiler']['Cisco']['timestamp']:
             timestamp = now.strftime("%Y%m%d_%H%M%S_%f")
-            dst_folder = "rendered/%s_%s/%s" % (
-                self.host, timestamp, "cisco")  # TODO: use os.path.join
+            dst_folder = os.path.join("rendered", self.host, timestamp, "cisco")
         else:
-            dst_folder = "rendered/%s/%s" % (self.host, "cisco")
+            dst_folder = os.path.join("rendered", self.host, "cisco")
 # TODO: merge common router code, so end up with three loops: routers, ios
 # routers, ios2 routers
 
@@ -867,7 +864,7 @@ class CiscoCompiler(PlatformCompiler):
 
         for phy_node in g_phy.nodes('is_router', host=self.host, syntax='ios'):
             nidb_node = self.nidb.node(phy_node)
-            nidb_node.render.template = "templates/ios.mako"
+            nidb_node.render.template = os.path.join("templates","ios.mako")
             if self.to_memory:
                 nidb_node.render.to_memory = True
             else:
@@ -893,7 +890,7 @@ class CiscoCompiler(PlatformCompiler):
         ios2_compiler = Ios2Compiler(self.nidb, self.anm)
         for phy_node in g_phy.nodes('is_router', host=self.host, syntax='ios2'):
             nidb_node = self.nidb.node(phy_node)
-            nidb_node.render.template = "templates/ios2/router.conf.mako"
+            nidb_node.render.template = os.path.join("templates","ios2","router.conf.mako")
             if self.to_memory:
                 nidb_node.render.to_memory = True
             else:
@@ -918,7 +915,7 @@ class CiscoCompiler(PlatformCompiler):
         nxos_compiler = NxOsCompiler(self.nidb, self.anm)
         for phy_node in g_phy.nodes('is_router', host=self.host, syntax='nx_os'):
             nidb_node = self.nidb.node(phy_node)
-            nidb_node.render.template = "templates/nx_os.mako"
+            nidb_node.render.template = os.path.join("templates","nx_os.mako")
             if self.to_memory:
                 nidb_node.render.to_memory = True
             else:
@@ -993,7 +990,7 @@ class DynagenCompiler(PlatformCompiler):
         for phy_node in g_phy.nodes('is_router', host=self.host, syntax='ios'):
             nidb_node = self.nidb.node(phy_node)
             graphics_node = G_graphics.node(phy_node)
-            nidb_node.render.template = "templates/ios.mako"
+            nidb_node.render.template = os.path.join("templates", "ios.mako")
             nidb_node.render.dst_folder = os.path.join(
                 "rendered", self.host, "dynagen", self.config_dir)
             nidb_node.render.dst_file = "%s.cfg" % ank.name_folder_safe(
@@ -1028,10 +1025,8 @@ class DynagenCompiler(PlatformCompiler):
     def lab_topology(self):
 # TODO: replace name/label and use attribute from subgraph
         lab_topology = self.nidb.topology[self.host]
-#TODO: this should be tuple of self.host and platform
-        lab_topology.render_template = "templates/dynagen.mako"
-        lab_topology.render_dst_folder = "rendered/%s/%s" % (
-            self.host, "dynagen")
+        lab_topology.render_template = os.path.join("templates","dynagen.mako")
+        lab_topology.render_dst_folder = os.path.join("rendered", self.host, "dynagen")
         lab_topology.render_dst_file = "topology.net"
 
         lab_topology.config_dir = self.config_dir
