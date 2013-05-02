@@ -838,7 +838,6 @@ class CiscoCompiler(PlatformCompiler):
 
     def compile(self):
         G_in = self.anm['input']
-        specified_int_names = G_in.data.specified_int_names
 #TODO: need to copy across the interface name from edge to the interface
         g_phy = self.anm['phy']
 
@@ -863,6 +862,7 @@ class CiscoCompiler(PlatformCompiler):
                     interface.id = loopback_ids.next()
 
         for phy_node in g_phy.nodes('is_router', host=self.host, syntax='ios'):
+            specified_int_names = phy_node.specified_int_names
             nidb_node = self.nidb.node(phy_node)
             nidb_node.render.template = os.path.join("templates","ios.mako")
             if self.to_memory:
@@ -889,6 +889,7 @@ class CiscoCompiler(PlatformCompiler):
 
         ios2_compiler = Ios2Compiler(self.nidb, self.anm)
         for phy_node in g_phy.nodes('is_router', host=self.host, syntax='ios2'):
+            specified_int_names = phy_node.specified_int_names
             nidb_node = self.nidb.node(phy_node)
             nidb_node.render.template = os.path.join("templates","ios2","router.conf.mako")
             if self.to_memory:
