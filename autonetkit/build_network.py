@@ -829,7 +829,8 @@ def build_phy(anm):
     g_in = anm['input']
     g_phy = anm['phy']
     g_phy.add_nodes_from(g_in, retain=['label', 'update', 'device_type', 'asn',
-                         'device_subtype', 'platform', 'host', 'syntax'])
+        'specified_int_names',
+        'device_subtype', 'platform', 'host', 'syntax'])
     if g_in.data.Creator == "Topology Zoo Toolset":
         ank_utils.copy_attr_from(g_in, g_phy, "Network")
 
@@ -837,13 +838,11 @@ def build_phy(anm):
     # TODO: make this automatic if adding to the physical graph?
     g_phy.allocate_interfaces() 
 
-    specified_int_names = g_in.data.specified_int_names
-    if specified_int_names:
-        for node in g_phy:
-            for interface in node:
-                edge = interface.edges()[0]
-                directed_edge = anm['input_directed'].edge(edge)
-                interface.name = directed_edge.name
+    for node in g_phy.nodes("specified_int_names"):
+        for interface in node:
+            edge = interface.edges()[0]
+            directed_edge = anm['input_directed'].edge(edge)
+            interface.name = directed_edge.name
 
 def build_conn(anm):
     """Build connectivity overlay"""
