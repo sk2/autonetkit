@@ -890,7 +890,13 @@ def build_ospf(anm):
     """
     import netaddr
     g_in = anm['input']
+    # add regardless, so allows quick check of node in anm['ospf'] in compilers
     g_ospf = anm.add_overlay("ospf")
+
+    if not any(n.igp == "ospf" for n in g_in):
+        log.debug("No OSPF nodes")
+        return
+
     g_ospf.add_nodes_from(g_in.nodes("is_router", igp = "ospf"), retain=['asn'])
     g_ospf.add_nodes_from(g_in.nodes("is_switch"), retain=['asn'])
     g_ospf.add_edges_from(g_in.edges(), retain=['edge_id'])
@@ -1019,11 +1025,13 @@ def ip_to_net_ent_title_ios(ip_addr):
 def build_isis(anm):
     """Build isis overlay"""
     g_in = anm['input']
+    # add regardless, so allows quick check of node in anm['isis'] in compilers
+    g_isis = anm.add_overlay("isis") 
+
     if not any(n.igp == "isis" for n in g_in):
         log.debug("No ISIS nodes")
         return
     g_ipv4 = anm['ipv4']
-    g_isis = anm.add_overlay("isis")
     g_isis.add_nodes_from(g_in.nodes("is_router", igp = "isis"), retain=['asn'])
     g_isis.add_nodes_from(g_in.nodes("is_switch"), retain=['asn'])
     g_isis.add_edges_from(g_in.edges(), retain=['edge_id'])
