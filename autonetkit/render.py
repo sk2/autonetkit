@@ -66,6 +66,7 @@ def render_node(node, folder_cache):
         log.debug("Rendering %s" % node)
         try:
             render_output_dir = node.render.dst_folder
+            #TODO: could check if base is set, so don't put error into debug log
             render_base = node.render.base
             render_base_output_dir = node.render.base_dst_folder
             render_template_file = node.render.template
