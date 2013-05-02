@@ -1,4 +1,4 @@
-hostname ${node.zebra.hostname}
+hostname ${node.hostname}
 password ${node.zebra.password}   
 !log stdout
 % for interface in node.interfaces:  

@@ -106,6 +106,16 @@ def load_graphml(input_data):
             if attr not in graph.node[node]:
                 graph.node[node][attr] = False
 
+    boolean_attributes = set( k for n1,d1 in graph.edge.items()
+                              for n2,d2 in d1.items()
+                              for k, v in d2.items()
+                              if isinstance(v, bool)
+    )
+    for n1,d1 in graph.edge.items():
+        for n2,d2 in d1.items():
+            for attr in boolean_attributes:
+                if attr not in graph.edge[n1][n2]:
+                    graph.edge[n1][n2][attr] = False
 
 #TODO: store these in config file
     ank_node_defaults = settings['Graphml']['Node Defaults']
