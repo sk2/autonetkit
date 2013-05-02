@@ -191,25 +191,6 @@ def add_vrf_loopbacks(g_vrf):
             node.add_loopback(vrf_name=vrf_name,
                               description="loopback for vrf %s" % vrf_name)
 
-def vrf_edges(g_vrf):
-    """Calculate edges for vrf overlay"""
-    g_phy = g_vrf.anm['phy']
-    for _, devices in g_phy.groupby("asn").items():
-        as_graph = g_phy.subgraph(devices)
-        edges = [(edge.src, edge.dst) for edge in as_graph.edges()]
-        edges_vrf = [(g_vrf.node(s), g_vrf.node(t)) for (s, t) in edges]
-        pe_to_ce_edges = []
-        ce_to_pe_edges = []
-        for src, dst in edges_vrf:
-            if (src.vrf_role, dst.vrf_role) == ("CE", "PE"):
-                pe_to_ce_edges.append((src, dst))
-                ce_to_pe_edges.append((dst, src))
-            if (src.vrf_role, dst.vrf_role) == ("PE", "CE"):
-                pe_to_ce_edges.append((dst, src))
-                ce_to_pe_edges.append((src, dst))
-
-    return pe_to_ce_edges, ce_to_pe_edges
-
 def build_ibgp_vpn_v4(anm):
     """Based on the ibgp_v4 hierarchy rules.
     Exceptions:
