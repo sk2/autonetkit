@@ -104,7 +104,7 @@ def publish_data(data, type_key):
     try:
         data = urllib.urlopen(http_url, params).read()
     except IOError, e:
-        log.info("Unable to connect to HTTP Server %s: e" % (http_url, e))
+        log.info("Unable to connect to HTTP Server %s: %s" % (http_url, e))
 
 class AnkMessaging(object):
 
