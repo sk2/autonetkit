@@ -13,10 +13,6 @@ doc/build
 
 *.graphml
 
-*.graphml
-
-*.graphml2
-
 *.gz
 
 *.log
@@ -28,53 +24,26 @@ erl_crash.dump
 
 autonetkit_v3.egg-info/*
 
-nectar1/*
-
 test.xml
-
 output.xml
 
-envtest/*
 dist/*
 
-
-autonetkit_v3_cisco.egg-info/*
 diff.json
 
-autonetkit_v3_dev.egg-info/*
 *.virl
 
-example.graphml3
-*.graphml
 *.pickle
 *.gml
-envtest/.Python
 
 autonetkit.egg-info/*
-autonetkit.egg-info/SOURCES.txt
 
 example/rendered/*
 build/lib/autonetkit/__init__.py
 autonetkit/example/rendered/*
 example/rendered/*
-example/rendered/localhost/netkit/1/etc/hostname
-
-router.image
-
-output.txt
 
 cache/*
-script.profile
-
-*.graphml4
-
-*.graphml5
-
-autonetkit/www_vis/icons/collision_domain2.svg
-
-example.graphml*
-test_out.txt
-
-example/measurement_sh_ip_route/*
 
 test.*
+*.graphml*
