@@ -57,8 +57,8 @@ def manage_network(input_graph_string, timestamp, build_options, reload_build=Fa
             update_http(anm)
 
         if build_options['validate']:
-            import validate
-            validate.validate(anm)
+            import ank_validate
+            ank_validate.validate(anm)
 
     if build_options['compile']:
         if build_options['archive']:
