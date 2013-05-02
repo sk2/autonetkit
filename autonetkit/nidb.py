@@ -447,7 +447,10 @@ class nidb_node_category(object):
         except AttributeError:
             pass # not a dict
         except TypeError:
-            log.debug("Access unset key %s in %s" % (key, self.node_id))
+            #Supress warning as could occur if this element is a primitive rather than a dict
+            #eg a boolean, which is valid
+            # TODO: revisit this
+            #log.debug("Access unset key %s in %s %s" % (key, self.node_id, self.category_id))
             pass # also not a dict
         return data
 
