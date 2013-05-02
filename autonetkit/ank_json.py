@@ -230,8 +230,12 @@ def prepare_nidb(nidb):
         graph.node[node]['device_type'] = graph.node[node]['graphics']['device_type']
         graph.node[node]['device_subtype'] = graph.node[node]['graphics']['device_subtype']
 
+        print node
         for interface_index in graph.node[node]['_interfaces']:
-            interface_id = graph.node[node]["_interfaces"][interface_index]['id']
+            try:
+                interface_id = graph.node[node]["_interfaces"][interface_index]['id']
+            except KeyError: # interface doesn't exist, eg for a lan segment
+                interface_id = ""
             id_brief = shortened_interface(interface_id)
             graph.node[node]["_interfaces"][interface_index]['id_brief'] = id_brief
 
