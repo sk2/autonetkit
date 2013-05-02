@@ -489,7 +489,8 @@ def build_ibgp_v4(anm):
     g_phy = anm['phy']
     g_ibgpv4 = anm.add_overlay("ibgp_v4", directed=True)
     ipv4_nodes = set(g_phy.nodes("is_router", "use_ipv4"))
-    g_ibgpv4.add_nodes_from((n for n in g_bgp if n in ipv4_nodes), retain = "ibgp_level")
+    g_ibgpv4.add_nodes_from((n for n in g_bgp if n in ipv4_nodes),
+            retain = ["ibgp_level", "ibgp_l2_cluster", "ibgp_l3_cluster"] )
     g_ibgpv4.add_edges_from(g_bgp.edges(type="ibgp"), retain="direction")
 
 def build_ibgp_v6(anm):
@@ -500,7 +501,8 @@ def build_ibgp_v6(anm):
     g_phy = anm['phy']
     g_ibgpv6 = anm.add_overlay("ibgp_v6", directed=True)
     ipv6_nodes = set(g_phy.nodes("is_router", "use_ipv6"))
-    g_ibgpv6.add_nodes_from((n for n in g_bgp if n in ipv6_nodes), retain = "ibgp_level")
+    g_ibgpv6.add_nodes_from((n for n in g_bgp if n in ipv6_nodes),
+            retain = ["ibgp_level", "ibgp_l2_cluster", "ibgp_l3_cluster"] )
     g_ibgpv6.add_edges_from(g_bgp.edges(type="ibgp"), retain="direction")
 
 def build_ebgp_v4(anm):
