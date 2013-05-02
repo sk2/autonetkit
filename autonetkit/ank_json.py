@@ -230,7 +230,6 @@ def prepare_nidb(nidb):
         graph.node[node]['device_type'] = graph.node[node]['graphics']['device_type']
         graph.node[node]['device_subtype'] = graph.node[node]['graphics']['device_subtype']
 
-        print node
         for interface_index in graph.node[node]['_interfaces']:
             try:
                 interface_id = graph.node[node]["_interfaces"][interface_index]['id']
