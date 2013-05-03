@@ -818,6 +818,12 @@ class CiscoCompiler(PlatformCompiler):
             yield "GigabitEthernet0/%s" % x
 
     @staticmethod
+    def interface_ids_ra():
+        #TODO: make this skip if in list of allocated ie [interface.name for interface in node]
+        for x in itertools.count(0):
+            yield "GigabitEthernet%s" % x
+
+    @staticmethod
     def interface_ids_nxos():
         for x in itertools.count(0):
             yield "Ethernet2/%s" % x
