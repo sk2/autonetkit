@@ -27,6 +27,14 @@ var g_highlights = chart.append("svg:g")
 var g_interfaces = chart.append("svg:g")
 .attr("id", "g_interfaces");
 
+//To store svg defs for icons
+chart.append("defs")
+
+var icon_width = 45;
+var icon_height = 45;
+
+
+
 
 var jsondata;
 var socket_url = "ws://" + location.host + "/ws";
@@ -41,8 +49,6 @@ ws.onclose = function () {
     $("#websocket_icon").html(' <font color ="red"> <i class="icon-remove-sign " title="WebSocket Disconnected. Reload page to reconnect."></i></font>');
 };
 
-var icon_width = 45;
-var icon_height = 45;
 
 //TODO: make "phy" default selected
 
@@ -674,7 +680,9 @@ var interface_info = function(d) {
 // Per-type markers, as they don't inherit styles.
 //TODO: create separate markers for traces and links
 //TODO: set marker properties by css
-g_traces.append("svg:defs").selectAll("marker")
+//g_traces.append("svg:defs").selectAll("marker")
+//TODO: check this still works
+chart.select("defs").selectAll("marker")
 .data(["path_marker", "path_verified_marker"])
 .enter().append("svg:marker")
 .attr("id", String)
@@ -1524,12 +1532,36 @@ function redraw() {
         return d.label + d.network;
     }
 
+    var node_icon = function(d) {
+        retval = d.device_type;
+        if (d.device_subtype != null && d.device_subtype != "None") {
+            retval += "_" + d.device_subtype;
+        }
+        return retval;
+    }
+
+    //Append any new device icons found
+    device_type_subtypes = _.map(nodes, node_icon);
+    device_type_subtypes = _.uniq(device_type_subtypes);
+    console.log("subtypes", device_type_subtypes);
+    chart.select("defs")
+        .selectAll(".icondef")
+        .data(device_type_subtypes, function(d){ console.log("using", d); return d;})
+        .enter()
+        .append("image")
+        .attr("class", "icondef")
+        .attr("xlink:href", function (d){ return "icons/" + d + ".svg";})
+        .attr("id", function(d) {return "icon_" + d})
+        .attr("width", icon_width) 
+        .attr("height", icon_height);
+
     var image = g_nodes.selectAll(".device_icon")
-        .attr("xlink:href", icon)
+        //.attr("xlink:href", icon)
         .data(nodes, function(d) { return d.id});
 
-    image.enter().append("image")
+    image.enter().append("use")
         .attr("class", "device_icon")
+        .attr("xlink:href", function(d) {return "#icon_" + node_icon(d)})
         .attr("x", function(d) { return d.x + x_offset; })
         .attr("y", function(d) { return d.y + y_offset; })
         .style("opacity", icon_opacity)
@@ -1537,7 +1569,7 @@ function redraw() {
         .attr("height", icon_height)
         .on("mouseover", function(d){
             node_info(d);
-            d3.select(this).attr("xlink:href", icon); //TODO: check why need to do this
+            //d3.select(this).attr("xlink:href", icon); //TODO: check why need to do this
         })
     .on("mouseout", function(){
         clear_label();
@@ -1548,8 +1580,9 @@ function redraw() {
         image
         .attr("width", icon_width)
         .attr("height", icon_height)
+        .attr("xlink:href", function(d) {return "#icon_" + node_icon(d)})
         .transition()
-        .attr("xlink:href", icon)
+        .attr("xlink:href", function(d) {return "#icon_" + node_icon(d)})
         .style("opacity", icon_opacity)
         .attr("x", function(d) { return d.x + x_offset; })
         .attr("y", function(d) { return d.y + y_offset; })
