@@ -918,6 +918,8 @@ class CiscoCompiler(PlatformCompiler):
                     interface.id = int_ids.next()
 
             ios2_compiler.compile(nidb_node)
+
+            mgmt_int_id = "mgmteth 0/0/CPU0/0"
             mgmt_int = nidb_node.add_interface(management = True)
             mgmt_int.id = mgmt_int_id
 
@@ -941,6 +943,9 @@ class CiscoCompiler(PlatformCompiler):
                 else:
                     interface.id = int_ids.next()
 
+            mgmt_int_id = "mgmt0"
+            mgmt_int = nidb_node.add_interface(management = True)
+            mgmt_int.id = mgmt_int_id
             nxos_compiler.compile(nidb_node)
 
         # assign management IPs
