@@ -834,6 +834,10 @@ def build_phy(anm):
     if g_in.data.Creator == "Topology Zoo Toolset":
         ank_utils.copy_attr_from(g_in, g_phy, "Network")
 
+    if g_in.data.Creator == "Maestro":
+        g_phy.data.management_subnet = g_in.data.management_subnet 
+        g_phy.data.management_prefixlen = g_in.data.management_prefixlen 
+
     g_phy.add_edges_from(g_in.edges(type="physical"))
     # TODO: make this automatic if adding to the physical graph?
     g_phy.allocate_interfaces() 
