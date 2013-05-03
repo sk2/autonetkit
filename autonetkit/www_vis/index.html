@@ -129,15 +129,12 @@ var revision_dropdown = d3.select("#revision_select")
 
 $('#revision_select').hide();
 
-
 var node_label_select = d3.select("#node_label_select")
 .attr("title", "Node Label")
 .on("change", function() {
     node_label_id = this.value;
     redraw();
     })
-
-
 
 var edge_group_select = d3.select("#edge_group_select")
 .attr("title", "Edge Label")
@@ -152,8 +149,6 @@ var interface_label_select = d3.select("#interface_label_select")
     interface_label_id = this.value;
     redraw();
     })
-
-
 
 d3.select("#display_interfaces")
 .on("change", function() {
@@ -202,8 +197,6 @@ chart.append('svg:rect')
 .attr("class", "chart_rect")
 .attr('width', chart_width)
 .attr('height', chart_height);
-
-
 
 function redraw() {
     //current_translate = d3.event.translate; // store to use when using slider
