@@ -953,9 +953,16 @@ class CiscoCompiler(PlatformCompiler):
         lab_topology = self.nidb.topology[self.host]
         oob_management_ips = {}
         from netaddr import IPNetwork
-        management_subnet = IPNetwork("172.16.254.0/16")
+        try:
+            management_subnet = address_prefixlen_to_network(g_phy.data.management_subnet,
+                    g_phy.data.management_prefixlen)
+        except ValueError:
+            management_subnet = IPNetwork("172.16.254.0/16")
+            log.info("Unable to create management subnet: %s/%s, using default of %s" % 
+                    (g_phy.data.management_subnet,
+                    g_phy.data.management_prefixlen, management_subnet))
         management_ips = management_subnet.iter_hosts()
-        oob_host_ip = management_ips.next()
+        oob_host_ip = management_ips.next() # consume first ip for the host
         oob_management_ips["host"] = oob_host_ip
         for nidb_node in sorted(self.nidb.nodes('is_router', host=self.host)):
             for interface in nidb_node.physical_interfaces:
@@ -963,6 +970,7 @@ class CiscoCompiler(PlatformCompiler):
                     interface.description = "OOB Management"
                     interface.ipv4_address = management_ips.next()
                     interface.ipv4_subnet = management_subnet
+                    interface.ipv4_cidr = address_prefixlen_to_network(interface.ipv4_address, management_subnet.prefixlen)
                     interface.physical = True
                     oob_management_ips[str(nidb_node)] = interface.ipv4_address
         lab_topology.oob_management_ips = oob_management_ips
