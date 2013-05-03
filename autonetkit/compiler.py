@@ -843,7 +843,6 @@ class CiscoCompiler(PlatformCompiler):
             yield "GigabitEthernet0/0/0/%s" % x
 
     def compile(self):
-        G_in = self.anm['input']
 #TODO: need to copy across the interface name from edge to the interface
         g_phy = self.anm['phy']
 
