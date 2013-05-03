@@ -879,6 +879,11 @@ class CiscoCompiler(PlatformCompiler):
 
             # Assign interfaces
             int_ids = self.interface_ids_ios()
+            if phy_node.device_subtype == "os":
+                int_ids = self.interface_ids_ios()
+            elif phy_node.device_subtype == "ra":
+                int_ids = self.interface_ids_ra()
+                
             mgmt_int_id = int_ids.next()  # 0/0 is used for management ethernet
 
             for interface in nidb_node.physical_interfaces:
