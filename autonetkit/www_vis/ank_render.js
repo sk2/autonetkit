@@ -1543,10 +1543,9 @@ function redraw() {
     //Append any new device icons found
     device_type_subtypes = _.map(nodes, node_icon);
     device_type_subtypes = _.uniq(device_type_subtypes);
-    console.log("subtypes", device_type_subtypes);
     chart.select("defs")
         .selectAll(".icondef")
-        .data(device_type_subtypes, function(d){ console.log("using", d); return d;})
+        .data(device_type_subtypes, function(d){  return d;})
         .enter()
         .append("image")
         .attr("class", "icondef")
