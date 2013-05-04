@@ -956,10 +956,11 @@ class CiscoCompiler(PlatformCompiler):
         lab_topology = self.nidb.topology[self.host]
         oob_management_ips = {}
         from netaddr import IPNetwork
+        import netaddr
         try:
             management_subnet = address_prefixlen_to_network(g_phy.data.management_subnet,
                     g_phy.data.management_prefixlen)
-        except ValueError:
+        except (ValueError, netaddr.core.AddrFormatError):
             management_subnet = IPNetwork("172.16.254.0/16")
             log.info("Unable to create management subnet: %s/%s, using default of %s" % 
                     (g_phy.data.management_subnet,
