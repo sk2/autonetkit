@@ -882,6 +882,9 @@ class CiscoCompiler(PlatformCompiler):
                 int_ids = self.interface_ids_ios()
             elif phy_node.device_subtype == "ra":
                 int_ids = self.interface_ids_ra()
+            else:
+                log.warning("Unexpected subtype %s" % phy_node.device_subtype)
+                int_ids = self.interface_ids_ios()
                 
             mgmt_int_id = int_ids.next()  # 0/0 is used for management ethernet
 
