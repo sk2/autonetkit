@@ -808,9 +808,9 @@ def build_ipv4(anm, infrastructure=True):
         #ank_utils.save(g_ipv4)
 
     #TODO: need to also support secondary_loopbacks for IPv6
+    import autonetkit.plugins.ipv4 as ipv4
     ipv4.allocate_ips(g_ipv4, infrastructure = False, loopbacks = False,
             secondary_loopbacks = True)
-
 
     #TODO: replace this with direct allocation to interfaces in ip alloc plugin
     for node in g_ipv4.nodes("is_l3device"):
