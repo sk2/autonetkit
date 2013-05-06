@@ -448,6 +448,8 @@ class IosBaseCompiler(RouterCompiler):
         node.bgp.lo_interface = self.lo_interface
         super(IosBaseCompiler, self).bgp(node)
 
+
+        # Only advertise loopbacks into eBGP
         if node.ip.use_ipv4:
             node.bgp.ipv4_advertise_subnets = [node.loopback_zero.ipv4_cidr]
         if node.ip.use_ipv6:
