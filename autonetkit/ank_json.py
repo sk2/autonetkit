@@ -5,6 +5,8 @@ import netaddr
 import string
 import autonetkit.anm
 import autonetkit.log as log
+import autonetkit.plugins
+import autonetkit.plugins.ipv4
 
 class NidbEncoder(json.JSONEncoder):
     #TODO: would be better to build this as a graph and then use normal JSON serialization
