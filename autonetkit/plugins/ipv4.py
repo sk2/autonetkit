@@ -9,8 +9,7 @@ import networkx as nx
 from collections import defaultdict
 import netaddr
 import functools
-
-messaging = autonetkit.ank_messaging
+import autonetkit.ank_messaging
 
 #TODO: allow slack in allocations: both for ASN (group level), and for collision domains to allow new nodes to be easily added
 
@@ -502,6 +501,6 @@ def allocate_ips(g_ip, infrastructure = True, loopbacks = True, secondary_loopba
                 #[loopback_tree],
             }
     jsontree = json.dumps(total_tree, cls=autonetkit.ank_json.AnkEncoder, indent = 4)
-    messaging.publish_data(jsontree, "ip_allocations")
+    autonetkit.ank_messaging.publish_data(jsontree, "ip_allocations")
 
     #ip_tree.save()
