@@ -15,6 +15,7 @@ import autonetkit.ank_messaging as ank_messaging
 import autonetkit.config as config
 import autonetkit.ank_json as ank_json
 
+
 # import autonetkit.bgp_pol as bgp_pol
 # raise SystemExit
 
@@ -81,7 +82,7 @@ def manage_network(input_graph_string, timestamp, build_options, reload_build=Fa
         nidb = NIDB()
         nidb.restore_latest()
         update_http(anm, nidb)
-        
+
 
     if build_options['diff']:
         import autonetkit.diff
@@ -143,7 +144,6 @@ def parse_options():
     arguments = parser.parse_args()
     return arguments
 
-
 def main():
     settings = config.settings
 
@@ -169,7 +169,6 @@ def main():
         'diff': options.diff or settings['General']['diff'],
         'archive': options.archive or settings['General']['archive'],
     }
-
 
     if options.webserver:
         log.info("Webserver not yet supported, please run as seperate module")
@@ -384,7 +383,7 @@ def measure_network(anm, nidb):
     # abort after 10 fails, proceed on any success, 0.1 second timeout (quite aggressive)
     if 1:
         collect_sh_ip_route(anm, nidb)
-        
+
 
     if 0:
         #measure.send(nidb, command, remote_hosts, threads = 5)
