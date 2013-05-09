@@ -289,7 +289,7 @@ def compile_network(anm):
 def deploy_network(anm, nidb, input_graph_string = None):
 
     # TODO: make this driven from config file
-    log.info("Deploying network")
+    log.info("Deploying Network")
 
 # TODO: pick up platform, host, filenames from nidb (as set in there)
     deploy_hosts = config.settings['Deploy Hosts']
