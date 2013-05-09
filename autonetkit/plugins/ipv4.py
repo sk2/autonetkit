@@ -284,6 +284,7 @@ class IpTree(object):
 
         # now allocate the IPs
         global_prefix_len = global_root.prefixlen
+#TODO: need to take prefixlen in as argument, and create network in the init...
         global_ip_block = netaddr.IPNetwork("%s/%s" % (self.root_ip_block, global_prefix_len))
         self.graph = global_graph
 
