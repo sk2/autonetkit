@@ -835,8 +835,10 @@ def build_phy(anm):
         ank_utils.copy_attr_from(g_in, g_phy, "Network")
 
     if g_in.data.Creator == "Maestro":
-        g_phy.data.management_subnet = g_in.data.management_subnet 
-        g_phy.data.management_prefixlen = g_in.data.management_prefixlen 
+        g_phy.data.mgmt_interfaces_enabled = g_in.data.mgmt_interfaces_enabled 
+        g_phy.data.mgmt_address_start = g_in.data.mgmt_address_start 
+        g_phy.data.mgmt_address_end = g_in.data.mgmt_address_end 
+        g_phy.data.mgmt_prefixlen = g_in.data.mgmt_prefixlen
 
     g_phy.add_edges_from(g_in.edges(type="physical"))
     # TODO: make this automatic if adding to the physical graph?
