@@ -407,6 +407,8 @@ class IosBaseCompiler(RouterCompiler):
         self.vrf_igp_interfaces(node)
         phy_node = self.anm['phy'].node(node)
 
+        node.use_cdp = phy_node.use_cdp
+
         if node in self.anm['ospf']:
             node.ospf.use_ipv4 = phy_node.use_ipv4
             node.ospf.use_ipv6 = phy_node.use_ipv6
@@ -589,6 +591,16 @@ class IosClassicCompiler(IosBaseCompiler):
             node.include_csr = True
 
 class Ios2Compiler(IosBaseCompiler):
+
+    def interfaces(self, node):
+        """Set use_cdp on each physical interface"""
+        super(Ios2Compiler, self).interfaces(node)
+        for interface in node.physical_interfaces:
+            if interface.management:
+                interface.use # don't enable cdp on management interfaces
+
+            interface.use_cdp = node.use_cdp # use node value
+
     def ospf(self, node):
         super(Ios2Compiler, self).ospf(node)
         g_ospf = self.anm['ospf']
@@ -978,7 +990,6 @@ class CiscoCompiler(PlatformCompiler):
 
         if use_mgmt_interfaces:
             self.assign_management_interfaces()
-
 
     def assign_management_interfaces(self):
         g_phy = self.anm['phy']

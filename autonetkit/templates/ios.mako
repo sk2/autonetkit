@@ -30,6 +30,11 @@ line vty 0 4
 line con 0
  password cisco
 !
+% if node.use_cdp:
+!
+cdp run
+!
+%endif
 ## Physical Interfaces
 % for interface in node.interfaces:  
 interface ${interface.id}
