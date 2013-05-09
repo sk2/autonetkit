@@ -627,11 +627,17 @@ class OverlayGraphData(object):
         return self.anm.overlay_nx_graphs[self.overlay_id]
 
     def __getattr__(self, key):
-        """Returns edge property"""
         return self._graph.graph.get(key)
 
     def __setattr__(self, key, val):
-        """Sets edge property"""
+        self._graph.graph[key] = val
+
+    def __getitem__(self, key):
+        """"""
+        return self._graph.graph.get(key)
+
+    def __setitem__(self, key, val):
+        """"""
         self._graph.graph[key] = val
 
 
