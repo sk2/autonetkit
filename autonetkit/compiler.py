@@ -439,7 +439,7 @@ class IosBaseCompiler(RouterCompiler):
 
         if node.ip.use_ipv6:
             ipv6_loopback_zero = phy_loopback_zero['ipv6']
-            node.loopback_zero.ipv6_address = address_prefixlen_to_network(
+            node.loopback_zero.ipv6_address = add_preflen_to_net(
                 ipv6_loopback_zero.ip_address, 128)
 
         super(IosBaseCompiler, self).interfaces(node)
@@ -847,6 +847,11 @@ class CiscoCompiler(PlatformCompiler):
     def compile(self):
 #TODO: need to copy across the interface name from edge to the interface
         g_phy = self.anm['phy']
+        use_mgmt_interfaces = g_phy.data.mgmt_interfaces_enabled 
+        if use_mgmt_interfaces:
+            log.info("Allocating management interfaces for Cisco")
+        else:
+            log.info("Not allocating management interfaces for Cisco")
 
         log.info("Compiling Cisco for %s" % self.host)
         ios_compiler = IosClassicCompiler(self.nidb, self.anm)
@@ -885,10 +890,13 @@ class CiscoCompiler(PlatformCompiler):
             elif phy_node.device_subtype == "ra":
                 int_ids = self.interface_ids_ra()
             else:
+                # default if no subtype specified
+                #TODO: need to set default in the load module
                 log.warning("Unexpected subtype %s" % phy_node.device_subtype)
                 int_ids = self.interface_ids_ios()
                 
-            mgmt_int_id = int_ids.next()  # 0/0 is used for management ethernet
+            if use_mgmt_interfaces:
+                mgmt_int_id = int_ids.next()  # 0/0 is used for management ethernet
 
             for interface in nidb_node.physical_interfaces:
                 if specified_int_names:
@@ -898,8 +906,9 @@ class CiscoCompiler(PlatformCompiler):
                     interface.id = int_ids.next()
 
             ios_compiler.compile(nidb_node)
-            mgmt_int = nidb_node.add_interface(management = True)
-            mgmt_int.id = mgmt_int_id
+            if use_mgmt_interfaces:
+                mgmt_int = nidb_node.add_interface(management = True)
+                mgmt_int.id = mgmt_int_id
 
         ios2_compiler = Ios2Compiler(self.nidb, self.anm)
         for phy_node in g_phy.nodes('is_router', host=self.host, syntax='ios2'):
@@ -924,9 +933,10 @@ class CiscoCompiler(PlatformCompiler):
 
             ios2_compiler.compile(nidb_node)
 
-            mgmt_int_id = "mgmteth 0/0/CPU0/0"
-            mgmt_int = nidb_node.add_interface(management = True)
-            mgmt_int.id = mgmt_int_id
+            if use_mgmt_interfaces:
+                mgmt_int_id = "mgmteth 0/0/CPU0/0"
+                mgmt_int = nidb_node.add_interface(management = True)
+                mgmt_int.id = mgmt_int_id
 
         nxos_compiler = NxOsCompiler(self.nidb, self.anm)
         for phy_node in g_phy.nodes('is_router', host=self.host, syntax='nx_os'):
@@ -948,48 +958,82 @@ class CiscoCompiler(PlatformCompiler):
                 else:
                     interface.id = int_ids.next()
 
-            mgmt_int_id = "mgmt0"
-            mgmt_int = nidb_node.add_interface(management = True)
-            mgmt_int.id = mgmt_int_id
-            nxos_compiler.compile(nidb_node)
+            if use_mgmt_interfaces:
+                mgmt_int_id = "mgmt0"
+                mgmt_int = nidb_node.add_interface(management = True)
+                mgmt_int.id = mgmt_int_id
 
-        # assign management IPs
-        #TODO: make this a module
-        lab_topology = self.nidb.topology[self.host]
-        oob_management_ips = {}
-        from netaddr import IPNetwork
-        import netaddr
-        try:
-            management_subnet = address_prefixlen_to_network(g_phy.data.management_subnet,
-                    g_phy.data.management_prefixlen)
-        except (ValueError, netaddr.core.AddrFormatError):
-            management_subnet = IPNetwork("172.16.254.0/16")
-            log.info("Unable to create management subnet: %s/%s, using default of %s" % 
-                    (g_phy.data.management_subnet,
-                    g_phy.data.management_prefixlen, management_subnet))
-        management_ips = management_subnet.iter_hosts()
-        oob_host_ip = management_ips.next() # consume first ip for the host
-        oob_management_ips["host"] = oob_host_ip
-        for nidb_node in sorted(self.nidb.nodes('is_router', host=self.host)):
-            for interface in nidb_node.physical_interfaces:
-                if interface.management:
-                    interface.description = "OOB Management"
-                    interface.ipv4_address = management_ips.next()
-                    interface.ipv4_subnet = management_subnet
-                    interface.ipv4_cidr = address_prefixlen_to_network(interface.ipv4_address, management_subnet.prefixlen)
-                    interface.physical = True
-                    oob_management_ips[str(nidb_node)] = interface.ipv4_address
-        lab_topology.oob_management_ips = oob_management_ips
+            nxos_compiler.compile(nidb_node)
 
         other_nodes = [phy_node for phy_node in g_phy.nodes('is_router', host=self.host)
                        if phy_node.syntax not in ("ios", "ios2")]
         for node in other_nodes:
+            #TODO: check why we need this
             phy_node = g_phy.node(node)
             nidb_node = self.nidb.node(phy_node)
             nidb_node.input_label = phy_node.id  # set specifically for now for other variants
 
 # TODO: use more os.path.join for render folders
 # TODO: Split compilers into seperate modules
+
+        if use_mgmt_interfaces:
+            self.assign_management_interfaces()
+
+
+    def assign_management_interfaces(self):
+        g_phy = self.anm['phy']
+        lab_topology = self.nidb.topology[self.host]
+        oob_management_ips = {}
+
+        #TODO: make this seperate function
+        from netaddr import IPNetwork, IPRange
+
+        mgmt_address_start = g_phy.data.mgmt_address_start 
+        mgmt_address_end = g_phy.data.mgmt_address_end 
+        mgmt_prefixlen = int(g_phy.data.mgmt_prefixlen)
+
+        #TODO: need to check if range is insufficient
+        mgmt_ips = (IPRange(mgmt_address_start, mgmt_address_end))
+        mgmt_ips_iter = iter(mgmt_ips) # to iterate over
+
+        mgmt_address_start_network = IPNetwork(mgmt_address_start) # as /32 for supernet
+        mgmt_address_end_network = IPNetwork(mgmt_address_end) # as /32 for supernet
+        # retrieve the first supernet, as this is the range requested. subsequent are the subnets
+        start_subnet = mgmt_address_start_network.supernet(mgmt_prefixlen)[0] # retrieve first
+        end_subnet = mgmt_address_end_network.supernet(mgmt_prefixlen)[0] # retrieve first
+
+        try: # validation
+            assert(start_subnet == end_subnet)
+            log.debug("Verified: Cisco management subnets match")
+        except AssertionError:
+            log.warning("Error: Cisco management subnets do not match: %s and %s, using start subnet"
+                    % (start_subnet, end_subnet))
+
+        mgmt_subnet = start_subnet
+        hosts_to_allocate = sorted(self.nidb.nodes('is_router', host=self.host))
+
+        try: # validation
+            assert(len(mgmt_ips) >= len(hosts_to_allocate))
+            log.debug("Verified: Cisco management IP range is sufficient size %s for %s hosts"
+                    % (len(mgmt_ips), len(hosts_to_allocate)))
+        except AssertionError:
+            log.warning("Error: Cisco management IP range is insufficient size %s for %s hosts"
+                    % (len(mgmt_ips), len(hosts_to_allocate)))
+            # TODO: need to use default range
+            return
+
+        for nidb_node in hosts_to_allocate:
+            for interface in nidb_node.physical_interfaces:
+                if interface.management:
+                    interface.description = "OOB Management"
+                    ipv4_address = mgmt_ips_iter.next()
+                    interface.ipv4_address = ipv4_address
+                    interface.ipv4_subnet = mgmt_subnet
+                    interface.ipv4_cidr = add_preflen_to_net(ipv4_address, mgmt_prefixlen)
+                    interface.physical = True
+                    oob_management_ips[str(nidb_node)] = ipv4_address
+
+        lab_topology.oob_management_ips = oob_management_ips
 
 
 class DynagenCompiler(PlatformCompiler):
