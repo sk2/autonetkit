@@ -12,7 +12,7 @@ settings = autonetkit.config.settings
 from autonetkit.ank_utils import alphabetical_sort as alpha_sort
 
 
-def address_prefixlen_to_network(address, prefixlen):
+def add_preflen_to_net(address, prefixlen):
     """Workaround for creating an IPNetwork from an address and a prefixlen
     TODO: check if this is part of netaddr module
     """
@@ -133,14 +133,14 @@ class RouterCompiler(object):
                 ipv4_int = phy_int['ipv4']
                 interface.ipv4_address = ipv4_int.ip_address
                 interface.ipv4_subnet = ipv4_int.subnet
-                interface.ipv4_cidr = address_prefixlen_to_network(interface.ipv4_address,
+                interface.ipv4_cidr = add_preflen_to_net(interface.ipv4_address,
                         interface.ipv4_subnet.prefixlen)
 
             if node.ip.use_ipv6:
                 ipv6_int = phy_int['ipv6']
 #TODO: for consistency, make ipv6_cidr
                 interface.ipv6_subnet = ipv6_int.subnet
-                interface.ipv6_address = address_prefixlen_to_network(ipv6_int.ip_address,
+                interface.ipv6_address = add_preflen_to_net(ipv6_int.ip_address,
                         interface.ipv6_subnet.prefixlen)
 
         for interface in node.loopback_interfaces:
@@ -154,14 +154,14 @@ class RouterCompiler(object):
                     ipv4_int = phy_int['ipv4']
                     interface.ipv4_address = ipv4_int.loopback
                     interface.ipv4_subnet = node.loopback_subnet
-                    interface.ipv4_cidr = address_prefixlen_to_network(interface.ipv4_address,
+                    interface.ipv4_cidr = add_preflen_to_net(interface.ipv4_address,
                             interface.ipv4_subnet.prefixlen)
 
                 if node.ip.use_ipv6:
                     ipv6_int = phy_int['ipv6']
 #TODO: for consistency, make ipv6_cidr
                     #interface.ipv6_subnet = ipv6_int.loopback # TODO: do we need for consistency?
-                    interface.ipv6_address = address_prefixlen_to_network(
+                    interface.ipv6_address = add_preflen_to_net(
                             ipv6_int.loopback, 128)
 
                 # secondary loopbacks
@@ -434,7 +434,7 @@ class IosBaseCompiler(RouterCompiler):
             ipv4_address = ipv4_loopback_zero.ip_address
             node.loopback_zero.ipv4_address = ipv4_address
             node.loopback_zero.ipv4_subnet = ipv4_loopback_subnet
-            node.loopback_zero.ipv4_cidr = address_prefixlen_to_network(
+            node.loopback_zero.ipv4_cidr = add_preflen_to_net(
                     ipv4_address, ipv4_loopback_subnet.prefixlen)
 
         if node.ip.use_ipv6:
