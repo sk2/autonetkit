@@ -438,6 +438,9 @@ class IosBaseCompiler(RouterCompiler):
 
         super(IosBaseCompiler, self).interfaces(node)
 
+        for interface in node.physical_interfaces:
+            interface.use_cdp = node.use_cdp # use node value
+
     def bgp(self, node):
         node.bgp.lo_interface = self.lo_interface
         super(IosBaseCompiler, self).bgp(node)
@@ -618,15 +621,6 @@ class IosClassicCompiler(IosBaseCompiler):
         node.bgp.vpnv4_neighbors = vpnv4_neighbors
 
 class Ios2Compiler(IosBaseCompiler):
-
-    def interfaces(self, node):
-        """Set use_cdp on each physical interface"""
-        super(Ios2Compiler, self).interfaces(node)
-        for interface in node.physical_interfaces:
-            if interface.management:
-                interface.use # don't enable cdp on management interfaces
-
-            interface.use_cdp = node.use_cdp # use node value
 
     def ospf(self, node):
         super(Ios2Compiler, self).ospf(node)
@@ -978,7 +972,7 @@ class CiscoCompiler(PlatformCompiler):
             ios2_compiler.compile(nidb_node)
 
             if use_mgmt_interfaces:
-                mgmt_int_id = "mgmteth 0/0/CPU0/0"
+                mgmt_int_id = "mgmteth0/0/CPU0/0"
                 mgmt_int = nidb_node.add_interface(management = True)
                 mgmt_int.id = mgmt_int_id
 
