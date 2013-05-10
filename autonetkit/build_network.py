@@ -288,7 +288,9 @@ def build_mpls_ldp(anm):
     g_in = anm['input']
     g_vrf = anm['vrf']
     g_mpls_ldp = anm.add_overlay("mpls_ldp")
-    g_mpls_ldp.add_nodes_from(g_in.nodes("is_router"), retain=["vrf_role", "vrf"])
+    nodes_to_add = [n for n in g_in.nodes("is_router")
+            if n['vrf'].vrf_role in ("PE", "P")]
+    g_mpls_ldp.add_nodes_from(nodes_to_add, retain=["vrf_role", "vrf"])
 
     # store as set for faster lookup
     pe_nodes = set(g_vrf.nodes(vrf_role = "PE"))
