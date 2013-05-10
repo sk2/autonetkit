@@ -781,8 +781,43 @@ def build_ip(anm):
             node.cd_id = cd_label
             graphics_node.label = cd_label
 
+def extract_ipv4_blocks(anm):
+    #TODO: set all these blocks globally in config file, rather than repeated in load, build_network, compile, etc
+    from autonetkit.ank import sn_preflen_to_network
+    from netaddr import IPNetwork
+    g_in = anm['input']
+
+    try:
+        infra_subnet = g_in.data.ipv4_infra_subnet
+        infra_prefix = g_in.data.ipv4_infra_prefix
+        infra_block = sn_preflen_to_network(infra_subnet, infra_prefix)
+    except Exception, e:
+        log.debug("Unable to obtain infra_subnet from input graph: %s" % e)
+        infra_block = IPNetwork("10.0.0.0/8")
+
+    try:
+        loopback_subnet = g_in.data.ipv4_loopback_subnet
+        loopback_prefix = g_in.data.ipv4_loopback_prefix
+        loopback_block = sn_preflen_to_network(loopback_subnet, loopback_prefix)
+    except Exception, e:
+        log.debug("Unable to obtain loopback_subnet from input graph: %s" % e)
+        loopback_block = IPNetwork("10.0.0.0/8")
+
+    try:
+        vrf_loopback_subnet = g_in.data.ipv4_vrf_loopback_subnet
+        vrf_loopback_prefix = g_in.data.ipv4_vrf_loopback_prefix
+        vrf_loopback_block = sn_preflen_to_network(vrf_loopback_subnet, vrf_loopback_prefix)
+    except Exception, e:
+        log.debug("Unable to obtain vrf_loopback_subnet from input graph: %s" % e)
+        vrf_loopback_block = IPNetwork("172.16.0.0/24")
+
+
+    return infra_block, loopback_block, vrf_loopback_block
+
+
 def build_ipv4(anm, infrastructure=True):
     """Builds IPv4 graph"""
+    import autonetkit.plugins.ipv4 as ipv4
     g_ipv4 = anm.add_overlay("ipv4")
     g_ip = anm['ip']
     g_in = anm['input']
@@ -793,23 +828,21 @@ def build_ipv4(anm, infrastructure=True):
     g_ipv4.add_edges_from(g_ip.edges())
 
     # check if ip ranges have been specified on g_in
+    infra_block, loopback_block, vrf_loopback_block = extract_ipv4_blocks(anm)
 
     #TODO: need to set allocate_ipv4 by default in the readers
     if g_in.data.alloc_ipv4_infrastructure is False:
         manual_ipv4_infrastructure_allocation(anm)
     else:
-        import autonetkit.plugins.ipv4 as ipv4
-        ipv4.allocate_infra(g_ipv4)
+        ipv4.allocate_infra(g_ipv4, infra_block)
 
     if g_in.data.alloc_ipv4_loopbacks is False:
         manual_ipv4_loopback_allocation(anm)
     else:
-        import autonetkit.plugins.ipv4 as ipv4
-        ipv4.allocate_loopbacks(g_ipv4)
+        ipv4.allocate_loopbacks(g_ipv4, loopback_block)
 
     #TODO: need to also support secondary_loopbacks for IPv6
-    import autonetkit.plugins.ipv4 as ipv4
-    ipv4.allocate_vrf_loopbacks(g_ipv4)
+    ipv4.allocate_vrf_loopbacks(g_ipv4, vrf_loopback_block)
 
     #TODO: replace this with direct allocation to interfaces in ip alloc plugin
     for node in g_ipv4.nodes("is_l3device"):

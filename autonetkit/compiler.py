@@ -10,18 +10,11 @@ import autonetkit.plugins.naming as naming
 import autonetkit.config
 settings = autonetkit.config.settings
 from autonetkit.ank_utils import alphabetical_sort as alpha_sort
-
-
-def add_preflen_to_net(address, prefixlen):
-    """Workaround for creating an IPNetwork from an address and a prefixlen
-    TODO: check if this is part of netaddr module
-    """
-    return netaddr.IPNetwork("%s/%s" % (address, prefixlen))
+from autonetkit.ank import sn_preflen_to_network
 
 def dot_to_underscore(instring):
     """Replace dots with underscores"""
     return instring.replace(".", "_")
-
 
 class RouterCompiler(object):
     """Base router compiler"""
@@ -133,14 +126,14 @@ class RouterCompiler(object):
                 ipv4_int = phy_int['ipv4']
                 interface.ipv4_address = ipv4_int.ip_address
                 interface.ipv4_subnet = ipv4_int.subnet
-                interface.ipv4_cidr = add_preflen_to_net(interface.ipv4_address,
+                interface.ipv4_cidr = sn_preflen_to_network(interface.ipv4_address,
                         interface.ipv4_subnet.prefixlen)
 
             if node.ip.use_ipv6:
                 ipv6_int = phy_int['ipv6']
 #TODO: for consistency, make ipv6_cidr
                 interface.ipv6_subnet = ipv6_int.subnet
-                interface.ipv6_address = add_preflen_to_net(ipv6_int.ip_address,
+                interface.ipv6_address = sn_preflen_to_network(ipv6_int.ip_address,
                         interface.ipv6_subnet.prefixlen)
 
         for interface in node.loopback_interfaces:
@@ -154,14 +147,14 @@ class RouterCompiler(object):
                     ipv4_int = phy_int['ipv4']
                     interface.ipv4_address = ipv4_int.loopback
                     interface.ipv4_subnet = node.loopback_subnet
-                    interface.ipv4_cidr = add_preflen_to_net(interface.ipv4_address,
+                    interface.ipv4_cidr = sn_preflen_to_network(interface.ipv4_address,
                             interface.ipv4_subnet.prefixlen)
 
                 if node.ip.use_ipv6:
                     ipv6_int = phy_int['ipv6']
 #TODO: for consistency, make ipv6_cidr
                     #interface.ipv6_subnet = ipv6_int.loopback # TODO: do we need for consistency?
-                    interface.ipv6_address = add_preflen_to_net(
+                    interface.ipv6_address = sn_preflen_to_network(
                             ipv6_int.loopback, 128)
 
                 # secondary loopbacks
@@ -436,12 +429,12 @@ class IosBaseCompiler(RouterCompiler):
             ipv4_address = ipv4_loopback_zero.ip_address
             node.loopback_zero.ipv4_address = ipv4_address
             node.loopback_zero.ipv4_subnet = ipv4_loopback_subnet
-            node.loopback_zero.ipv4_cidr = add_preflen_to_net(
+            node.loopback_zero.ipv4_cidr = sn_preflen_to_network(
                     ipv4_address, ipv4_loopback_subnet.prefixlen)
 
         if node.ip.use_ipv6:
             ipv6_loopback_zero = phy_loopback_zero['ipv6']
-            node.loopback_zero.ipv6_address = add_preflen_to_net(
+            node.loopback_zero.ipv6_address = sn_preflen_to_network(
                 ipv6_loopback_zero.ip_address, 128)
 
         super(IosBaseCompiler, self).interfaces(node)
@@ -1040,7 +1033,7 @@ class CiscoCompiler(PlatformCompiler):
                     ipv4_address = mgmt_ips_iter.next()
                     interface.ipv4_address = ipv4_address
                     interface.ipv4_subnet = mgmt_subnet
-                    interface.ipv4_cidr = add_preflen_to_net(ipv4_address, mgmt_prefixlen)
+                    interface.ipv4_cidr = sn_preflen_to_network(ipv4_address, mgmt_prefixlen)
                     interface.physical = True
                     oob_management_ips[str(nidb_node)] = ipv4_address
 
