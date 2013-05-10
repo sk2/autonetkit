@@ -811,9 +811,7 @@ def extract_ipv4_blocks(anm):
         log.debug("Unable to obtain vrf_loopback_subnet from input graph: %s" % e)
         vrf_loopback_block = IPNetwork("172.16.0.0/24")
 
-
     return infra_block, loopback_block, vrf_loopback_block
-
 
 def build_ipv4(anm, infrastructure=True):
     """Builds IPv4 graph"""
