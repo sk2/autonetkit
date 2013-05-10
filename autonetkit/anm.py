@@ -295,7 +295,9 @@ class OverlayNode(object):
 
     def add_loopback(self, *args, **kwargs):
         """Public function to add a loopback interface"""
-        self._add_interface(type="loopback", *args, **kwargs)
+        interface_id = self._add_interface(type="loopback", *args, **kwargs)
+        return overlay_interface(self.anm, self.overlay_id, 
+                self.node_id, interface_id)
 
     def add_interface(self,*args,  **kwargs):
         """Public function to add interface"""
