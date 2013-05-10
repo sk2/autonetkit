@@ -792,25 +792,24 @@ def build_ipv4(anm, infrastructure=True):
     ank_utils.copy_attr_from(g_ip, g_ipv4, "asn", nbunch = g_ipv4.nodes("collision_domain"))
     g_ipv4.add_edges_from(g_ip.edges())
 
+    # check if ip ranges have been specified on g_in
+
     #TODO: need to set allocate_ipv4 by default in the readers
     if g_in.data.alloc_ipv4_infrastructure is False:
         manual_ipv4_infrastructure_allocation(anm)
     else:
         import autonetkit.plugins.ipv4 as ipv4
-        ipv4.allocate_ips(g_ipv4, infrastructure = True, loopbacks = False)
-        #ank_utils.save(g_ipv4)
+        ipv4.allocate_infra(g_ipv4)
 
     if g_in.data.alloc_ipv4_loopbacks is False:
         manual_ipv4_loopback_allocation(anm)
     else:
         import autonetkit.plugins.ipv4 as ipv4
-        ipv4.allocate_ips(g_ipv4, infrastructure = False, loopbacks = True)
-        #ank_utils.save(g_ipv4)
+        ipv4.allocate_loopbacks(g_ipv4)
 
     #TODO: need to also support secondary_loopbacks for IPv6
     import autonetkit.plugins.ipv4 as ipv4
-    ipv4.allocate_ips(g_ipv4, infrastructure = False, loopbacks = False,
-            secondary_loopbacks = True)
+    ipv4.allocate_vrf_loopbacks(g_ipv4)
 
     #TODO: replace this with direct allocation to interfaces in ip alloc plugin
     for node in g_ipv4.nodes("is_l3device"):
