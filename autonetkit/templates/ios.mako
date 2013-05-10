@@ -67,6 +67,9 @@ interface ${interface.id}
   % if node.ip.use_ipv6:
   ipv6 address ${interface.ipv6_address} 
   %endif
+  % if interface.use_cdp:
+  cdp enable
+  %endif
   % if interface.ospf:
     %if interface.ospf.use_ipv4:
       %if not interface.ospf.multipoint:
