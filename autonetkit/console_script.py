@@ -15,10 +15,6 @@ import autonetkit.ank_messaging as ank_messaging
 import autonetkit.config as config
 import autonetkit.ank_json as ank_json
 
-
-# import autonetkit.bgp_pol as bgp_pol
-# raise SystemExit
-
 # TODO: make if measure set, then not compile - or warn if both set, as
 # don't want to regen topology when measuring
 
@@ -26,7 +22,6 @@ try:
     ANK_VERSION = pkg_resources.get_distribution("autonetkit").version
 except pkg_resources.DistributionNotFound:
     ANK_VERSION = "dev"
-
 
 def file_monitor(filename):
     """Generator based function to check if a file has changed"""
