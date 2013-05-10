@@ -903,10 +903,15 @@ class CiscoCompiler(PlatformCompiler):
 # TODO: merge common router code, so end up with three loops: routers, ios
 # routers, ios2 routers
 
+        # store autonetkit_cisco version
+        from pkg_resources import get_distribution
+        ank_cisco_version = get_distribution("autonetkit_cisco").version
+
         for phy_node in g_phy.nodes('is_router', host=self.host):
             loopback_ids = self.loopback_interface_ids()
             # allocate loopbacks to routes (same for all ios variants)
             nidb_node = self.nidb.node(phy_node)
+            nidb_node.ank_cisco_version = ank_cisco_version
 
             for interface in nidb_node.loopback_interfaces:
                 if interface != nidb_node.loopback_zero:
