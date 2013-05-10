@@ -86,6 +86,7 @@ interface ${interface.id}
     %endif
   %endif
   % if interface.isis:
+  clns mtu 1400
   % if interface.isis.use_ipv4:
   ip router isis ${node.isis.process_id}
     % if interface.physical:
