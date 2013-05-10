@@ -11,6 +11,13 @@ try:
 except ImportError:
     import pickle
 
+def sn_preflen_to_network(address, prefixlen):
+    """Workaround for creating an IPNetwork from an address and a prefixlen
+    TODO: check if this is part of netaddr module
+    """
+    import netaddr
+    return netaddr.IPNetwork("%s/%s" % (address, prefixlen))
+
 def fqdn(node):
     return "%s.%s" % (node.label, node.asn)
 

@@ -429,34 +429,34 @@ def assign_asn_to_interasn_cds(g_ip):
 
     return
 
-def allocate_infra(g_ip):
+def allocate_infra(g_ip, address_block):
     log.info("Allocating v4 Infrastructure IPs")
     ip_tree = IpTree("10.0.0.0")
     assign_asn_to_interasn_cds(g_ip)
     ip_tree.add_nodes(g_ip.nodes("collision_domain"))
     ip_tree.build()
-    cd_tree = ip_tree.json()
+    #cd_tree = ip_tree.json()
     ip_tree.assign()
 
     g_ip.data.infra_blocks = ip_tree.group_allocations()
 
-    total_tree = { 'name': "ip", 'children': [cd_tree], }
-    jsontree = json.dumps(total_tree, cls=autonetkit.ank_json.AnkEncoder, indent = 4)
+    #total_tree = { 'name': "ip", 'children': [cd_tree], }
+    #jsontree = json.dumps(total_tree, cls=autonetkit.ank_json.AnkEncoder, indent = 4)
     g_ip.data.infra_blocks = ip_tree.group_allocations()
 
 #TODO: apply directly here
 
 
-def allocate_loopbacks(g_ip):
+def allocate_loopbacks(g_ip, address_block):
     log.info("Allocating v4 Primary Host loopback IPs")
     ip_tree = IpTree("192.168.1.0")
     ip_tree.add_nodes(g_ip.nodes("is_l3device"))
     ip_tree.build()
-    loopback_tree = ip_tree.json()
+    #loopback_tree = ip_tree.json()
     ip_tree.assign()
     g_ip.data.loopback_blocks = ip_tree.group_allocations()
 
-def allocate_vrf_loopbacks(g_ip):
+def allocate_vrf_loopbacks(g_ip, address_block):
     log.info("Allocating v4 Secondary Host loopback IPs")
     ip_tree = IpTree("172.16.0.0")
     secondary_loopbacks = [i for n in g_ip.nodes()
@@ -465,5 +465,6 @@ def allocate_vrf_loopbacks(g_ip):
 
     ip_tree.add_nodes(secondary_loopbacks)
     ip_tree.build()
-    secondary_loopback_tree = ip_tree.json()
+    #secondary_loopback_tree = ip_tree.json()
     ip_tree.assign()
+    #TODO: store vrf block to g_ip.data
