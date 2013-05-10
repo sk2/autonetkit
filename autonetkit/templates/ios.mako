@@ -35,10 +35,27 @@ line con 0
 cdp run
 !
 %endif
+## VRF
+% for vrf in node.vrf.vrfs:
+vrf definition ${vrf.vrf}
+rd ${vrf.rd}
+!
+% if node.vrf.use_ipv4:
+address-family ipv4
+  route-target export ${vrf.route_target}
+  route-target import ${vrf.route_target}
+exit-address-family
+%endif
+!
+%endfor
+!
 ## Physical Interfaces
 % for interface in node.interfaces:  
 interface ${interface.id}
   description ${interface.description}
+  % if interface.vrf:
+  vrf forwarding ${interface.vrf} 
+  %endif
   % if node.ip.use_ipv4:
   ip address ${interface.ipv4_address} ${interface.ipv4_subnet.netmask}   
   %endif
@@ -83,6 +100,9 @@ interface ${interface.id}
   speed auto
   no shutdown
   %endif
+  % if interface.use_mpls:
+  mpls ip
+  %endif
 !
 % endfor 
 !               
@@ -122,6 +142,10 @@ router isis ${node.isis.process_id}
 router eigrp ${node.eigrp.process_id}       
 % endif   
 !                
+% if node.mpls.enabled:
+mpls ldp router-id ${node.mpls.router_id}
+%endif
+!
 ## BGP
 % if node.bgp: 
 router bgp ${node.asn}   
@@ -171,6 +195,26 @@ router bgp ${node.asn}
   neighbor ${neigh.loopback} next-hop-self
   % endif
 % endfor
+## vpnv4 peers
+% for neigh in node.bgp.vpnv4_neighbors:      
+% if loop.first:
+  ! vpnv4 peers
+  address-family vpnv4
+% endif 
+    neighbor ${neigh.loopback} activate
+  % if neigh.rr_client: 
+    neighbor ${neigh.loopback} route-reflector-client                                                   
+  % endif
+    neighbor ${neigh.loopback} send-community extended
+  % if node.bgp.ebgp_neighbors: 
+    neighbor ${neigh.loopback} next-hop-self
+  % endif
+  % if loop.last:
+  exit-address-family
+  %else:
+  % endif 
+% endfor
+!
 ## eBGP peers
 % for neigh in node.bgp.ebgp_neighbors:      
 % if loop.first:
@@ -183,5 +227,32 @@ router bgp ${node.asn}
   neighbor ${neigh.dst_int_ip} next-hop-self
 % endfor    
 % endif 
+!
+## VRFs
+% for vrf in node.bgp.vrfs:      
+% if loop.first:
+! vrfs
+% endif    
+address-family ipv4 vrf ${vrf.vrf}
+% for neigh in vrf.vrf_ibgp_neighbors:      
+  % if loop.first:
+  % endif
+  % if neigh['use_ipv4']:
+  neighbor ${neigh['dst_int_ip']} remote-as ${neigh['asn']}
+  neighbor ${neigh['dst_int_ip']} activate
+  %endif
+  !
+% endfor    
+% for neigh in vrf.vrf_ebgp_neighbors:      
+  % if loop.first:
+  % endif
+  % if neigh['use_ipv4']:
+  neighbor ${neigh['dst_int_ip']} remote-as ${neigh['asn']}
+  neighbor ${neigh['dst_int_ip']} activate
+  neighbor ${neigh['dst_int_ip']} as-override
+  %endif
+  !
+  % endfor    
+%endfor
 !
 end

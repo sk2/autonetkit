@@ -223,7 +223,6 @@ class RouterCompiler(object):
         ibgp_rr_clients = []
         ibgp_rr_parents = []
 
-
         g_ibgp_v4 = self.anm['ibgp_v4']
         for session in g_ibgp_v4.edges(phy_node):
             if session.exclude:
@@ -443,7 +442,6 @@ class IosBaseCompiler(RouterCompiler):
         node.bgp.lo_interface = self.lo_interface
         super(IosBaseCompiler, self).bgp(node)
 
-
         # Only advertise loopbacks into eBGP
         if node.ip.use_ipv4:
             node.bgp.ipv4_advertise_subnets = [node.loopback_zero.ipv4_cidr]
@@ -524,9 +522,12 @@ class IosBaseCompiler(RouterCompiler):
             #TODO: check if mpls ldp already set elsewhere
             for vrf in vrf_node.node_vrf_names:
                 route_target = g_vrf.data.route_targets[node.asn][vrf]
+                rd_index = vrf_node.rd_indices[vrf]
+                rd = "%s:%s" % (node.asn, rd_index)
 
                 node.vrf.vrfs.append({
                     'vrf': vrf,
+                    "rd": rd,
                     'route_target': route_target,
                 })
 
@@ -544,6 +545,7 @@ class IosBaseCompiler(RouterCompiler):
                 mpls_ldp_int = self.anm['mpls_ldp'].interface(interface)
                 if mpls_ldp_int.is_bound:
                     node.mpls.ldp_interfaces.append(interface.id)
+                    interface.use_mpls = True
 
         if vrf_node.vrf_role is "P":
             node.mpls.ldp_interfaces = []
@@ -555,6 +557,10 @@ class IosBaseCompiler(RouterCompiler):
         node.vrf.use_ipv4 = node.ip.use_ipv4
         node.vrf.use_ipv6 = node.ip.use_ipv6
         node.vrf.vrfs.sort("vrf")
+
+        if node in self.anm['mpls_ldp']:
+            node.mpls.enabled = True
+            node.mpls.router_id = node.loopback_zero.id
 
     def ospf(self, node):
         super(IosBaseCompiler, self).ospf(node)
@@ -582,6 +588,34 @@ class IosClassicCompiler(IosBaseCompiler):
         phy_node = self.anm['phy'].node(node)
         if phy_node.include_csr:
             node.include_csr = True
+
+    def bgp(self, node):
+        super(IosClassicCompiler, self).bgp(node)
+
+        vpnv4_neighbors = []
+        if node.bgp.vpnv4:
+            for neigh in node.bgp.ibgp_neighbors:
+                if not neigh.use_ipv4:
+                    continue
+                #TODO: fix up limitation where can't add as overlay_data
+                # (this causes problems serializing, when adding convert to dict?)
+                neigh_data = dict(neigh)
+                vpnv4_neighbors.append(neigh_data)
+
+            for neigh in node.bgp.ibgp_rr_clients:
+                if not neigh.use_ipv4:
+                    continue
+                neigh_data = dict(neigh)
+                neigh_data['rr_client'] = True
+                vpnv4_neighbors.append(neigh_data)
+
+            for neigh in node.bgp.ibgp_rr_parents:
+                if not neigh.use_ipv4:
+                    continue
+                neigh_data = dict(neigh)
+                vpnv4_neighbors.append(neigh_data)
+
+        node.bgp.vpnv4_neighbors = vpnv4_neighbors
 
 class Ios2Compiler(IosBaseCompiler):
 
