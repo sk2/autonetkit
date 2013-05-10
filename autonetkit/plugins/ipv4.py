@@ -20,7 +20,6 @@ except ImportError:
 
 def subnet_size(host_count):
     """Returns subnet size"""
-    import math
     host_count += 2 # network and broadcast
     return int(math.ceil(math.log(host_count, 2)))
 
@@ -130,7 +129,6 @@ class IpTree(object):
 
     def save(self):
         import os
-        import gzip
         archive_dir = os.path.join("versions", "ip")
         if not os.path.isdir(archive_dir):
             os.makedirs(archive_dir)
@@ -284,8 +282,8 @@ class IpTree(object):
 
         # now allocate the IPs
         global_prefix_len = global_root.prefixlen
-#TODO: need to take prefixlen in as argument, and create network in the init...
-        global_ip_block = netaddr.IPNetwork("%s/%s" % (self.root_ip_block, global_prefix_len))
+        #TODO: try/catch if the block is too small for prefix
+        global_ip_block = self.root_ip_block.subnet(global_prefix_len).next()
         self.graph = global_graph
 
 # add children of collision domains
@@ -417,7 +415,7 @@ class IpTree(object):
         for n in interfaces:
             n.host.loopback = n.subnet
 
-def assign_asn_to_interasn_cds(g_ip):
+def assign_asn_to_interasn_cds(g_ip, address_block = None):
     G_phy = g_ip.overlay("phy")
     for collision_domain in g_ip.nodes("collision_domain"):
         neigh_asn = list(ank_utils.neigh_attr(g_ip, collision_domain, "asn", G_phy)) #asn of neighbors
@@ -429,9 +427,11 @@ def assign_asn_to_interasn_cds(g_ip):
 
     return
 
-def allocate_infra(g_ip, address_block):
+def allocate_infra(g_ip, address_block = None):
+    if not address_block:
+        address_block = netaddr.IPNetwork("10.0.0.0/8")
     log.info("Allocating v4 Infrastructure IPs")
-    ip_tree = IpTree("10.0.0.0")
+    ip_tree = IpTree(address_block)
     assign_asn_to_interasn_cds(g_ip)
     ip_tree.add_nodes(g_ip.nodes("collision_domain"))
     ip_tree.build()
@@ -447,23 +447,31 @@ def allocate_infra(g_ip, address_block):
 #TODO: apply directly here
 
 
-def allocate_loopbacks(g_ip, address_block):
+def allocate_loopbacks(g_ip, address_block = None):
+    if not address_block:
+        address_block = netaddr.IPNetwork("192.168.0.0/22")
     log.info("Allocating v4 Primary Host loopback IPs")
-    ip_tree = IpTree("192.168.1.0")
+    ip_tree = IpTree(address_block)
     ip_tree.add_nodes(g_ip.nodes("is_l3device"))
     ip_tree.build()
     #loopback_tree = ip_tree.json()
     ip_tree.assign()
     g_ip.data.loopback_blocks = ip_tree.group_allocations()
 
-def allocate_vrf_loopbacks(g_ip, address_block):
+def allocate_vrf_loopbacks(g_ip, address_block = None):
+    if not address_block:
+        address_block = netaddr.IPNetwork("172.16.0.0/24")
     log.info("Allocating v4 Secondary Host loopback IPs")
-    ip_tree = IpTree("172.16.0.0")
+    ip_tree = IpTree(address_block)
     secondary_loopbacks = [i for n in g_ip.nodes()
             for i in n.loopback_interfaces
-            if not i.is_loopback_zero]
+            if not i.is_loopback_zero
+            ]
 
-    ip_tree.add_nodes(secondary_loopbacks)
+    vrf_loopbacks = [i for i in secondary_loopbacks
+            if i['vrf'].vrf_name]
+
+    ip_tree.add_nodes(vrf_loopbacks)
     ip_tree.build()
     #secondary_loopback_tree = ip_tree.json()
     ip_tree.assign()
