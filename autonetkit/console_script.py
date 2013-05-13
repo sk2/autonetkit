@@ -307,10 +307,16 @@ def deploy_network(anm, nidb, input_graph_string = None):
                 except ImportError:
                     pass  # development module, may not be available
                 if platform == "cisco":
-                    if input_graph_string: # input xml file
-                        cisco_deploy.package(nidb, config_path, input_graph_string)
-                    else:
+                    create_new_xml = False
+                    if not input_graph_string:
+                        create_new_xml = True # no input, eg if came from grid
+                    elif anm['input'].data['file_type'] == "graphml":
+                        create_new_xml = True # input from graphml, create XML
+
+                    if create_new_xml:
                         cisco_deploy.create_xml(anm, nidb, input_graph_string)
+                    else:
+                        cisco_deploy.package(nidb, config_path, input_graph_string)
                 continue
 
             username = platform_data['username']

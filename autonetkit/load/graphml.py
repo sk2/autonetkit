@@ -217,4 +217,6 @@ def load_graphml(input_data):
     if not all( key == val for key, val in mapping.items()):
         nx.relabel_nodes(graph, mapping, copy=False) # Networkx wipes data if remap with same labels
 
+    graph.graph['file_type'] = "graphml"
+
     return graph
