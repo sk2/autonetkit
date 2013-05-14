@@ -17,11 +17,15 @@ path.link {
 #path_verified_marker{
   stroke: rgb(0,120,33);
   fill: rgb(0,120,33);
+    stroke: red;
+  fill: red;
 }
 
 #path_marker {
   stroke: rgb(25,52,65);
   fill: rgb(25,52,65);
+  stroke: red;
+  fill: red;
 }
 
 .node_filter {
