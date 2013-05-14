@@ -23,33 +23,18 @@
   <body>
 
       <div class="navbar">
-          <b>AutoNetkit</b>
-          <span id="websocket_icon"></span>
-          | <i class="icon-reorder "></i> Overlay:
         <select id = "overlay_select"></select>
-        <select id = "revision_select"></select>
         <!--- <button onclick="history_start();"><<</button>
         <button onclick="history_back();"><</button>
         <button onclick="history_forward();">></button>
         <button onclick="history_end();">>></button>
         !-->
         <!---<button onclick="javascript:setActiveStyleSheet('maximised');">Max</button>-->
-        <button onclick="zoom_fit();">
-            <i class="icon-move "></i>
-        </button>
-
-        |
-        <label for="display_interfaces">
-            <i class="icon-plus-sign-alt"></i>
-        </label>
         <input type="checkbox" id="display_interfaces" value="display_interfaces" />
 
         |<select id = "node_label_select"></select>
         <select id = "edge_group_select"></select>
-        <select id = "interface_label_select"></select>
 
-        |        <button onclick="toggle_visibility('node_filter');">
-            <i class="icon-filter "></i> Node Filter
         </button>
     </div>
 
