@@ -374,7 +374,7 @@ def measure_network(anm, nidb):
     import autonetkit.measure as measure
 
     log.info("Measuring network")
-    if 0:
+    if 1:
         remote_hosts = [node.tap.ip for node in nidb.nodes("is_router")]
         dest_node = random.choice([n for n in nidb.nodes("is_l3device")])
         log.info("Tracing to randomly selected node: %s" % dest_node)
@@ -382,7 +382,7 @@ def measure_network(anm, nidb):
         command = "traceroute -n -a -U -w 0.5 %s" % dest_ip
         measure.send(nidb, command, remote_hosts, threads = 10)
     # abort after 10 fails, proceed on any success, 0.1 second timeout (quite aggressive)
-    if 1:
+    if 0:
         collect_sh_ip_route(anm, nidb)
 
 
