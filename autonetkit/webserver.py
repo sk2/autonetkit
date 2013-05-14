@@ -58,9 +58,11 @@ class MyWebHandler(tornado.web.RequestHandler):
                 listener.write_message({'lab started': data}) 
 
         elif data_type == "highlight":
-            self.update_listeners(data) 
+            #self.update_listeners(data) 
+            body_parsed = json.loads(data)
             for listener in self.application.socket_listeners:
-                listener.write_message(data) 
+                #listener.write_message(data) 
+                listener.write_message({'highlight': body_parsed}) 
         else:
             self.update_listeners(data)
 
