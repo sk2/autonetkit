@@ -75,7 +75,7 @@ def send(nidb, command, hosts, server = "measure_client", threads = 3):
                     log.info("Trace from %s to %s" % (src_host, dst_host[1]))
                     parse_command = parsing["traceroute"]
                     log.info(command_result)
-                    trace_result = parse_command(nidb, command_result)
+                    trace_result = parse_command(src_host, nidb, command_result)
                     trace_result.insert(0, src_host) 
                     log.info(trace_result)
                     parse_result.append(trace_result)
