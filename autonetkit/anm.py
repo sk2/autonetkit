@@ -541,6 +541,11 @@ class OverlayEdge(object):
         """Destination node of edge"""
         return OverlayNode(self.anm, self.overlay_id, self.dst_id)
 
+    def apply_to_interfaces(self, attribute):
+        val = self.__getattr__(attribute)
+        self.src_int.__setattr__(attribute, val)
+        self.dst_int.__setattr__(attribute, val)
+
     @property
     def src_int(self):
         """Interface bound to source node of edge"""
@@ -1018,6 +1023,7 @@ class OverlayGraph(OverlayBase):
         except AttributeError:
             pass  # already a list
         self.add_edges_from([(src, dst)], retain, **kwargs)
+
 
     def remove_edges_from(self, ebunch):
         """Removes set of edges from ebunch"""
