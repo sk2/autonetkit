@@ -122,7 +122,7 @@ ws.onmessage = function (evt) {
         apply_highlight(data['highlight']);
     }
     else {
-        //console.log("Received unknown data", data);
+        console.log("Received unknown data", data);
         //TODO: work out why reaching here if passing the "graph in data" check above
     }
 }
@@ -130,8 +130,8 @@ ws.onmessage = function (evt) {
 highlight_nodes = [];
 highlight_edges = [];
 
+abc = [];
 var apply_highlight = function(data){
-
 
     highlight_nodes = _.map(data['nodes'], function(n) {
         return nodes_by_id[n];
@@ -1665,16 +1665,16 @@ function redraw_paths() {
 
     var path_color = function(d) { 
         if ("verified" in d && d['verified'] == true) {
-            return "rgb(0,128,64)";
+            return "red";
         }
-        return "rgb(25,52,65)";
+        return "red";
     }
 
     trace_path.enter().append("svg:path")
         .attr("d", function(d) { return svg_line(d['path'])})
         .attr("class", "trace_path")
         .style("stroke-width", 5)
-        .style("stroke", "rgb(207,120,33)")
+        .style("stroke", "red")
         .style("fill", "none")
         .attr("stroke-dasharray", function(d) {
             return path_total_length(d3.select(this)) + " " + path_total_length(d3.select(this))})
@@ -1695,7 +1695,7 @@ function redraw_paths() {
 
         trace_path
           .on("mouseover", function(d){
-            d3.select(this).style("stroke", "rgb(242,130,6)");
+            d3.select(this).style("stroke", "red");
             d3.select(this).style("stroke-width", "4");
             //path_info(d);
             console.log(d.verified);
