@@ -5,7 +5,7 @@ from setuptools import setup
 
 setup (
      name = "autonetkit",
-     version = "0.4.3",
+     version = "0.4.4",
      description = 'Automatic configuration generation for emulated networks',
      long_description = 'Automatic configuration generation for emulated networks',
 
