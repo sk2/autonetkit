@@ -78,7 +78,6 @@ def manage_network(input_graph_string, timestamp, build_options, reload_build=Fa
         nidb.restore_latest()
         update_http(anm, nidb)
 
-
     if build_options['diff']:
         import autonetkit.diff
         nidb_diff = autonetkit.diff.nidb_diff()
@@ -136,6 +135,7 @@ def parse_options():
                         default=False, help="Measure")
     parser.add_argument('--webserver', action="store_true", default=False, help="Webserver")
     parser.add_argument('--grid', type=int, help="Grid Size (n * n)")
+    parser.add_argument('--target', choices=['netkit', 'cisco'], default = None)
     arguments = parser.parse_args()
     return arguments
 
@@ -146,6 +146,17 @@ def main():
     log.info("AutoNetkit %s" % ANK_VERSION)
 
 # TODO: only allow monitor mode with options.file not options.stdin
+
+    if options.target == "cisco":
+        # output target is Cisco
+        log.info("Setting output target as Cisco")
+        settings['Graphml']['Node Defaults']['platform'] = "cisco"
+        settings['Graphml']['Node Defaults']['host'] = "internal"
+        settings['Graphml']['Node Defaults']['syntax'] = "ios2"
+        settings['Compiler']['Cisco']['to memory'] = 1
+        settings['General']['deploy'] = 1
+        settings['Deploy Hosts']['internal'] = {'cisco': 
+                {'deploy': 1}}
 
     if options.debug or settings['General']['debug']:
         # TODO: fix this
