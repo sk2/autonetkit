@@ -110,7 +110,6 @@ class RouterCompiler(object):
         node.loopback_zero.id = self.lo_interface
         node.loopback_zero.description = "Loopback"
 
-
         for interface in node.physical_interfaces:
             phy_int = self.anm['phy'].interface(interface)
             interface.physical = True
@@ -1052,14 +1051,17 @@ class CiscoCompiler(PlatformCompiler):
 
         mgmt_subnet = start_subnet
         hosts_to_allocate = sorted(self.nidb.nodes('is_router', host=self.host))
+        dhcp_subtypes = {"os"}
+        dhcp_hosts = [h for h in hosts_to_allocate if h.device_subtype in dhcp_subtypes]
+        non_dhcp_hosts = [h for h in hosts_to_allocate if h.device_subtype not in dhcp_subtypes]
 
         try: # validation
-            assert(len(mgmt_ips) >= len(hosts_to_allocate))
+            assert(len(mgmt_ips) >= len(non_dhcp_hosts))
             log.debug("Verified: Cisco management IP range is sufficient size %s for %s hosts"
-                    % (len(mgmt_ips), len(hosts_to_allocate)))
+                    % (len(mgmt_ips), len(non_dhcp_hosts)))
         except AssertionError:
             log.warning("Error: Cisco management IP range is insufficient size %s for %s hosts"
-                    % (len(mgmt_ips), len(hosts_to_allocate)))
+                    % (len(mgmt_ips), len(non_dhcp_hosts)))
             # TODO: need to use default range
             return
 
@@ -1067,12 +1069,16 @@ class CiscoCompiler(PlatformCompiler):
             for interface in nidb_node.physical_interfaces:
                 if interface.management:
                     interface.description = "OOB Management"
-                    ipv4_address = mgmt_ips_iter.next()
-                    interface.ipv4_address = ipv4_address
-                    interface.ipv4_subnet = mgmt_subnet
-                    interface.ipv4_cidr = sn_preflen_to_network(ipv4_address, mgmt_prefixlen)
                     interface.physical = True
-                    oob_management_ips[str(nidb_node)] = ipv4_address
+                    if nidb_node in dhcp_hosts:
+                        interface.use_dhcp = True
+                        oob_management_ips[str(nidb_node)] = "dhcp"
+                    else:
+                        ipv4_address = mgmt_ips_iter.next()
+                        interface.ipv4_address = ipv4_address
+                        interface.ipv4_subnet = mgmt_subnet
+                        interface.ipv4_cidr = sn_preflen_to_network(ipv4_address, mgmt_prefixlen)
+                        oob_management_ips[str(nidb_node)] = ipv4_address
 
         lab_topology.oob_management_ips = oob_management_ips
 

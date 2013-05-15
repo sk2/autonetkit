@@ -69,7 +69,11 @@ interface ${interface.id}
   vrf forwarding ${interface.vrf} 
   %endif
   % if node.ip.use_ipv4:
+      %if interface.use_dhcp:
+  ip address dhcp
+      %else:
   ip address ${interface.ipv4_address} ${interface.ipv4_subnet.netmask}   
+    %endif
   %endif
   % if node.ip.use_ipv6:
   ipv6 address ${interface.ipv6_address} 
