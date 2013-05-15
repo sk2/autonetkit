@@ -108,6 +108,8 @@ def apply_design_rules(anm):
     build_vrf(anm) # need to do before to add loopbacks before ip allocations
     build_ip(anm) # ip infrastructure topology
 
+#TODO: set defaults at the start, rather than inline, ie set g_in.data.address_family then use later
+
     address_family = g_in.data.address_family or "v4" # default is v4
 #TODO: can remove the infrastructure now create g_ip seperately
     if address_family in ("v4", "dual_stack"):
