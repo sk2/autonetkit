@@ -872,6 +872,7 @@ def build_phy(anm):
         g_phy.data.mgmt_address_end = g_in.data.mgmt_address_end 
         g_phy.data.mgmt_prefixlen = g_in.data.mgmt_prefixlen
         ank_utils.copy_attr_from(g_in, g_phy, "use_cdp")
+        ank_utils.copy_attr_from(g_in, g_phy, "use_onepk")
 
     g_phy.add_edges_from(g_in.edges(type="physical"))
     # TODO: make this automatic if adding to the physical graph?
