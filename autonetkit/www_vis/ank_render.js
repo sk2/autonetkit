@@ -8,6 +8,9 @@ var g_groupings = chart.append("svg:g")
 var g_links = chart.append("svg:g")
 .attr("id", "g_links");
 
+var g_link_highlights = chart.append("svg:g")
+.attr("id", "g_link_highlights");
+
 var g_nodes = chart.append("svg:g")
 .attr("id", "g_nodes");
 
@@ -1356,7 +1359,7 @@ function redraw() {
     });
 
 
-    var highlight_line = chart.selectAll(".highlight_line")
+    var highlight_line = g_link_highlights.selectAll(".highlight_line")
         .data(highlight_edges)
 
         //line.enter().append("line")
@@ -1370,9 +1373,9 @@ function redraw() {
         .style("stroke-width", function() {
             //TODO: use this stroke-width function on mouseout too
             if (jsondata.directed) {
-                return 3;
+                return 5;
             } 
-            return 3;
+            return 5;
         })
     //.attr("marker-end", marker_end)
     .style("stroke", "red")
@@ -1579,9 +1582,7 @@ function redraw() {
         image
         .attr("width", icon_width)
         .attr("height", icon_height)
-        .attr("xlink:href", function(d) {return "#icon_" + node_icon(d)})
         .transition()
-        .attr("xlink:href", function(d) {return "#icon_" + node_icon(d)})
         .style("opacity", icon_opacity)
         .attr("x", function(d) { return d.x + x_offset; })
         .attr("y", function(d) { return d.y + y_offset; })
