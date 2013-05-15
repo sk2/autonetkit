@@ -8,7 +8,6 @@ from datetime import datetime
 import autonetkit.log as log
 import autonetkit.plugins.naming as naming
 import autonetkit.config
-settings = autonetkit.config.settings
 from autonetkit.ank_utils import alphabetical_sort as alpha_sort
 from autonetkit.ank import sn_preflen_to_network
 
@@ -764,6 +763,7 @@ class NetkitCompiler(PlatformCompiler):
         self.lab_topology()
 
     def allocate_tap_ips(self):
+        settings = autonetkit.config.settings
         # TODO: take tap subnet parameter
         #TODO: this should be tuple of self.host and platform
         lab_topology = self.nidb.topology[self.host]
@@ -830,7 +830,6 @@ class NetkitCompiler(PlatformCompiler):
 
 class CiscoCompiler(PlatformCompiler):
     """Platform compiler for Cisco"""
-    to_memory = settings['Compiler']['Cisco']['to memory']
 
     # def __init__(self, nidb, anm, host):
 # TODO: setup to remap allocate interface id function here
@@ -881,6 +880,8 @@ class CiscoCompiler(PlatformCompiler):
             yield "GigabitEthernet0/0/0/%s" % x
 
     def compile(self):
+        settings = autonetkit.config.settings
+        to_memory = settings['Compiler']['Cisco']['to memory']
 #TODO: need to copy across the interface name from edge to the interface
         g_phy = self.anm['phy']
         use_mgmt_interfaces = g_phy.data.mgmt_interfaces_enabled 
@@ -918,7 +919,7 @@ class CiscoCompiler(PlatformCompiler):
             specified_int_names = phy_node.specified_int_names
             nidb_node = self.nidb.node(phy_node)
             nidb_node.render.template = os.path.join("templates","ios.mako")
-            if self.to_memory:
+            if to_memory:
                 nidb_node.render.to_memory = True
             else:
                 nidb_node.render.dst_folder = dst_folder
@@ -956,7 +957,7 @@ class CiscoCompiler(PlatformCompiler):
             specified_int_names = phy_node.specified_int_names
             nidb_node = self.nidb.node(phy_node)
             nidb_node.render.template = os.path.join("templates","ios2","router.conf.mako")
-            if self.to_memory:
+            if to_memory:
                 nidb_node.render.to_memory = True
             else:
                 nidb_node.render.dst_folder = dst_folder
@@ -983,7 +984,7 @@ class CiscoCompiler(PlatformCompiler):
         for phy_node in g_phy.nodes('is_router', host=self.host, syntax='nx_os'):
             nidb_node = self.nidb.node(phy_node)
             nidb_node.render.template = os.path.join("templates","nx_os.mako")
-            if self.to_memory:
+            if to_memory:
                 nidb_node.render.to_memory = True
             else:
                 nidb_node.render.dst_folder = dst_folder
