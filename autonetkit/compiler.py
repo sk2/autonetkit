@@ -400,6 +400,9 @@ class IosBaseCompiler(RouterCompiler):
         phy_node = self.anm['phy'].node(node)
 
         node.use_cdp = phy_node.use_cdp
+        if phy_node.device_subtype == "os":
+            # only copy across for certain reference platforms
+            node.use_onepk = phy_node.use_onepk
 
         if node in self.anm['ospf']:
             node.ospf.use_ipv4 = phy_node.use_ipv4

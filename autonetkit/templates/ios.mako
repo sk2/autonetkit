@@ -40,6 +40,13 @@ line con 0
 cdp run
 !
 %endif
+% if node.use_onepk:
+!
+onep
+ transport socket
+ start
+!
+%endif
 ## VRF
 % for vrf in node.vrf.vrfs:
 vrf definition ${vrf.vrf}
