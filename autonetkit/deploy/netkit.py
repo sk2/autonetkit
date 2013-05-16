@@ -185,5 +185,5 @@ def extract(host, username, tar_file, cd_dir, timeout = 45, key_filename = None,
         accounts = [Account(username)] 
 
     hosts = ['ssh://%s' % host]
-    verbosity = 0
+    verbosity = -1
     start(accounts, hosts, start_lab, verbose = verbosity)

@@ -1,0 +1,2367 @@
+<html>
+<head>
+<style type="text/css">
+/**
+ * HTML5 ✰ Boilerplate
+ *
+ * style.css contains a reset, font normalization and some base styles.
+ *
+ * Credit is left where credit is due.
+ * Much inspiration was taken from these projects:
+ * - yui.yahooapis.com/2.8.1/build/base/base.css
+ * - camendesign.com/design/
+ * - praegnanz.de/weblog/htmlcssjs-kickstart
+ */
+
+
+/**
+ * html5doctor.com Reset Stylesheet (Eric Meyer's Reset Reloaded + HTML5 baseline)
+ * v1.6.1 2010-09-17 | Authors: Eric Meyer & Richard Clark
+ * html5doctor.com/html-5-reset-stylesheet/
+ */
+
+html, body, div, span, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+abbr, address, cite, code, del, dfn, em, img, ins, kbd, q, samp,
+small, strong, sub, sup, var, b, i, dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, figcaption, figure,
+footer, header, hgroup, menu, nav, section, summary,
+time, mark, audio, video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline;
+}
+
+sup { vertical-align: super; }
+sub { vertical-align: sub; }
+
+article, aside, details, figcaption, figure,
+footer, header, hgroup, menu, nav, section {
+  display: block;
+}
+
+blockquote, q { quotes: none; }
+
+blockquote:before, blockquote:after,
+q:before, q:after { content: ""; content: none; }
+
+ins { background-color: #ff9; color: #000; text-decoration: none; }
+
+mark { background-color: #ff9; color: #000; font-style: italic; font-weight: bold; }
+
+del { text-decoration: line-through; }
+
+abbr[title], dfn[title] { border-bottom: 1px dotted; cursor: help; }
+
+table { border-collapse: collapse; border-spacing: 0; }
+
+hr { display: block; height: 1px; border: 0; border-top: 1px solid #ccc; margin: 1em 0; padding: 0; }
+
+input, select { vertical-align: middle; }
+
+
+/**
+ * Font normalization inspired by YUI Library's fonts.css: developer.yahoo.com/yui/
+ */
+
+body { font:13px/1.231 sans-serif; *font-size:small; } /* Hack retained to preserve specificity */
+select, input, textarea, button { font:99% sans-serif; }
+
+/* Normalize monospace sizing:
+   en.wikipedia.org/wiki/MediaWiki_talk:Common.css/Archive_11#Teletype_style_fix_for_Chrome */
+pre, code, kbd, samp { font-family: monospace, sans-serif; }
+
+em,i { font-style: italic; }
+b,strong { font-weight: bold; }
+
+</style>
+<style type="text/css">
+
+/* Flexible box model classes */
+/* Taken from Alex Russell http://infrequently.org/2009/08/css-3-progress/ */
+ 
+.hbox {
+	display: -webkit-box;
+	-webkit-box-orient: horizontal;
+	-webkit-box-align: stretch;
+ 
+	display: -moz-box;
+	-moz-box-orient: horizontal;
+	-moz-box-align: stretch;
+ 
+	display: box;
+	box-orient: horizontal;
+	box-align: stretch;
+}
+ 
+.hbox > * {
+	-webkit-box-flex: 0;
+	-moz-box-flex: 0;
+	box-flex: 0;
+}
+ 
+.vbox {
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-box-align: stretch;
+ 
+	display: -moz-box;
+	-moz-box-orient: vertical;
+	-moz-box-align: stretch;
+ 
+	display: box;
+	box-orient: vertical;
+	box-align: stretch;
+}
+ 
+.vbox > * {
+	-webkit-box-flex: 0;
+	-moz-box-flex: 0;
+	box-flex: 0;
+}
+  
+.reverse {
+	-webkit-box-direction: reverse;
+	-moz-box-direction: reverse;
+	box-direction: reverse;
+}
+ 
+.box-flex0 {
+	-webkit-box-flex: 0;
+	-moz-box-flex: 0;
+	box-flex: 0;
+}
+ 
+.box-flex1, .box-flex {
+	-webkit-box-flex: 1;
+	-moz-box-flex: 1;
+	box-flex: 1;
+}
+ 
+.box-flex2 {
+	-webkit-box-flex: 2;
+	-moz-box-flex: 2;
+	box-flex: 2;
+}
+ 
+.box-group1 {
+	-webkit-box-flex-group: 1;
+	-moz-box-flex-group: 1;
+	box-flex-group: 1;
+}
+ 
+.box-group2 {
+	-webkit-box-flex-group: 2;
+	-moz-box-flex-group: 2;
+	box-flex-group: 2;
+}
+ 
+.start {
+	-webkit-box-pack: start;
+	-moz-box-pack: start;
+	box-pack: start;
+}
+ 
+.end {
+	-webkit-box-pack: end;
+	-moz-box-pack: end;
+	box-pack: end;
+}
+ 
+.center {
+	-webkit-box-pack: center;
+	-moz-box-pack: center;
+	box-pack: center;
+}
+
+</style>
+<style type="text/css">
+/**
+ * Primary styles
+ *
+ * Author: IPython Development Team
+ */
+
+
+body {
+    overflow: hidden;
+}
+
+span#save_widget {
+    padding: 5px;
+    margin: 0px 0px 0px 300px;
+    display:inline-block;
+}
+
+span#notebook_name {
+    height: 1em;
+    line-height: 1em;
+    padding: 3px;
+    border: none;
+    font-size: 146.5%;
+}
+
+.ui-menubar-item .ui-button .ui-button-text {
+    padding: 0.4em 1.0em;
+    font-size: 100%;
+}
+
+.ui-menu {
+  -moz-box-shadow:    0px 6px 10px -1px #adadad;
+  -webkit-box-shadow: 0px 6px 10px -1px #adadad;
+  box-shadow:         0px 6px 10px -1px #adadad;
+}
+
+.ui-menu .ui-menu-item a {
+    border: 1px solid transparent;
+    padding: 2px 1.6em;
+}
+
+.ui-menu .ui-menu-item a.ui-state-focus {
+    margin: 0;
+}
+
+.ui-menu hr {
+    margin: 0.3em 0;
+}
+
+#menubar_container {
+    position: relative;
+}
+
+#notification {
+    position: absolute;
+    right: 3px;
+    top: 3px;
+    height: 25px;
+    padding: 3px 6px;
+    z-index: 10;
+}
+
+#toolbar {
+    padding: 3px 15px;
+}
+
+#cell_type {
+    font-size: 85%;
+}
+
+
+div#main_app {
+    width: 100%;
+    position: relative;
+}
+
+span#quick_help_area {
+    position: static;
+    padding: 5px 0px;
+    margin: 0px 0px 0px 0px;
+}
+
+.help_string {
+    float: right;
+    width: 170px;
+    padding: 0px 5px;
+    text-align: left;
+    font-size: 85%;
+}
+
+.help_string_label {
+    float: right;
+    font-size: 85%;
+}
+
+div#notebook_panel {
+    margin: 0px 0px 0px 0px;
+    padding: 0px;
+}
+
+div#notebook {
+    overflow-y: scroll;
+    overflow-x: auto;
+    width: 100%;
+    /* This spaces the cell away from the edge of the notebook area */
+    padding: 5px 5px 15px 5px;
+    margin: 0px;
+    background-color: white;
+}
+
+div#pager_splitter {
+    height: 8px;
+}
+
+div#pager {
+    padding: 15px;
+    overflow: auto;
+    display: none;
+}
+
+div.ui-widget-content {
+    border: 1px solid #aaa;
+    outline: none;
+}
+
+.cell {
+    border: 1px solid transparent;
+}
+
+div.cell {
+    width: 100%;
+    padding: 5px 5px 5px 0px;
+    /* This acts as a spacer between cells, that is outside the border */
+    margin: 2px 0px 2px 0px;
+}
+
+div.code_cell {
+    background-color: white;
+}
+
+/* any special styling for code cells that are currently running goes here */
+div.code_cell.running {
+}
+
+div.prompt {
+    /* This needs to be wide enough for 3 digit prompt numbers: In[100]: */
+    width: 11ex;
+    /* This 0.4em is tuned to match the padding on the CodeMirror editor. */
+    padding: 0.4em;
+    margin: 0px;
+    font-family: monospace;
+    text-align:right;
+}
+
+div.input {
+    page-break-inside: avoid;
+}
+
+/* input_area and input_prompt must match in top border and margin for alignment */
+div.input_area {
+    color: black;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    background: #f7f7f7;
+}
+
+div.input_prompt {
+    color: navy;
+    border-top: 1px solid transparent;
+}
+
+div.output_wrapper {
+    /* This is a spacer between the input and output of each cell */
+    margin-top: 5px;
+    margin-left: 5px;
+    /* FF needs explicit width to stretch */
+    width: 100%;
+    /* this position must be relative to enable descendents to be absolute within it */
+    position: relative;
+}
+
+/* class for the output area when it should be height-limited */
+div.output_scroll {
+  /* ideally, this would be max-height, but FF barfs all over that */
+  height: 24em;
+  /* FF needs this *and the wrapper* to specify full width, or it will shrinkwrap */
+  width: 100%;
+  
+  overflow: auto;
+  border-radius: 3px;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, .8);
+}
+
+/* output div while it is collapsed */
+div.output_collapsed {
+  margin-right: 5px;
+}
+
+div.out_prompt_overlay {
+  height: 100%;
+  padding: 0px;
+  position: absolute;
+  border-radius: 3px;
+}
+
+div.out_prompt_overlay:hover {
+  /* use inner shadow to get border that is computed the same on WebKit/FF */
+  box-shadow: inset 0 0 1px #000;
+  background: rgba(240, 240, 240, 0.5);
+}
+
+div.output_prompt {
+    color: darkred;
+    /* 5px right shift to account for margin in parent container */
+    margin: 0 5px 0 -5px;
+}
+
+/* This class is the outer container of all output sections. */
+div.output_area {
+    padding: 0px;
+    page-break-inside: avoid;
+}
+
+/* This class is for the output subarea inside the output_area and after
+   the prompt div. */
+div.output_subarea {
+    padding: 0.4em 0.4em 0.4em 0.4em;
+}
+
+/* The rest of the output_* classes are for special styling of the different
+   output types */
+
+/* all text output has this class: */
+div.output_text {
+    text-align: left;
+    color: black;
+    font-family: monospace;
+}
+
+/* stdout/stderr are 'text' as well as 'stream', but pyout/pyerr are *not* streams */
+div.output_stream {
+    padding-top: 0.0em;
+    padding-bottom: 0.0em;
+}
+div.output_stdout {
+}
+div.output_stderr {
+    background: #fdd; /* very light red background for stderr */
+}
+
+div.output_latex {
+    text-align: left;
+    color: black;
+}
+
+div.output_html {
+}
+
+div.output_png {
+}
+
+div.output_jpeg {
+}
+
+div.text_cell {
+    background-color: white;
+    padding: 5px 5px 5px 5px;
+}
+
+div.text_cell_input {
+    color: black;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    background: #f7f7f7;
+}
+
+div.text_cell_render {
+    font-family: "Helvetica Neue", Arial, Helvetica, Geneva, sans-serif;
+    outline: none;
+    resize: none;
+    width:  inherit;
+    border-style: none;
+    padding: 5px;
+    color: black;
+}
+
+/* The following gets added to the <head> if it is detected that the user has a
+ * monospace font with inconsistent normal/bold/italic height.  See
+ * notebookmain.js.  Such fonts will have keywords vertically offset with
+ * respect to the rest of the text.  The user should select a better font. 
+ * See: https://github.com/ipython/ipython/issues/1503
+ *
+ * .CodeMirror span {
+ *      vertical-align: bottom;
+ * }
+ */
+
+.CodeMirror {
+    line-height: 1.231;  /* Changed from 1em to our global default */
+}
+
+.CodeMirror-scroll {
+    height: auto;     /* Changed to auto to autogrow */
+    /*  The CodeMirror docs are a bit fuzzy on if overflow-y should be hidden or visible.*/
+    /*  We have found that if it is visible, vertical scrollbars appear with font size changes.*/
+    overflow-y: hidden;
+    overflow-x: auto; /* Changed from auto to remove scrollbar */
+}
+
+/* CSS font colors for translated ANSI colors. */
+
+
+.ansiblack {color: black;}
+.ansired {color: darkred;}
+.ansigreen {color: darkgreen;}
+.ansiyellow {color: brown;}
+.ansiblue {color: darkblue;}
+.ansipurple {color: darkviolet;}
+.ansicyan {color: steelblue;}
+.ansigrey {color: grey;}
+.ansibold {font-weight: bold;}
+
+.completions {
+    position: absolute;
+    z-index: 10;
+    overflow: hidden;
+    border: 1px solid grey;
+}
+
+.completions select {
+    background: white;
+    outline: none;
+    border: none;
+    padding: 0px;
+    margin: 0px;
+    overflow: auto;
+    font-family: monospace;
+}
+
+option.context {
+  background-color: #DEF7FF;
+}
+option.introspection {
+  background-color: #EBF4EB;
+}
+
+/*fixed part of the completion*/
+.completions p b {
+    font-weight:bold;
+}
+
+.completions p {
+    background: #DDF;
+    /*outline: none;
+    padding: 0px;*/
+    border-bottom: black solid 1px;
+    padding: 1px;
+    font-family: monospace;
+}
+
+pre.dialog {
+    background-color: #f7f7f7;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    padding: 0.4em;
+    padding-left: 2em;
+}
+
+p.dialog {
+    padding : 0.2em;
+}
+
+.shortcut_key {
+    display: inline-block;
+    width: 15ex;
+    text-align: right;
+    font-family: monospace;
+}
+
+.shortcut_descr {
+}
+
+/* Word-wrap output correctly.  This is the CSS3 spelling, though Firefox seems
+   to not honor it correctly.  Webkit browsers (Chrome, rekonq, Safari) do.
+ */
+pre, code, kbd, samp { white-space: pre-wrap; }
+
+#fonttest {
+    font-family: monospace;
+}
+
+.js-error {
+    color: darkred;
+}
+</style>
+<style type="text/css">
+.rendered_html {color: black;}
+.rendered_html em {font-style: italic;}
+.rendered_html strong {font-weight: bold;}
+.rendered_html u {text-decoration: underline;}
+.rendered_html :link { text-decoration: underline }
+.rendered_html :visited { text-decoration: underline }
+.rendered_html h1 {font-size: 197%; margin: .65em 0; font-weight: bold;}
+.rendered_html h2 {font-size: 153.9%; margin: .75em 0; font-weight: bold;}
+.rendered_html h3 {font-size: 123.1%; margin: .85em 0; font-weight: bold;}
+.rendered_html h4 {font-size: 100% margin: 0.95em 0; font-weight: bold;}
+.rendered_html h5 {font-size: 85%; margin: 1.5em 0; font-weight: bold;}
+.rendered_html h6 {font-size: 77%; margin: 1.65em 0; font-weight: bold;}
+.rendered_html ul {list-style:disc; margin: 1em 2em;}
+.rendered_html ul ul {list-style:square; margin: 0em 2em;}
+.rendered_html ul ul ul {list-style:circle; margin-left: 0em 2em;}
+.rendered_html ol {list-style:upper-roman; margin: 1em 2em;}
+.rendered_html ol ol {list-style:upper-alpha; margin: 0em 2em;}
+.rendered_html ol ol ol {list-style:decimal; margin: 0em 2em;}
+.rendered_html ol ol ol ol {list-style:lower-alpha; margin 0em 2em;}
+.rendered_html ol ol ol ol ol {list-style:lower-roman; 0em 2em;}
+
+.rendered_html hr {
+    color: black;
+    background-color: black;
+}
+
+.rendered_html pre {
+    margin: 1em 2em;
+}
+
+.rendered_html blockquote {
+    margin: 1em 2em;
+}
+
+.rendered_html table {
+    border: 1px solid black;
+    border-collapse: collapse;
+    margin: 1em 2em;
+}
+
+.rendered_html td {
+    border: 1px solid black;
+    text-align: left;
+    vertical-align: middle;
+    padding: 4px;
+}
+
+.rendered_html th {
+    border: 1px solid black;
+    text-align: left;
+    vertical-align: middle;
+    padding: 4px;
+    font-weight: bold;
+}
+
+.rendered_html tr {
+    border: 1px solid black;
+}    
+
+.rendered_html p + p {
+    margin-top: 1em;
+}
+
+
+</style>
+<style type="text/css">
+/* Overrides of notebook CSS for static HTML export
+
+*/
+body {
+  overflow: visible;
+  padding: 8px;
+}
+.input_area {
+  padding: 0.4em;
+}
+
+</style>
+<meta charset="UTF-8">
+<style type="text/css">
+.highlight .hll { background-color: #ffffcc }
+.highlight  { background: #f8f8f8; }
+.highlight .c { color: #408080; font-style: italic } /* Comment */
+.highlight .err { border: 1px solid #FF0000 } /* Error */
+.highlight .k { color: #008000; font-weight: bold } /* Keyword */
+.highlight .o { color: #666666 } /* Operator */
+.highlight .cm { color: #408080; font-style: italic } /* Comment.Multiline */
+.highlight .cp { color: #BC7A00 } /* Comment.Preproc */
+.highlight .c1 { color: #408080; font-style: italic } /* Comment.Single */
+.highlight .cs { color: #408080; font-style: italic } /* Comment.Special */
+.highlight .gd { color: #A00000 } /* Generic.Deleted */
+.highlight .ge { font-style: italic } /* Generic.Emph */
+.highlight .gr { color: #FF0000 } /* Generic.Error */
+.highlight .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.highlight .gi { color: #00A000 } /* Generic.Inserted */
+.highlight .go { color: #888888 } /* Generic.Output */
+.highlight .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.highlight .gs { font-weight: bold } /* Generic.Strong */
+.highlight .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.highlight .gt { color: #0044DD } /* Generic.Traceback */
+.highlight .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.highlight .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.highlight .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.highlight .kp { color: #008000 } /* Keyword.Pseudo */
+.highlight .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.highlight .kt { color: #B00040 } /* Keyword.Type */
+.highlight .m { color: #666666 } /* Literal.Number */
+.highlight .s { color: #BA2121 } /* Literal.String */
+.highlight .na { color: #7D9029 } /* Name.Attribute */
+.highlight .nb { color: #008000 } /* Name.Builtin */
+.highlight .nc { color: #0000FF; font-weight: bold } /* Name.Class */
+.highlight .no { color: #880000 } /* Name.Constant */
+.highlight .nd { color: #AA22FF } /* Name.Decorator */
+.highlight .ni { color: #999999; font-weight: bold } /* Name.Entity */
+.highlight .ne { color: #D2413A; font-weight: bold } /* Name.Exception */
+.highlight .nf { color: #0000FF } /* Name.Function */
+.highlight .nl { color: #A0A000 } /* Name.Label */
+.highlight .nn { color: #0000FF; font-weight: bold } /* Name.Namespace */
+.highlight .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.highlight .nv { color: #19177C } /* Name.Variable */
+.highlight .ow { color: #AA22FF; font-weight: bold } /* Operator.Word */
+.highlight .w { color: #bbbbbb } /* Text.Whitespace */
+.highlight .mf { color: #666666 } /* Literal.Number.Float */
+.highlight .mh { color: #666666 } /* Literal.Number.Hex */
+.highlight .mi { color: #666666 } /* Literal.Number.Integer */
+.highlight .mo { color: #666666 } /* Literal.Number.Oct */
+.highlight .sb { color: #BA2121 } /* Literal.String.Backtick */
+.highlight .sc { color: #BA2121 } /* Literal.String.Char */
+.highlight .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.highlight .s2 { color: #BA2121 } /* Literal.String.Double */
+.highlight .se { color: #BB6622; font-weight: bold } /* Literal.String.Escape */
+.highlight .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.highlight .si { color: #BB6688; font-weight: bold } /* Literal.String.Interpol */
+.highlight .sx { color: #008000 } /* Literal.String.Other */
+.highlight .sr { color: #BB6688 } /* Literal.String.Regex */
+.highlight .s1 { color: #BA2121 } /* Literal.String.Single */
+.highlight .ss { color: #19177C } /* Literal.String.Symbol */
+.highlight .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.highlight .vc { color: #19177C } /* Name.Variable.Class */
+.highlight .vg { color: #19177C } /* Name.Variable.Global */
+.highlight .vi { color: #19177C } /* Name.Variable.Instance */
+.highlight .il { color: #666666 } /* Literal.Number.Integer.Long */
+</style>
+<script src="https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" type="text/javascript">
+
+</script>
+<script type="text/javascript">
+init_mathjax = function() {
+    if (window.MathJax) {
+        // MathJax loaded
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            },
+            displayAlign: 'left', // Change this to 'center' to center equations.
+            "HTML-CSS": {
+                styles: {'.MathJax_Display': {"margin": 0}}
+            }
+        });
+        MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+    }
+}
+init_mathjax();
+</script>
+</head>
+<body>
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3>
+  Creating ANM from topology graph
+</h3>
+</div>
+<div class="cell border-box-sizing code_cell vbox">
+<div class="input hbox">
+<div class="prompt input_prompt">In&nbsp;[1]:</div>
+<div class="input_area box-flex1">
+<div class="highlight"><pre><span class="kn">import</span> <span class="nn">autonetkit</span>
+<span class="kn">import</span> <span class="nn">autonetkit.load.graphml</span> <span class="kn">as</span> <span class="nn">graphml</span>
+
+<span class="n">anm</span> <span class="o">=</span>  <span class="n">autonetkit</span><span class="o">.</span><span class="n">ANM</span><span class="p">()</span>
+<span class="n">input_graph</span> <span class="o">=</span> <span class="n">graphml</span><span class="o">.</span><span class="n">load_graphml</span><span class="p">(</span><span class="s">&quot;demo.graphml&quot;</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">autonetkit.build_network</span> <span class="kn">as</span> <span class="nn">build_network</span>
+<span class="n">anm</span> <span class="o">=</span> <span class="n">build_network</span><span class="o">.</span><span class="n">initialise</span><span class="p">(</span><span class="n">input_graph</span><span class="p">)</span>
+<span class="n">autonetkit</span><span class="o">.</span><span class="n">update_http</span><span class="p">(</span><span class="n">anm</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell vbox">
+<div class="input hbox">
+<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="input_area box-flex1">
+<div class="highlight"><pre><span class="n">g_test</span> <span class="o">=</span> <span class="n">anm</span><span class="o">.</span><span class="n">add_overlay</span><span class="p">(</span><span class="s">&quot;test&quot;</span><span class="p">)</span>
+<span class="n">g_in</span> <span class="o">=</span> <span class="n">anm</span><span class="p">[</span><span class="s">&#39;input&#39;</span><span class="p">]</span>
+<span class="n">autonetkit</span><span class="o">.</span><span class="n">update_http</span><span class="p">(</span><span class="n">anm</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell vbox">
+<div class="input hbox">
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
+<div class="input_area box-flex1">
+<div class="highlight"><pre><span class="n">g_test</span><span class="o">.</span><span class="n">add_nodes_from</span><span class="p">(</span><span class="n">g_in</span><span class="p">,</span> <span class="n">retain</span> <span class="o">=</span> <span class="s">&quot;asn&quot;</span><span class="p">)</span>
+<span class="n">autonetkit</span><span class="o">.</span><span class="n">update_http</span><span class="p">(</span><span class="n">anm</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell vbox">
+<div class="input hbox">
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="input_area box-flex1">
+<div class="highlight"><pre><span class="n">ebgp_edges</span> <span class="o">=</span> <span class="p">(</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">g_in</span><span class="o">.</span><span class="n">edges</span><span class="p">()</span> <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">src</span><span class="o">.</span><span class="n">asn</span> <span class="o">!=</span> <span class="n">e</span><span class="o">.</span><span class="n">dst</span><span class="o">.</span><span class="n">asn</span><span class="p">)</span>
+<span class="n">g_test</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">(</span><span class="n">ebgp_edges</span><span class="p">,</span> <span class="nb">type</span> <span class="o">=</span> <span class="s">&quot;ebgp&quot;</span><span class="p">)</span>
+
+<span class="n">autonetkit</span><span class="o">.</span><span class="n">update_http</span><span class="p">(</span><span class="n">anm</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3>
+  Applying network design rules
+</h3>
+</div>
+<div class="cell border-box-sizing code_cell vbox">
+<div class="input hbox">
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="input_area box-flex1">
+<div class="highlight"><pre><span class="n">anm</span> <span class="o">=</span> <span class="n">build_network</span><span class="o">.</span><span class="n">apply_design_rules</span><span class="p">(</span><span class="n">anm</span><span class="p">)</span>
+<span class="n">autonetkit</span><span class="o">.</span><span class="n">update_http</span><span class="p">(</span><span class="n">anm</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+<div class="vbox output_wrapper">
+<div class="output vbox">
+<div class="hbox output_area">
+<div class="prompt output_prompt"></div>
+<div class="output_subarea output_stream output_stderr">
+<pre><span class="ansigrey">INFO</span> Allocating v4 Infrastructure IPs
+<span class="ansigrey">INFO</span>:ANK:Allocating v4 Infrastructure IPs
+<span class="ansigrey">INFO</span> Allocating v4 Primary Host loopback IPs
+<span class="ansigrey">INFO</span>:ANK:Allocating v4 Primary Host loopback IPs
+<span class="ansigrey">INFO</span> Allocating v4 Secondary Host loopback IPs
+<span class="ansigrey">INFO</span>:ANK:Allocating v4 Secondary Host loopback IPs
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3>
+  Modifying Network using API
+</h3>
+</div>
+<div class="cell border-box-sizing code_cell vbox">
+<div class="input hbox">
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
+<div class="input_area box-flex1">
+<div class="highlight"><pre><span class="kn">import</span> <span class="nn">autonetkit.ank_messaging</span> <span class="kn">as</span> <span class="nn">msg</span>
+<span class="n">msg</span><span class="o">.</span><span class="n">highlight</span><span class="p">([],</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span><span class="mi">8</span><span class="p">)],</span> <span class="p">[])</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Look at the OSPF overlay: set "cost" to be the edge attribute displayed</p>
+</div>
+<div class="cell border-box-sizing code_cell vbox">
+<div class="input hbox">
+<div class="prompt input_prompt">In&nbsp;[7]:</div>
+<div class="input_area box-flex1">
+<div class="highlight"><pre><span class="n">e1_8</span> <span class="o">=</span> <span class="n">anm</span><span class="p">[</span><span class="s">&#39;ospf&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">edge</span><span class="p">(</span><span class="s">&#39;1&#39;</span><span class="p">,</span> <span class="s">&#39;8&#39;</span><span class="p">)</span>
+<span class="k">print</span> <span class="s">&quot;before:&quot;</span><span class="p">,</span> <span class="n">e1_8</span><span class="o">.</span><span class="n">cost</span>
+
+<span class="n">e1_8</span><span class="o">.</span><span class="n">cost</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">e1_8</span><span class="o">.</span><span class="n">apply_to_interfaces</span><span class="p">(</span><span class="s">&quot;cost&quot;</span><span class="p">)</span>
+<span class="k">print</span> <span class="s">&quot;after:&quot;</span><span class="p">,</span> <span class="n">e1_8</span><span class="o">.</span><span class="n">cost</span>
+
+<span class="n">autonetkit</span><span class="o">.</span><span class="n">update_http</span><span class="p">(</span><span class="n">anm</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+<div class="vbox output_wrapper">
+<div class="output vbox">
+<div class="hbox output_area">
+<div class="prompt output_prompt"></div>
+<div class="output_subarea output_stream output_stdout">
+<pre>before: 1
+after: 10
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>View the result on the OSPF overlay</p>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3>
+  Compiling ANM to NIDB
+</h3>
+</div>
+<div class="cell border-box-sizing code_cell vbox">
+<div class="input hbox">
+<div class="prompt input_prompt">In&nbsp;[8]:</div>
+<div class="input_area box-flex1">
+<div class="highlight"><pre><span class="kn">import</span> <span class="nn">autonetkit.console_script</span> <span class="kn">as</span> <span class="nn">console_script</span>
+<span class="n">render_hostname</span> <span class="o">=</span> <span class="s">&quot;localhost&quot;</span>
+
+<span class="n">nidb</span> <span class="o">=</span> <span class="n">console_script</span><span class="o">.</span><span class="n">create_nidb</span><span class="p">(</span><span class="n">anm</span><span class="p">)</span>
+<span class="n">nidb_a</span> <span class="o">=</span> <span class="n">nidb</span> <span class="c"># store for diffing</span>
+<span class="n">nk_compiler</span> <span class="o">=</span> <span class="n">autonetkit</span><span class="o">.</span><span class="n">compiler</span><span class="o">.</span><span class="n">NetkitCompiler</span><span class="p">(</span><span class="n">nidb</span><span class="p">,</span> <span class="n">anm</span><span class="p">,</span> <span class="n">render_hostname</span><span class="p">)</span>
+<span class="n">nk_compiler</span><span class="o">.</span><span class="n">compile</span><span class="p">()</span>
+<span class="n">autonetkit</span><span class="o">.</span><span class="n">update_http</span><span class="p">(</span><span class="n">anm</span><span class="p">,</span> <span class="n">nidb</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+<div class="vbox output_wrapper">
+<div class="output vbox">
+<div class="hbox output_area">
+<div class="prompt output_prompt"></div>
+<div class="output_subarea output_stream output_stderr">
+<pre><span class="ansigrey">INFO</span> Compiling Netkit for localhost
+<span class="ansigrey">INFO</span>:ANK:Compiling Netkit for localhost
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3>
+  Viewing NIDB Attributes
+</h3>
+</div>
+<div class="cell border-box-sizing code_cell vbox">
+<div class="input hbox">
+<div class="prompt input_prompt">In&nbsp;[9]:</div>
+<div class="input_area box-flex1">
+<div class="highlight"><pre><span class="n">router</span> <span class="o">=</span> <span class="n">nidb</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="s">&quot;1&quot;</span><span class="p">)</span>
+<span class="n">router</span><span class="o">.</span><span class="n">dump</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+<div class="vbox output_wrapper">
+<div class="output vbox">
+<div class="hbox output_area">
+<div class="prompt output_prompt"></div>
+<div class="output_subarea output_stream output_stdout">
+<pre>{&apos;Network&apos;: None,
+ &apos;_interfaces&apos;: {0: {&apos;description&apos;: &apos;Loopback&apos;,
+                     &apos;id&apos;: &apos;lo0:1&apos;,
+                     &apos;id_brief&apos;: &apos;lo0:1&apos;,
+                     &apos;ipv4_address&apos;: IPAddress(&apos;10.0.0.1&apos;),
+                     &apos;ipv4_subnet&apos;: IPNetwork(&apos;10.0.0.1/32&apos;),
+                     &apos;type&apos;: &apos;loopback&apos;},
+                 1: {&apos;description&apos;: &apos;1 to 3&apos;,
+                     &apos;id&apos;: &apos;eth0&apos;,
+                     &apos;id_brief&apos;: &apos;eth0&apos;,
+                     &apos;ipv4_address&apos;: IPAddress(&apos;10.1.0.25&apos;),
+                     &apos;ipv4_cidr&apos;: IPNetwork(&apos;10.1.0.25/30&apos;),
+                     &apos;ipv4_subnet&apos;: IPNetwork(&apos;10.1.0.24/30&apos;),
+                     &apos;numeric_id&apos;: 0,
+                     &apos;physical&apos;: True,
+                     &apos;type&apos;: &apos;physical&apos;},
+                 2: {&apos;description&apos;: &apos;1 to 4&apos;,
+                     &apos;id&apos;: &apos;eth1&apos;,
+                     &apos;id_brief&apos;: &apos;eth1&apos;,
+                     &apos;ipv4_address&apos;: IPAddress(&apos;10.1.128.1&apos;),
+                     &apos;ipv4_cidr&apos;: IPNetwork(&apos;10.1.128.1/30&apos;),
+                     &apos;ipv4_subnet&apos;: IPNetwork(&apos;10.1.128.0/30&apos;),
+                     &apos;numeric_id&apos;: 1,
+                     &apos;physical&apos;: True,
+                     &apos;type&apos;: &apos;physical&apos;},
+                 3: {&apos;description&apos;: &apos;1 to 5&apos;,
+                     &apos;id&apos;: &apos;eth2&apos;,
+                     &apos;id_brief&apos;: &apos;eth2&apos;,
+                     &apos;ipv4_address&apos;: IPAddress(&apos;10.1.128.6&apos;),
+                     &apos;ipv4_cidr&apos;: IPNetwork(&apos;10.1.128.6/30&apos;),
+                     &apos;ipv4_subnet&apos;: IPNetwork(&apos;10.1.128.4/30&apos;),
+                     &apos;numeric_id&apos;: 2,
+                     &apos;ospf_cost&apos;: 1,
+                     &apos;physical&apos;: True,
+                     &apos;type&apos;: &apos;physical&apos;},
+                 4: {&apos;description&apos;: &apos;1 to 7&apos;,
+                     &apos;id&apos;: &apos;eth3&apos;,
+                     &apos;id_brief&apos;: &apos;eth3&apos;,
+                     &apos;ipv4_address&apos;: IPAddress(&apos;10.1.0.29&apos;),
+                     &apos;ipv4_cidr&apos;: IPNetwork(&apos;10.1.0.29/30&apos;),
+                     &apos;ipv4_subnet&apos;: IPNetwork(&apos;10.1.0.28/30&apos;),
+                     &apos;numeric_id&apos;: 3,
+                     &apos;ospf_cost&apos;: 1,
+                     &apos;physical&apos;: True,
+                     &apos;type&apos;: &apos;physical&apos;},
+                 5: {&apos;description&apos;: &apos;1 to 8&apos;,
+                     &apos;id&apos;: &apos;eth4&apos;,
+                     &apos;id_brief&apos;: &apos;eth4&apos;,
+                     &apos;ipv4_address&apos;: IPAddress(&apos;10.1.128.9&apos;),
+                     &apos;ipv4_cidr&apos;: IPNetwork(&apos;10.1.128.9/30&apos;),
+                     &apos;ipv4_subnet&apos;: IPNetwork(&apos;10.1.128.8/30&apos;),
+                     &apos;numeric_id&apos;: 4,
+                     &apos;ospf_cost&apos;: 10,
+                     &apos;physical&apos;: True,
+                     &apos;type&apos;: &apos;physical&apos;}},
+ &apos;asn&apos;: 2,
+ &apos;bgp&apos;: {&apos;debug&apos;: True,
+         &apos;ebgp_neighbors&apos;: [{&apos;asn&apos;: 1,
+                             &apos;dst_int_ip&apos;: IPAddress(&apos;10.1.0.26&apos;),
+                             &apos;local_int_ip&apos;: IPAddress(&apos;10.1.0.25&apos;),
+                             &apos;loopback&apos;: IPAddress(&apos;10.0.0.17&apos;),
+                             &apos;neighbor&apos;: &apos;3&apos;,
+                             &apos;update_source&apos;: None,
+                             &apos;use_ipv4&apos;: True,
+                             &apos;use_ipv6&apos;: False},
+                            {&apos;asn&apos;: 1,
+                             &apos;dst_int_ip&apos;: IPAddress(&apos;10.1.128.2&apos;),
+                             &apos;local_int_ip&apos;: IPAddress(&apos;10.1.128.1&apos;),
+                             &apos;loopback&apos;: IPAddress(&apos;10.0.0.19&apos;),
+                             &apos;neighbor&apos;: &apos;4&apos;,
+                             &apos;update_source&apos;: None,
+                             &apos;use_ipv4&apos;: True,
+                             &apos;use_ipv6&apos;: False}],
+         &apos;ibgp_neighbors&apos;: [{&apos;asn&apos;: 2,
+                             &apos;loopback&apos;: IPAddress(&apos;10.0.0.8&apos;),
+                             &apos;neighbor&apos;: &apos;11&apos;,
+                             &apos;update_source&apos;: None,
+                             &apos;use_ipv4&apos;: True,
+                             &apos;use_ipv6&apos;: False},
+                            {&apos;asn&apos;: 2,
+                             &apos;loopback&apos;: IPAddress(&apos;10.0.0.7&apos;),
+                             &apos;neighbor&apos;: &apos;10&apos;,
+                             &apos;update_source&apos;: None,
+                             &apos;use_ipv4&apos;: True,
+                             &apos;use_ipv6&apos;: False},
+                            {&apos;asn&apos;: 2,
+                             &apos;loopback&apos;: IPAddress(&apos;10.0.0.2&apos;),
+                             &apos;neighbor&apos;: &apos;5&apos;,
+                             &apos;update_source&apos;: None,
+                             &apos;use_ipv4&apos;: True,
+                             &apos;use_ipv6&apos;: False},
+                            {&apos;asn&apos;: 2,
+                             &apos;loopback&apos;: IPAddress(&apos;10.0.0.3&apos;),
+                             &apos;neighbor&apos;: &apos;7&apos;,
+                             &apos;update_source&apos;: None,
+                             &apos;use_ipv4&apos;: True,
+                             &apos;use_ipv6&apos;: False},
+                            {&apos;asn&apos;: 2,
+                             &apos;loopback&apos;: IPAddress(&apos;10.0.0.4&apos;),
+                             &apos;neighbor&apos;: &apos;6&apos;,
+                             &apos;update_source&apos;: None,
+                             &apos;use_ipv4&apos;: True,
+                             &apos;use_ipv6&apos;: False},
+                            {&apos;asn&apos;: 2,
+                             &apos;loopback&apos;: IPAddress(&apos;10.0.0.5&apos;),
+                             &apos;neighbor&apos;: &apos;9&apos;,
+                             &apos;update_source&apos;: None,
+                             &apos;use_ipv4&apos;: True,
+                             &apos;use_ipv6&apos;: False},
+                            {&apos;asn&apos;: 2,
+                             &apos;loopback&apos;: IPAddress(&apos;10.0.0.6&apos;),
+                             &apos;neighbor&apos;: &apos;8&apos;,
+                             &apos;update_source&apos;: None,
+                             &apos;use_ipv4&apos;: True,
+                             &apos;use_ipv6&apos;: False}],
+         &apos;ibgp_rr_clients&apos;: [],
+         &apos;ibgp_rr_parents&apos;: [],
+         &apos;ipv4_advertise_subnets&apos;: [IPNetwork(&apos;10.1.0.0/16&apos;)],
+         &apos;ipv6_advertise_subnets&apos;: []},
+ &apos;device_subtype&apos;: None,
+ &apos;device_type&apos;: &apos;router&apos;,
+ &apos;graphics&apos;: {&apos;device_subtype&apos;: None,
+              &apos;device_type&apos;: &apos;router&apos;,
+              &apos;x&apos;: 542.6405010223389,
+              &apos;y&apos;: 415.17582416534424},
+ &apos;host&apos;: &apos;localhost&apos;,
+ &apos;hostname&apos;: &apos;r1&apos;,
+ &apos;input_label&apos;: &apos;1&apos;,
+ &apos;interfaces&apos;: [],
+ &apos;ip&apos;: {&apos;use_ipv4&apos;: True, &apos;use_ipv6&apos;: False},
+ &apos;label&apos;: &apos;1&apos;,
+ &apos;loopback&apos;: IPAddress(&apos;10.0.0.1&apos;),
+ &apos;loopback_subnet&apos;: IPNetwork(&apos;10.0.0.1/32&apos;),
+ &apos;ospf&apos;: {&apos;lo_interface&apos;: &apos;lo0:1&apos;,
+          &apos;loopback_area&apos;: 0,
+          &apos;ospf_links&apos;: [{&apos;area&apos;: 0, &apos;network&apos;: IPNetwork(&apos;10.1.128.4/30&apos;)},
+                         {&apos;area&apos;: 0, &apos;network&apos;: IPNetwork(&apos;10.1.0.28/30&apos;)},
+                         {&apos;area&apos;: 0, &apos;network&apos;: IPNetwork(&apos;10.1.128.8/30&apos;)},
+                         {&apos;area&apos;: 0, &apos;network&apos;: IPNetwork(&apos;10.1.0.24/30&apos;)},
+                         {&apos;area&apos;: 0, &apos;network&apos;: IPNetwork(&apos;10.1.128.0/30&apos;)}],
+          &apos;passive_interfaces&apos;: [{&apos;id&apos;: &apos;eth0&apos;}, {&apos;id&apos;: &apos;eth1&apos;}],
+          &apos;process_id&apos;: 1},
+ &apos;platform&apos;: &apos;netkit&apos;,
+ &apos;render&apos;: {&apos;base&apos;: &apos;templates/quagga&apos;,
+            &apos;base_dst_folder&apos;: &apos;rendered/localhost/netkit/1&apos;,
+            &apos;dst_file&apos;: &apos;1.startup&apos;,
+            &apos;dst_folder&apos;: &apos;rendered/localhost/netkit&apos;,
+            &apos;template&apos;: &apos;templates/netkit_startup.mako&apos;},
+ &apos;ssh&apos;: {&apos;use_key&apos;: True},
+ &apos;tap&apos;: {&apos;id&apos;: &apos;eth5&apos;, &apos;ip&apos;: IPAddress(&apos;172.16.0.6&apos;)},
+ &apos;update&apos;: None,
+ &apos;x&apos;: 274.0,
+ &apos;y&apos;: 210.0,
+ &apos;zebra&apos;: {&apos;password&apos;: &apos;1234&apos;, &apos;static_routes&apos;: []}}
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3>
+  Rendering NIDB to Configuration Files
+</h3>
+</div>
+<div class="cell border-box-sizing code_cell vbox">
+<div class="input hbox">
+<div class="prompt input_prompt">In&nbsp;[10]:</div>
+<div class="input_area box-flex1">
+<div class="highlight"><pre><span class="kn">import</span> <span class="nn">autonetkit.render</span>
+<span class="n">autonetkit</span><span class="o">.</span><span class="n">render</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">nidb</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+<div class="vbox output_wrapper">
+<div class="output vbox">
+<div class="hbox output_area">
+<div class="prompt output_prompt"></div>
+<div class="output_subarea output_stream output_stderr">
+<pre><span class="ansigrey">INFO</span> Rendering Network
+<span class="ansigrey">INFO</span>:ANK:Rendering Network
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3>
+  Viewing Output Configurations
+</h3>
+</div>
+<div class="cell border-box-sizing code_cell vbox">
+<div class="input hbox">
+<div class="prompt input_prompt">In&nbsp;[11]:</div>
+<div class="input_area box-flex1">
+<div class="highlight"><pre><span class="kn">import</span> <span class="nn">os</span>
+<span class="n">dst_folder</span> <span class="o">=</span> <span class="n">nidb</span><span class="o">.</span><span class="n">topology</span><span class="p">[</span><span class="s">&#39;localhost&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">render_dst_folder</span>
+<span class="k">for</span> <span class="n">path</span><span class="p">,</span> <span class="n">dirs</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">dst_folder</span><span class="p">):</span>
+  <span class="k">print</span> <span class="n">path</span>
+  <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+    <span class="k">print</span> <span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">f</span>
+</pre></div>
+
+</div>
+</div>
+<div class="vbox output_wrapper">
+<div class="output vbox">
+<div class="hbox output_area">
+<div class="prompt output_prompt"></div>
+<div class="output_subarea output_stream output_stdout">
+<pre>rendered/localhost/netkit
+	.DS_Store
+	1.startup
+	10.startup
+	11.startup
+	12.startup
+	13.startup
+	14.startup
+	2.startup
+	3.startup
+	4.startup
+	5.startup
+	6.startup
+	7.startup
+	8.startup
+	9.startup
+	lab.conf
+rendered/localhost/netkit/1
+rendered/localhost/netkit/1/etc
+	hostname
+	shadow
+rendered/localhost/netkit/1/etc/ssh
+	sshd_config
+rendered/localhost/netkit/1/etc/zebra
+	bgpd.conf
+	daemons
+	isisd.conf
+	motd.txt
+	ospfd.conf
+	zebra.conf
+rendered/localhost/netkit/1/root
+rendered/localhost/netkit/1/root/.ssh
+	authorized_keys
+rendered/localhost/netkit/10
+rendered/localhost/netkit/10/etc
+	hostname
+	shadow
+rendered/localhost/netkit/10/etc/ssh
+	sshd_config
+rendered/localhost/netkit/10/etc/zebra
+	bgpd.conf
+	daemons
+	isisd.conf
+	motd.txt
+	ospfd.conf
+	zebra.conf
+rendered/localhost/netkit/10/root
+rendered/localhost/netkit/10/root/.ssh
+	authorized_keys
+rendered/localhost/netkit/11
+rendered/localhost/netkit/11/etc
+	hostname
+	shadow
+rendered/localhost/netkit/11/etc/ssh
+	sshd_config
+rendered/localhost/netkit/11/etc/zebra
+	bgpd.conf
+	daemons
+	isisd.conf
+	motd.txt
+	ospfd.conf
+	zebra.conf
+rendered/localhost/netkit/11/root
+rendered/localhost/netkit/11/root/.ssh
+	authorized_keys
+rendered/localhost/netkit/12
+rendered/localhost/netkit/12/etc
+	hostname
+	shadow
+rendered/localhost/netkit/12/etc/ssh
+	sshd_config
+rendered/localhost/netkit/12/etc/zebra
+	bgpd.conf
+	daemons
+	isisd.conf
+	motd.txt
+	ospfd.conf
+	zebra.conf
+rendered/localhost/netkit/12/root
+rendered/localhost/netkit/12/root/.ssh
+	authorized_keys
+rendered/localhost/netkit/13
+rendered/localhost/netkit/13/etc
+	hostname
+	shadow
+rendered/localhost/netkit/13/etc/ssh
+	sshd_config
+rendered/localhost/netkit/13/etc/zebra
+	bgpd.conf
+	daemons
+	isisd.conf
+	motd.txt
+	ospfd.conf
+	zebra.conf
+rendered/localhost/netkit/13/root
+rendered/localhost/netkit/13/root/.ssh
+	authorized_keys
+rendered/localhost/netkit/14
+rendered/localhost/netkit/14/etc
+	hostname
+	shadow
+rendered/localhost/netkit/14/etc/ssh
+	sshd_config
+rendered/localhost/netkit/14/etc/zebra
+	bgpd.conf
+	daemons
+	isisd.conf
+	motd.txt
+	ospfd.conf
+	zebra.conf
+rendered/localhost/netkit/14/root
+rendered/localhost/netkit/14/root/.ssh
+	authorized_keys
+rendered/localhost/netkit/2
+rendered/localhost/netkit/2/etc
+	hostname
+	shadow
+rendered/localhost/netkit/2/etc/ssh
+	sshd_config
+rendered/localhost/netkit/2/etc/zebra
+	bgpd.conf
+	daemons
+	isisd.conf
+	motd.txt
+	ospfd.conf
+	zebra.conf
+rendered/localhost/netkit/2/root
+rendered/localhost/netkit/2/root/.ssh
+	authorized_keys
+rendered/localhost/netkit/3
+rendered/localhost/netkit/3/etc
+	hostname
+	shadow
+rendered/localhost/netkit/3/etc/ssh
+	sshd_config
+rendered/localhost/netkit/3/etc/zebra
+	bgpd.conf
+	daemons
+	isisd.conf
+	motd.txt
+	ospfd.conf
+	zebra.conf
+rendered/localhost/netkit/3/root
+rendered/localhost/netkit/3/root/.ssh
+	authorized_keys
+rendered/localhost/netkit/4
+rendered/localhost/netkit/4/etc
+	hostname
+	shadow
+rendered/localhost/netkit/4/etc/ssh
+	sshd_config
+rendered/localhost/netkit/4/etc/zebra
+	bgpd.conf
+	daemons
+	isisd.conf
+	motd.txt
+	ospfd.conf
+	zebra.conf
+rendered/localhost/netkit/4/root
+rendered/localhost/netkit/4/root/.ssh
+	authorized_keys
+rendered/localhost/netkit/5
+rendered/localhost/netkit/5/etc
+	hostname
+	shadow
+rendered/localhost/netkit/5/etc/ssh
+	sshd_config
+rendered/localhost/netkit/5/etc/zebra
+	bgpd.conf
+	daemons
+	isisd.conf
+	motd.txt
+	ospfd.conf
+	zebra.conf
+rendered/localhost/netkit/5/root
+rendered/localhost/netkit/5/root/.ssh
+	authorized_keys
+rendered/localhost/netkit/6
+rendered/localhost/netkit/6/etc
+	hostname
+	shadow
+rendered/localhost/netkit/6/etc/ssh
+	sshd_config
+rendered/localhost/netkit/6/etc/zebra
+	bgpd.conf
+	daemons
+	isisd.conf
+	motd.txt
+	ospfd.conf
+	zebra.conf
+rendered/localhost/netkit/6/root
+rendered/localhost/netkit/6/root/.ssh
+	authorized_keys
+rendered/localhost/netkit/7
+rendered/localhost/netkit/7/etc
+	hostname
+	shadow
+rendered/localhost/netkit/7/etc/ssh
+	sshd_config
+rendered/localhost/netkit/7/etc/zebra
+	bgpd.conf
+	daemons
+	isisd.conf
+	motd.txt
+	ospfd.conf
+	zebra.conf
+rendered/localhost/netkit/7/root
+rendered/localhost/netkit/7/root/.ssh
+	authorized_keys
+rendered/localhost/netkit/8
+rendered/localhost/netkit/8/etc
+	hostname
+	shadow
+rendered/localhost/netkit/8/etc/ssh
+	sshd_config
+rendered/localhost/netkit/8/etc/zebra
+	bgpd.conf
+	daemons
+	isisd.conf
+	motd.txt
+	ospfd.conf
+	zebra.conf
+rendered/localhost/netkit/8/root
+rendered/localhost/netkit/8/root/.ssh
+	authorized_keys
+rendered/localhost/netkit/9
+rendered/localhost/netkit/9/etc
+	hostname
+	shadow
+rendered/localhost/netkit/9/etc/ssh
+	sshd_config
+rendered/localhost/netkit/9/etc/zebra
+	bgpd.conf
+	daemons
+	isisd.conf
+	motd.txt
+	ospfd.conf
+	zebra.conf
+rendered/localhost/netkit/9/root
+rendered/localhost/netkit/9/root/.ssh
+	authorized_keys
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3>
+  Viewing Configuration Files: OSPF
+</h3>
+</div>
+<div class="cell border-box-sizing code_cell vbox">
+<div class="input hbox">
+<div class="prompt input_prompt">In&nbsp;[12]:</div>
+<div class="input_area box-flex1">
+<div class="highlight"><pre><span class="n">router</span> <span class="o">=</span> <span class="n">nidb</span><span class="o">.</span><span class="n">routers</span><span class="p">()</span><span class="o">.</span><span class="n">next</span><span class="p">()</span> <span class="c"># choose a router</span>
+<span class="n">router</span> <span class="o">=</span> <span class="n">nidb</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="s">&quot;1&quot;</span><span class="p">)</span>
+<span class="n">zebra_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">router</span><span class="o">.</span><span class="n">render</span><span class="o">.</span><span class="n">base_dst_folder</span><span class="p">,</span> <span class="s">&quot;etc&quot;</span><span class="p">,</span> <span class="s">&quot;zebra&quot;</span><span class="p">)</span>
+
+<span class="n">ospfd_conf</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">zebra_dir</span><span class="p">,</span> <span class="s">&quot;ospfd.conf&quot;</span><span class="p">)</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">ospfd_conf</span><span class="p">,</span> <span class="s">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+    <span class="k">print</span> <span class="n">fh</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+<div class="vbox output_wrapper">
+<div class="output vbox">
+<div class="hbox output_area">
+<div class="prompt output_prompt"></div>
+<div class="output_subarea output_stream output_stdout">
+<pre>hostname r1
+password 1234   
+banner motd file /etc/quagga/motd.txt
+!
+  interface eth2
+  #Link to 1 to 5
+  ip ospf cost 1
+  !
+  interface eth3
+  #Link to 1 to 7
+  ip ospf cost 1
+  !
+  interface eth4
+  #Link to 1 to 8
+  ip ospf cost 10
+  !
+!
+router ospf
+  network 10.1.128.4/30 area 0 
+  network 10.1.0.28/30 area 0 
+  network 10.1.128.8/30 area 0 
+  network 10.1.0.24/30 area 0 
+  network 10.1.128.0/30 area 0 
+  !
+  passive-interface eth0
+  passive-interface eth1
+  !
+  network 10.0.0.1/32 area 0
+!
+
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3>
+  Viewing Configuration Files: BGP
+</h3>
+</div>
+<div class="cell border-box-sizing code_cell vbox">
+<div class="input hbox">
+<div class="prompt input_prompt">In&nbsp;[13]:</div>
+<div class="input_area box-flex1">
+<div class="highlight"><pre><span class="n">bgpd_conf</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">zebra_dir</span><span class="p">,</span> <span class="s">&quot;bgpd.conf&quot;</span><span class="p">)</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">bgpd_conf</span><span class="p">,</span> <span class="s">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+    <span class="k">print</span> <span class="n">fh</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+<div class="vbox output_wrapper">
+<div class="output vbox">
+<div class="hbox output_area">
+<div class="prompt output_prompt"></div>
+<div class="output_subarea output_stream output_stdout">
+<pre>!
+hostname r1
+password 1234              
+banner motd file /etc/quagga/motd.txt
+!enable password 1234
+!
+  router bgp 2   
+  bgp router-id 10.0.0.1
+  no synchronization
+  network 10.1.0.0/16
+! ibgp
+  ! ibgp peers
+  ! 11
+  neighbor 10.0.0.8 remote-as 2
+  neighbor 10.0.0.8 update-source 10.0.0.1                                                     
+  neighbor 10.0.0.8 send-community      
+  neighbor 10.0.0.8 next-hop-self
+  ! 10
+  neighbor 10.0.0.7 remote-as 2
+  neighbor 10.0.0.7 update-source 10.0.0.1                                                     
+  neighbor 10.0.0.7 send-community      
+  neighbor 10.0.0.7 next-hop-self
+  ! 5
+  neighbor 10.0.0.2 remote-as 2
+  neighbor 10.0.0.2 update-source 10.0.0.1                                                     
+  neighbor 10.0.0.2 send-community      
+  neighbor 10.0.0.2 next-hop-self
+  ! 7
+  neighbor 10.0.0.3 remote-as 2
+  neighbor 10.0.0.3 update-source 10.0.0.1                                                     
+  neighbor 10.0.0.3 send-community      
+  neighbor 10.0.0.3 next-hop-self
+  ! 6
+  neighbor 10.0.0.4 remote-as 2
+  neighbor 10.0.0.4 update-source 10.0.0.1                                                     
+  neighbor 10.0.0.4 send-community      
+  neighbor 10.0.0.4 next-hop-self
+  ! 9
+  neighbor 10.0.0.5 remote-as 2
+  neighbor 10.0.0.5 update-source 10.0.0.1                                                     
+  neighbor 10.0.0.5 send-community      
+  neighbor 10.0.0.5 next-hop-self
+  ! 8
+  neighbor 10.0.0.6 remote-as 2
+  neighbor 10.0.0.6 update-source 10.0.0.1                                                     
+  neighbor 10.0.0.6 send-community      
+  neighbor 10.0.0.6 next-hop-self
+! ebgp
+  ! 3 
+  neighbor 10.1.0.26 remote-as 1
+  neighbor 10.1.0.26 update-source 10.1.0.25                                                     
+  neighbor 10.1.0.26 send-community
+  ! 4 
+  neighbor 10.1.128.2 remote-as 1
+  neighbor 10.1.128.2 update-source 10.1.128.1                                                     
+  neighbor 10.1.128.2 send-community
+
+debug bgp
+debug bgp events
+debug bgp filters
+debug bgp fsm
+debug bgp keepalives
+debug bgp updates 
+log file /var/log/zebra/bgpd.log
+
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3>
+  Deploying Netkit Lab
+</h3>
+</div>
+<div class="cell border-box-sizing code_cell vbox">
+<div class="input hbox">
+<div class="prompt input_prompt">In&nbsp;[14]:</div>
+<div class="input_area box-flex1">
+<div class="highlight"><pre><span class="kn">import</span> <span class="nn">autonetkit.deploy.netkit</span> <span class="kn">as</span> <span class="nn">nk_deploy</span>
+<span class="n">username</span> <span class="o">=</span> <span class="s">&quot;sk2&quot;</span>
+<span class="n">host</span> <span class="o">=</span> <span class="s">&quot;192.168.255.129&quot;</span>
+<span class="n">dst_folder</span> <span class="o">=</span> <span class="n">nidb</span><span class="o">.</span><span class="n">topology</span><span class="p">[</span><span class="s">&#39;localhost&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">render_dst_folder</span>
+<span class="n">nk_deploy</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">username</span><span class="p">,</span> <span class="n">dst_folder</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+<div class="vbox output_wrapper">
+<div class="output vbox">
+<div class="hbox output_area">
+<div class="prompt output_prompt"></div>
+<div class="output_subarea output_stream output_stderr">
+<pre><span class="ansigrey">INFO</span> Packaging rendered/localhost/netkit
+<span class="ansigrey">INFO</span>:ANK:Packaging rendered/localhost/netkit
+<span class="ansigrey">INFO</span> Transferring Netkit lab
+<span class="ansigrey">INFO</span>:ANK:Transferring Netkit lab
+<span class="ansigrey">INFO</span> Connecting to 192.168.255.129 with sk2
+<span class="ansigrey">INFO</span>:ANK:Connecting to 192.168.255.129 with sk2
+<span class="ansigrey">INFO</span> Extracting and starting Netkit lab
+<span class="ansigrey">INFO</span>:ANK:Extracting and starting Netkit lab
+<span class="ansigrey">INFO</span> The lab contains VMs 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11
+<span class="ansigrey">INFO</span>:ANK:The lab contains VMs 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11
+<span class="ansigrey">INFO</span> Starting lab
+<span class="ansigrey">INFO</span>:ANK:Starting lab
+<span class="ansigrey">INFO</span> Starting 1
+<span class="ansigrey">INFO</span>:ANK:Starting 1
+<span class="ansigrey">INFO</span> Starting 3
+<span class="ansigrey">INFO</span>:ANK:Starting 3
+<span class="ansigrey">INFO</span> Starting 5
+<span class="ansigrey">INFO</span>:ANK:Starting 5
+<span class="ansigrey">INFO</span> Starting 2
+<span class="ansigrey">INFO</span>:ANK:Starting 2
+<span class="ansigrey">INFO</span> Starting 6
+<span class="ansigrey">INFO</span>:ANK:Starting 6
+<span class="ansigrey">INFO</span> Starting 7
+<span class="ansigrey">INFO</span>:ANK:Starting 7
+<span class="ansigrey">INFO</span> Starting 9
+<span class="ansigrey">INFO</span>:ANK:Starting 9
+<span class="ansigrey">INFO</span> Starting 8
+<span class="ansigrey">INFO</span>:ANK:Starting 8
+<span class="ansigrey">INFO</span> Starting 10
+<span class="ansigrey">INFO</span>:ANK:Starting 10
+<span class="ansigrey">INFO</span> Starting 11
+<span class="ansigrey">INFO</span>:ANK:Starting 11
+<span class="ansigrey">INFO</span> Lab started on 192.168.255.129
+<span class="ansigrey">INFO</span>:ANK:Lab started on 192.168.255.129
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3>
+  Analysis
+</h3>
+</div>
+<div class="cell border-box-sizing code_cell vbox">
+<div class="input hbox">
+<div class="prompt input_prompt">In&nbsp;[24]:</div>
+<div class="input_area box-flex1">
+<div class="highlight"><pre><span class="kn">from</span> <span class="nn">autonetkit.ank_utils</span> <span class="kn">import</span> <span class="n">unwrap_graph</span><span class="p">,</span> <span class="n">unwrap_nodes</span>
+<span class="kn">import</span> <span class="nn">autonetkit.ank_messaging</span> <span class="kn">as</span> <span class="nn">msg</span>
+<span class="kn">import</span> <span class="nn">networkx</span> <span class="kn">as</span> <span class="nn">nx</span>
+
+<span class="n">graph</span> <span class="o">=</span> <span class="n">unwrap_graph</span><span class="p">(</span><span class="n">anm</span><span class="p">[</span><span class="s">&#39;ospf&#39;</span><span class="p">])</span>
+
+<span class="n">path</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">shortest_path</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="s">&quot;1&quot;</span><span class="p">,</span> <span class="s">&quot;8&quot;</span><span class="p">,</span> <span class="n">weight</span> <span class="o">=</span> <span class="s">&#39;cost&#39;</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">path</span>
+<span class="n">msg</span><span class="o">.</span><span class="n">highlight</span><span class="p">([],</span> <span class="p">[],</span> <span class="p">[</span><span class="n">path</span><span class="p">])</span>
+</pre></div>
+
+</div>
+</div>
+<div class="vbox output_wrapper">
+<div class="output vbox">
+<div class="hbox output_area">
+<div class="prompt output_prompt"></div>
+<div class="output_subarea output_stream output_stdout">
+<pre>[&apos;1&apos;, &apos;5&apos;, &apos;6&apos;, &apos;7&apos;, &apos;9&apos;, &apos;8&apos;]
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell vbox">
+<div class="input hbox">
+<div class="prompt input_prompt">In&nbsp;[25]:</div>
+<div class="input_area box-flex1">
+<div class="highlight"><pre><span class="n">path</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">shortest_path</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="s">&quot;1&quot;</span><span class="p">,</span> <span class="s">&quot;11&quot;</span><span class="p">,</span> <span class="n">weight</span> <span class="o">=</span> <span class="s">&#39;cost&#39;</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">path</span>
+<span class="n">msg</span><span class="o">.</span><span class="n">highlight</span><span class="p">([],</span> <span class="p">[],</span> <span class="p">[</span><span class="n">path</span><span class="p">])</span>
+</pre></div>
+
+</div>
+</div>
+<div class="vbox output_wrapper">
+<div class="output vbox">
+<div class="hbox output_area">
+<div class="prompt output_prompt"></div>
+<div class="output_subarea output_stream output_stdout">
+<pre>[&apos;1&apos;, &apos;5&apos;, &apos;6&apos;, &apos;7&apos;, &apos;10&apos;, &apos;11&apos;]
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell vbox">
+<div class="input hbox">
+<div class="prompt input_prompt">In&nbsp;[26]:</div>
+<div class="input_area box-flex1">
+<div class="highlight"><pre><span class="n">edge</span> <span class="o">=</span> <span class="n">anm</span><span class="p">[</span><span class="s">&#39;ospf&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">edge</span><span class="p">(</span><span class="s">&#39;1&#39;</span><span class="p">,</span> <span class="s">&#39;7&#39;</span><span class="p">)</span>
+<span class="n">edge</span><span class="o">.</span><span class="n">cost</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">edge</span><span class="o">.</span><span class="n">apply_to_interfaces</span><span class="p">(</span><span class="s">&quot;cost&quot;</span><span class="p">)</span>
+<span class="n">autonetkit</span><span class="o">.</span><span class="n">update_http</span><span class="p">(</span><span class="n">anm</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell vbox">
+<div class="input hbox">
+<div class="prompt input_prompt">In&nbsp;[27]:</div>
+<div class="input_area box-flex1">
+<div class="highlight"><pre><span class="n">path</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">shortest_path</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="s">&quot;1&quot;</span><span class="p">,</span> <span class="s">&quot;11&quot;</span><span class="p">,</span> <span class="n">weight</span> <span class="o">=</span> <span class="s">&#39;cost&#39;</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">path</span>
+<span class="n">msg</span><span class="o">.</span><span class="n">highlight</span><span class="p">([],</span> <span class="p">[],</span> <span class="p">[</span><span class="n">path</span><span class="p">])</span>
+</pre></div>
+
+</div>
+</div>
+<div class="vbox output_wrapper">
+<div class="output vbox">
+<div class="hbox output_area">
+<div class="prompt output_prompt"></div>
+<div class="output_subarea output_stream output_stdout">
+<pre>[&apos;1&apos;, &apos;5&apos;, &apos;6&apos;, &apos;7&apos;, &apos;10&apos;, &apos;11&apos;]
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Let's use the API to modify the cost of the link from 1-&gt;7</p>
+</div>
+<div class="cell border-box-sizing code_cell vbox">
+<div class="input hbox">
+<div class="prompt input_prompt">In&nbsp;[32]:</div>
+<div class="input_area box-flex1">
+<div class="highlight"><pre><span class="n">edge</span> <span class="o">=</span> <span class="n">anm</span><span class="p">[</span><span class="s">&#39;ospf&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">edge</span><span class="p">(</span><span class="s">&#39;6&#39;</span><span class="p">,</span> <span class="s">&#39;11&#39;</span><span class="p">)</span>
+<span class="n">edge</span><span class="o">.</span><span class="n">cost</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">edge</span><span class="o">.</span><span class="n">apply_to_interfaces</span><span class="p">(</span><span class="s">&quot;cost&quot;</span><span class="p">)</span>
+<span class="n">autonetkit</span><span class="o">.</span><span class="n">update_http</span><span class="p">(</span><span class="n">anm</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell vbox">
+<div class="input hbox">
+<div class="prompt input_prompt">In&nbsp;[34]:</div>
+<div class="input_area box-flex1">
+<div class="highlight"><pre><span class="n">path</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">shortest_path</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="s">&quot;1&quot;</span><span class="p">,</span> <span class="s">&quot;11&quot;</span><span class="p">,</span> <span class="n">weight</span> <span class="o">=</span> <span class="s">&#39;cost&#39;</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">path</span>
+<span class="n">msg</span><span class="o">.</span><span class="n">highlight</span><span class="p">([],</span> <span class="p">[],</span> <span class="p">[</span><span class="n">path</span><span class="p">])</span>
+</pre></div>
+
+</div>
+</div>
+<div class="vbox output_wrapper">
+<div class="output vbox">
+<div class="hbox output_area">
+<div class="prompt output_prompt"></div>
+<div class="output_subarea output_stream output_stdout">
+<pre>[&apos;1&apos;, &apos;5&apos;, &apos;6&apos;, &apos;7&apos;, &apos;10&apos;, &apos;11&apos;]
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can see that the path has now changed to avoid the expensive 1-&gt;7 link</p>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3>
+  Measuring Results
+</h3>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can also collect data from the running network</p>
+</div>
+<div class="cell border-box-sizing code_cell vbox">
+<div class="input hbox">
+<div class="prompt input_prompt">In&nbsp;[35]:</div>
+<div class="input_area box-flex1">
+<div class="highlight"><pre><span class="kn">import</span> <span class="nn">autonetkit.measure</span> <span class="kn">as</span> <span class="nn">measure</span>
+<span class="n">remote_hosts</span> <span class="o">=</span> <span class="p">[</span><span class="n">nidb</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="s">&quot;1&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">tap</span><span class="o">.</span><span class="n">ip</span><span class="p">]</span>
+<span class="n">command</span> <span class="o">=</span> <span class="s">&#39;vtysh -c &quot;show ip ro&quot;&#39;</span>
+<span class="n">measure</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">nidb</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="n">remote_hosts</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+<div class="vbox output_wrapper">
+<div class="output vbox">
+<div class="hbox output_area">
+<div class="prompt output_prompt"></div>
+<div class="output_subarea output_stream output_stdout">
+<pre>No parser defined for command vtysh -c &quot;show ip ro&quot;
+Raw output:
+&apos;vtysh -c &quot;show ip ro&quot;
+Codes: K - kernel route, C - connected, S - static, R - RIP, O - OSPF,
+       I - ISIS, B - BGP, &gt; - selected route, * - FIB route
+
+B&gt;* 10.0.0.0/16 [20/0] via 10.1.0.26, eth0, 00:06:51
+O   10.0.0.1/32 [110/10] is directly connected, lo, 00:06:54
+C&gt;* 10.0.0.1/32 is directly connected, lo
+O&gt;* 10.0.0.2/32 [110/11] via 10.1.128.5, eth2, 00:06:06
+O&gt;* 10.0.0.3/32 [110/11] via 10.1.0.30, eth3, 00:05:58
+O&gt;* 10.0.0.4/32 [110/12] via 10.1.0.30, eth3, 00:05:54
+  *                      via 10.1.128.5, eth2, 00:05:54
+O&gt;* 10.0.0.5/32 [110/12] via 10.1.0.30, eth3, 00:05:54
+O&gt;* 10.0.0.6/32 [110/13] via 10.1.0.30, eth3, 00:05:54
+O&gt;* 10.0.0.7/32 [110/12] via 10.1.0.30, eth3, 00:05:54
+O&gt;* 10.0.0.8/32 [110/13] via 10.1.0.30, eth3, 00:05:49
+  *                      via 10.1.128.5, eth2, 00:05:49
+O&gt;* 10.1.0.0/30 [110/13] via 10.1.0.30, eth3, 00:05:54
+O&gt;* 10.1.0.4/30 [110/2] via 10.1.128.5, eth2, 00:06:06
+O&gt;* 10.1.0.8/30 [110/3] via 10.1.0.30, eth3, 00:05:54
+O&gt;* 10.1.0.12/30 [110/3] via 10.1.0.30, eth3, 00:05:54
+  *                      via 10.1.128.5, eth2, 00:05:54
+O&gt;* 10.1.0.16/30 [110/2] via 10.1.0.30, eth3, 00:05:58
+O&gt;* 10.1.0.20/30 [110/3] via 10.1.0.30, eth3, 00:05:54
+O   10.1.0.24/30 [110/10] is directly connected, eth0, 00:06:54
+C&gt;* 10.1.0.24/30 is directly connected, eth0
+O   10.1.0.28/30 [110/1] is directly connected, eth3, 00:06:54
+C&gt;* 10.1.0.28/30 is directly connected, eth3
+O   10.1.128.0/30 [110/10] is directly connected, eth1, 00:06:54
+C&gt;* 10.1.128.0/30 is directly connected, eth1
+O   10.1.128.4/30 [110/1] is directly connected, eth2, 00:06:54
+C&gt;* 10.1.128.4/30 is directly connected, eth2
+O   10.1.128.8/30 [110/10] is directly connected, eth4, 00:06:54
+C&gt;* 10.1.128.8/30 is directly connected, eth4
+O&gt;* 10.1.128.12/30 [110/2] via 10.1.0.30, eth3, 00:05:58
+O&gt;* 10.1.128.16/30 [110/2] via 10.1.0.30, eth3, 00:05:58
+C&gt;* 127.0.0.0/8 is directly connected, lo
+C&gt;* 172.16.0.0/16 is directly connected, eth5
+r1:~# &apos;
+</pre>
+</div>
+</div>
+<div class="hbox output_area">
+<div class="prompt output_prompt">Out[35]:</div>
+<div class="output_subarea output_pyout">
+<pre>[]</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell vbox">
+<div class="input hbox">
+<div class="prompt input_prompt">In&nbsp;[36]:</div>
+<div class="input_area box-flex1">
+<div class="highlight"><pre><span class="kn">import</span> <span class="nn">autonetkit.measure</span> <span class="kn">as</span> <span class="nn">measure</span>
+<span class="n">remote_hosts</span> <span class="o">=</span> <span class="p">[</span><span class="n">nidb</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="s">&quot;2&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">tap</span><span class="o">.</span><span class="n">ip</span><span class="p">]</span>
+<span class="n">command</span> <span class="o">=</span> <span class="s">&#39;vtysh -c &quot;show ip ro&quot;&#39;</span>
+<span class="n">measure</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">nidb</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="n">remote_hosts</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+<div class="vbox output_wrapper">
+<div class="output vbox">
+<div class="hbox output_area">
+<div class="prompt output_prompt"></div>
+<div class="output_subarea output_stream output_stdout">
+<pre>No parser defined for command vtysh -c &quot;show ip ro&quot;
+Raw output:
+&apos;vtysh -c &quot;show ip ro&quot;
+Codes: K - kernel route, C - connected, S - static, R - RIP, O - OSPF,
+       I - ISIS, B - BGP, &gt; - selected route, * - FIB route
+
+O   10.0.0.0/30 [110/1] is directly connected, eth1, 00:06:57
+C&gt;* 10.0.0.0/30 is directly connected, eth1
+O&gt;* 10.0.0.4/30 [110/2] via 10.0.0.2, eth1, 00:06:12
+O&gt;* 10.0.0.17/32 [110/11] via 10.0.0.2, eth1, 00:06:12
+O   10.0.0.18/32 [110/10] is directly connected, lo, 00:06:57
+C&gt;* 10.0.0.18/32 is directly connected, lo
+O&gt;* 10.0.0.19/32 [110/12] via 10.0.0.2, eth1, 00:06:08
+B&gt;* 10.1.0.0/16 [20/0] via 10.1.0.1, eth0, 00:06:41
+O   10.1.0.0/30 [110/10] is directly connected, eth0, 00:06:57
+C&gt;* 10.1.0.0/30 is directly connected, eth0
+O&gt;* 10.1.0.24/30 [110/11] via 10.0.0.2, eth1, 00:06:12
+O&gt;* 10.1.128.0/30 [110/12] via 10.0.0.2, eth1, 00:06:08
+C&gt;* 127.0.0.0/8 is directly connected, lo
+C&gt;* 172.16.0.0/16 is directly connected, eth2
+r2:~# &apos;
+</pre>
+</div>
+</div>
+<div class="hbox output_area">
+<div class="prompt output_prompt">Out[36]:</div>
+<div class="output_subarea output_pyout">
+<pre>[]</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can also process the returned data.
+For traceroutes we bind a process data function to map the returned IPs to the routers they represent.
+We then have a list of the routers along the path.</p>
+<p>But we can go one better: we can send this to the visualisation engine, just as we did for the offline analysis.</p>
+</div>
+<div class="cell border-box-sizing code_cell vbox">
+<div class="input hbox">
+<div class="prompt input_prompt">In&nbsp;[37]:</div>
+<div class="input_area box-flex1">
+<div class="highlight"><pre><span class="n">remote_hosts</span> <span class="o">=</span> <span class="p">[</span><span class="n">nidb</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="s">&quot;1&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">tap</span><span class="o">.</span><span class="n">ip</span><span class="p">]</span>
+
+<span class="n">dest_ip</span> <span class="o">=</span> <span class="n">nidb</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="s">&quot;7&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">interfaces</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ipv4_address</span>
+<span class="n">command</span> <span class="o">=</span> <span class="s">&quot;traceroute -n -a -U -w 0.5 </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">dest_ip</span>
+<span class="n">measure</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">nidb</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="n">remote_hosts</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+<div class="vbox output_wrapper">
+<div class="output vbox">
+<div class="hbox output_area">
+<div class="prompt output_prompt"></div>
+<div class="output_subarea output_stream output_stderr">
+<pre><span class="ansigrey">INFO</span> Trace from 1 to 7
+<span class="ansigrey">INFO</span>:ANK:Trace from 1 to 7
+<span class="ansigrey">INFO</span> &apos;traceroute -n -a -U -w 0.5 10.0.0.3
+traceroute to 10.0.0.3 (10.0.0.3), 64 hops max, 40 byte packets
+ 1  10.0.0.3  2 ms
+r1:~# &apos;
+<span class="ansigrey">INFO</span>:ANK:&apos;traceroute -n -a -U -w 0.5 10.0.0.3
+traceroute to 10.0.0.3 (10.0.0.3), 64 hops max, 40 byte packets
+ 1  10.0.0.3  2 ms
+r1:~# &apos;
+<span class="ansigrey">INFO</span> [1, 7]
+<span class="ansigrey">INFO</span>:ANK:[1, 7]
+</pre>
+</div>
+</div>
+<div class="hbox output_area">
+<div class="prompt output_prompt">Out[37]:</div>
+<div class="output_subarea output_pyout">
+<pre>[[1, 7]]</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell vbox">
+<div class="input hbox">
+<div class="prompt input_prompt">In&nbsp;[38]:</div>
+<div class="input_area box-flex1">
+<div class="highlight"><pre><span class="n">dest_ip</span> <span class="o">=</span> <span class="n">nidb</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="s">&quot;9&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">interfaces</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ipv4_address</span>
+<span class="n">command</span> <span class="o">=</span> <span class="s">&quot;traceroute -n -a -U -w 0.5 </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">dest_ip</span>
+<span class="n">measure</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">nidb</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="n">remote_hosts</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+<div class="vbox output_wrapper">
+<div class="output vbox">
+<div class="hbox output_area">
+<div class="prompt output_prompt"></div>
+<div class="output_subarea output_stream output_stderr">
+<pre><span class="ansigrey">INFO</span> Trace from 1 to 3
+<span class="ansigrey">INFO</span>:ANK:Trace from 1 to 3
+<span class="ansigrey">INFO</span> &apos;traceroute -n -a -U -w 0.5 10.0.0.5
+traceroute to 10.0.0.5 (10.0.0.5), 64 hops max, 40 byte packets
+ 1  10.1.0.30  0 ms
+ 2  10.0.0.5  1 ms
+r1:~# &apos;
+<span class="ansigrey">INFO</span>:ANK:&apos;traceroute -n -a -U -w 0.5 10.0.0.5
+traceroute to 10.0.0.5 (10.0.0.5), 64 hops max, 40 byte packets
+ 1  10.1.0.30  0 ms
+ 2  10.0.0.5  1 ms
+r1:~# &apos;
+<span class="ansigrey">INFO</span> [1, 7, 3]
+<span class="ansigrey">INFO</span>:ANK:[1, 7, 3]
+</pre>
+</div>
+</div>
+<div class="hbox output_area">
+<div class="prompt output_prompt">Out[38]:</div>
+<div class="output_subarea output_pyout">
+<pre>[[1, 7, 3]]</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell vbox">
+<div class="input hbox">
+<div class="prompt input_prompt">In&nbsp;[39]:</div>
+<div class="input_area box-flex1">
+<div class="highlight"><pre><span class="n">dest_ip</span> <span class="o">=</span> <span class="n">nidb</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="s">&quot;4&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">interfaces</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ipv4_address</span>
+<span class="n">command</span> <span class="o">=</span> <span class="s">&quot;traceroute -n -a -U -w 0.5 </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">dest_ip</span>
+<span class="n">measure</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">nidb</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="n">remote_hosts</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+<div class="vbox output_wrapper">
+<div class="output vbox">
+<div class="hbox output_area">
+<div class="prompt output_prompt"></div>
+<div class="output_subarea output_stream output_stderr">
+<pre><span class="ansigrey">INFO</span> Trace from 1 to 4
+<span class="ansigrey">INFO</span>:ANK:Trace from 1 to 4
+<span class="ansigrey">INFO</span> &apos;traceroute -n -a -U -w 0.5 10.0.0.19
+traceroute to 10.0.0.19 (10.0.0.19), 64 hops max, 40 byte packets
+ 1  10.1.0.26  1 ms
+ 2  10.0.0.19  1 ms
+r1:~# &apos;
+<span class="ansigrey">INFO</span>:ANK:&apos;traceroute -n -a -U -w 0.5 10.0.0.19
+traceroute to 10.0.0.19 (10.0.0.19), 64 hops max, 40 byte packets
+ 1  10.1.0.26  1 ms
+ 2  10.0.0.19  1 ms
+r1:~# &apos;
+<span class="ansigrey">INFO</span> [1, 3, 4]
+<span class="ansigrey">INFO</span>:ANK:[1, 3, 4]
+</pre>
+</div>
+</div>
+<div class="hbox output_area">
+<div class="prompt output_prompt">Out[39]:</div>
+<div class="output_subarea output_pyout">
+<pre>[[1, 3, 4]]</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell vbox">
+<div class="input hbox">
+<div class="prompt input_prompt">In&nbsp;[40]:</div>
+<div class="input_area box-flex1">
+<div class="highlight"><pre><span class="n">dest_ip</span> <span class="o">=</span> <span class="n">nidb</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="s">&quot;11&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">interfaces</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">ipv4_address</span>
+<span class="n">command</span> <span class="o">=</span> <span class="s">&quot;traceroute -n -a -U -w 0.5 </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">dest_ip</span>
+<span class="n">traceroute_result</span> <span class="o">=</span> <span class="n">measure</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">nidb</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="n">remote_hosts</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+<div class="vbox output_wrapper">
+<div class="output vbox">
+<div class="hbox output_area">
+<div class="prompt output_prompt"></div>
+<div class="output_subarea output_stream output_stderr">
+<pre><span class="ansigrey">INFO</span> Trace from 1 to 11
+<span class="ansigrey">INFO</span>:ANK:Trace from 1 to 11
+<span class="ansigrey">INFO</span> &apos;traceroute -n -a -U -w 0.5 10.1.0.21
+traceroute to 10.1.0.21 (10.1.0.21), 64 hops max, 40 byte packets
+ 1  10.1.0.30  2 ms
+ 2  10.1.0.17  1 ms
+ 3  10.1.0.21  2 ms
+r1:~# &apos;
+<span class="ansigrey">INFO</span>:ANK:&apos;traceroute -n -a -U -w 0.5 10.1.0.21
+traceroute to 10.1.0.21 (10.1.0.21), 64 hops max, 40 byte packets
+ 1  10.1.0.30  2 ms
+ 2  10.1.0.17  1 ms
+ 3  10.1.0.21  2 ms
+r1:~# &apos;
+<span class="ansigrey">INFO</span> [1, 7, 10, 11]
+<span class="ansigrey">INFO</span>:ANK:[1, 7, 10, 11]
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Not what we expected! like 1-7 was costed up to 10 in the analysis.
+Recall we expected </p>
+<pre><code>['1', '5', '6', '11']
+</code></pre>
+<p>but we got</p>
+<pre><code>[1, 7, 10, 11]
+</code></pre>
+<p>This is because we made the change after the network was deployed.
+Once option is to rebuild and restart the lab.
+A better way is to modify the existing network.</p>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Let's confirm that:</p>
+</div>
+<div class="cell border-box-sizing code_cell vbox">
+<div class="input hbox">
+<div class="prompt input_prompt">In&nbsp;[43]:</div>
+<div class="input_area box-flex1">
+<div class="highlight"><pre><span class="n">path_trace</span> <span class="o">=</span> <span class="n">traceroute_result</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="c"># extract from nested list</span>
+
+<span class="n">expected_path</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">shortest_path</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="s">&quot;1&quot;</span><span class="p">,</span> <span class="s">&quot;11&quot;</span><span class="p">,</span> <span class="n">weight</span> <span class="o">=</span> <span class="s">&#39;cost&#39;</span><span class="p">)</span>
+
+<span class="n">combined</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="n">path_trace</span><span class="p">,</span> <span class="n">expected_path</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">combined</span>
+<span class="k">print</span> <span class="nb">all</span><span class="p">(</span><span class="n">a</span> <span class="o">==</span> <span class="n">b</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span><span class="n">b</span> <span class="ow">in</span> <span class="n">combined</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+<div class="vbox output_wrapper">
+<div class="output vbox">
+<div class="hbox output_area">
+<div class="prompt output_prompt"></div>
+<div class="output_subarea output_stream output_stdout">
+<pre>[(1, &apos;1&apos;), (7, &apos;5&apos;), (10, &apos;6&apos;), (11, &apos;7&apos;)]
+False
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3>
+  Recompiling
+</h3>
+</div>
+<div class="cell border-box-sizing code_cell vbox">
+<div class="input hbox">
+<div class="prompt input_prompt">In&nbsp;[44]:</div>
+<div class="input_area box-flex1">
+<div class="highlight"><pre><span class="n">nidb_b</span> <span class="o">=</span> <span class="n">console_script</span><span class="o">.</span><span class="n">create_nidb</span><span class="p">(</span><span class="n">anm</span><span class="p">)</span>
+<span class="n">render_hostname</span> <span class="o">=</span> <span class="s">&quot;localhost&quot;</span>
+
+<span class="n">nk_compiler</span> <span class="o">=</span> <span class="n">autonetkit</span><span class="o">.</span><span class="n">compiler</span><span class="o">.</span><span class="n">NetkitCompiler</span><span class="p">(</span><span class="n">nidb_b</span><span class="p">,</span> <span class="n">anm</span><span class="p">,</span> <span class="n">render_hostname</span><span class="p">)</span>
+<span class="n">nk_compiler</span><span class="o">.</span><span class="n">compile</span><span class="p">()</span>
+
+<span class="n">autonetkit</span><span class="o">.</span><span class="n">update_http</span><span class="p">(</span><span class="n">anm</span><span class="p">,</span> <span class="n">nidb_b</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+<div class="vbox output_wrapper">
+<div class="output vbox">
+<div class="hbox output_area">
+<div class="prompt output_prompt"></div>
+<div class="output_subarea output_stream output_stderr">
+<pre><span class="ansigrey">INFO</span> Compiling Netkit for localhost
+<span class="ansigrey">INFO</span>:ANK:Compiling Netkit for localhost
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3>
+  Calculating Diffs
+</h3>
+</div>
+<div class="cell border-box-sizing code_cell vbox">
+<div class="input hbox">
+<div class="prompt input_prompt">In&nbsp;[45]:</div>
+<div class="input_area box-flex1">
+<div class="highlight"><pre><span class="kn">import</span> <span class="nn">autonetkit.diff</span>
+<span class="n">diffs</span> <span class="o">=</span> <span class="n">autonetkit</span><span class="o">.</span><span class="n">diff</span><span class="o">.</span><span class="n">compare_nidb</span><span class="p">(</span><span class="n">nidb_a</span><span class="p">,</span> <span class="n">nidb_b</span><span class="p">)</span>
+<span class="n">diffs</span>
+</pre></div>
+
+</div>
+</div>
+<div class="vbox output_wrapper">
+<div class="output vbox">
+<div class="hbox output_area">
+<div class="prompt output_prompt">Out[45]:</div>
+<div class="output_subarea output_pyout">
+<pre>{&apos;graph&apos;: {&apos;timestamp&apos;: {1: &apos;20130516_160936&apos;, 2: &apos;20130516_161725&apos;}},
+ &apos;nodes&apos;: {&apos;m&apos;: {&apos;1&apos;: {&apos;_interfaces&apos;: {4: {&apos;ospf_cost&apos;: {1: 1, 2: 10}}}},
+   &apos;11&apos;: {&apos;_interfaces&apos;: {1: {&apos;ospf_cost&apos;: {1: 1, 2: 10}}}},
+   &apos;6&apos;: {&apos;_interfaces&apos;: {1: {&apos;ospf_cost&apos;: {1: 1, 2: 10}}}},
+   &apos;7&apos;: {&apos;_interfaces&apos;: {2: {&apos;ospf_cost&apos;: {1: 1, 2: 10}}}}}}}</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>As well as the timestamp, we can see the OSPF costs which have been changed.</p>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3>
+  Pushing changes to emulated network
+</h3>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Let's push these changes to the emulated network</p>
+</div>
+<div class="cell border-box-sizing code_cell vbox">
+<div class="input hbox">
+<div class="prompt input_prompt">In&nbsp;[46]:</div>
+<div class="input_area box-flex1">
+<div class="highlight"><pre><span class="kn">import</span> <span class="nn">autonetkit.push_changes</span>
+<span class="n">autonetkit</span><span class="o">.</span><span class="n">push_changes</span><span class="o">.</span><span class="n">apply_difference</span><span class="p">(</span><span class="n">nidb_a</span><span class="p">,</span> <span class="n">diffs</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+<div class="vbox output_wrapper">
+<div class="output vbox">
+<div class="hbox output_area">
+<div class="prompt output_prompt"></div>
+<div class="output_subarea output_stream output_stdout">
+<pre>&apos;vtysh -c &quot;conf t
+&gt; interface eth3
+&gt; ip ospf cost 10 &quot;
+r1:~# &apos;
+&apos;vtysh -c &quot;show ip ospf interface eth3&quot;
+eth3 is up
+  ifindex 6, MTU 1500 bytes, BW 0 Kbit &lt;UP,BROADCAST,RUNNING,MULTICAST&gt;
+  Internet Address 10.1.0.29/30, Broadcast 10.1.0.31, Area 0.0.0.0
+  MTU mismatch detection:enabled
+  Router ID 10.0.0.1, Network Type BROADCAST, Cost: 10
+  Transmit Delay is 1 sec, State Backup, Priority 1
+  Designated Router (ID) 10.0.0.3, Interface Address 10.1.0.30
+  Backup Designated Router (ID) 10.0.0.1, Interface Address 10.1.0.29
+  Multicast group memberships: OSPFAllRouters OSPFDesignatedRouters
+  Timer intervals configured, Hello 10s, Dead 40s, Wait 40s, Retransmit 5
+    Hello due in 2.620s
+  Neighbor Count is 1, Adjacent neighbor count is 1
+r1:~# &apos;
+&apos;vtysh -c &quot;conf t
+&gt; interface eth0
+&gt; ip ospf cost 10 &quot;
+r11:~# &apos;
+&apos;vtysh -c &quot;show ip ospf interface eth0&quot;
+eth0 is up
+  ifindex 3, MTU 1500 bytes, BW 0 Kbit &lt;UP,BROADCAST,RUNNING,MULTICAST&gt;
+  Internet Address 10.1.0.13/30, Broadcast 10.1.0.15, Area 0.0.0.0
+  MTU mismatch detection:enabled
+  Router ID 10.0.0.8, Network Type BROADCAST, Cost: 10
+  Transmit Delay is 1 sec, State DR, Priority 1
+  Designated Router (ID) 10.0.0.8, Interface Address 10.1.0.13
+  Backup Designated Router (ID) 10.0.0.4, Interface Address 10.1.0.14
+  Multicast group memberships: OSPFAllRouters OSPFDesignatedRouters
+  Timer intervals configured, Hello 10s, Dead 40s, Wait 40s, Retransmit 5
+    Hello due in 8.346s
+  Neighbor Count is 1, Adjacent neighbor count is 1
+r11:~# &apos;
+&apos;vtysh -c &quot;conf t
+&gt; interface eth1
+&gt; ip ospf cost 10 &quot;
+r7:~# &apos;
+&apos;vtysh -c &quot;show ip ospf interface eth1&quot;
+eth1 is up
+  ifindex 4, MTU 1500 bytes, BW 0 Kbit &lt;UP,BROADCAST,RUNNING,MULTICAST&gt;
+  Internet Address 10.1.0.30/30, Broadcast 10.1.0.31, Area 0.0.0.0
+  MTU mismatch detection:enabled
+  Router ID 10.0.0.3, Network Type BROADCAST, Cost: 10
+  Transmit Delay is 1 sec, State DR, Priority 1
+  Designated Router (ID) 10.0.0.3, Interface Address 10.1.0.30
+  Backup Designated Router (ID) 10.0.0.1, Interface Address 10.1.0.29
+  Multicast group memberships: OSPFAllRouters OSPFDesignatedRouters
+  Timer intervals configured, Hello 10s, Dead 40s, Wait 40s, Retransmit 5
+    Hello due in 7.820s
+  Neighbor Count is 1, Adjacent neighbor count is 1
+r7:~# &apos;
+&apos;vtysh -c &quot;conf t
+&gt; interface eth0
+&gt; ip ospf cost 10 &quot;
+r6:~# &apos;
+&apos;vtysh -c &quot;show ip ospf interface eth0&quot;
+eth0 is up
+  ifindex 3, MTU 1500 bytes, BW 0 Kbit &lt;UP,BROADCAST,RUNNING,MULTICAST&gt;
+  Internet Address 10.1.0.14/30, Broadcast 10.1.0.15, Area 0.0.0.0
+  MTU mismatch detection:enabled
+  Router ID 10.0.0.4, Network Type BROADCAST, Cost: 10
+  Transmit Delay is 1 sec, State Backup, Priority 1
+  Designated Router (ID) 10.0.0.8, Interface Address 10.1.0.13
+  Backup Designated Router (ID) 10.0.0.4, Interface Address 10.1.0.14
+  Multicast group memberships: OSPFAllRouters OSPFDesignatedRouters
+  Timer intervals configured, Hello 10s, Dead 40s, Wait 40s, Retransmit 5
+    Hello due in 3.540s
+  Neighbor Count is 1, Adjacent neighbor count is 1
+r6:~# &apos;
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3>
+  Now let's try traceroute again...
+</h3>
+</div>
+<div class="cell border-box-sizing code_cell vbox">
+<div class="input hbox">
+<div class="prompt input_prompt">In&nbsp;[47]:</div>
+<div class="input_area box-flex1">
+<div class="highlight"><pre><span class="n">dest_ip</span> <span class="o">=</span> <span class="n">nidb</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="s">&quot;11&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">interfaces</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">ipv4_address</span>
+<span class="n">command</span> <span class="o">=</span> <span class="s">&quot;traceroute -n -a -U -w 0.5 </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">dest_ip</span>
+<span class="n">traceroute_result</span> <span class="o">=</span> <span class="n">measure</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">nidb</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="n">remote_hosts</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">traceroute_result</span>
+</pre></div>
+
+</div>
+</div>
+<div class="vbox output_wrapper">
+<div class="output vbox">
+<div class="hbox output_area">
+<div class="prompt output_prompt"></div>
+<div class="output_subarea output_stream output_stderr">
+<pre><span class="ansigrey">INFO</span> Trace from 1 to 11
+<span class="ansigrey">INFO</span>:ANK:Trace from 1 to 11
+<span class="ansigrey">INFO</span> &apos;traceroute -n -a -U -w 0.5 10.1.0.21
+traceroute to 10.1.0.21 (10.1.0.21), 64 hops max, 40 byte packets
+ 1  10.1.128.5  1 ms
+ 2  10.1.0.6  1 ms
+ 3  10.1.128.18  1 ms
+ 4  10.1.0.17  1 ms
+ 5  10.1.0.21  1 ms
+r1:~# &apos;
+<span class="ansigrey">INFO</span>:ANK:&apos;traceroute -n -a -U -w 0.5 10.1.0.21
+traceroute to 10.1.0.21 (10.1.0.21), 64 hops max, 40 byte packets
+ 1  10.1.128.5  1 ms
+ 2  10.1.0.6  1 ms
+ 3  10.1.128.18  1 ms
+ 4  10.1.0.17  1 ms
+ 5  10.1.0.21  1 ms
+r1:~# &apos;
+<span class="ansigrey">INFO</span> [1, 5, 6, 7, 10, 11]
+<span class="ansigrey">INFO</span>:ANK:[1, 5, 6, 7, 10, 11]
+</pre>
+</div>
+</div>
+<div class="hbox output_area">
+<div class="prompt output_prompt"></div>
+<div class="output_subarea output_stream output_stdout">
+<pre>[[1, 5, 6, 7, 10, 11]]
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell vbox">
+<div class="input hbox">
+<div class="prompt input_prompt">In&nbsp;[48]:</div>
+<div class="input_area box-flex1">
+<div class="highlight"><pre><span class="n">expected_path</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">shortest_path</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="s">&quot;1&quot;</span><span class="p">,</span> <span class="s">&quot;11&quot;</span><span class="p">,</span> <span class="n">weight</span> <span class="o">=</span> <span class="s">&#39;cost&#39;</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">expected_path</span>
+</pre></div>
+
+</div>
+</div>
+<div class="vbox output_wrapper">
+<div class="output vbox">
+<div class="hbox output_area">
+<div class="prompt output_prompt"></div>
+<div class="output_subarea output_stream output_stdout">
+<pre>[&apos;1&apos;, &apos;5&apos;, &apos;6&apos;, &apos;7&apos;, &apos;10&apos;, &apos;11&apos;]
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This is what we expected! :)
+We can confirm this programatically:</p>
+</div>
+<div class="cell border-box-sizing code_cell vbox">
+<div class="input hbox">
+<div class="prompt input_prompt">In&nbsp;[49]:</div>
+<div class="input_area box-flex1">
+<div class="highlight"><pre><span class="n">path_trace</span> <span class="o">=</span> <span class="n">traceroute_result</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="c"># extract from nested list</span>
+
+<span class="n">combined</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="n">path_trace</span><span class="p">,</span> <span class="n">expected_path</span><span class="p">)</span>
+<span class="k">print</span> <span class="nb">all</span><span class="p">(</span><span class="n">a</span> <span class="o">==</span> <span class="n">b</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span><span class="n">b</span> <span class="ow">in</span> <span class="n">combined</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+<div class="vbox output_wrapper">
+<div class="output vbox">
+<div class="hbox output_area">
+<div class="prompt output_prompt"></div>
+<div class="output_subarea output_stream output_stdout">
+<pre>True
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body>
+</html>
