@@ -1632,6 +1632,10 @@ function redraw() {
         .style("opacity",0)
         .remove();
     //});
+    
+
+        pathinfo = [];
+        redraw_paths();
         }
 
 function redraw_paths() {
