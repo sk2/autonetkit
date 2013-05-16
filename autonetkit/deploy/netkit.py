@@ -58,6 +58,9 @@ def extract(host, username, tar_file, cd_dir, timeout = 45, key_filename = None,
 
     messaging = ank_messaging
 
+
+    lab_vlist = {}
+
     def starting_host(protocol, index, data):
         m = re.search('\\"(\S+)\\"', data.group(index))
         if m:
@@ -73,13 +76,33 @@ def extract(host, username, tar_file, cd_dir, timeout = 45, key_filename = None,
     def make_not_found(protocol, index, data):
         log.warning("Make not installed on remote host %s. Please install make and retry." % host)
         return
+    
+    def process_vlist(response):
+        """Obtain VM to PID listing: required if terminating a numeric VM"""
+        #TODO: could process using textfsm template
+        vm_to_pid = {}
+        import re
+        for line in response.splitlines():
+            match = re.match(r'^\w+\s+(\w+)\s+(\d+)', line)
+            if match:
+                vm = match.group(1)
+                pid = match.group(2)
+                vm_to_pid[vm] = pid
+
+        return vm_to_pid
 
     def start_lab(thread, host, conn):
         conn.set_timeout(timeout)
-        conn.add_monitor(r'Starting (\S+)', starting_host)
+        conn.add_monitor(r'Starting "(\w+)"', starting_host)
         conn.add_monitor(r'The lab has been started', lab_started)
+        lab_vlist = []
+
+        #conn.add_monitor(r'Virtual machine "((\S*_*)+)" is already running. Please', already_running_b)
         conn.add_monitor(r'make: not found', make_not_found)
         #conn.data_received_event.connect(data_received)
+        conn.execute("vlist")
+        response = str(conn.response)
+        lab_vlist = process_vlist(response)
         conn.execute('cd %s' % cd_dir)
         conn.execute('lcrash -k')
         conn.execute("lclean")
@@ -88,14 +111,37 @@ def extract(host, username, tar_file, cd_dir, timeout = 45, key_filename = None,
         conn.execute('cd %s' % cd_dir)
         conn.execute('vlist')
         conn.execute("lclean")
-        log.info("Starting lab")
         start_command = 'lstart -p5 -o --con0=none'
-        try:
-            conn.execute(start_command)
-        except InvalidCommandException, error:
-            if "already running" in str(error):
-                time.sleep(1)
+        lab_is_started = False
+        while lab_is_started == False:
+            try:
+                log.info("Starting lab")
                 conn.execute(start_command)
+            except InvalidCommandException, error:
+                error_string = str(error)
+                if "already running" in error_string:
+                    running_vms = []
+                    for line in error_string.splitlines():
+                        if "already running" in line:
+                            running_vm = line.split('"')[1]
+                            running_vms.append(running_vm)
+
+                    for vm in running_vms:
+                        if vm.isdigit:
+                            # convert to PID if numeric, as vcrash can't crash numeric ids (treats as PID)
+                            crash_id = lab_vlist.get(vm)
+                        else:
+                            crash_id = vm # use name
+
+                        if crash_id:
+                            # crash_id may not be set, if machine not present in initial vlist, if so then ignore
+                            log.info("Stopping running VM %s" % vm)
+                            conn.execute("vcrash %s" % crash_id)
+
+                    time.sleep(1)
+                    #conn.execute(start_command)
+            else:
+                lab_is_started = True
         first_match(conn, r'^The lab has been started')
         conn.send("exit")
 
@@ -108,4 +154,5 @@ def extract(host, username, tar_file, cd_dir, timeout = 45, key_filename = None,
         accounts = [Account(username)] 
 
     hosts = ['ssh://%s' % host]
+    verbosity = 3
     start(accounts, hosts, start_lab, verbose = verbosity)
