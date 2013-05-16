@@ -62,12 +62,9 @@ def extract(host, username, tar_file, cd_dir, timeout = 45, key_filename = None,
     lab_vlist = {}
 
     def starting_host(protocol, index, data):
-        m = re.search('\\"(\S+)\\"', data.group(index))
-        if m:
-            hostname = m.group(1)
-            log.info(data.group(index)) #TODO: use regex to strip out just the machine name
-            #TODO: use params and seperate call here than publish_json
-            messaging.publish_data(hostname, "starting_host")
+        import autonetkit.ank_messaging as msg
+        log.info("Starting %s" % data.group(1))
+        msg.highlight([data.group(1)], [], [])
 
     def lab_started(protocol, index, data):
         log.info("Lab started on %s" % host)
@@ -100,15 +97,44 @@ def extract(host, username, tar_file, cd_dir, timeout = 45, key_filename = None,
         #conn.add_monitor(r'Virtual machine "((\S*_*)+)" is already running. Please', already_running_b)
         conn.add_monitor(r'make: not found', make_not_found)
         #conn.data_received_event.connect(data_received)
-        conn.execute("vlist")
-        response = str(conn.response)
-        lab_vlist = process_vlist(response)
+
+
         conn.execute('cd %s' % cd_dir)
         conn.execute('lcrash -k')
         conn.execute("lclean")
         conn.execute('cd') # back to home directory tar file copied to
         conn.execute('tar -xzf %s' % tar_file)
         conn.execute('cd %s' % cd_dir)
+
+        conn.execute("linfo")
+        linfo_response = str(conn.response)
+        vm_list = []
+        for line in linfo_response.splitlines():
+            if "The lab is made up of" in line:
+                open_bracket = line.index("(")
+                close_bracket = line.index(")")
+                vm_list = line[open_bracket+1:close_bracket]
+                vm_list = vm_list.split()
+                log.info("The lab contains VMs %s" % ", ".join(vm_list))
+
+        # now check if any vms are still running
+        conn.execute("vlist")
+        response = str(conn.response)
+        lab_vlist = process_vlist(response)
+
+        for vm in lab_vlist:
+            if vm in vm_list:
+                if vm.isdigit:
+                    # convert to PID if numeric, as vcrash can't crash numeric ids (treats as PID)
+                    crash_id = lab_vlist.get(vm)
+                else:
+                    crash_id = vm # use name
+
+                if crash_id:
+                    # crash_id may not be set, if machine not present in initial vlist, if so then ignore
+                    log.info("Stopping running VM %s" % vm)
+                    conn.execute("vcrash %s" % crash_id)
+
         conn.execute('vlist')
         conn.execute("lclean")
         start_command = 'lstart -p5 -o --con0=none'
@@ -120,6 +146,11 @@ def extract(host, username, tar_file, cd_dir, timeout = 45, key_filename = None,
             except InvalidCommandException, error:
                 error_string = str(error)
                 if "already running" in error_string:
+
+                    conn.execute("vlist")
+                    response = str(conn.response)
+                    lab_vlist = process_vlist(response)
+
                     running_vms = []
                     for line in error_string.splitlines():
                         if "already running" in line:
@@ -154,5 +185,5 @@ def extract(host, username, tar_file, cd_dir, timeout = 45, key_filename = None,
         accounts = [Account(username)] 
 
     hosts = ['ssh://%s' % host]
-    verbosity = 3
+    verbosity = 0
     start(accounts, hosts, start_lab, verbose = verbosity)
