@@ -17,8 +17,8 @@ path.link {
 #path_verified_marker{
   stroke: rgb(0,120,33);
   fill: rgb(0,120,33);
-    stroke: red;
-  fill: red;
+    stroke: green;
+  fill: green;
 }
 
 #path_marker {
