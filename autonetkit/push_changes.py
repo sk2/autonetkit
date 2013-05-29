@@ -1,5 +1,6 @@
 import autonetkit.ank_messaging as ank_messaging
 import autonetkit.measure as measure
+import autonetkit.log as log
 
 def apply_difference(nidb_a, nidb_diff):
 #TODO: batch node updates
@@ -40,3 +41,4 @@ def apply_difference(nidb_a, nidb_diff):
                     command = 'vtysh -c "%s"' % command
                     measure.send(nidb_a, command, remote_hosts)
 
+    log.info("Differences applied")
