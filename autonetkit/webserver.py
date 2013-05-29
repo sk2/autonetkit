@@ -180,11 +180,22 @@ def main():
     ank_accessor = AnkAccessor()
 # check if most recent outdates current most recent
 
-    settings = {
-            "static_path": www_dir,
-            'debug': False,
-            }
+    content_path = www_dir # default content directory
 
+    try:
+        import autonetkit_cisco
+    except ImportError:
+        pass  # use AutoNetkit internal web content
+    else:
+        # use web content from autonetkit_cisco module
+        content_path = pkg_resources.resource_filename("autonetkit_cisco", "web_content")
+
+    print content_path
+    settings = {
+            "static_path": content_path,
+            'debug': False,
+            "static_url_prefix": "test",
+            }
 
     application = tornado.web.Application([
         (r'/ws', MyWebSocketHandler, {"ank_accessor": ank_accessor, "overlay_id": "phy"}),
@@ -192,6 +203,7 @@ def main():
         (r'/overlay', OverlayHandler, {'ank_accessor': ank_accessor}),
         ("/(.*)", tornado.web.StaticFileHandler, {"path":settings['static_path'], "default_filename":"index.html"} )
         ], **settings)
+
 
     application.socket_listeners = set() # TODO: see if tornado provides access to listeners
 
