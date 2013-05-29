@@ -1670,7 +1670,7 @@ function redraw_paths() {
 
     var path_color = function(d) { 
         if ("verified" in d && d['verified'] == true) {
-            return "red";
+            return "green";
         }
         return "red";
     }
