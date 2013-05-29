@@ -47,7 +47,10 @@ def igp_routes(anm, measured):
     optimal_prefixes = {}
     for prefix, routers in prefix_reachability.items():
         # decorate with cost
-        routers_with_costs = [(shortest_path_lengths[r], r) for r in routers]
+        try:
+            routers_with_costs = [(shortest_path_lengths[r], r) for r in routers]
+        except KeyError:
+            continue # no router, likely from eBGP
         min_cost = min(rwc[0] for rwc in routers_with_costs)
         shortest_routers = [rwc[1] for rwc in routers_with_costs if rwc[0] == min_cost]
         optimal_prefixes[str(prefix)] = shortest_routers
@@ -57,7 +60,10 @@ def igp_routes(anm, measured):
     for route in measured:
         dst_cd = route[-1]
         prefix = str(g_ipv4.node(dst_cd).subnet)
-        optimal_routers = optimal_prefixes[prefix]
+        try:
+            optimal_routers = optimal_prefixes[prefix]
+        except KeyError:
+            continue # prefix not present
         if src_node in optimal_routers:
             continue # target is self
 
@@ -65,7 +71,7 @@ def igp_routes(anm, measured):
         optimal_next_hop = [p[1] for p in optimal_routes]
         actual_next_hop = route[1]
 
-        log.debug( "Match: %s, %s, optimal: %s, actual: %s" % (
+        log.info( "Match: %s, %s, optimal: %s, actual: %s" % (
                 actual_next_hop in optimal_next_hop, prefix, ", ".join(optimal_next_hop), actual_next_hop))
 
         if actual_next_hop not in optimal_next_hop:
@@ -76,7 +82,10 @@ def igp_routes(anm, measured):
 
 
     verified_count = verified_prefixes.values().count(True) 
-    verified_fraction = round(100 * verified_count/len(verified_prefixes),2)
+    try:
+        verified_fraction = round(100 * verified_count/len(verified_prefixes),2)
+    except ZeroDivisionError:
+        verified_fraction = 0
     log.info("%s%% verification rate" % verified_fraction)
         
     return verified_prefixes
