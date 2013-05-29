@@ -174,6 +174,7 @@ def extract(host, username, tar_file, cd_dir, timeout = 45, key_filename = None,
             else:
                 lab_is_started = True
         first_match(conn, r'^The lab has been started')
+        log.info("Lab started") #TODO: make this captured - need to debug capturing
         conn.send("exit")
 
     if key_filename:
