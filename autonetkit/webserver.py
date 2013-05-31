@@ -13,8 +13,9 @@ www_dir = pkg_resources.resource_filename(__name__, "www_vis")
 
 class MyWebHandler(tornado.web.RequestHandler):
 
-    def initialize(self, ank_accessor):
+    def initialize(self, ank_accessor, singleuser_mode = False):
         self.ank_accessor = ank_accessor
+        self.singleuser_mode = singleuser_mode
     
     def get(self):
         self.write("Hello, world")
@@ -22,7 +23,14 @@ class MyWebHandler(tornado.web.RequestHandler):
     def post(self):
         data = self.get_argument('body', 'No data received')
         data_type = self.get_argument('type', 'No data received')
-        uuid = self.get_argument('uuid', 'singleuser')
+        if self.singleuser_mode:
+            uuid = "singleuser"
+        else:
+            uuid = self.get_argument('uuid', 'singleuser')
+        
+        # get listeners for this uuid
+        uuid_socket_listeners = self.application.socket_listeners[uuid]
+
         print "Received data of type %s" % data_type
 
         if data_type == "anm":
@@ -34,61 +42,38 @@ class MyWebHandler(tornado.web.RequestHandler):
                 import gzip
                 with gzip.open(os.path.join(www_dir, "default.json.gz"), "w") as fh:
                     json.dump(body_parsed, fh)
-            self.anm = data
-            try:
-                #self.ank_accessor.anm = body_parsed
-                self.ank_accessor.store_overlay(uuid, body_parsed)
-                #TODO: could process diff and only update client if data has changed -> more efficient client side
-                self.update_listeners("overlays")
-                # TODO: find better way to replace object not just local reference, as need to replace for RequestHandler too
-            except Exception, e:
-                print "Exception is", e
 
-        elif data_type == "ip_allocations":
-            logging.warning("IP Allocations currently unsupported")
-            return
-            #body_parsed = json.loads(data)
-            #alloc = body_parsed
-            #self.ank_accessor.ip_allocation = alloc
-            #self.update_listeners("ip_allocations")
+            self.ank_accessor.store_overlay(uuid, body_parsed)
+            print "Updating listeners for uuid", uuid
+            for listener in uuid_socket_listeners:
+                print("Updating listener %s for uuid %s" % (listener.request.remote_ip, uuid))
+                listener.update_overlay()
 
         elif data_type == "starting_host":
-            self.update_listeners(data) 
-            for listener in self.application.socket_listeners:
+            for listener in uuid_socket_listeners:
                 #TODO: use a json format of {'type': type, 'data': data} in client-side script
                 listener.write_message({'starting': data}) 
 
         elif data_type == "lab started":
-            self.update_listeners(data) 
-            for listener in self.application.socket_listeners:
+            for listener in uuid_socket_listeners:
                 listener.write_message({'lab started': data}) 
 
         elif data_type == "highlight":
-            #self.update_listeners(data) 
             body_parsed = json.loads(data)
-            for listener in self.application.socket_listeners:
-                #listener.write_message(data) 
+            for listener in uuid_socket_listeners:
                 listener.write_message({'highlight': body_parsed}) 
         else:
-            self.update_listeners(data)
-
-        #for listener in self.application.socket_listeners:
-            #listener.write_message(data) 
-
-    def update_listeners(self, index):
-        for listener in self.application.socket_listeners:
-            if index == "overlays":
-                listener.update_overlay()
-            #elif index == "ip_allocations":
-                #listener.update_ip_allocation()
+            print "Received unknown data type %s" % data_type
     
 class MyWebSocketHandler(websocket.WebSocketHandler):
-    def initialize(self, ank_accessor, overlay_id):
+    def initialize(self, ank_accessor, overlay_id, singleuser_mode = False):
         """ Store the overlay_id this listener is currently viewing.
         Used when updating."""
         self.ank_accessor = ank_accessor
         self.overlay_id = overlay_id
         self.uuid = None # set by the client
+        self.uuid_socket_listeners = set()
+        self.singleuser_mode = singleuser_mode
 
     def allow_draft76(self):
         # for iOS 5.0 Safari
@@ -96,18 +81,20 @@ class MyWebSocketHandler(websocket.WebSocketHandler):
 
     def open(self, *args, **kwargs):
         # Tornado needs default (here is None) or throws exception that required argument not provided
-        uuid = self.get_argument("uuid", None) 
-        self.uuid = uuid
-        print "Client connected from %s, with uuid %s" % (self.request.remote_ip, uuid)
-        self.application.socket_listeners.add(self) 
+        if self.singleuser_mode:
+            uuid = "singleuser"
+        else:
+            uuid = self.get_argument("uuid", "singleuser") 
 
-        try:
-            self.application.pc.add_event_listener(self)
-        except AttributeError:
-            pass # no RabbitMQ server
+        self.uuid = uuid
+
+        self.uuid_socket_listeners = self.application.socket_listeners[uuid]
+
+        print "Client connected from %s, with uuid %s" % (self.request.remote_ip, uuid)
+        self.uuid_socket_listeners.add(self) 
 
     def on_close(self):
-        self.application.socket_listeners.remove(self) 
+        self.uuid_socket_listeners.remove(self) 
         print "Client disconnected from %s" % self.request.remote_ip
         try:
             self.application.pc.remove_event_listener(self)
@@ -119,7 +106,7 @@ class MyWebSocketHandler(websocket.WebSocketHandler):
             pass # no echo_server
 
     def on_message(self, message):
-        print "received message from client with uuid", self.uuid
+        print "Received message %s from client with uuid %s" % (message, self.uuid)
         if "overlay_id" in message:
             _, overlay_id = message.split("=") #TODO: form JSON on client side, use loads here
             self.overlay_id = overlay_id
@@ -129,20 +116,12 @@ class MyWebSocketHandler(websocket.WebSocketHandler):
             self.write_message(body)
         elif "ip_allocations" in message:
             print "IP Allocations currently unsupported"
-            #body = json.dumps({'ip_allocations': self.ank_accessor.ip_allocations()})
-            #self.write_message(body)
 
     def update_overlay(self):
         body = self.ank_accessor.get_overlay(self.uuid, self.overlay_id)
         self.write_message(body)
-# and update overlay dropdown
         body = json.dumps({'overlay_list': self.ank_accessor.overlay_list(self.uuid)})
         self.write_message(body)
-#TODO: tidy up the passing of IP allocations
-
-    #def update_ip_allocation(self):
-        #body = json.dumps({'ip_allocations': self.ank_accessor.ip_allocations()})
-        #self.write_message(body)
 
 class AnkAccessor():
     """ Used to store published topologies"""
@@ -175,9 +154,8 @@ class AnkAccessor():
         if len(self.uuid_list) == self.uuid_list.maxlen:
             # list is full
             oldest_uuid = self.uuid_list.popleft()
-            # remove this from anm_inde
-            print "removing uuid", oldest_uuid
-            print oldest_uuid in self.anm_index.keys()
+            logging.debug("Removing uuid %s" % oldest_uuid)
+
             del self.anm_index[oldest_uuid] 
 
         self.uuid_list.append(uuid)
@@ -233,6 +211,20 @@ class IndexHandler(tornado.web.RequestHandler):
         self.render(template, uuid = uuid)
  
 def main():
+
+    try:
+        ANK_VERSION = pkg_resources.get_distribution("autonetkit").version
+    except pkg_resources.DistributionNotFound:
+        ANK_VERSION = "dev"
+
+    import argparse
+    usage = "ank_webserver"
+    version = "%(prog)s " + str(ANK_VERSION)
+    parser = argparse.ArgumentParser(description=usage, version=version)
+    parser.add_argument('--port', type=int, default = 8000, help="Grid Size (n * n)")
+    parser.add_argument('--multi_user', action="store_true", default=False, help="Multi-User mode")
+    arguments = parser.parse_args()
+
     ank_accessor = AnkAccessor()
 # check if most recent outdates current most recent
 
@@ -246,16 +238,24 @@ def main():
         # use web content from autonetkit_cisco module
         content_path = pkg_resources.resource_filename("autonetkit_cisco", "web_content")
 
-    print content_path
     settings = {
             "static_path": content_path,
             'debug': False,
             "static_url_prefix": "unused", # otherwise content with folder /static won't get mapped
             }
 
+    singleuser_mode = True # default for now
+    if arguments.multi_user:
+        singleuser_mode = False
+
+
     application = tornado.web.Application([
-        (r'/ws', MyWebSocketHandler, {"ank_accessor": ank_accessor, "overlay_id": "phy"}),
-        (r'/publish', MyWebHandler, {"ank_accessor": ank_accessor}),
+        (r'/ws', MyWebSocketHandler, {"ank_accessor": ank_accessor, 
+            'singleuser_mode': singleuser_mode,
+            "overlay_id": "phy"}),
+        (r'/publish', MyWebHandler, {"ank_accessor": ank_accessor,
+            'singleuser_mode': singleuser_mode,
+            }),
         #TODO: merge the two below into a single handler that captures both cases
         (r'/', IndexHandler, {"path":settings['static_path']}),
         (r'/index.html', IndexHandler, {"path":settings['static_path']}),
@@ -267,14 +267,8 @@ def main():
     application.socket_listeners = defaultdict(set) # Indexed by uuid
 
     io_loop = tornado.ioloop.IOLoop.instance()
-    # PikaClient is our rabbitmq consumer
-  
-    #listening for web clientshost_address
-#TODO: make this driven from config
-    try:
-        port = sys.argv[1]
-    except IndexError:
-        port = 8000
+
+    port = arguments.port
     try:
         application.listen(port)
     except socket.error, e:
@@ -282,10 +276,7 @@ def main():
             logging.warning("Unable to start webserver: socket in use for port %s" % port)
             raise SystemExit
 
-
-    print "Visualisation server started"
     io_loop.start()
 
 if __name__ == '__main__':
     main()
-
