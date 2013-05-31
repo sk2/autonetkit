@@ -34,7 +34,8 @@ for json_file in sorted(glob.glob('measurement_sh_ip_route/*.json')):
             })
 
     autonetkit.update_http(anm)
-    ank_messaging.highlight(nodes, [], processed_with_results)
+    uuid = ank_messaging.AnkMessaging(anm)
+    ank_messaging.highlight(nodes, [], processed_with_results, uuid)
 
     raw_input("Press Enter to continue...")
     
