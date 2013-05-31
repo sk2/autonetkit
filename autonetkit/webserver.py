@@ -216,9 +216,9 @@ def main():
 
     import argparse
     usage = "ank_webserver"
-    version = "%(prog)s " + str(ANK_VERSION)
+    version = "%(prog)s using AutoNetkit " + str(ANK_VERSION)
     parser = argparse.ArgumentParser(description=usage, version=version)
-    parser.add_argument('--port', type=int, default = 8000, help="Grid Size (n * n)")
+    parser.add_argument('--port', type=int, default = 8000, help="Port to run webserver on (default 8000)")
     parser.add_argument('--multi_user', action="store_true", default=False, help="Multi-User mode")
     arguments = parser.parse_args()
 
