@@ -220,6 +220,7 @@ def main():
     parser = argparse.ArgumentParser(description=usage, version=version)
     parser.add_argument('--port', type=int, default = 8000, help="Port to run webserver on (default 8000)")
     parser.add_argument('--multi_user', action="store_true", default=False, help="Multi-User mode")
+    parser.add_argument('--ank_vis', action="store_true", default=False, help="Force AutoNetkit visualisation system")
     arguments = parser.parse_args()
 
     ank_accessor = AnkAccessor()
@@ -227,13 +228,14 @@ def main():
 
     content_path = www_dir # default content directory
 
-    try:
-        import autonetkit_cisco
-    except ImportError:
-        pass  # use AutoNetkit internal web content
-    else:
-        # use web content from autonetkit_cisco module
-        content_path = pkg_resources.resource_filename("autonetkit_cisco", "web_content")
+    if not arguments.ank_vis:
+        try:
+            import autonetkit_cisco
+        except ImportError:
+            pass  # use AutoNetkit internal web content
+        else:
+            # use web content from autonetkit_cisco module
+            content_path = pkg_resources.resource_filename("autonetkit_cisco", "web_content")
 
     settings = {
             "static_path": content_path,
@@ -245,6 +247,8 @@ def main():
     if arguments.multi_user:
         singleuser_mode = False
 
+    if singleuser_mode:
+        print "Running webserver in single-user mode"
 
     application = tornado.web.Application([
         (r'/ws', MyWebSocketHandler, {"ank_accessor": ank_accessor, 
