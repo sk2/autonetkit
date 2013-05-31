@@ -83,6 +83,7 @@ def send(nidb, command, hosts, server = "measure_client", threads = 3):
 #TODO: make this use custom ANK serializer function
                         trace_result = [str(t.id) for t in trace_result if t] # make serializable
                         import autonetkit.ank_messaging
+                        #TODO: need to include uuid for highlight
                         autonetkit.ank_messaging.highlight([], [], paths = [trace_result])
                     else:
                         log.info("Partial trace, not sending to webserver: %s", trace_result)
