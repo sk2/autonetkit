@@ -847,6 +847,7 @@ def build_phy(anm):
     if not g_phy.data.uuid:
         import uuid
         g_phy.data.uuid = uuid.uuid4().hex[:10]
+        g_phy.data.uuid = "abc"
 
     g_phy.add_nodes_from(g_in, retain=['label', 'update', 'device_type', 'asn',
         'specified_int_names',
