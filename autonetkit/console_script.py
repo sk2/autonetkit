@@ -397,7 +397,6 @@ def measure_network(anm, nidb):
     if 0:
         collect_sh_ip_route(anm, nidb)
 
-
     if 0:
         #measure.send(nidb, command, remote_hosts, threads = 5)
         remote_hosts = [node.tap.ip for node in nidb.nodes(
