@@ -227,25 +227,6 @@ def build_ibgp_vpn_v4(anm):
     ce_edges = [e for e in g_ibgp_vpn_v4.edges()
             if e.src in ce_nodes or e.dst in ce_nodes]
 
-    """
-    #TODO: do we still need this?
-    g_ibgp_vpn_v4.remove_edges_from(ce_edges)
-
-# add CE -> PE links based on physical connectivity
-#Note: this could later look at 
-    ce_to_pe_edges = []
-    ce_phy_nodes = {g_phy.node(n) for n in ce_nodes}
-    pe_phy_nodes = {g_phy.node(n) for n in g_vrf.nodes(vrf_role = "PE")}
-    ce_to_pe_edges += (e for e in g_phy.edges()
-            if 
-            e.src.asn == e.dst.asn 
-            and
-            ((e.src in ce_phy_nodes and e.dst in pe_phy_nodes)
-            or (e.src in pe_phy_nodes and e.dst in ce_phy_nodes)))
-
-    g_ibgp_vpn_v4.add_edges_from(ce_to_pe_edges, type="ibgp", bidirectional = True)
-    """
-
     # mark ibgp direction
     ce_pe_edges = []
     pe_ce_edges = []
@@ -258,7 +239,6 @@ def build_ibgp_vpn_v4(anm):
             edge.direction = "down"
             edge.vrf = edge.dst.vrf
             pe_ce_edges.append(edge)
-
 
     #TODO: Document this
     g_ibgpv4 = anm['ibgp_v4']
@@ -281,7 +261,6 @@ def build_ibgp_vpn_v4(anm):
     g_bgp.remove_edges_from(ce_edges)
     g_bgp.add_edges_from(ce_pe_edges, retain = ["direction", "vrf", "type"])
     g_bgp.add_edges_from(pe_ce_edges, retain = ["direction", "vrf", "type"])
-
 
     # also need to modify the ibgp_v4 and ibgp_v6 graphs
 
@@ -862,6 +841,13 @@ def build_phy(anm):
     """Build physical overlay"""
     g_in = anm['input']
     g_phy = anm['phy']
+
+    # apply uuid if not set
+    g_phy.data.uuid = g_phy.data.uuid
+    if not g_phy.data.uuid:
+        import uuid
+        g_phy.data.uuid = uuid.uuid4().hex
+
     g_phy.add_nodes_from(g_in, retain=['label', 'update', 'device_type', 'asn',
         'specified_int_names',
         'device_subtype', 'platform', 'host', 'syntax'])
