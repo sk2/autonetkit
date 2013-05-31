@@ -28,9 +28,12 @@ def update_http(anm = None, nidb = None):
         import json
         body = json.dumps({}) # blank to test visualisation server running
 
+    uuid = get_uuid(anm)
+
     params = urllib.urlencode({
         'body': body,
         'type': 'anm',
+        'uuid': uuid,
         })
     try:
         data = urllib.urlopen(http_url, params).read()
@@ -42,8 +45,15 @@ def update_http(anm = None, nidb = None):
         # testing
         log.info("Visualisation server running")
 
+def get_uuid(anm):
+    try:
+        return anm['phy'].data['uuid']
+    except KeyError:
+        log.warning("UUID not set, returning singleuser uuid")
+        return "singleuser"
 
-def highlight(nodes, edges, paths = None):
+
+def highlight(nodes, edges, paths = None, uuid = "singleuser"):
     if not paths:
         paths = []
 
@@ -86,6 +96,7 @@ def highlight(nodes, edges, paths = None):
     params = urllib.urlencode({
         'body': body,
         'type': 'highlight',
+        'uuid': uuid,
         })
 
     #TODO: split this common function out, create at runtime so don't need to keep reading config
