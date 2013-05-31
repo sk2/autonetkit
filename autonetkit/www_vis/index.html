@@ -63,39 +63,10 @@
     <div>
       <script type="text/javascript">
 
+var socket_url = "ws://" + location.host + "/ws";
+socket_url += "?uuid={{ uuid }}"; //Webserver template fills in the uuid
+
 var current_translate = "0,0";
-
- //$( "#slider-vertical" ).slider({
-      //orientation: "vertical",
-      //range: "min",
-      //min: -9,
-      //max: 9,
-      //value: 0,
-      //slide: function( event, ui ) {
-      //scale = ui.value;
-      //console.log(scale);
-      //console.log(scale, scale <0);
-      //if (scale >= 0)  scale = scale + 1;
-      //if (scale < 0)  scale = 1  + 1*(scale/10);
-      //console.log(scale);
-      //chart.attr("transform", "translate(" + current_translate + ") scale(" + scale + "," + scale + ")");
-      //}
-    //});
-
-        function setActiveStyleSheet(title) {
-          //From http://www.alistapart.com/articles/alternate/
-          var i, a, main;
-          for(i=0; (a = document.getElementsByTagName("link")[i]); i++) {
-            if(a.getAttribute("rel").indexOf("style") != -1
-                && a.getAttribute("title")) {
-              //a.disabled = true;
-              if(a.getAttribute("title") == title) a.disabled = false;
-            }
-          }
-        }
-
-   
-//TODO: use icons that are updated for the zoom and Interfaces selectors
 
 var overlay_id = "phy";
 //var overlay_id = "ospf";
