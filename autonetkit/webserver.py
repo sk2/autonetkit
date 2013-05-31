@@ -3,9 +3,6 @@ import tornado
 import tornado.websocket as websocket
 import os
 import json
-import glob
-import sys
-import autonetkit.config as ank_config
 import logging
 import pkg_resources
 import socket
