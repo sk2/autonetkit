@@ -105,9 +105,6 @@ def sh_ip_route(host, nidb, data, record_data = False):
     #pprint.pprint(paths)
     log.debug("Parsed paths %s" % paths)
 
-    import autonetkit.ank_messaging as ank_messaging
-    #ank_messaging.highlight(nodes, edges, paths)
-
     if record_data:
         import time
         import json
