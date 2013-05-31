@@ -62,9 +62,7 @@ def extract(host, username, tar_file, cd_dir, timeout = 45, key_filename = None,
     lab_vlist = {}
 
     def starting_host(protocol, index, data):
-        import autonetkit.ank_messaging as msg
         log.info("Starting %s" % data.group(1))
-        msg.highlight([data.group(1)], [], [])
 
     def lab_started(protocol, index, data):
         log.info("Lab started on %s" % host)
