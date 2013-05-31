@@ -208,16 +208,16 @@ def main():
         try:
             log.info("Monitoring for updates...")
             input_filemonitor = file_monitor(options.file)
-            build_filemonitor = file_monitor("autonetkit/build_network.py")
+            #build_filemonitor = file_monitor("autonetkit/build_network.py")
             while True:
                 time.sleep(1)
                 rebuild = False
                 reload_build = False
                 if input_filemonitor.next():
                     rebuild = True
-                if build_filemonitor.next():
-                    reload_build = True
-                    rebuild = True
+                #if build_filemonitor.next():
+                    #reload_build = True
+                    #rebuild = True
 
                 if rebuild:
                     try:
@@ -378,7 +378,8 @@ def collect_sh_ip_route(anm, nidb, start_node = None):
             })
 
     autonetkit.update_http(anm, nidb)
-    ank_messaging.highlight([], [], processed_with_results)
+    uuid = ank_messaging.get_uuid(anm)
+    ank_messaging.highlight([], [], processed_with_results, uuid)
 
 
 def measure_network(anm, nidb):
