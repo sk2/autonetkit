@@ -841,13 +841,6 @@ class CiscoCompiler(PlatformCompiler):
             yield "%s%s" % (prefix, x)
 
     @staticmethod
-    def interface_ids_ios_by_slot():
-        id_pairs = ((slot, 0) for slot in itertools.count(0))
-        for (slot, port) in id_pairs:
-            # yield "Ethernet%s/%s" % (slot, port)
-            yield "GigabitEthernet%s/%s" % (slot, port)
-
-    @staticmethod
     def interface_ids_ios():
         #TODO: make this skip if in list of allocated ie [interface.name for interface in node]
         for x in itertools.count(0):
@@ -863,15 +856,6 @@ class CiscoCompiler(PlatformCompiler):
     def interface_ids_nxos():
         for x in itertools.count(0):
             yield "Ethernet2/%s" % x
-
-    @staticmethod
-    def interface_ids_ios2_slot_port():
-        """Allocate with slot and port iterating
-        """
-        id_pairs = ((slot, port) for (
-            slot, port) in itertools.product(xrange(17), xrange(5)))
-        for (slot, port) in id_pairs:
-            yield "GigabitEthernet%s/%s/%s/%s" % (0, 0, slot, port)
 
     @staticmethod
     def interface_ids_ios2():
