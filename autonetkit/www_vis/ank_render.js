@@ -36,11 +36,8 @@ chart.append("defs")
 var icon_width = 45;
 var icon_height = 45;
 
-
-
-
 var jsondata;
-var socket_url = "ws://" + location.host + "/ws";
+
 var ws = new WebSocket(socket_url);
 ws.onopen = function() {
     ws.send("overlay_list");
@@ -711,43 +708,6 @@ var d3LineBasis = d3.svg.line().interpolate("basis");
 var offsetScale = 0.15; /* percentage of line line to offset curves */
 var radius = 20;
 
-
-function drawTaperedEdge(d) {
-    //Note: not currently used
-    //Adapted from http://bl.ocks.org/2942559
-
-    var sourceX = nodes[d.source].x + x_offset + icon_width/2;
-    sourceY =  nodes[d.source].y + y_offset + icon_height/2;
-    targetX =  nodes[d.target].x + x_offset + icon_width/2;
-    targetY =  nodes[d.target].y + y_offset + icon_height/2;
-
-    // Changed from example: replaced repeated code with sourceX, targetY, etc variables
-    var slope = Math.atan2((+targetY - sourceY), (+targetX - sourceX));
-    var slopePlus90 = Math.atan2((+targetY - sourceY), (+targetX - sourceX)) + (Math.PI/2);
-
-    var halfX = (sourceX + targetX)/2;
-    var halfY = (sourceY + targetY)/2;
-
-    var lineLength = Math.sqrt(Math.pow(targetX - sourceX, 2) + Math.pow(targetY - sourceY, 2));
-
-    strength = 2.5; //fixed strength
-
-    var MP1X = halfX + (offsetScale * lineLength + strength/3) * Math.cos(slopePlus90);
-    var MP1Y = halfY + (offsetScale * lineLength + strength/3) * Math.sin(slopePlus90);
-    var MP2X = halfX + (offsetScale * lineLength - strength/3) * Math.cos(slopePlus90);
-    var MP2Y = halfY + (offsetScale * lineLength - strength/3) * Math.sin(slopePlus90);
-
-    var points = [];
-    points.push([(sourceX - strength*2 * Math.cos(slopePlus90)),(sourceY - strength * Math.sin(slopePlus90))]);
-    points.push([MP2X,MP2Y]);
-    points.push(([(targetX  + radius * Math.cos(slope)), (targetY + radius * Math.sin(slope))]));
-    points.push(([(targetX  + radius * Math.cos(slope)), (targetY + radius * Math.sin(slope))]));
-    points.push([MP1X, MP1Y]);
-    points.push([(sourceX + strength*2 * Math.cos(slopePlus90)),(sourceY + strength * Math.sin(slopePlus90))]);
-
-    return d3LineBasis(points) + "Z";
-}
-
 var alpha = 0.2;
 
 var graph_edge = function(d) {
@@ -1076,11 +1036,6 @@ var line_opacity = function(x) {
 // Store the attributes used for nodes and edges, to allow user to select
 var node_attributes = [];
 var edge_attributes = [];
-
-
-
-
-
 
 function redraw() {
     //TODO: tidy this up, not all functions need to be in here, move out those that do, and only pass required params. also avoid repeated calculations.
@@ -1712,59 +1667,9 @@ function redraw_paths() {
     })
 
 
-        //TODO: chain arrow-head to appear after path is drawn (ie fire fade-in after previous event)
-
-
-        //TODO: can use following to map to marker type
-        //.attr("marker-end", function(d) { return "url(#" + d.type + ")"; });
-        //.attr("marker-end", "url(#trace)")
-        //.on("mouseover", function(d){
-            //d3.select(this).style("stroke", "rgb(242,130,6)");
-            //d3.select(this).style("stroke-width", "4");
-            //path_info(d);
-        //})
-    //.on("mouseout", function(){
-        //d3.select(this).style("stroke-width", "3");
-        //d3.select(this).style("stroke", "yellow");
-        //clear_label();
-    //})
-
-    //.style("stroke-width", 5)
-    //.style("stroke", "rgb(25,52,65)")
-    //.style("opacity", 1) ;
-
     trace_path.exit().transition()
     .duration(1000)
     .style("opacity",0)
     .remove();
 
-    //device_labels = g_nodes.selectAll(".device_label")
-        //.transition()
-        //.duration(50)
-        //.style("opacity",0.5);
-
-    //image = g_nodes.selectAll(".device_icon")
-    //.transition()
-        //.duration(50)
-        //.style("stroke","red")
-        //.style("opacity",0.5);
-
-    //g_links.selectAll(".link_edge")
-                //.transition()
-        //.duration(50)
-        //.style("opacity",0.5);
-
-    //g_links.selectAll(".link_label")
-                //.transition()
-        //.duration(50)
-        //.style("opacity",0.5);
-
-    //groupings = g_groupings.selectAll(".attr_group")
-        //.transition()
-        //.duration(50)
-        //.style("opacity",0.1);
-        //
-
-    //window.print();
-
-    }
+}
