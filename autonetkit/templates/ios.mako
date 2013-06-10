@@ -19,16 +19,24 @@ no aaa new-model
 !
 !
 ip cef
+ipv6 unicast-routing
+ipv6 cef
 ! 
 !      
 service timestamps debug datetime msec
 service timestamps log datetime msec
 no service password-encryption
+% if node.platform_subtype == "os":
+no service config
+%endif
 enable password cisco
 ip classless
 ip subnet-zero
 no ip domain lookup
 line vty 0 4
+% if node.platform_subtype == "ra":
+ transport input ssh telnet
+%endif
  exec-timeout 720 0
  password cisco
  login
@@ -68,14 +76,14 @@ interface ${interface.id}
   % if interface.vrf:
   vrf forwarding ${interface.vrf} 
   %endif
-  % if node.ip.use_ipv4:
+  % if interface.use_ipv4:
       %if interface.use_dhcp:
   ip address dhcp
       %else:
   ip address ${interface.ipv4_address} ${interface.ipv4_subnet.netmask}   
     %endif
   %endif
-  % if node.ip.use_ipv6:
+  % if interface.use_ipv6:
   ipv6 address ${interface.ipv6_address} 
   %endif
   % if interface.use_cdp:
@@ -145,7 +153,7 @@ router ospfv3 ${node.ospf.process_id}
   router-id ${node.loopback}
   !
   address-family ipv6 unicast
-  exit address-family
+  exit-address-family
 % endif  
 % endif           
 ## ISIS
@@ -157,7 +165,7 @@ router isis ${node.isis.process_id}
   !
   address-family ipv6
     multi-topology
-  exit address-family
+  exit-address-family
 % endif  
 % endif  
 % if node.eigrp: 
