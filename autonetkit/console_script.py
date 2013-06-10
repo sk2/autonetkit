@@ -100,7 +100,7 @@ def manage_network(input_graph_string, timestamp, build_options, reload_build=Fa
 
     log.info("Finished")
 
-def parse_options():
+def parse_options(argument_string = None):
     """Parse user-provided options"""
     import argparse
     usage = "autonetkit -f input.graphml"
@@ -136,13 +136,16 @@ def parse_options():
     parser.add_argument('--webserver', action="store_true", default=False, help="Webserver")
     parser.add_argument('--grid', type=int, help="Grid Size (n * n)")
     parser.add_argument('--target', choices=['netkit', 'cisco'], default = None)
-    arguments = parser.parse_args()
+    if argument_string:
+        arguments = parser.parse_args(argument_string.split())
+    else:
+        # from command line arguments
+        arguments = parser.parse_args()
     return arguments
 
-def main():
+def main(options):
     settings = config.settings
 
-    options = parse_options()
     log.info("AutoNetkit %s" % ANK_VERSION)
 
 # TODO: only allow monitor mode with options.file not options.stdin
@@ -403,8 +406,14 @@ def measure_network(anm, nidb):
             "is_router") if node.bgp.ebgp_neighbors]
         command = "cat /var/log/zebra/bgpd.log"
 
+def console_entry():
+    """If come from console entry point"""
+    args = parse_options()
+    main(args)
+
 if __name__ == "__main__":
     try:
-        main()
+        args = parse_options()
+        main(args)
     except KeyboardInterrupt:
         pass
