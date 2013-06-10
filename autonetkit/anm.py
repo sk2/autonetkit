@@ -1145,6 +1145,13 @@ class AbstractNetworkModel(object):
         self.label_attrs = label_attrs
         self._build_node_label()
 
+    def dump(self):
+        import autonetkit.ank_json as ank_json
+        data = ank_json.jsonify_anm(self)
+        #data = data.replace("\\n", "\n")
+        #data = data.replace('\\"', '\"')
+        return data
+
     def save(self):
         """"""
         import autonetkit.ank_json as ank_json
