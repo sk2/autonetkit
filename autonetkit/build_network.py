@@ -105,6 +105,8 @@ def apply_design_rules(anm):
     build_phy(anm)
     g_phy = anm['phy']
 
+    build_l3_connectivity(anm)
+
     build_vrf(anm) # need to do before to add loopbacks before ip allocations
     build_ip(anm) # ip infrastructure topology
 
@@ -268,6 +270,7 @@ def build_mpls_ldp(anm):
     """Builds MPLS LDP"""
     g_in = anm['input']
     g_vrf = anm['vrf']
+    g_l3conn = anm['l3_conn']
     g_mpls_ldp = anm.add_overlay("mpls_ldp")
     nodes_to_add = [n for n in g_in.nodes("is_router")
             if n['vrf'].vrf_role in ("PE", "P")]
@@ -277,13 +280,18 @@ def build_mpls_ldp(anm):
     pe_nodes = set(g_vrf.nodes(vrf_role = "PE"))
     p_nodes = set(g_vrf.nodes(vrf_role = "P"))
 
-    pe_to_pe_edges = (e for e in g_in.edges()
+    pe_to_pe_edges = (e for e in g_l3conn.edges()
             if e.src in pe_nodes and e.dst in pe_nodes)
     g_mpls_ldp.add_edges_from(pe_to_pe_edges)
-    pe_to_p_edges = (e for e in g_in.edges()
+
+    pe_to_p_edges = (e for e in g_l3conn.edges()
             if e.src in pe_nodes and e.dst in p_nodes
             or e.src in p_nodes and e.dst in pe_nodes)
     g_mpls_ldp.add_edges_from(pe_to_p_edges)
+
+    p_to_p_edges = (e for e in g_l3conn.edges()
+            if e.src in p_nodes and e.dst in p_nodes)
+    g_mpls_ldp.add_edges_from(p_to_p_edges)
 
 def mark_ebgp_vrf(anm):
     g_ebgp = anm['ebgp']
@@ -306,6 +314,7 @@ def mark_ebgp_vrf(anm):
 def build_vrf(anm):
     """Build VRF Overlay"""
     g_in = anm['input']
+    g_l3conn = anm['l3_conn']
     g_vrf = anm.add_overlay("vrf")
     g_vrf.add_nodes_from(g_in.nodes("is_router"), retain=["vrf_role", "vrf"])
 
@@ -318,7 +327,7 @@ def build_vrf(anm):
         dst_vrf_role = g_vrf.node(edge.dst).vrf_role
         return (src_vrf_role, dst_vrf_role) in (("PE", "CE"), ("CE", "PE"))
 
-    vrf_add_edges = (e for e in g_in.edges()
+    vrf_add_edges = (e for e in g_l3conn.edges()
            if is_pe_ce_edge(e))
     #TODO: should mark as being towards PE or CE
     g_vrf.add_edges_from(vrf_add_edges, retain=['edge_id'])
@@ -327,7 +336,7 @@ def build_vrf(anm):
         src_vrf_role = g_vrf.node(edge.src).vrf_role
         dst_vrf_role = g_vrf.node(edge.dst).vrf_role
         return (src_vrf_role, dst_vrf_role) in (("PE", "P"), ("P", "PE"))
-    vrf_add_edges = (e for e in g_in.edges()
+    vrf_add_edges = (e for e in g_l3conn.edges()
             if is_pe_p_edge(e))
     g_vrf.add_edges_from(vrf_add_edges, retain=['edge_id'])
 
@@ -854,6 +863,10 @@ def build_phy(anm):
     if g_in.data.Creator == "Topology Zoo Toolset":
         ank_utils.copy_attr_from(g_in, g_phy, "Network")
 
+    g_phy.add_edges_from(g_in.edges(type="physical"))
+    # TODO: make this automatic if adding to the physical graph?
+    g_phy.allocate_interfaces() 
+
     if g_in.data.Creator == "Maestro":
         g_phy.data.mgmt_interfaces_enabled = g_in.data.mgmt_interfaces_enabled 
         g_phy.data.mgmt_address_start = g_in.data.mgmt_address_start 
@@ -862,15 +875,38 @@ def build_phy(anm):
         ank_utils.copy_attr_from(g_in, g_phy, "use_cdp")
         ank_utils.copy_attr_from(g_in, g_phy, "use_onepk")
 
-    g_phy.add_edges_from(g_in.edges(type="physical"))
-    # TODO: make this automatic if adding to the physical graph?
-    g_phy.allocate_interfaces() 
+            # copy over numeric interface ids
+        for node in g_phy:
+            for interface in node:
+                edge = interface.edges()[0]
+                directed_edge = anm['input_directed'].edge(edge)
+                interface.numeric_int_id = directed_edge.numeric_int_id
 
     for node in g_phy.nodes("specified_int_names"):
         for interface in node:
             edge = interface.edges()[0]
             directed_edge = anm['input_directed'].edge(edge)
             interface.name = directed_edge.name
+
+def build_l3_connectivity(anm):
+    """ creates l3_connectivity graph, which is switch nodes aggregated and exploded"""
+    #TODO: use this as base for ospf, ebgp, ip, etc rather than exploding in each
+    g_in = anm['input']
+    g_l3conn = anm.add_overlay("l3_conn")
+    g_l3conn.add_nodes_from(g_in, retain=['label', 'update', 'device_type', 'asn',
+        'specified_int_names',
+        'device_subtype', 'platform', 'host', 'syntax'])
+    g_l3conn.add_nodes_from(g_in.nodes("is_switch"), retain=['asn'])
+#TODO: check if edge_id needs to be still retained
+    g_l3conn.add_edges_from(g_in.edges(), retain=['edge_id'])
+
+    ank_utils.aggregate_nodes(g_l3conn, g_l3conn.nodes("is_switch"),
+                              retain="edge_id")
+    exploded_edges = ank_utils.explode_nodes(g_l3conn, g_l3conn.nodes("is_switch"),
+                            retain="edge_id")
+    for edge in exploded_edges:
+        edge.multipoint = True
+
 
 def build_conn(anm):
     """Build connectivity overlay"""
