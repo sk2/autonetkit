@@ -130,8 +130,14 @@ class AnkAccessor():
         self.ip_allocation = {}
 # try loading from vis directory
         try:
+            import autonetkit_cisco
+            default_file = pkg_resources.resource_filename("autonetkit_cisco", "cisco.json.gz")
+        except ImportError:
+            default_file = os.path.join(www_dir, "default.json.gz")
+
+        try:
             import gzip
-            fh = gzip.open(os.path.join(www_dir, "default.json.gz"), "r")
+            fh = gzip.open(default_file, "r")
             data = json.load(fh)
             #data = json.loads(loaded)
             self.anm_index['singleuser'] = data
