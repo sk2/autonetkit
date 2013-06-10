@@ -10,10 +10,10 @@ except ImportError:
     log.warning("Deployment requires Exscript: "
     "pip install https://github.com/knipknap/exscript/tarball/master")
 
-def deploy(host, username, dst_folder):
+def deploy(host, username, dst_folder, key_filename = None):
     tar_file = package(dst_folder)
-    transfer(host, username, tar_file)
-    extract(host, username, tar_file, dst_folder)
+    transfer(host, username, tar_file, key_filename = key_filename)
+    extract(host, username, tar_file, dst_folder, key_filename = key_filename)
 
 def package(src_dir, target = "netkit_lab"):
     log.info("Packaging %s" % src_dir)
