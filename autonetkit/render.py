@@ -180,7 +180,7 @@ def render_node(node, folder_cache):
             except OSError:
                 pass # doesn't exist
             shutil.copytree(render_base, render_base_output_dir, 
-                    ignore=shutil.ignore_patterns('*.mako'))
+                    ignore=shutil.ignore_patterns('*.mako', '.DS_Store'))
 # now use templates
             for template_file in fs_mako_templates:
                 template_file_path = os.path.normpath(os.path.join(render_base, template_file))
