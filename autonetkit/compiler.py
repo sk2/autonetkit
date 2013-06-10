@@ -122,6 +122,7 @@ class RouterCompiler(object):
             interface.description = phy_int.description
             if node.ip.use_ipv4:
                 ipv4_int = phy_int['ipv4']
+                interface.use_ipv4 = True
                 interface.ipv4_address = ipv4_int.ip_address
                 interface.ipv4_subnet = ipv4_int.subnet
                 interface.ipv4_cidr = sn_preflen_to_network(interface.ipv4_address,
@@ -129,6 +130,7 @@ class RouterCompiler(object):
 
             if node.ip.use_ipv6:
                 ipv6_int = phy_int['ipv6']
+                interface.use_ipv6 = True
 #TODO: for consistency, make ipv6_cidr
                 interface.ipv6_subnet = ipv6_int.subnet
                 interface.ipv6_address = sn_preflen_to_network(ipv6_int.ip_address,
@@ -143,6 +145,7 @@ class RouterCompiler(object):
                 phy_int = self.anm['phy'].interface(interface)
                 if node.ip.use_ipv4:
                     ipv4_int = phy_int['ipv4']
+                    interface.use_ipv4 = True
                     interface.ipv4_address = ipv4_int.loopback
                     interface.ipv4_subnet = node.loopback_subnet
                     interface.ipv4_cidr = sn_preflen_to_network(interface.ipv4_address,
@@ -150,6 +153,7 @@ class RouterCompiler(object):
 
                 if node.ip.use_ipv6:
                     ipv6_int = phy_int['ipv6']
+                    interface.use_ipv6 = True
 #TODO: for consistency, make ipv6_cidr
                     #interface.ipv6_subnet = ipv6_int.loopback # TODO: do we need for consistency?
                     interface.ipv6_address = sn_preflen_to_network(
@@ -427,12 +431,14 @@ class IosBaseCompiler(RouterCompiler):
             ipv4_loopback_subnet = netaddr.IPNetwork("0.0.0.0/32")
             ipv4_loopback_zero = phy_loopback_zero['ipv4']
             ipv4_address = ipv4_loopback_zero.ip_address
+            node.loopback_zero.use_ipv4 = True
             node.loopback_zero.ipv4_address = ipv4_address
             node.loopback_zero.ipv4_subnet = ipv4_loopback_subnet
             node.loopback_zero.ipv4_cidr = sn_preflen_to_network(
                     ipv4_address, ipv4_loopback_subnet.prefixlen)
 
         if node.ip.use_ipv6:
+            node.loopback_zero.use_ipv6 = True
             ipv6_loopback_zero = phy_loopback_zero['ipv6']
             node.loopback_zero.ipv6_address = sn_preflen_to_network(
                 ipv6_loopback_zero.ip_address, 128)
@@ -593,6 +599,8 @@ class IosClassicCompiler(IosBaseCompiler):
         if phy_node.include_csr:
             node.include_csr = True
 
+        node.platform_subtype = phy_node.device_subtype
+
     def bgp(self, node):
         super(IosClassicCompiler, self).bgp(node)
 
@@ -652,7 +660,6 @@ class Ios2Compiler(IosBaseCompiler):
             'passive': True,
         })
 
-
         node.ospf.interfaces = dict( interfaces_by_area)
 
 class NxOsCompiler(IosBaseCompiler):
@@ -662,6 +669,17 @@ class NxOsCompiler(IosBaseCompiler):
 
     def ospf(self, node):
         super(NxOsCompiler, self).ospf(node)
+        loopback_zero = node.loopback_zero
+        g_ospf = self.anm['ospf']
+        ospf_node = g_ospf.node(node)
+        loopback_zero.ospf = {
+                'cost': ospf_node.cost,
+                'area': ospf_node.area,
+                'process_id': node.ospf.process_id,
+                'use_ipv4': node.ip.use_ipv4,
+                'use_ipv6': node.ip.use_ipv6,
+                } #TODO: add wrapper for this
+
         # TODO: configure OSPF on loopback like example
 
 # Platform compilers
@@ -681,7 +699,6 @@ class PlatformCompiler(object):
     def compile(self):
         # TODO: make this abstract
         pass
-
 
 class JunosphereCompiler(PlatformCompiler):
     """Junosphere Platform Compiler"""
@@ -708,7 +725,6 @@ class JunosphereCompiler(PlatformCompiler):
                 interface.id = int_ids.next()
 
             junos_compiler.compile(nidb_node)
-
 
 class NetkitCompiler(PlatformCompiler):
     """Netkit Platform Compiler"""
@@ -826,7 +842,6 @@ class NetkitCompiler(PlatformCompiler):
         lab_topology.tap_ips.sort("ip")
         lab_topology.config_items.sort("device")
 
-
 class CiscoCompiler(PlatformCompiler):
     """Platform compiler for Cisco"""
 
@@ -834,9 +849,31 @@ class CiscoCompiler(PlatformCompiler):
 # TODO: setup to remap allocate interface id function here
         # super(CiscoCompiler, self).__init__(nidb, anm, host)
 
+
+    @staticmethod
+    def numeric_to_interface_label_ios(x):
+        """Starts at GigabitEthernet0/1 """
+        x = x + 1 
+        return "GigabitEthernet0/%s" % x
+
+    @staticmethod
+    def numeric_to_interface_label_ra(x):
+        """Starts at Gi0/1
+        #TODO: check"""
+        x = x + 1
+        return "GigabitEthernet%s" % x
+
+    @staticmethod
+    def numeric_to_interface_label_nxos(x):
+        return "Ethernet2/%s" % x
+
+    @staticmethod
+    def numeric_to_interface_label_ios2(x):
+        return "GigabitEthernet0/0/0/%s" % x
+
     @staticmethod
     def loopback_interface_ids():
-        for x in itertools.count(100):
+        for x in itertools.count(100): # start at 100 for secondary
             prefix = IosBaseCompiler.lo_interface_prefix
             yield "%s%s" % (prefix, x)
 
@@ -861,6 +898,12 @@ class CiscoCompiler(PlatformCompiler):
     def interface_ids_ios2():
         for x in itertools.count(0):
             yield "GigabitEthernet0/0/0/%s" % x
+
+    @staticmethod
+    def numeric_interface_ids():
+        """#TODO: later skip interfaces already taken"""
+        for x in itertools.count(0):
+            yield x
 
     def compile(self):
         settings = autonetkit.config.settings
@@ -898,6 +941,15 @@ class CiscoCompiler(PlatformCompiler):
                 if interface != nidb_node.loopback_zero:
                     interface.id = loopback_ids.next()
 
+            # numeric ids
+            numeric_int_ids = self.numeric_interface_ids()
+            for interface in nidb_node.physical_interfaces:
+                phy_numeric_id = phy_node.interface(interface).numeric_int_id
+                if phy_numeric_id is None:
+                    interface.numeric_id = numeric_int_ids.next() 
+                else:
+                    interface.numeric_id = int(phy_numeric_id) 
+
         for phy_node in g_phy.nodes('is_router', host=self.host, syntax='ios'):
             specified_int_names = phy_node.specified_int_names
             nidb_node = self.nidb.node(phy_node)
@@ -909,21 +961,29 @@ class CiscoCompiler(PlatformCompiler):
                 nidb_node.render.dst_file = "%s.conf" % naming.network_hostname(
                     phy_node)
 
+            #TODO: write function that assigns interface number excluding those already taken
+
             # Assign interfaces
             if phy_node.device_subtype == "os":
                 int_ids = self.interface_ids_ios()
+                numeric_to_interface_label = self.numeric_to_interface_label_ios
             elif phy_node.device_subtype == "ra":
                 int_ids = self.interface_ids_ra()
+                numeric_to_interface_label = self.numeric_to_interface_label_ra
             else:
                 # default if no subtype specified
                 #TODO: need to set default in the load module
                 log.warning("Unexpected subtype %s" % phy_node.device_subtype)
                 int_ids = self.interface_ids_ios()
+                numeric_to_interface_label = self.numeric_to_interface_label_ios
                 
             if use_mgmt_interfaces:
                 mgmt_int_id = int_ids.next()  # 0/0 is used for management ethernet
 
             for interface in nidb_node.physical_interfaces:
+                # map numeric id to label
+                interface.label = numeric_to_interface_label(interface.numeric_id)
+
                 if specified_int_names:
                     interface.id = phy_node.interface(interface).name
                 # TODO: need to determine if interface name already specified
@@ -950,6 +1010,7 @@ class CiscoCompiler(PlatformCompiler):
             # Assign interfaces
             int_ids = self.interface_ids_ios2()
             for interface in nidb_node.physical_interfaces:
+                interface.label = self.numeric_to_interface_label_ios2(interface.numeric_id)
                 if specified_int_names:
                     interface.id = phy_node.interface(interface).name
                 # TODO: need to determine if interface name already specified
@@ -977,6 +1038,7 @@ class CiscoCompiler(PlatformCompiler):
             # Assign interfaces
             int_ids = self.interface_ids_nxos()
             for interface in nidb_node.physical_interfaces:
+                interface.label = self.numeric_to_interface_label_nxos(interface.numeric_id)
                 if specified_int_names:
                     interface.id = phy_node.interface(interface).name
                 # TODO: need to determine if interface name already specified
@@ -1054,6 +1116,9 @@ class CiscoCompiler(PlatformCompiler):
                 if interface.management:
                     interface.description = "OOB Management"
                     interface.physical = True
+                    interface.mgmt = True
+                    if nidb_node.ip.use_ipv4:
+                        interface.use_ipv4 = True
                     if nidb_node in dhcp_hosts:
                         interface.use_dhcp = True
                         oob_management_ips[str(nidb_node)] = "dhcp"
@@ -1065,7 +1130,6 @@ class CiscoCompiler(PlatformCompiler):
                         oob_management_ips[str(nidb_node)] = ipv4_address
 
         lab_topology.oob_management_ips = oob_management_ips
-
 
 class DynagenCompiler(PlatformCompiler):
     """Dynagen Platform Compiler"""
