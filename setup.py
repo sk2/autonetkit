@@ -12,7 +12,7 @@ setup (
      # simple to run 
      entry_points = {
          'console_scripts': [
-             'autonetkit = autonetkit.console_script:main',
+             'autonetkit = autonetkit.console_script:console_entry',
              'ank_webserver = autonetkit.webserver:main',
              'ank_measure_client = autonetkit.measure_client:main',
          ],
