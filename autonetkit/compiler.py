@@ -594,6 +594,21 @@ class IosBaseCompiler(RouterCompiler):
                         } #TODO: add wrapper for this
 
 class IosClassicCompiler(IosBaseCompiler):
+
+    def ospf(self, node):
+        super(IosClassicCompiler, self).ospf(node)
+        loopback_zero = node.loopback_zero
+        ospf_node = self.anm['ospf'].node(node)
+        loopback_zero.ospf = {
+                        'cost': 1,
+                        'area': ospf_node.area,
+                        'process_id': node.ospf.process_id,
+                        'use_ipv4': False,
+                        'use_ipv6': node.ip.use_ipv6,
+                        'multipoint': False,
+                        } #TODO: add wrapper for this        
+
+
     def compile(self, node):
         super(IosClassicCompiler, self).compile(node)
 
