@@ -217,6 +217,12 @@ def build_ibgp_vpn_v4(anm):
             n in pe_nodes and n.ibgp_role == "RRC"}
     ce_nodes = set(g_vrf.nodes(vrf_role = "CE"))
 
+    if len(pe_nodes) == len(ce_nodes) == len(pe_rrc_nodes) == 0:
+        # no vrf nodes to connect
+        return
+
+    #TODO: extend this to only connect nodes which are connected in VRFs, so don't set to others
+
     ibgp_vpn_v4_nodes = (n for n in ibgp_v4_nodes 
             if n not in pe_rrc_nodes and n not in ce_nodes)
     g_ibgp_vpn_v4.add_nodes_from(ibgp_vpn_v4_nodes, retain = "ibgp_level")
@@ -942,6 +948,7 @@ def build_ospf(anm):
         return
 
     g_ospf.add_nodes_from(g_in.nodes("is_router", igp = "ospf"), retain=['asn'])
+    g_ospf.add_nodes_from(g_in.nodes("is_server", igp = "ospf"), retain=['asn'])
     g_ospf.add_nodes_from(g_in.nodes("is_switch"), retain=['asn'])
     g_ospf.add_edges_from(g_in.edges(), retain=['edge_id'])
 
@@ -1077,6 +1084,7 @@ def build_isis(anm):
         return
     g_ipv4 = anm['ipv4']
     g_isis.add_nodes_from(g_in.nodes("is_router", igp = "isis"), retain=['asn'])
+    g_isis.add_nodes_from(g_in.nodes("is_server", igp = "isis"), retain=['asn'])
     g_isis.add_nodes_from(g_in.nodes("is_switch"), retain=['asn'])
     g_isis.add_edges_from(g_in.edges(), retain=['edge_id'])
 # Merge and explode switches
