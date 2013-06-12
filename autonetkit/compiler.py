@@ -204,6 +204,8 @@ class RouterCompiler(object):
                     area=ospf_int.area,
                 )
 
+            # also add networks for subnets to servers in the same AS
+
     def bgp(self, node):
         phy_node = self.anm['phy'].node(node)
         g_bgp = self.anm['bgp']
