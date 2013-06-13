@@ -99,6 +99,22 @@ def string_to_netaddr(val):
 
     return retval
 
+def restore_anm_nidb_from_json(data):
+
+    d = ank_json_custom_loads(data)
+    anm = autonetkit.anm.AbstractNetworkModel()
+    nidb = autonetkit.nidb.NIDB()
+
+    for overlay_id, overlay_data in d.items():
+        if overlay_id == "nidb":
+            continue # don't restore nidb graph to anm
+        anm._overlays[overlay_id] = json_graph.node_link_graph(overlay_data)
+
+    nidb._graph = json_graph.node_link_graph(d['nidb'])
+
+    return anm, nidb
+
+
 def ank_json_custom_loads(data):
     #data = json.loads(data) # this is needed if dicts contain anm overlays, nidb, etc
     def dict_to_object(d):
