@@ -465,7 +465,7 @@ class IosBaseCompiler(RouterCompiler):
         node.bgp.vrfs = []
 
         vrf_node = self.anm['vrf'].node(node)
-        if vrf_node.vrf_role is "PE":
+        if vrf_node and vrf_node.vrf_role is "PE":
 
             # iBGP sessions for this VRF
             vrf_ibgp_neighbors = defaultdict(list)
@@ -520,7 +520,7 @@ class IosBaseCompiler(RouterCompiler):
     def vrf_igp_interfaces(self, node):
         # marks physical interfaces to exclude from IGP
         vrf_node = self.anm['vrf'].node(node)
-        if vrf_node.vrf_role is "PE":
+        if vrf_node and vrf_node.vrf_role is "PE":
             for interface in node.physical_interfaces:
                 vrf_int = self.anm['vrf'].interface(interface)
                 if vrf_int.vrf_name:
@@ -530,7 +530,7 @@ class IosBaseCompiler(RouterCompiler):
         g_vrf = self.anm['vrf']
         vrf_node = self.anm['vrf'].node(node)
         node.vrf.vrfs = []
-        if vrf_node.vrf_role is "PE":
+        if vrf_node and vrf_node.vrf_role is "PE":
             #TODO: check if mpls ldp already set elsewhere
             for vrf in vrf_node.node_vrf_names:
                 route_target = g_vrf.data.route_targets[node.asn][vrf]
@@ -550,7 +550,7 @@ class IosBaseCompiler(RouterCompiler):
                     if interface.physical:
                         interface.description += " vrf %s" % vrf_int.vrf_name
 
-        if vrf_node.vrf_role in ("P", "PE"):
+        if vrf_node and vrf_node.vrf_role in ("P", "PE"):
             # Add PE -> P, PE -> PE interfaces to MPLS LDP
             node.mpls.ldp_interfaces = []
             for interface in node.physical_interfaces:
@@ -559,7 +559,7 @@ class IosBaseCompiler(RouterCompiler):
                     node.mpls.ldp_interfaces.append(interface.id)
                     interface.use_mpls = True
 
-        if vrf_node.vrf_role is "P":
+        if vrf_node and vrf_node.vrf_role is "P":
             node.mpls.ldp_interfaces = []
             for interface in node.physical_interfaces:
                 node.mpls.ldp_interfaces.append(interface.id)
@@ -570,7 +570,7 @@ class IosBaseCompiler(RouterCompiler):
         node.vrf.use_ipv6 = node.ip.use_ipv6
         node.vrf.vrfs.sort("vrf")
 
-        if node in self.anm['mpls_ldp']:
+        if self.anm.has_overlay("mpls_ldp") and node in self.anm['mpls_ldp']:
             node.mpls.enabled = True
             node.mpls.router_id = node.loopback_zero.id
 
