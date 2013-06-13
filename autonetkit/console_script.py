@@ -119,6 +119,8 @@ def parse_options(argument_string = None):
         help="Monitor input file for changes")
     parser.add_argument('--debug', action="store_true",
                         default=False, help="Debug mode")
+    parser.add_argument('--quiet', action="store_true",
+                        default=False, help="Quiet mode (only display warnings and errors)")
     parser.add_argument('--diff', action="store_true", default=False,
                         help="Diff NIDB")
     parser.add_argument('--compile', action="store_true",
@@ -166,6 +168,12 @@ def main(options):
         import logging
         logger = logging.getLogger("ANK")
         logger.setLevel(logging.DEBUG)
+
+    if options.quiet or settings['General']['quiet']:
+        # TODO: fix this
+        import logging
+        logger = logging.getLogger("ANK")
+        logger.setLevel(logging.WARNING)
 
     build_options = {
         'compile': options.compile or settings['General']['compile'],
