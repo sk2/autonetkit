@@ -173,6 +173,7 @@ def allocate_vrf_roles(g_vrf):
         node.vrf_role = "CE"
 
     non_ce_nodes = [node for node in g_vrf if node.vrf_role != "CE"]
+
     for node in non_ce_nodes:
         phy_neighbors = g_phy.node(node).neighbors("is_router")  
         # neighbors from physical graph for connectivity
@@ -322,6 +323,11 @@ def build_vrf(anm):
     g_in = anm['input']
     g_l3conn = anm['l3_conn']
     g_vrf = anm.add_overlay("vrf")
+
+    if not any(True for n in g_in if n.is_router and n.vrf):
+        log.debug("No VRFs set")
+        return
+
     g_vrf.add_nodes_from(g_in.nodes("is_router"), retain=["vrf_role", "vrf"])
 
     allocate_vrf_roles(g_vrf)
