@@ -146,6 +146,24 @@ def ank_json_custom_loads(data):
     d = json.loads(data, object_hook=dict_to_object)
     return d
 
+def rebind_interfaces(anm):
+    for overlay_id in anm.overlays():
+        overlay = anm[overlay_id]
+        for edge in overlay.edges():
+            unbound_interfaces = edge._interfaces
+# map nodes -> node objects, values to integers (not strings)
+            interfaces = {overlay.node(key): val for key, val in unbound_interfaces.items()}
+            edge._interfaces = interfaces # store with remapped node
+
+        for node in overlay.nodes():
+            unbound_interfaces = node._interfaces
+            if len(unbound_interfaces): # is list if none set
+                interfaces = {int(key): val for key, val in unbound_interfaces.items()}
+                node._interfaces = interfaces
+
+#TODO: need to also rebind_interfaces for nidb
+
+
 
 def ank_json_loads(data):
     d = ank_json_custom_loads(data)

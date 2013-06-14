@@ -1216,6 +1216,8 @@ class AbstractNetworkModel(object):
                 self._overlays[
                     overlay_id] = ank_json.ank_json_loads(graph_data)
 
+        ank_json.rebind_interfaces(self)
+
     @property
     def _phy(self):
         """"""
