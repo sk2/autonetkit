@@ -502,6 +502,15 @@ class OverlayEdge(object):
         object.__setattr__(self, 'src_id', src_id)
         object.__setattr__(self, 'dst_id', dst_id)
 
+    def __key(self):
+        # based on http://stackoverflow.com/q/2909106
+        """Note: key doesn't include overlay_id to allow fast cross-layer comparisons"""
+        return (self.src_id, self.dst_id)
+
+    def __hash__(self):
+        """"""
+        return hash(self.__key())
+
     def __eq__(self, other):
         """"""
         try:
