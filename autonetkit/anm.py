@@ -30,12 +30,21 @@ class overlay_interface(object):
         object.__setattr__(self, 'node_id', node_id)
         object.__setattr__(self, 'interface_id', interface_id)
 
+    def __key(self):
+        # based on http://stackoverflow.com/q/2909106
+        """Note: key doesn't include overlay_id to allow fast cross-layer comparisons"""
+        return (self.interface_id, self.node_id)
+
+    def __hash__(self):
+        """"""
+        return hash(self.__key())
+
     def __repr__(self):
         description = self.description or self.interface_id
         return "(%s, %s)" % (self.node_id, description)
 
     def __eq__(self, other):
-        return (self.node_id, self.interface_id) == (other.node_id, other.interface_id)
+        return self.__key() == other.__key()
 
     def __nonzero__(self):
         #TODO: work out why description and type being set/copied to each overlay
