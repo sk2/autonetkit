@@ -1043,6 +1043,7 @@ class CiscoCompiler(PlatformCompiler):
 
         nxos_compiler = NxOsCompiler(self.nidb, self.anm)
         for phy_node in g_phy.nodes('is_router', host=self.host, syntax='nx_os'):
+            specified_int_names = phy_node.specified_int_names
             nidb_node = self.nidb.node(phy_node)
             nidb_node.render.template = os.path.join("templates","nx_os.mako")
             if to_memory:
