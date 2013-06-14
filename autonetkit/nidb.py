@@ -163,6 +163,17 @@ class overlay_interface(object):
         object.__setattr__(self, 'node_id', node_id)
         object.__setattr__(self, 'interface_id', interface_id)
 
+    def __key(self):
+        # based on http://stackoverflow.com/q/2909106
+        return (self.interface_id, self.node_id)
+
+    def __hash__(self):
+        """"""
+        return hash(self.__key())
+
+    def __eq__(self, other):
+        return self.__key() == other.__key()
+
     def __repr__(self):
         description = self.description or self.interface_id
         return "(%s, %s)" % (self.node_id, description)
@@ -171,9 +182,6 @@ class overlay_interface(object):
         """Allows for checking if node exists
         """
         return len(self._interface) > 0  # if interface data set
-
-    def __eq__(self, other):
-        return (self.node_id, self.interface_id) == (other.node_id, other.interface_id)
 
     def __str__(self):
         return self.__repr__()
