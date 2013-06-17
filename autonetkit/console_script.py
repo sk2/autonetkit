@@ -98,6 +98,12 @@ def manage_network(input_graph_string, timestamp, build_options, reload_build=Fa
     if build_options['measure']:
         measure_network(anm, nidb)
 
+    hosts = anm['phy'].routers()
+    command = "traceroute"
+
+    http_url_measure = ank_messaging.format_http_url("ank-dev", 8001)
+    #http_url_measure = ank_messaging.format_http_url("localhost", 8001)
+    measure_data = ank_messaging.measure(anm, nidb, hosts, command, http_url = http_url_measure)
     log.info("Finished")
 
 def parse_options(argument_string = None):
