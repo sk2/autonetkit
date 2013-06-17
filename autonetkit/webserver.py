@@ -234,7 +234,7 @@ def main():
 
     content_path = www_dir # default content directory
 
-    #arguments.ank_vis = True # manually force for now
+    arguments.ank_vis = True # manually force for now
 
     if not arguments.ank_vis:
         try:
