@@ -763,6 +763,13 @@ class NetkitCompiler(PlatformCompiler):
             nidb_node.render.base_dst_folder = os.path.join("rendered", self.host, "netkit", folder_name)
             nidb_node.render.dst_file = "%s.startup" % folder_name
 
+            nidb_node.render.custom = {
+                    'abc': 'def.txt'
+
+
+
+                    }
+
 # allocate zebra information
             if nidb_node.is_router:
                 nidb_node.zebra.password = "1234"
