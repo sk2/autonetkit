@@ -70,7 +70,9 @@ def render_node(node, folder_cache):
             render_base = node.render.base
             render_base_output_dir = node.render.base_dst_folder
             render_template_file = node.render.template
+            render_custom = node.render.custom
         except KeyError, error:
+            #TODO: make sure allows case of just custom render
             return
 
         try:
@@ -79,6 +81,9 @@ def render_node(node, folder_cache):
             ank_version = "autonetkit_dev"
 
         date = time.strftime("%Y-%m-%d %H:%M", time.localtime())
+        if render_custom:
+            #print render_custom
+            pass
 
 #TODO: make sure is an abspath here so don't wipe user directory!!!
         if render_output_dir and not os.path.isdir(render_output_dir):

@@ -11,14 +11,17 @@ use_http_post = config.settings['Http Post']['active']
 if use_http_post:
     import urllib
 
-def format_http_url(settings):
-    host = settings['Http Post']['server']
-    port = settings['Http Post']['port']
+def format_http_url(host = None, port = None):
+    if not host and not port:
+        host = config.settings['Http Post']['server']
+        port = config.settings['Http Post']['port']
     return "http://%s:%s/publish" % (host, port)
 
-http_url = format_http_url(config.settings)
+default_http_url = format_http_url()
 
-def update_http(anm = None, nidb = None):
+def update_http(anm = None, nidb = None, http_url = None):
+    if http_url is None:
+        http_url = default_http_url
 
     if anm and nidb:
         body = autonetkit.ank_json.dumps(anm, nidb)
@@ -37,6 +40,55 @@ def update_http(anm = None, nidb = None):
         })
     try:
         data = urllib.urlopen(http_url, params).read()
+        log.debug(data)
+    except IOError, e:
+        log.info("Unable to connect to visualisation server %s" % http_url)
+        return
+
+    if not anm:
+        # testing
+        log.info("Visualisation server running")
+
+def measure(anm = None, nidb = None, hosts = None, command = None, http_url = None, **kwargs):
+    if http_url is None:
+        http_url = default_http_url
+
+    if anm and nidb:
+        body = autonetkit.ank_json.dumps(anm, nidb)
+    elif anm:
+        body = autonetkit.ank_json.dumps(anm)
+    else:
+        import json
+        body = json.dumps({}) # blank to test visualisation server running
+
+    uuid = get_uuid(anm)
+
+    import json
+    measure_params = json.dumps(kwargs)
+
+    def nfilter(n):
+        try:
+            return n.id
+        except AttributeError:
+            return n # likely already a node id (string)
+
+    hosts = [nfilter(n) for n in hosts]
+    hosts = json.dumps(hosts)
+
+    params = urllib.urlencode({
+        'body': body,
+        'type': 'anm',
+        'uuid': uuid,
+        'hosts': hosts,
+        'command': command,
+        'measure_params': measure_params,
+        })
+
+    try:
+        data = urllib.urlopen(http_url, params).read()
+        log.debug(data)
+        data = json.loads(data)
+        return data
     except IOError, e:
         log.info("Unable to connect to visualisation server %s" % http_url)
         return
@@ -53,7 +105,9 @@ def get_uuid(anm):
         return "singleuser"
 
 
-def highlight(nodes, edges, paths = None, uuid = "singleuser"):
+def highlight(nodes, edges, paths = None, uuid = "singleuser", http_url = None):
+    if http_url is None:
+        http_url = default_http_url
     if not paths:
         paths = []
 
@@ -106,6 +160,7 @@ def highlight(nodes, edges, paths = None, uuid = "singleuser"):
         log.info("Unable to connect to HTTP Server %s: %s" % (http_url, e))
 
 def publish_data(data, type_key):
+    http_url = default_http_url
     params = urllib.urlencode({
         'body': data,
         'type': type_key,
@@ -194,7 +249,6 @@ class AnkMessaging(object):
         return
 
     def publish_http_post(self, exchange, routing_key, body):
-        print "called"
         params = urllib.urlencode({
             'body': body
             })
