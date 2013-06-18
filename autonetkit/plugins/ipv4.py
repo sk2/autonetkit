@@ -220,17 +220,17 @@ class IpTree(object):
             for level, nodes in nodes_by_level.items():
                 level_counts[level] = len(nodes)
 
-            min_level = min(level_counts)
-            # need to update level counts if added extra parent nodes,
-            # in order to ensure root node isn't a cd
-            if level_counts[min_level] == 1:
-                # one node at this level -> added one parent at next level (node is a cd)
-                level_counts[min_level - 1] = 1
-            elif level_counts[min_level] == 2:
-                # two nodes at this level -> added a grandparent (nodes are cds)
-                level_counts[min_level - 2] = 1
-
             self.add_parent_nodes(subgraph, level_counts)
+# test if min_level node is bound, if so then add a parent, so root for AS isn't a cd
+            min_level = min(level_counts)
+            min_level_nodes = [n for n in subgraph if subgraph.node[n]['prefixlen'] == min_level]
+            # test if bound
+            if len(min_level_nodes) == 2:
+                subgraph.add_node(self.next_node_id, {'prefixlen': min_level - 2})
+                subgraph.add_node(self.next_node_id, {'prefixlen': min_level - 2})
+                subgraph.add_node(self.next_node_id, {'prefixlen': min_level - 1})
+            if len(min_level_nodes) == 1:
+                subgraph.add_node(self.next_node_id, {'prefixlen': min_level - 1})
 
             # rebuild with parent nodes
             nodes_by_level = defaultdict(list)
