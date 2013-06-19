@@ -11,11 +11,11 @@ use_http_post = config.settings['Http Post']['active']
 if use_http_post:
     import urllib
 
-def format_http_url(host = None, port = None):
+def format_http_url(host = None, port = None, route = "publish"):
     if not host and not port:
         host = config.settings['Http Post']['server']
         port = config.settings['Http Post']['port']
-    return "http://%s:%s/publish" % (host, port)
+    return "http://%s:%s/%s" % (host, port, route)
 
 default_http_url = format_http_url()
 
@@ -49,9 +49,14 @@ def update_http(anm = None, nidb = None, http_url = None):
         # testing
         log.info("Visualisation server running")
 
-def measure(anm = None, nidb = None, hosts = None, command = None, http_url = None, **kwargs):
-    if http_url is None:
-        http_url = default_http_url
+def measure(anm = None, nidb = None, hosts = None, command = None, server = None, port = None, **kwargs):
+    if not server:
+        server = "127.0.0.1"
+    if not port:
+        port = 8001
+
+    http_url = format_http_url(server, port, route="measure")
+    print http_url
 
     if anm and nidb:
         body = autonetkit.ank_json.dumps(anm, nidb)
