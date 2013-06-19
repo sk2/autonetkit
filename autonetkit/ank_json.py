@@ -111,6 +111,7 @@ def restore_anm_nidb_from_json(data):
         anm._overlays[overlay_id] = json_graph.node_link_graph(overlay_data)
 
     nidb._graph = json_graph.node_link_graph(d['nidb'])
+    rebind_interfaces(anm)
 
     return anm, nidb
 
@@ -149,12 +150,11 @@ def ank_json_custom_loads(data):
 def rebind_interfaces(anm):
     for overlay_id in anm.overlays():
         overlay = anm[overlay_id]
-        for edge in overlay.edges():
-            unbound_interfaces = edge._interfaces
-# map nodes -> node objects, values to integers (not strings)
-            interfaces = {overlay.node(key): val for key, val in unbound_interfaces.items()}
-            edge._interfaces = interfaces # store with remapped node
-
+        #for edge in overlay.edges():
+            #unbound_interfaces = edge._interfaces
+## map nodes -> node objects, values to integers (not strings)
+            #interfaces = {overlay.node(key): val for key, val in unbound_interfaces.items()}
+            #edge._interfaces = interfaces # store with remapped node
         for node in overlay.nodes():
             unbound_interfaces = node._interfaces
             if len(unbound_interfaces): # is list if none set
