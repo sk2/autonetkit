@@ -17,6 +17,10 @@ var g_nodes = chart.append("svg:g")
 var g_node_labels = chart.append("svg:g")
 .attr("id", "g_node_labels");
 
+
+var g_path_node_annotation_backings = chart.append("svg:g")
+.attr("id", "g_path_node_annotation_backings");
+
 var g_link_labels = chart.append("svg:g")
 .attr("id", "g_link_labels");
 
@@ -25,6 +29,9 @@ var g_traces = chart.append("svg:g")
 
 var g_highlights = chart.append("svg:g")
 .attr("id", "g_highlights");
+
+var g_path_node_annotations = chart.append("svg:g")
+.attr("id", "g_path_node_annotations");
 
 
 var g_interfaces = chart.append("svg:g")
@@ -1593,6 +1600,71 @@ function redraw() {
         redraw_paths();
         }
 
+var node_annotation = function(d) {
+    //TODO: iterate over node, concatenate items
+    //use host first, then others
+    return "delay:" + d['delay'];
+}
+
+function draw_path_node_annotations(data) {
+    var host_info = data['host_info'];
+
+    var annotation_x = function(host_id) {
+        return nodes_by_id[host_id].x;
+    }
+
+    var annotation_y = function(host_id) {
+        return nodes_by_id[host_id].y;
+    }
+
+    path_node_annotation_backings = g_path_node_annotation_backings.selectAll(".path_node_annotation_backing")
+        .data(host_info, function(d) { return d.host});
+
+    path_node_annotation_backings.enter().append("rect")
+        .attr("x", function(d) { return annotation_x(d.host) + x_offset - icon_width/2; })
+        .attr("y", function(d) { return annotation_y(d.host) + y_offset + icon_height/2; } )
+        .attr("height", 50)
+        .attr("width", 120)
+        .attr("class", "path_node_annotation_backing")
+        .attr("fill", "white") 
+        .style("opacity", 0.6)
+
+        path_node_annotation_backings.exit().transition()
+        .duration(500)
+        .style("opacity",0)
+        .remove();
+
+    path_node_annotations = g_path_node_annotations.selectAll(".path_node_annotation")
+        .data(host_info, function(d) { return d.host});
+
+    path_node_annotations.enter().append("text")
+        .attr("x", function(d) { return annotation_x(d.host) + x_offset; })
+        .attr("y", function(d) { return annotation_y(d.host) + y_offset + 3; } )
+        .attr("class", "path_node_annotation")
+        .attr("text-anchor", "middle") 
+        .attr("font-family", "helvetica") 
+        .attr("background-color", "red") 
+        //.style("opacity", 1)
+        .attr("font-size", 18) 
+
+        //TODO: use a general accessor for x/y of nodes
+        path_node_annotations 
+        .attr("dx", icon_width/2) // padding-right
+        .attr("dy", icon_height + 3) // vertical-align: middle
+        .text(node_annotation);
+
+    path_node_annotations.transition()
+        .attr("x", function(d) { return annotation_x(d.host) + x_offset; })
+        .attr("y", function(d) { return annotation_y(d.host) + y_offset + 3; })
+        .duration(500)
+
+        path_node_annotations.exit().transition()
+        .duration(500)
+        .style("opacity",0)
+        .remove();
+
+}
+
 function redraw_paths() {
 
     //TODO: paths need to be updated when graph changes... or perhaps fade out as no longer relevant if topology changes?
@@ -1655,14 +1727,16 @@ function redraw_paths() {
 
         trace_path
           .on("mouseover", function(d){
+            draw_path_node_annotations(d);
             d3.select(this).style("stroke", "red");
             d3.select(this).style("stroke-width", "4");
             //path_info(d);
-            console.log(d.verified);
+            //console.log(d.verified);
         })
     .on("mouseout", function(){
         d3.select(this).style("stroke-width", "3");
         d3.select(this).style("stroke", "yellow");
+        draw_path_node_annotations({'host_info': []});
         //clear_label();
     })
 
