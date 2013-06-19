@@ -338,8 +338,15 @@ class OverlayNode(object):
                 return overlay_interface(self.anm, self.overlay_id, 
                         self.node_id, key.interface_id)
         except AttributeError:
-            log.warning("Unable to find interface %s in %s " % (key, self))
-            return None
+            #try with key as id
+            try:
+                if key in self._interface_ids:
+                    return overlay_interface(self.anm, self.overlay_id, 
+                            self.node_id, key)
+            except AttributeError:
+                # no match for either
+                log.warning("Unable to find interface %s in %s " % (key, self))
+                return None
 
     @property
     def _interface_ids(self):
@@ -992,8 +999,8 @@ class OverlayGraph(OverlayBase):
                 log.debug("Initialise interfaces for %s in %s" % (
                     node, self._overlay_id))
                 self._graph.node[node]['_interfaces'] = {0:
-                                                         {'description': 'loopback',
-                                                             'type': 'loopback'}}
+                        {'description': 'loopback',
+                            'type': 'loopback'}}
 
     def allocate_interfaces(self):
         """allocates edges to interfaces"""
