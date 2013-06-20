@@ -56,7 +56,10 @@ def measure(anm = None, nidb = None, hosts = None, command = None, server = None
         port = 8001
 
     http_url = format_http_url(server, port, route="measure")
-    print http_url
+
+    #anm_light = autonetkit.ANM()
+    #for key in ['phy', 'ipv4', 'graphics']:
+        #anm_light._overlays[key] = anm._overlays[key]
 
     if anm and nidb:
         body = autonetkit.ank_json.dumps(anm, nidb)
@@ -80,14 +83,27 @@ def measure(anm = None, nidb = None, hosts = None, command = None, server = None
     hosts = [nfilter(n) for n in hosts]
     hosts = json.dumps(hosts)
 
-    params = urllib.urlencode({
-        'body': body,
+#TODO: upload data as a file rather than compress all the json
+
+    #params = urllib.urlencode({
+    data = {
         'type': 'anm',
         'uuid': uuid,
         'hosts': hosts,
         'command': command,
         'measure_params': measure_params,
-        })
+        #})
+        }
+
+    #TODO: store anm here
+    files = {'file': body.encode("zlib")}
+
+    import requests
+    res = requests.post(url= http_url,
+            files= files,
+                    data=data,
+                    )
+    return
 
     try:
         data = urllib.urlopen(http_url, params).read()
