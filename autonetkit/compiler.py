@@ -1144,6 +1144,8 @@ class CiscoCompiler(PlatformCompiler):
                     interface.mgmt = True
                     if nidb_node.ip.use_ipv4:
                         interface.use_ipv4 = True
+                    if nidb_node.use_cdp:
+                        interface.use_cdp = True # ensure CDP activated
                     if nidb_node in dhcp_hosts:
                         interface.use_dhcp = True
                         oob_management_ips[str(nidb_node)] = "dhcp"
