@@ -137,7 +137,6 @@ ws.onmessage = function (evt) {
 highlight_nodes = [];
 highlight_edges = [];
 
-abc = [];
 var apply_highlight = function(data){
 
     highlight_nodes = _.map(data['nodes'], function(n) {
@@ -160,7 +159,7 @@ var apply_highlight = function(data){
 
 
     //draw paths after redraw -> z-ordering means overlayed
-    pathinfo = []; //reset
+    //pathinfo = []; //reset
     if (data.paths.length > 0) {
         for (index in data.paths) {
             path = data.paths[index];
@@ -1596,6 +1595,7 @@ function redraw() {
     //});
     
 
+        //reset paths
         pathinfo = [];
         redraw_paths();
         }
@@ -1603,10 +1603,23 @@ function redraw() {
 var node_annotation = function(d) {
     //TODO: iterate over node, concatenate items
     //use host first, then others
-    return "delay:" + d['delay'];
+    retval = "";
+    for (attr in d) {
+        if (attr != "host") {
+            retval += attr + ": " + d[attr] + "  ";
+        }
+    }
+    return retval;
 }
 
 function draw_path_node_annotations(data) {
+    if ('host_info' in data){
+
+    }
+    else {
+        return;
+    }
+
     var host_info = data['host_info'];
 
     var annotation_x = function(host_id) {
@@ -1627,7 +1640,7 @@ function draw_path_node_annotations(data) {
         .attr("width", 120)
         .attr("class", "path_node_annotation_backing")
         .attr("fill", "white") 
-        .style("opacity", 0.6)
+        .style("opacity", 0.8)
 
         path_node_annotation_backings.exit().transition()
         .duration(500)
@@ -1666,9 +1679,6 @@ function draw_path_node_annotations(data) {
 }
 
 function redraw_paths() {
-
-    //TODO: paths need to be updated when graph changes... or perhaps fade out as no longer relevant if topology changes?
-    //TODO: set paths using css and transition style rather than all the attributes hard coded
 
     //animation based on http://bl.ocks.org/duopixel/4063326
     var svg_line = d3.svg.line()
@@ -1735,7 +1745,7 @@ function redraw_paths() {
         })
     .on("mouseout", function(){
         d3.select(this).style("stroke-width", "3");
-        d3.select(this).style("stroke", "yellow");
+        d3.select(this).style("stroke", path_color);
         draw_path_node_annotations({'host_info': []});
         //clear_label();
     })
