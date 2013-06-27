@@ -104,7 +104,13 @@ def manage_network(input_graph_string, timestamp, build_options, reload_build=Fa
     log.info("Running traceroute")
     #http_url_measure = ank_messaging.format_http_url("ank-dev", 8000)
     #update_http(anm, nidb, http_url_measure)
-    measure_data = ank_messaging.measure(anm, nidb, hosts, command, server = "ank-dev", port = 8001)
+    server = "ank-dev"
+    server = "localhost"
+    try:
+        #measure_data = ank_messaging.measure(anm, nidb, hosts, command, server = server, port = 8001)
+        pass
+    except Exception, e:
+        pass
     log.info("Finished")
 
 def parse_options(argument_string = None):
