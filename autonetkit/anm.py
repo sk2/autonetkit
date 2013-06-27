@@ -1044,11 +1044,11 @@ class OverlayGraph(OverlayBase):
                 # allocate called once physical graph populated
                 for node in self:
                     #node._interfaces = node['input']._interfaces
+                    node._interfaces = node['input']._interfaces
                     pass
 
-                print list(self.anm['input'].edges())
                 for edge in self.edges():
-                    print edge['input']
+                    edge._interfaces = edge['input']._interfaces
 
                 return
 
