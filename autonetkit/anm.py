@@ -257,21 +257,26 @@ class OverlayNode(object):
 # so need to look at numeric part
         self_node_id = self.node_id
         other_node_id = other.node_id
-        self_node_string = [x for x in self.node_id if x not in string.digits]
-        other_node_string = [x for x in self.node_id if x not in string.digits]
-        if self_node_string == other_node_string:
-            self_node_id = "".join(
-                [x for x in self.node_id if x in string.digits])
-            other_node_id = "".join(
-                [x for x in other.node_id if x in string.digits])
-            try:
-                self_node_id = int(self_node_id)
-            except ValueError:
-                pass  # not a number
-            try:
-                other_node_id = int(other_node_id)
-            except ValueError:
-                pass  # not a number
+        try:
+            self_node_string = [x for x in self.node_id if x not in string.digits]
+            other_node_string = [x for x in self.node_id if x not in string.digits]
+        except TypeError:
+            # e.g. non-iterable type, such as an int node_id
+            pass
+        else:
+            if self_node_string == other_node_string:
+                self_node_id = "".join(
+                    [x for x in self.node_id if x in string.digits])
+                other_node_id = "".join(
+                    [x for x in other.node_id if x in string.digits])
+                try:
+                    self_node_id = int(self_node_id)
+                except ValueError:
+                    pass  # not a number
+                try:
+                    other_node_id = int(other_node_id)
+                except ValueError:
+                    pass  # not a number
 
         return ((self.asn, self_node_id) < (other.asn, other_node_id))
 
