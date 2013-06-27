@@ -471,6 +471,9 @@ class OverlayNode(object):
         """Edges to/from this node"""
         return self._overlay.edges(self, *args, **kwargs)
 
+    def __str__(self):
+        return str(self.__repr__())
+
     def __repr__(self):
         """Try label if set in overlay, otherwise from physical,
         otherwise node id"""
