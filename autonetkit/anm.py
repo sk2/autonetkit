@@ -716,6 +716,16 @@ class OverlayBase(object):
 
     def edge(self, edge_to_find, dst_to_find=None):
         """returns edge in this graph with same src and same edge_id"""
+
+        if isinstance(edge_to_find, OverlayEdge):
+            src_id = edge_to_find.src
+            dst_id = edge_to_find.dst
+            #TODO: add MultiGraph support in terms of key here
+            for src, dst in self._graph.edges_iter(src_id):
+                if dst == dst_id:
+                    return OverlayEdge(self._anm, self._overlay_id, src, dst)
+
+        #TODO: tidy this logic up
         try:
             src = edge_to_find
             dst = dst_to_find
