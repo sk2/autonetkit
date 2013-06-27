@@ -97,6 +97,11 @@ def initialise(input_graph):
     g_graphics.add_nodes_from(g_in, retain=['x', 'y', 'device_type',
                               'device_subtype', 'pop', 'asn'])
 
+    if g_in.data.Creator == "Maestro":
+        # Multiple ASNs set, use label format device.asn
+        anm.set_node_label(".", ['label_full'])
+
+    autonetkit.update_http(anm)
     return anm
 
 def apply_design_rules(anm):
@@ -105,6 +110,7 @@ def apply_design_rules(anm):
     build_phy(anm)
     g_phy = anm['phy']
 
+    autonetkit.update_http(anm)
     build_l3_connectivity(anm)
 
     build_vrf(anm) # need to do before to add loopbacks before ip allocations
@@ -144,7 +150,6 @@ def apply_design_rules(anm):
     build_ibgp_vpn_v4(anm) # build after bgp as is based on
     #autonetkit.update_http(anm)
     return anm
-
 
 def build(input_graph):
     """Main function to build network overlay topologies"""
@@ -316,7 +321,6 @@ def mark_ebgp_vrf(anm):
         if (edge.src in pe_nodes and edge.dst in ce_nodes):
             edge.exclude = True # exclude from "regular" ebgp (as put into vrf stanza)
             edge.vrf = edge.dst['vrf'].vrf
-
 
 def build_vrf(anm):
     """Build VRF Overlay"""
@@ -886,13 +890,15 @@ def build_phy(anm):
         g_phy.data.mgmt_prefixlen = g_in.data.mgmt_prefixlen
         ank_utils.copy_attr_from(g_in, g_phy, "use_cdp")
         ank_utils.copy_attr_from(g_in, g_phy, "use_onepk")
+        ank_utils.copy_attr_from(g_in, g_phy, "label_full")
+        ank_utils.copy_attr_from(g_in, g_phy, "indices")
 
             # copy over numeric interface ids
-        for node in g_phy:
-            for interface in node:
-                edge = interface.edges()[0]
-                directed_edge = anm['input_directed'].edge(edge)
-                interface.numeric_int_id = directed_edge.numeric_int_id
+        #for node in g_phy:
+            #for interface in node:
+                #edge = interface.edges()[0]
+                #directed_edge = anm['input_directed'].edge(edge)
+                #interface.numeric_int_id = directed_edge.numeric_int_id
 
     for node in g_phy.nodes("specified_int_names"):
         for interface in node:
@@ -918,7 +924,6 @@ def build_l3_connectivity(anm):
                             retain="edge_id")
     for edge in exploded_edges:
         edge.multipoint = True
-
 
 def build_conn(anm):
     """Build connectivity overlay"""
@@ -1077,7 +1082,6 @@ def ip_to_net_ent_title_ios(ip_addr):
         octet) for octet in ip_words)  # single string, padded if needed
     return ".".join([area_id, ip_octets[0:4], ip_octets[4:8], ip_octets[8:12],
                      "00"])
-
 
 def build_isis(anm):
     """Build isis overlay"""
