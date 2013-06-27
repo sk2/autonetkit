@@ -419,7 +419,12 @@ class OverlayNode(object):
             return self._graph.node[self.node_id]['asn']  # not in this graph
         except KeyError:
             # try from phy
-            return self.anm.overlay_nx_graphs['phy'].node[self.node_id]['asn'] 
+            try:
+                return self.anm.overlay_nx_graphs['phy'].node[self.node_id]['asn'] 
+            except KeyError:
+                if self.node_id not in self.anm.overlay_nx_graphs['phy']:
+                    log.warning("Node id %s not found in physical overlay" % self.node_id)
+                    return
 
     @property
     def id(self):
@@ -707,7 +712,11 @@ class OverlayBase(object):
 
     def __contains__(self, n):
         """"""
-        return n.node_id in self._graph
+        try:
+            return n.node_id in self._graph
+        except AttributeError:
+            # try with node_id as a string
+            return n in self._graph
 
     def interface(self, interface):
         """"""
@@ -751,6 +760,7 @@ class OverlayBase(object):
 
         for src, dst in self._graph.edges_iter(src_id):
             try:
+                print (src, dst), (src_id, search_id)
                 if self._graph[src][dst]['edge_id'] == search_id:
                     return OverlayEdge(self._anm, self._overlay_id, src, dst)
                 elif (src, dst) == (src_id, search_id): 
@@ -909,7 +919,6 @@ class OverlayBase(object):
                       for (src, dst) in valid_edges)
         return result
 
-
 class OverlaySubgraph(OverlayBase):
     """OverlaySubgraph"""
 
@@ -921,7 +930,6 @@ class OverlaySubgraph(OverlayBase):
 
     def __repr__(self):
         return self._subgraph_name or "subgraph"
-
 
 class OverlayGraph(OverlayBase):
     """API to interact with an overlay graph in ANM"""
@@ -1028,18 +1036,39 @@ class OverlayGraph(OverlayBase):
     def allocate_interfaces(self):
         """allocates edges to interfaces"""
         # int_counter = (n for n in itertools.count() if n not in
+        if self._overlay_id == "phy":
+            # check if nodes added
+            nodes = list(self)
+            edges = list(self.edges())
+            if len(nodes) and len(edges):
+                # allocate called once physical graph populated
+                for node in self:
+                    #node._interfaces = node['input']._interfaces
+                    pass
+
+                print list(self.anm['input'].edges())
+                for edge in self.edges():
+                    print edge['input']
+
+                return
+
         self._init_interfaces()
+
+        #self._init_interfaces(nbunch)
 
         def numeric_id(edge):
             try:
                 return int(edge.edge_id.split("_")[0])
             except ValueError:
-                return edge # can't casr to int
+                return edge # can't cast to int
+            except AttributeError:
+                return edge # can't split, eg if not set
 
         ebunch = sorted(self.edges(), key = numeric_id)
 
         for edge in ebunch:
             src = edge.src
+            dst = edge.dst
             dst = edge.dst
             src_int_id = src._add_interface('%s to %s' % (src, dst))
             dst_int_id = dst._add_interface('%s to %s' % (dst, src))
@@ -1257,8 +1286,8 @@ class AbstractNetworkModel(object):
         """Sets input graph. Converts to undirected. 
         Initialises graphics overlay."""
         graph = nx.Graph(graph)
-        g_in = self.add_overlay("input", graph=graph, directed=False)
         g_graphics = self['graphics']
+        g_in = self.add_overlay("input", graph=graph, directed=False)
         g_graphics.add_nodes_from(g_in, retain=['x', 'y', 'device_type',
                                                 'device_subtype', 'pop', 
                                                 'asn'])
