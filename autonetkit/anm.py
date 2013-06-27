@@ -760,7 +760,6 @@ class OverlayBase(object):
 
         for src, dst in self._graph.edges_iter(src_id):
             try:
-                print (src, dst), (src_id, search_id)
                 if self._graph[src][dst]['edge_id'] == search_id:
                     return OverlayEdge(self._anm, self._overlay_id, src, dst)
                 elif (src, dst) == (src_id, search_id): 
@@ -1043,12 +1042,15 @@ class OverlayGraph(OverlayBase):
             if len(nodes) and len(edges):
                 # allocate called once physical graph populated
                 for node in self:
-                    #node._interfaces = node['input']._interfaces
-                    node._interfaces = node['input']._interfaces
-                    pass
+                    input_interfaces = node['input']._interfaces
+                    if len(input_interfaces):
+                        node._interfaces = input_interfaces
 
                 for edge in self.edges():
                     edge._interfaces = edge['input']._interfaces
+                    input_interfaces = edge['input']._interfaces
+                    if len(input_interfaces):
+                        edge._interfaces = input_interfaces
 
                 return
 
@@ -1070,8 +1072,8 @@ class OverlayGraph(OverlayBase):
             src = edge.src
             dst = edge.dst
             dst = edge.dst
-            src_int_id = src._add_interface('%s to %s' % (src, dst))
-            dst_int_id = dst._add_interface('%s to %s' % (dst, src))
+            src_int_id = src._add_interface('%s to %s' % (src.label, dst.label))
+            dst_int_id = dst._add_interface('%s to %s' % (dst.label, src.label))
             edge._interfaces = {}
             edge._interfaces[src.id] = src_int_id
             edge._interfaces[dst.id] = dst_int_id
