@@ -120,6 +120,12 @@ class RouterCompiler(object):
                 continue
                 
             interface.description = phy_int.description
+            remote_edges = phy_int.edges()
+            if len(remote_edges):
+                interface.description = "to %s" % remote_edges[0].dst.label
+
+            #TODO: fix the description to use mapped label
+            #print "desc", interface.description
             if node.ip.use_ipv4:
                 ipv4_int = phy_int['ipv4']
                 interface.use_ipv4 = True
@@ -960,6 +966,7 @@ class CiscoCompiler(PlatformCompiler):
             # allocate loopbacks to routes (same for all ios variants)
             nidb_node = self.nidb.node(phy_node)
             nidb_node.ank_cisco_version = ank_cisco_version
+            nidb_node.indices = phy_node.indices
 
             for interface in nidb_node.loopback_interfaces:
                 if interface != nidb_node.loopback_zero:
@@ -970,6 +977,7 @@ class CiscoCompiler(PlatformCompiler):
             for interface in nidb_node.physical_interfaces:
                 phy_numeric_id = phy_node.interface(interface).numeric_int_id
                 if phy_numeric_id is None:
+                    #TODO: remove numeric ID code
                     interface.numeric_id = numeric_int_ids.next() 
                 else:
                     interface.numeric_id = int(phy_numeric_id) 
