@@ -80,7 +80,11 @@ class overlay_interface(object):
     @property
     def _interface(self):
         """Return data dict for the interface"""
-        return self._node["_interfaces"][self.interface_id]
+        try:
+            return self._node["_interfaces"][self.interface_id]
+        except KeyError:
+            log.warning("Unable to find interface %s in %s" % (self.interface_id, self.node_id))
+            return None
 
     @property
     def phy(self):
@@ -173,8 +177,9 @@ class overlay_interface(object):
         """Sets interface property"""
         try:
             self._interface[key] = val
-        except KeyError:
-            self.set(key, val)
+        except KeyError, e:
+            log.warning(e)
+            #self.set(key, val)
 
     def set(self, key, val):
         """For consistency, node.set(key, value) is neater
