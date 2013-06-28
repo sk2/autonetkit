@@ -1051,12 +1051,14 @@ class CiscoCompiler(PlatformCompiler):
             for interface in nidb_node.physical_interfaces:
                 interface.id = self.numeric_to_interface_label_nxos(interface.numeric_id)
 
+            nxos_compiler.compile(nidb_node)
+            #TODO: make this work other way around
+
             if use_mgmt_interfaces:
                 mgmt_int_id = "mgmt0"
                 mgmt_int = nidb_node.add_interface(management = True)
                 mgmt_int.id = mgmt_int_id
 
-            nxos_compiler.compile(nidb_node)
 
         other_nodes = [phy_node for phy_node in g_phy.nodes('is_router', host=self.host)
                        if phy_node.syntax not in ("ios", "ios_xr")]
