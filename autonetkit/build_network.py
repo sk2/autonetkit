@@ -881,7 +881,6 @@ def build_phy(anm):
 
     g_phy.add_edges_from(g_in.edges(type="physical"))
     # TODO: make this automatic if adding to the physical graph?
-    g_phy.allocate_interfaces() 
 
     if g_in.data.Creator == "Maestro":
         g_phy.data.mgmt_interfaces_enabled = g_in.data.mgmt_interfaces_enabled 
@@ -893,13 +892,7 @@ def build_phy(anm):
         ank_utils.copy_attr_from(g_in, g_phy, "label_full")
         ank_utils.copy_attr_from(g_in, g_phy, "indices")
 
-            # copy over numeric interface ids
-        #for node in g_phy:
-            #for interface in node:
-                #edge = interface.edges()[0]
-                #directed_edge = anm['input_directed'].edge(edge)
-                #interface.numeric_int_id = directed_edge.numeric_int_id
-
+    g_phy.allocate_interfaces() 
     for node in g_phy.nodes("specified_int_names"):
         for interface in node:
             edge = interface.edges()[0]
