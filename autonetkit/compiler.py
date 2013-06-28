@@ -125,7 +125,6 @@ class RouterCompiler(object):
                 interface.description = "to %s" % remote_edges[0].dst.label
 
             #TODO: fix the description to use mapped label
-            #print "desc", interface.description
             if node.ip.use_ipv4:
                 ipv4_int = phy_int['ipv4']
                 interface.use_ipv4 = True
@@ -147,7 +146,6 @@ class RouterCompiler(object):
             if interface == node.loopback_zero:
                 continue
             else:
-                #print "here for non zero", interface.id
                 phy_int = self.anm['phy'].interface(interface)
                 if node.ip.use_ipv4:
                     ipv4_int = phy_int['ipv4']
@@ -875,8 +873,6 @@ class NetkitCompiler(PlatformCompiler):
 class CiscoCompiler(PlatformCompiler):
     """Platform compiler for Cisco"""
 
-    #TODO: remove the other section of these
-
     @staticmethod
     def numeric_to_interface_label_ios(x):
         """Starts at GigabitEthernet0/1 """
@@ -972,7 +968,7 @@ class CiscoCompiler(PlatformCompiler):
             # numeric ids
             numeric_int_ids = self.numeric_interface_ids()
             for interface in nidb_node.physical_interfaces:
-                phy_numeric_id = phy_node.interface(interface).numeric_int_id
+                phy_numeric_id = phy_node.interface(interface).numeric_id
                 if phy_numeric_id is None:
                     #TODO: remove numeric ID code
                     interface.numeric_id = numeric_int_ids.next() 
@@ -980,7 +976,6 @@ class CiscoCompiler(PlatformCompiler):
                     interface.numeric_id = int(phy_numeric_id) 
 
         for phy_node in g_phy.nodes('is_router', host=self.host, syntax='ios'):
-            specified_int_names = phy_node.specified_int_names
             nidb_node = self.nidb.node(phy_node)
             nidb_node.render.template = os.path.join("templates","ios.mako")
             if to_memory:
@@ -1010,14 +1005,7 @@ class CiscoCompiler(PlatformCompiler):
                 mgmt_int_id = int_ids.next()  # 0/0 is used for management ethernet
 
             for interface in nidb_node.physical_interfaces:
-                # map numeric id to label
-                interface.label = numeric_to_interface_label(interface.numeric_id)
-
-                if specified_int_names:
-                    interface.id = phy_node.interface(interface).name
-                # TODO: need to determine if interface name already specified
-                else:
-                    interface.id = int_ids.next()
+                interface.id = numeric_to_interface_label(interface.numeric_id)
 
             ios_compiler.compile(nidb_node)
             if use_mgmt_interfaces:
@@ -1026,7 +1014,6 @@ class CiscoCompiler(PlatformCompiler):
 
         ios_xr_compiler = IosXrCompiler(self.nidb, self.anm)
         for phy_node in g_phy.nodes('is_router', host=self.host, syntax='ios_xr'):
-            specified_int_names = phy_node.specified_int_names
             nidb_node = self.nidb.node(phy_node)
             nidb_node.render.template = os.path.join("templates","ios_xr","router.conf.mako")
             if to_memory:
@@ -1039,12 +1026,7 @@ class CiscoCompiler(PlatformCompiler):
             # Assign interfaces
             int_ids = self.interface_ids_ios_xr()
             for interface in nidb_node.physical_interfaces:
-                interface.label = self.numeric_to_interface_label_ios_xr(interface.numeric_id)
-                if specified_int_names:
-                    interface.id = phy_node.interface(interface).name
-                # TODO: need to determine if interface name already specified
-                else:
-                    interface.id = int_ids.next()
+                interface.id = self.numeric_to_interface_label_ios_xr(interface.numeric_id)
 
             ios_xr_compiler.compile(nidb_node)
 
@@ -1055,7 +1037,6 @@ class CiscoCompiler(PlatformCompiler):
 
         nxos_compiler = NxOsCompiler(self.nidb, self.anm)
         for phy_node in g_phy.nodes('is_router', host=self.host, syntax='nx_os'):
-            specified_int_names = phy_node.specified_int_names
             nidb_node = self.nidb.node(phy_node)
             nidb_node.render.template = os.path.join("templates","nx_os.mako")
             if to_memory:
@@ -1068,12 +1049,7 @@ class CiscoCompiler(PlatformCompiler):
             # Assign interfaces
             int_ids = self.interface_ids_nxos()
             for interface in nidb_node.physical_interfaces:
-                interface.label = self.numeric_to_interface_label_nxos(interface.numeric_id)
-                if specified_int_names:
-                    interface.id = phy_node.interface(interface).name
-                # TODO: need to determine if interface name already specified
-                else:
-                    interface.id = int_ids.next()
+                interface.id = self.numeric_to_interface_label_nxos(interface.numeric_id)
 
             if use_mgmt_interfaces:
                 mgmt_int_id = "mgmt0"
