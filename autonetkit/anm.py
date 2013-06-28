@@ -83,7 +83,7 @@ class overlay_interface(object):
         try:
             return self._node["_interfaces"][self.interface_id]
         except KeyError:
-            log.warning("Unable to find interface %s in %s" % (self.interface_id, self.node_id))
+            log.warning("Unable to find interface %s in %s" % (self.interface_id, self.node))
             return None
 
     @property
@@ -1034,6 +1034,9 @@ class OverlayGraph(OverlayBase):
 
     def allocate_interfaces(self):
         """allocates edges to interfaces"""
+        if self._overlay_id == "input":
+            return
+  
         # int_counter = (n for n in itertools.count() if n not in
         if self._overlay_id == "phy":
             # check if nodes added
@@ -1043,6 +1046,10 @@ class OverlayGraph(OverlayBase):
                 # allocate called once physical graph populated
                 for node in self:
                     input_interfaces = node['input']._interfaces
+                    #print "node", type(node), node.id,
+                    #print "label is", node.get("label")
+                    #print "inputs", input_interfaces
+                    #print
                     if len(input_interfaces):
                         node._interfaces = input_interfaces
 
@@ -1285,6 +1292,7 @@ class AbstractNetworkModel(object):
         return OverlayGraph(self, "phy")
 
     def initialise_graph(self, graph):
+        #TODO: check why this isn't used in build_network
         """Sets input graph. Converts to undirected. 
         Initialises graphics overlay."""
         graph = nx.Graph(graph)
@@ -1293,7 +1301,6 @@ class AbstractNetworkModel(object):
         g_graphics.add_nodes_from(g_in, retain=['x', 'y', 'device_type',
                                                 'device_subtype', 'pop', 
                                                 'asn'])
-
         return g_in
 
     def add_overlay(self, name, nodes=None, graph=None, directed=False,
@@ -1321,6 +1328,7 @@ class AbstractNetworkModel(object):
         if nodes:
             retain = retain or []  # default is an empty list
             overlay.add_nodes_from(nodes, retain)
+
         return overlay
 
     def overlays(self):
