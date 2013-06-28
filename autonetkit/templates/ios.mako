@@ -26,7 +26,7 @@ ipv6 cef
 service timestamps debug datetime msec
 service timestamps log datetime msec
 no service password-encryption
-% if node.platform_subtype == "os":
+% if node.no_service_config:
 no service config
 %endif
 enable password cisco
@@ -34,7 +34,7 @@ ip classless
 ip subnet-zero
 no ip domain lookup
 line vty 0 4
-% if node.platform_subtype == "ra":
+% if node.transport_input_ssh_telnet:
  transport input ssh telnet
 %endif
  exec-timeout 720 0

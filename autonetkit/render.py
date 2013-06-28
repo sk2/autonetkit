@@ -134,6 +134,7 @@ def render_node(node, folder_cache):
                             date = date,
                             )
 
+
         if render_base:
             mako_tmp_dir = "cache"
             if render_base in folder_cache:
