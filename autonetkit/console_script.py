@@ -170,7 +170,7 @@ def main(options):
         log.info("Setting output target as Cisco")
         settings['Graphml']['Node Defaults']['platform'] = "cisco"
         settings['Graphml']['Node Defaults']['host'] = "internal"
-        settings['Graphml']['Node Defaults']['syntax'] = "ios2"
+        settings['Graphml']['Node Defaults']['syntax'] = "ios_xr"
         settings['Compiler']['Cisco']['to memory'] = 1
         settings['General']['deploy'] = 1
         settings['Deploy Hosts']['internal'] = {'cisco': 

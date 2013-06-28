@@ -47,7 +47,7 @@ def grid_2d(dim):
         graph.node[n]['y'] = n[1] * 150
         graph.node[n]['device_type'] = 'router'
         graph.node[n]['platform'] = 'cisco'
-        graph.node[n]['syntax'] = 'ios2'
+        graph.node[n]['syntax'] = 'ios_xr'
         graph.node[n]['host'] = 'internal'
         graph.node[n]['ibgp_level'] = 0
 

@@ -410,9 +410,15 @@ class IosBaseCompiler(RouterCompiler):
         phy_node = self.anm['phy'].node(node)
 
         node.use_cdp = phy_node.use_cdp
-        if phy_node.device_subtype == "os":
+        if phy_node.device_subtype == "vios":
             # only copy across for certain reference platforms
             node.use_onepk = phy_node.use_onepk
+            node.no_service_config = True
+
+        if phy_node.device_subtype == "ultra":
+            # only copy across for certain reference platforms
+            node.transport_input_ssh_telnet = True
+            node.include_csr = True
 
         if node in self.anm['ospf']:
             node.ospf.use_ipv4 = phy_node.use_ipv4
@@ -618,12 +624,6 @@ class IosClassicCompiler(IosBaseCompiler):
     def compile(self, node):
         super(IosClassicCompiler, self).compile(node)
 
-        phy_node = self.anm['phy'].node(node)
-        if phy_node.include_csr:
-            node.include_csr = True
-
-        node.platform_subtype = phy_node.device_subtype
-
     def bgp(self, node):
         super(IosClassicCompiler, self).bgp(node)
 
@@ -652,10 +652,10 @@ class IosClassicCompiler(IosBaseCompiler):
 
         node.bgp.vpnv4_neighbors = vpnv4_neighbors
 
-class Ios2Compiler(IosBaseCompiler):
+class IosXrCompiler(IosBaseCompiler):
 
     def ospf(self, node):
-        super(Ios2Compiler, self).ospf(node)
+        super(IosXrCompiler, self).ospf(node)
         g_ospf = self.anm['ospf']
         interfaces_by_area = defaultdict(list)
 
@@ -875,10 +875,7 @@ class NetkitCompiler(PlatformCompiler):
 class CiscoCompiler(PlatformCompiler):
     """Platform compiler for Cisco"""
 
-    # def __init__(self, nidb, anm, host):
-# TODO: setup to remap allocate interface id function here
-        # super(CiscoCompiler, self).__init__(nidb, anm, host)
-
+    #TODO: remove the other section of these
 
     @staticmethod
     def numeric_to_interface_label_ios(x):
@@ -898,7 +895,7 @@ class CiscoCompiler(PlatformCompiler):
         return "Ethernet2/%s" % x
 
     @staticmethod
-    def numeric_to_interface_label_ios2(x):
+    def numeric_to_interface_label_ios_xr(x):
         return "GigabitEthernet0/0/0/%s" % x
 
     @staticmethod
@@ -925,7 +922,7 @@ class CiscoCompiler(PlatformCompiler):
             yield "Ethernet2/%s" % x
 
     @staticmethod
-    def interface_ids_ios2():
+    def interface_ids_ios_xr():
         for x in itertools.count(0):
             yield "GigabitEthernet0/0/0/%s" % x
 
@@ -955,7 +952,7 @@ class CiscoCompiler(PlatformCompiler):
         else:
             dst_folder = os.path.join("rendered", self.host, "cisco")
 # TODO: merge common router code, so end up with three loops: routers, ios
-# routers, ios2 routers
+# routers, ios_xr routers
 
         # store autonetkit_cisco version
         from pkg_resources import get_distribution
@@ -996,16 +993,16 @@ class CiscoCompiler(PlatformCompiler):
             #TODO: write function that assigns interface number excluding those already taken
 
             # Assign interfaces
-            if phy_node.device_subtype == "os":
+            if phy_node.device_subtype == "vios":
                 int_ids = self.interface_ids_ios()
                 numeric_to_interface_label = self.numeric_to_interface_label_ios
-            elif phy_node.device_subtype == "ra":
+            elif phy_node.device_subtype == "ultra":
                 int_ids = self.interface_ids_ra()
                 numeric_to_interface_label = self.numeric_to_interface_label_ra
             else:
                 # default if no subtype specified
                 #TODO: need to set default in the load module
-                log.warning("Unexpected subtype %s" % phy_node.device_subtype)
+                log.warning("Unexpected subtype %s for %s" % (phy_node.device_subtype, phy_node))
                 int_ids = self.interface_ids_ios()
                 numeric_to_interface_label = self.numeric_to_interface_label_ios
                 
@@ -1027,11 +1024,11 @@ class CiscoCompiler(PlatformCompiler):
                 mgmt_int = nidb_node.add_interface(management = True)
                 mgmt_int.id = mgmt_int_id
 
-        ios2_compiler = Ios2Compiler(self.nidb, self.anm)
-        for phy_node in g_phy.nodes('is_router', host=self.host, syntax='ios2'):
+        ios_xr_compiler = IosXrCompiler(self.nidb, self.anm)
+        for phy_node in g_phy.nodes('is_router', host=self.host, syntax='ios_xr'):
             specified_int_names = phy_node.specified_int_names
             nidb_node = self.nidb.node(phy_node)
-            nidb_node.render.template = os.path.join("templates","ios2","router.conf.mako")
+            nidb_node.render.template = os.path.join("templates","ios_xr","router.conf.mako")
             if to_memory:
                 nidb_node.render.to_memory = True
             else:
@@ -1040,16 +1037,16 @@ class CiscoCompiler(PlatformCompiler):
                     phy_node)
 
             # Assign interfaces
-            int_ids = self.interface_ids_ios2()
+            int_ids = self.interface_ids_ios_xr()
             for interface in nidb_node.physical_interfaces:
-                interface.label = self.numeric_to_interface_label_ios2(interface.numeric_id)
+                interface.label = self.numeric_to_interface_label_ios_xr(interface.numeric_id)
                 if specified_int_names:
                     interface.id = phy_node.interface(interface).name
                 # TODO: need to determine if interface name already specified
                 else:
                     interface.id = int_ids.next()
 
-            ios2_compiler.compile(nidb_node)
+            ios_xr_compiler.compile(nidb_node)
 
             if use_mgmt_interfaces:
                 mgmt_int_id = "mgmteth0/0/CPU0/0"
@@ -1086,7 +1083,7 @@ class CiscoCompiler(PlatformCompiler):
             nxos_compiler.compile(nidb_node)
 
         other_nodes = [phy_node for phy_node in g_phy.nodes('is_router', host=self.host)
-                       if phy_node.syntax not in ("ios", "ios2")]
+                       if phy_node.syntax not in ("ios", "ios_xr")]
         for node in other_nodes:
             #TODO: check why we need this
             phy_node = g_phy.node(node)
@@ -1130,7 +1127,7 @@ class CiscoCompiler(PlatformCompiler):
 
         mgmt_subnet = start_subnet
         hosts_to_allocate = sorted(self.nidb.nodes('is_router', host=self.host))
-        dhcp_subtypes = {"os"}
+        dhcp_subtypes = {"vios"}
         dhcp_hosts = [h for h in hosts_to_allocate if h.device_subtype in dhcp_subtypes]
         non_dhcp_hosts = [h for h in hosts_to_allocate if h.device_subtype not in dhcp_subtypes]
 
