@@ -12,6 +12,7 @@ import autonetkit.ank as ank_utils
 import itertools
 
 #TODO: remove retain edge_id once removed from compiler
+#TODO: note that build network now assumes input graph has interface mappings on nodes/edges
 
 __all__ = ['build']
 
@@ -682,34 +683,37 @@ def build_ipv6(anm):
 def manual_ipv4_infrastructure_allocation(anm):
     """Applies manual IPv4 allocation"""
     import netaddr
-    g_in_directed = anm['input_directed']
     g_ipv4 = anm['ipv4']
-    #TODO: tidy this up to work with interfaces directly
 
-    for l3_device in g_ipv4.nodes("is_l3device"):
-        for edge in l3_device.edges():
-            # find edge in g_in_directed
-            directed_edge = g_in_directed.edge(edge)
-            edge.ip_address = netaddr.IPAddress(directed_edge.ipv4)
+    for node in g_ipv4.nodes("is_l3device"):
+        for interface in node.physical_interfaces:
+            if not interface['input'].is_bound:
+                continue # unbound interface
+            ip_address = netaddr.IPAddress(interface['input'].ipv4_address)
+            prefixlen = interface['input'].ipv4_prefixlen
+            interface.ip_address = ip_address
+            interface.prefixlen = prefixlen
+            cidr_string = "%s/%s" % (ip_address, prefixlen)
+            interface.subnet = netaddr.IPNetwork(cidr_string)
 
-            # set subnet onto collision domain (can come from either
-            # direction)
-            collision_domain = edge.dst
-            if not collision_domain.subnet:
-                # TODO: see if direct method in netaddr to deduce network
-                prefixlen = directed_edge.netPrefixLenV4
-                cidr_string = "%s/%s" % (edge.ip_address, prefixlen)
+    collision_domains = [d for d in g_ipv4 if d.collision_domain]
+    #TODO: allow this to work with specified ip_address/subnet as well as ip_address/prefixlen
+    from netaddr import IPNetwork
+    for cd in collision_domains:
+        connected_interfaces = [edge.dst_int for edge in cd.edges()]
+        cd_subnets = [IPNetwork("%s/%s" % (i.subnet.network, i.prefixlen))
+            for i in connected_interfaces]
 
-                intermediate_subnet = netaddr.IPNetwork(cidr_string)
-                cidr_string = "%s/%s" % (
-                    intermediate_subnet.network, prefixlen)
-                subnet = netaddr.IPNetwork(cidr_string)
-                collision_domain.subnet = subnet
-
-    #TODO: assign directly to interfaces
+        try:
+            assert(len(set(cd_subnets)) == 1)
+        except AssertionError:
+            log.warning("Non matching subnets from collision domain %s" % cd)
+        else:
+            cd.subnet = cd_subnets[0] # take first entry
 
     # also need to form aggregated IP blocks (used for e.g. routing prefix
     # advertisement)
+    autonetkit.update_http(anm)
     infra_blocks = {}
     for asn, devices in g_ipv4.groupby("asn").items():
         collision_domains = [d for d in devices if d.collision_domain]
@@ -721,12 +725,10 @@ def manual_ipv4_infrastructure_allocation(anm):
 def manual_ipv4_loopback_allocation(anm):
     """Applies manual IPv4 allocation"""
     import netaddr
-    g_in_directed = anm['input_directed']
     g_ipv4 = anm['ipv4']
 
     for l3_device in g_ipv4.nodes("is_l3device"):
-        directed_node = g_in_directed.node(l3_device)
-        l3_device.loopback = directed_node.ipv4loopback
+        l3_device.loopback = l3_device['input'].loopback_v4
 
     # also need to form aggregated IP blocks (used for e.g. routing prefix
     # advertisement)
@@ -836,11 +838,19 @@ def build_ipv4(anm, infrastructure=True):
     # check if ip ranges have been specified on g_in
     infra_block, loopback_block, vrf_loopback_block = extract_ipv4_blocks(anm)
 
+    # See if IP addresses specified on each interface
+    alloc_ipv4_infrastructure = True
+    l3_devices = [d for d in g_in if d.device_type in ("router", "server")]
+    for device in l3_devices:
+        physical_interfaces = list(device.physical_interfaces)
+        if all((i.ipv4_address and i.ipv4_prefixlen) for i in physical_interfaces):
+            alloc_ipv4_infrastructure = False
+
     #TODO: need to set allocate_ipv4 by default in the readers
-    if g_in.data.alloc_ipv4_infrastructure is False:
-        manual_ipv4_infrastructure_allocation(anm)
-    else:
+    if alloc_ipv4_infrastructure:
         ipv4.allocate_infra(g_ipv4, infra_block)
+    else:
+        manual_ipv4_infrastructure_allocation(anm)
 
     if g_in.data.alloc_ipv4_loopbacks is False:
         manual_ipv4_loopback_allocation(anm)
@@ -853,7 +863,10 @@ def build_ipv4(anm, infrastructure=True):
     #TODO: replace this with direct allocation to interfaces in ip alloc plugin
     for node in g_ipv4.nodes("is_l3device"):
         node.loopback_zero.ip_address = node.loopback
+        if not alloc_ipv4_infrastructure:
+            continue
         for interface in node:
+            continue
             edges = list(interface.edges())
             if len(edges):
                 edge = edges[0] # first (only) edge
@@ -976,6 +989,8 @@ def build_ospf(anm):
     if any(router.area == "0.0.0.0" for router in g_ospf):
         # string comparison as hasn't yet been cast to IPAddress
         default_area = area_zero_ip
+
+    #TODO: use interfaces throughout, rather than edges
 
     for router in g_ospf:
         if not router.area or router.area == "None":
@@ -1108,8 +1123,6 @@ def build_isis(anm):
 
     for link in g_isis.edges():
         link.metric = 1  # default
-        # link.hello = 5 # for debugging, TODO: read from graph
-
 
     for edge in g_isis.edges():
         for interface in edge.interfaces():
