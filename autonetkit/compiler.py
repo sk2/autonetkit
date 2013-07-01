@@ -127,19 +127,23 @@ class RouterCompiler(object):
             #TODO: fix the description to use mapped label
             if node.ip.use_ipv4:
                 ipv4_int = phy_int['ipv4']
-                interface.use_ipv4 = True
-                interface.ipv4_address = ipv4_int.ip_address
-                interface.ipv4_subnet = ipv4_int.subnet
-                interface.ipv4_cidr = sn_preflen_to_network(interface.ipv4_address,
-                        interface.ipv4_subnet.prefixlen)
+                if ipv4_int.is_bound:
+                    # interface is connected
+                    interface.use_ipv4 = True
+                    interface.ipv4_address = ipv4_int.ip_address
+                    interface.ipv4_subnet = ipv4_int.subnet
+                    interface.ipv4_cidr = sn_preflen_to_network(interface.ipv4_address,
+                            interface.ipv4_subnet.prefixlen)
 
             if node.ip.use_ipv6:
                 ipv6_int = phy_int['ipv6']
-                interface.use_ipv6 = True
+                if ipv6_int.is_bound:
+                    # interface is connected
+                    interface.use_ipv6 = True
 #TODO: for consistency, make ipv6_cidr
-                interface.ipv6_subnet = ipv6_int.subnet
-                interface.ipv6_address = sn_preflen_to_network(ipv6_int.ip_address,
-                        interface.ipv6_subnet.prefixlen)
+                    interface.ipv6_subnet = ipv6_int.subnet
+                    interface.ipv6_address = sn_preflen_to_network(ipv6_int.ip_address,
+                            interface.ipv6_subnet.prefixlen)
 
         for interface in node.loopback_interfaces:
             #TODO: check if nonzero is different to __eq__
@@ -150,6 +154,7 @@ class RouterCompiler(object):
                 if node.ip.use_ipv4:
                     ipv4_int = phy_int['ipv4']
                     interface.use_ipv4 = True
+
                     interface.ipv4_address = ipv4_int.loopback
                     interface.ipv4_subnet = node.loopback_subnet
                     interface.ipv4_cidr = sn_preflen_to_network(interface.ipv4_address,
