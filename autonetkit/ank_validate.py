@@ -40,9 +40,12 @@ def validate_ipv4(anm):
     # interface IP uniqueness
     tests_passed = True
 
+    #TODO: only include bound interfaces
+
     # check globally unique ip addresses
     all_ints = [i for n in g_ipv4.nodes("is_l3device")
-            for i in n.physical_interfaces]
+            for i in n.physical_interfaces 
+            if i.is_bound] # don't include unbound interfaces
     all_int_ips = [i.ip_address for i in all_ints]
 
     if all_unique(all_int_ips):
