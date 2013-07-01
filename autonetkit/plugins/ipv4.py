@@ -156,7 +156,8 @@ class IpTree(object):
 
         unallocated_nodes = self.unallocated_nodes
         key_func  = lambda x: x.get(group_attr)
-        if all(isinstance(item, autonetkit.anm.overlay_interface) for item in unallocated_nodes):
+        if all((isinstance(item, autonetkit.anm.overlay_interface) and item.is_loopback)
+                for item in unallocated_nodes):
             key_func  = lambda x: x.node.get(group_attr) # interface, map key function to be the interface's node
 
         unallocated_nodes = sorted(unallocated_nodes, key = key_func)
@@ -293,7 +294,7 @@ class IpTree(object):
                 #TODO: sort these
                 child_id = self.next_node_id
                 cd_id = cd.node
-                global_graph.add_node(child_id, prefixlen = 32, host = edge)
+                global_graph.add_node(child_id, prefixlen = 32, host = edge.dst_int)
                 global_graph.add_edge(cd_id, child_id) # cd -> neigh (cd is parent)
 
 #TODO: make allocate seperate step
@@ -318,17 +319,29 @@ class IpTree(object):
                 iterhosts = node.subnet.iter_hosts() # ensures start at .1 rather than .0
                 sub_children = node.children()
                 for sub_child in sub_children:
-                    sub_child.subnet = iterhosts.next()
+                    if sub_child.is_interface() and sub_child.host.is_loopback:
+                        sub_child.ip_address = iterhosts.next()
+                    else:
+                        sub_child.subnet = iterhosts.next()
 
                 return
 
             for child in children:
                 if child.is_collision_domain():
-                    child.subnet = subnet.next()
+                    subnet = subnet.next()
+                    child.subnet = subnet
                     iterhosts = child.subnet.iter_hosts() # ensures start at .1 rather than .0
                     sub_children = child.children()
                     for sub_child in sub_children:
-                        sub_child.subnet = iterhosts.next()
+                        if sub_child.is_interface():
+                            interface = sub_child.host
+                            if interface.is_physical:
+                                # physical interface
+                                sub_child.ip_address = iterhosts.next()
+                                sub_child.subnet = subnet 
+                        else:
+                            sub_child.subnet = iterhosts.next()
+
                         log.debug( "Allocate sub_child to %s %s" % ( sub_child, sub_child.subnet))
                 elif child.is_host():
                     child.subnet = subnet.next()
@@ -396,9 +409,6 @@ class IpTree(object):
     
     def assign(self):
 # assigns allocated addresses back to hosts
-        edges = [n for n in self if n.is_host() and n.host.src]
-        for edge in edges:
-            edge.host.ip_address = edge.subnet
     
         # don't look at host nodes now - use loopback_groups
         host_tree_nodes = [n for n in self if n.is_host() and n.host.is_l3device]
@@ -413,7 +423,12 @@ class IpTree(object):
 
         interfaces = [n for n in self if n.is_interface()]
         for n in interfaces:
-            n.host.loopback = n.subnet
+            interface = n.host
+            if interface.is_loopback:
+                interface.loopback = n.ip_address
+            elif interface.is_physical:
+                interface.ip_address = n.ip_address
+                interface.subnet = n.subnet
 
 def assign_asn_to_interasn_cds(g_ip, address_block = None):
     G_phy = g_ip.overlay("phy")
@@ -445,7 +460,6 @@ def allocate_infra(g_ip, address_block = None):
     g_ip.data.infra_blocks = ip_tree.group_allocations()
 
 #TODO: apply directly here
-
 
 def allocate_loopbacks(g_ip, address_block = None):
     if not address_block:
