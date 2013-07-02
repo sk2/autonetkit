@@ -238,12 +238,12 @@ def main():
 
     if not arguments.ank_vis:
         try:
-            import autonetkit_cisco
+            import autonetkit_cisco_webui
         except ImportError:
             pass  # use AutoNetkit internal web content
         else:
             # use web content from autonetkit_cisco module
-            content_path = pkg_resources.resource_filename("autonetkit_cisco", "web_content")
+            content_path = pkg_resources.resource_filename("autonetkit_cisco_webui", "web_content")
 
     settings = {
             "static_path": content_path,
