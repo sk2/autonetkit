@@ -839,18 +839,24 @@ def build_ipv4(anm, infrastructure=True):
     infra_block, loopback_block, vrf_loopback_block = extract_ipv4_blocks(anm)
 
     # See if IP addresses specified on each interface
-    alloc_ipv4_infrastructure = True
     l3_devices = [d for d in g_in if d.device_type in ("router", "server")]
+
+    manual_alloc_devices = set()
     for device in l3_devices:
         physical_interfaces = list(device.physical_interfaces)
-        if all((i.ipv4_address and i.ipv4_prefixlen) for i in physical_interfaces):
-            alloc_ipv4_infrastructure = False
+        if all(interface.ipv4_address for interface in physical_interfaces):
+            manual_alloc_devices.add(device) # add as a manual allocated device
+
+    if manual_alloc_devices == set(l3_devices):
+        manual_alloc_ipv4_infrastructure = True
+    else:
+        manual_alloc_ipv4_infrastructure = False
 
     #TODO: need to set allocate_ipv4 by default in the readers
-    if alloc_ipv4_infrastructure:
-        ipv4.allocate_infra(g_ipv4, infra_block)
-    else:
+    if manual_alloc_ipv4_infrastructure:
         manual_ipv4_infrastructure_allocation(anm)
+    else:
+        ipv4.allocate_infra(g_ipv4, infra_block)
 
     if g_in.data.alloc_ipv4_loopbacks is False:
         manual_ipv4_loopback_allocation(anm)
@@ -863,17 +869,6 @@ def build_ipv4(anm, infrastructure=True):
     #TODO: replace this with direct allocation to interfaces in ip alloc plugin
     for node in g_ipv4.nodes("is_l3device"):
         node.loopback_zero.ip_address = node.loopback
-        if not alloc_ipv4_infrastructure:
-            continue
-        for interface in node:
-            continue
-            edges = list(interface.edges())
-            if len(edges):
-                edge = edges[0] # first (only) edge
-                interface.ip_address = edge.ip_address
-                interface.subnet = edge.dst.subnet # from collision domain
-
-    # TODO: also map loopbacks to loopback interface 0
 
 def build_phy(anm):
     """Build physical overlay"""
