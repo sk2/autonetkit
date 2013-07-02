@@ -49,7 +49,11 @@ class interface_data_dict(collections.MutableMapping):
     def __getattr__(self, key):
         return self.store.get(key)
 
-#TODO: fix __setattr__ so doesn't cause recursion - and so doesn't silently not set values in compiler
+    def __setattr__(self, key, value):
+        if key == "store":
+            object.__setattr__(self, 'store', value)
+        else:
+            self.store[key] = value # store locally
 
     def dump(self):
         return self.store
@@ -94,6 +98,7 @@ class overlay_data_dict(collections.MutableMapping):
         return self.store.get(key)
 
 #TODO: fix __setattr__ so doesn't cause recursion - and so doesn't silently not set values in compiler
+#same as for interfaces
 
     def dump(self):
         return self.store
