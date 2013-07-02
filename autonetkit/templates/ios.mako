@@ -105,9 +105,6 @@ interface ${interface.id}
     %endif
   %endif
   % if interface.isis:
-    % if interface.physical:
-  clns mtu 1400
-    %endif
   % if interface.isis.use_ipv4:
   ip router isis ${node.isis.process_id}
     % if interface.physical:
@@ -124,6 +121,9 @@ interface ${interface.id}
   isis ipv6 metric ${interface.isis.metric}
     % endif
   % endif
+  % if interface.isis.mtu:
+  clns mtu ${interface.isis.mtu}
+  %endif
   % endif
   % if interface.physical:
   duplex auto
