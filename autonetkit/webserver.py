@@ -130,8 +130,8 @@ class AnkAccessor():
         self.ip_allocation = {}
 # try loading from vis directory
         try:
-            import autonetkit_cisco
-            default_file = pkg_resources.resource_filename("autonetkit_cisco", "cisco.json.gz")
+            import autonetkit_cisco_webui
+            default_file = pkg_resources.resource_filename("autonetkit_cisco_webui", "cisco.json.gz")
         except ImportError:
             default_file = os.path.join(www_dir, "default.json.gz")
 
@@ -234,7 +234,7 @@ def main():
 
     content_path = www_dir # default content directory
 
-    #arguments.ank_vis = True # manually force for now
+    arguments.ank_vis = True # manually force for now
 
     if not arguments.ank_vis:
         try:
