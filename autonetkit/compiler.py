@@ -300,7 +300,6 @@ class RouterCompiler(object):
 
     def isis(self, node):
         g_isis = self.anm['isis']
-        node.isis.isis_links = []
 
         for interface in node.physical_interfaces:
             if interface.exclude_igp:
@@ -318,12 +317,6 @@ class RouterCompiler(object):
                         'use_ipv6': node.ip.use_ipv6,
                         'multipoint': isis_int.multipoint,
                         } #TODO: add wrapper for this
-
-                node.isis.isis_links.append(
-                        id = interface.id,
-                        metric = isis_int.metric,
-                        multipoint= isis_int.multipoint,
-                        )
 
         g_isis = self.anm['isis']
         isis_node = self.anm['isis'].node(node)
@@ -608,8 +601,55 @@ class IosBaseCompiler(RouterCompiler):
                         'multipoint': ospf_int.multipoint,
                         } #TODO: add wrapper for this
 
-class IosClassicCompiler(IosBaseCompiler):
 
+    def isis(self, node):
+        super(IosBaseCompiler, self).isis(node)
+        for interface in node.physical_interfaces:
+            isis_int = self.anm['isis'].interface(interface)
+            edges = isis_int.edges()
+            if len(edges) != 1:
+                log.warning("Extended IOS config support not valid for multipoint ISIS connections")
+                continue
+                #TODO multipoint handling?
+            edge = edges[0]
+            dst = edge.dst
+            if not dst.is_router:
+                log.warning("Extended IOS config support not valid for non router ISIS connections")
+                continue
+
+            src_type = node.device_subtype
+            dst_type = dst['phy'].device_subtype
+            if src_type == "xrvr":
+                if dst_type == "vios":
+                    interface.isis.hello_padding_disable = True
+                elif dst_type == "ultra":
+                    interface.isis.hello_padding_disable = True
+                elif dst_type == "titanium":
+                    interface.isis.hello_padding_disable = True
+
+            if src_type == "vios":
+                if dst_type == "xrvr":
+                    interface.isis.mtu = 1430
+
+            if src_type == "ultra":
+                if dst_type == "xrvr":
+                    interface.isis.mtu = 1430
+
+            if src_type == "titanium":
+                if dst_type == "xrvr":
+                    interface.mtu = 1430 # for all of interface
+                    interface.isis.hello_padding_disable = True
+                elif dst_type == "vios":
+                    interface.isis.hello_padding_disable = True
+                elif dst_type == "ultra":
+                    interface.isis.hello_padding_disable = True
+
+            interface.isis_mtu = interface.isis.mtu
+            interface.hello_padding_disable = interface.isis.hello_padding_disable
+
+
+
+class IosClassicCompiler(IosBaseCompiler):
     def ospf(self, node):
         super(IosClassicCompiler, self).ospf(node)
         loopback_zero = node.loopback_zero
@@ -656,7 +696,6 @@ class IosClassicCompiler(IosBaseCompiler):
         node.bgp.vpnv4_neighbors = vpnv4_neighbors
 
 class IosXrCompiler(IosBaseCompiler):
-
     def ospf(self, node):
         super(IosXrCompiler, self).ospf(node)
         g_ospf = self.anm['ospf']
@@ -687,6 +726,32 @@ class IosXrCompiler(IosBaseCompiler):
         })
 
         node.ospf.interfaces = dict( interfaces_by_area)
+
+
+    def isis(self, node):
+        super(IosXrCompiler, self).isis(node)
+        node.isis.isis_links = []
+
+        for interface in node.physical_interfaces:
+            if interface.exclude_igp:
+                continue # don't configure IGP for this interface
+
+            #print interface.isis.dump()
+            # copy across attributes from the IosBaseCompiler setting step
+
+            isis_int = self.anm['isis'].interface(interface)
+            if isis_int and isis_int.is_bound:
+                data = {
+                        'id': interface.id,
+                        'metric': isis_int.metric,
+                        'multipoint': isis_int.multipoint,
+                        }
+                if interface.isis.hello_padding_disable is not None:
+                    data['hello_padding_disable'] = interface.isis.hello_padding_disable
+                if interface.isis.mtu is not None:
+                    data['mtu'] = interface.isis.hello_padding_disable
+
+                node.isis.isis_links.append(**data)
 
 class NxOsCompiler(IosBaseCompiler):
     def interfaces(self, node):
