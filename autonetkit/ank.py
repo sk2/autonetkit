@@ -29,9 +29,6 @@ def name_folder_safe(foldername):
         foldername = foldername.replace("__", "_")
     return foldername
 
-#TODO: have function that goes over a list, edge edges_to_add and sets edge_id if not set
-#this cleans up the manual edge adding process
-
 def set_node_default(OverlayGraph, nbunch, **kwargs):
     """Sets all nodes in nbunch to value if key not already set"""
     graph = unwrap_graph(OverlayGraph)
@@ -245,7 +242,6 @@ def explode_nodes(OverlayGraph, nodes, retain = []):
     graph = unwrap_graph(OverlayGraph)
     nodes = unwrap_nodes(nodes)
     added_edges = []
-#TODO: need to keep track of edge_ids here also?
     nodes = list(nodes)
 #TODO: if graph is bidirectional, need to explode here too
 #TODO: how do we handle explode for multi graphs?
