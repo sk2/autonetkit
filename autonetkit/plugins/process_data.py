@@ -76,11 +76,6 @@ def sh_ip_route(host, nidb, data, record_data = False):
 
     #pprint.pprint(subnets)
 
-    """
-    pprint.pprint(["%s: %s.%s" % (subnet, nidb.interface(i).id, i.node)
-            for (subnet, i) in infra_interfaces.items()])
-    """
-
     mapped_routes = []
     for route_entry in routes:
         try:
