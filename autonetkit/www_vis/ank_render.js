@@ -49,7 +49,6 @@ var ws = new WebSocket(socket_url);
 ws.onopen = function() {
     ws.send("overlay_list");
     ws.send("overlay_id=" + overlay_id);
-    ws.send("ip_allocations");
     $("#websocket_icon").html(' <i class="icon-circle " title="WebSocket Connected."></i>');
 };
 ws.onclose = function () {
@@ -66,7 +65,7 @@ var pathinfo = [];
 var graph_history = [];
 var ip_allocations = [];
 
-var node_label_id = "id";
+var node_label_id = "label";
 var edge_group_id = ""; //TODO: rename edge_label_id
 var interface_label_id = "";
 
