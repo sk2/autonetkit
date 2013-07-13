@@ -321,6 +321,10 @@ class IpTree(object):
                 for sub_child in sub_children:
                     if sub_child.is_interface() and sub_child.host.is_loopback:
                         sub_child.ip_address = iterhosts.next()
+                    elif sub_child.is_interface() and sub_child.host.is_physical:
+                        # physical interface
+                        sub_child.ip_address = iterhosts.next()
+                        sub_child.subnet = node.subnet
                     else:
                         sub_child.subnet = iterhosts.next()
 
@@ -475,12 +479,17 @@ def allocate_loopbacks(g_ip, address_block = None):
 def allocate_vrf_loopbacks(g_ip, address_block = None):
     if not address_block:
         address_block = netaddr.IPNetwork("172.16.0.0/24")
+
+    secondary_loopbacks = [i for n in g_ip.nodes()
+        for i in n.loopback_interfaces
+        if not i.is_loopback_zero
+        ]
+
+    if not len(secondary_loopbacks):
+            return # nothing to set
     log.info("Allocating v4 Secondary Host loopback IPs")
     ip_tree = IpTree(address_block)
-    secondary_loopbacks = [i for n in g_ip.nodes()
-            for i in n.loopback_interfaces
-            if not i.is_loopback_zero
-            ]
+
 
     vrf_loopbacks = [i for i in secondary_loopbacks
             if i['vrf'].vrf_name]
