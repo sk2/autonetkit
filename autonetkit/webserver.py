@@ -28,7 +28,7 @@ class MyWebHandler(tornado.web.RequestHandler):
         # get listeners for this uuid
         uuid_socket_listeners = self.application.socket_listeners[uuid]
 
-        print "Received data of type %s" % data_type
+        #print "Received data of type %s" % data_type
 
         if data_type == "anm":
             body_parsed = json.loads(data)
@@ -41,9 +41,10 @@ class MyWebHandler(tornado.web.RequestHandler):
                     json.dump(body_parsed, fh)
 
             self.ank_accessor.store_overlay(uuid, body_parsed)
-            print "Updating listeners for uuid", uuid
+            #print "Updating listeners for uuid", uuid
+            print "Updating listeners"
             for listener in uuid_socket_listeners:
-                print("Updating listener %s for uuid %s" % (listener.request.remote_ip, uuid))
+                #print("Updating listener %s for uuid %s" % (listener.request.remote_ip, uuid))
                 listener.update_overlay()
 
         elif data_type == "starting_host":
@@ -60,7 +61,8 @@ class MyWebHandler(tornado.web.RequestHandler):
             for listener in uuid_socket_listeners:
                 listener.write_message({'highlight': body_parsed}) 
         else:
-            print "Received unknown data type %s" % data_type
+            #print "Received unknown data type %s" % data_type
+            pass
     
 class MyWebSocketHandler(websocket.WebSocketHandler):
     def initialize(self, ank_accessor, overlay_id, singleuser_mode = False):
@@ -87,12 +89,13 @@ class MyWebSocketHandler(websocket.WebSocketHandler):
 
         self.uuid_socket_listeners = self.application.socket_listeners[uuid]
 
-        print "Client connected from %s, with uuid %s" % (self.request.remote_ip, uuid)
+        #print "Client connected from %s, with uuid %s" % (self.request.remote_ip, uuid)
+        print "Client connected from %s" % self.request.remote_ip
         self.uuid_socket_listeners.add(self) 
 
     def on_close(self):
         self.uuid_socket_listeners.remove(self) 
-        print "Client disconnected from %s" % self.request.remote_ip
+        #print "Client disconnected from %s" % self.request.remote_ip
         try:
             self.application.pc.remove_event_listener(self)
         except AttributeError:
@@ -103,7 +106,8 @@ class MyWebSocketHandler(websocket.WebSocketHandler):
             pass # no echo_server
 
     def on_message(self, message):
-        print "Received message %s from client with uuid %s" % (message, self.uuid)
+        #print "Received message %s from client with uuid %s" % (message, self.uuid)
+        print "Received message %s from websocket client" % message
         if "overlay_id" in message:
             _, overlay_id = message.split("=") #TODO: form JSON on client side, use loads here
             self.overlay_id = overlay_id
@@ -112,7 +116,8 @@ class MyWebSocketHandler(websocket.WebSocketHandler):
             body = json.dumps({'overlay_list': self.ank_accessor.overlay_list(self.uuid)})
             self.write_message(body)
         elif "ip_allocations" in message:
-            print "IP Allocations currently unsupported"
+            #print "IP Allocations currently unsupported"
+            pass
 
     def update_overlay(self):
         body = self.ank_accessor.get_overlay(self.uuid, self.overlay_id)
