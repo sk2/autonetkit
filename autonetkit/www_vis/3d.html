@@ -19,7 +19,7 @@
 	<body>
 
 		<script src="three.min.js"></script>
-		<script src="js/TrackballControls.js"></script>
+		<script src="TrackballControls.js"></script>
 		<script type="text/javascript" src="jquery-1.7.2.min.js"></script>
 		<script type="text/javascript" src="underscore-min.js"></script>
 
@@ -77,6 +77,8 @@
 				offset_x =  (_.max(all_x) - _.min(all_x))/2;
 				offset_y =  (_.max(all_y) - _.min(all_y))/2;
 
+				//TODO: replace particles with cylinders.... and embed svg image on
+
 				var PI2 = Math.PI * 2;
 				var material = new THREE.ParticleCanvasMaterial( {
 
@@ -125,7 +127,7 @@
 					var geometry = new THREE.Geometry();
 					geometry.vertices.push(source);
 					geometry.vertices.push(target);
-					var line = new THREE.Line( geometry, new THREE.LineDashedMaterial( { color: 0xaaaaaa,
+					var line = new THREE.Line( geometry, new THREE.LineBasicMaterial( { color: 0xaaaaaa,
 						opacity: 1,
 						linewidth: 1 } ) );
 					scene.add( line );
