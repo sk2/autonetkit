@@ -33,7 +33,7 @@ class NidbEncoder(json.JSONEncoder):
         if isinstance(obj, autonetkit.nidb.overlay_interface):
             return [{'name': obj.id,
                 'children': list(obj.dict())}]
-        #return str(obj)
+        #return stfr(obj)
 
         if isinstance(obj, dict):
             return str(obj) #TODO: need to handle as list of children
