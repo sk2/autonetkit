@@ -152,6 +152,7 @@ def apply_design_rules(anm):
     #autonetkit.update_http(anm)
     return anm
 
+
 def build(input_graph):
     """Main function to build network overlay topologies"""
     anm = initialise(input_graph)
@@ -864,6 +865,7 @@ def build_ipv4(anm, infrastructure=True):
         ipv4.allocate_loopbacks(g_ipv4, loopback_block)
 
     #TODO: need to also support secondary_loopbacks for IPv6
+    #TODO: only call if secondaries are set
     ipv4.allocate_vrf_loopbacks(g_ipv4, vrf_loopback_block)
 
     #TODO: replace this with direct allocation to interfaces in ip alloc plugin
