@@ -647,8 +647,6 @@ class IosBaseCompiler(RouterCompiler):
             interface.isis_mtu = interface.isis.mtu
             interface.hello_padding_disable = interface.isis.hello_padding_disable
 
-
-
 class IosClassicCompiler(IosBaseCompiler):
     def ospf(self, node):
         super(IosClassicCompiler, self).ospf(node)
@@ -662,7 +660,6 @@ class IosClassicCompiler(IosBaseCompiler):
                         'use_ipv6': node.ip.use_ipv6,
                         'multipoint': False,
                         } #TODO: add wrapper for this        
-
 
     def compile(self, node):
         super(IosClassicCompiler, self).compile(node)
@@ -965,6 +962,10 @@ class CiscoCompiler(PlatformCompiler):
         return "GigabitEthernet0/0/0/%s" % x
 
     @staticmethod
+    def numeric_to_interface_label_linux(x):
+        return "eth%s" % x
+
+    @staticmethod
     def loopback_interface_ids():
         for x in itertools.count(100): # start at 100 for secondary
             prefix = IosBaseCompiler.lo_interface_prefix
@@ -977,7 +978,7 @@ class CiscoCompiler(PlatformCompiler):
             yield "GigabitEthernet0/%s" % x
 
     @staticmethod
-    def interface_ids_ra():
+    def interface_ids_ultra():
         #TODO: make this skip if in list of allocated ie [interface.name for interface in node]
         for x in itertools.count(0):
             yield "GigabitEthernet%s" % x
@@ -1024,7 +1025,7 @@ class CiscoCompiler(PlatformCompiler):
         from pkg_resources import get_distribution
         ank_cisco_version = get_distribution("autonetkit_cisco").version
 
-        for phy_node in g_phy.nodes('is_router', host=self.host):
+        for phy_node in g_phy.nodes('is_l3device', host=self.host):
             loopback_ids = self.loopback_interface_ids()
             # allocate loopbacks to routes (same for all ios variants)
             nidb_node = self.nidb.node(phy_node)
@@ -1045,6 +1046,35 @@ class CiscoCompiler(PlatformCompiler):
                 else:
                     interface.numeric_id = int(phy_numeric_id) 
 
+        for phy_node in g_phy.nodes('is_server', host=self.host):
+            #TODO: look at server syntax also, same as for routers
+            nidb_node = self.nidb.node(phy_node)
+            for interface in nidb_node.physical_interfaces:
+                interface.id = self.numeric_to_interface_label_linux(interface.numeric_id)
+                nidb_node.ip.use_ipv4 = phy_node.use_ipv4
+                nidb_node.ip.use_ipv6 = phy_node.use_ipv6
+                phy_int = phy_node.interface(interface)
+
+                #TODO: make this part of the base device compiler, which server/router inherits
+                if nidb_node.ip.use_ipv4:
+                    ipv4_int = phy_int['ipv4']
+                    if ipv4_int.is_bound:
+                        # interface is connected
+                        interface.use_ipv4 = True
+                        interface.ipv4_address = ipv4_int.ip_address
+                        interface.ipv4_subnet = ipv4_int.subnet
+                        interface.ipv4_cidr = sn_preflen_to_network(interface.ipv4_address,
+                                interface.ipv4_subnet.prefixlen)
+                if nidb_node.ip.use_ipv6:
+                    ipv6_int = phy_int['ipv6']
+                    if ipv6_int.is_bound:
+                        # interface is connected
+                        interface.use_ipv6 = True
+#TODO: for consistency, make ipv6_cidr
+                        interface.ipv6_subnet = ipv6_int.subnet
+                        interface.ipv6_address = sn_preflen_to_network(ipv6_int.ip_address,
+                                interface.ipv6_subnet.prefixlen)
+
         for phy_node in g_phy.nodes('is_router', host=self.host, syntax='ios'):
             nidb_node = self.nidb.node(phy_node)
             nidb_node.render.template = os.path.join("templates","ios.mako")
@@ -1062,7 +1092,7 @@ class CiscoCompiler(PlatformCompiler):
                 int_ids = self.interface_ids_ios()
                 numeric_to_interface_label = self.numeric_to_interface_label_ios
             elif phy_node.device_subtype == "ultra":
-                int_ids = self.interface_ids_ra()
+                int_ids = self.interface_ids_ultra()
                 numeric_to_interface_label = self.numeric_to_interface_label_ra
             else:
                 # default if no subtype specified
