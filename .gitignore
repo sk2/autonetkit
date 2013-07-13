@@ -51,3 +51,6 @@ test.*
 .coverage
 htmlcov/*
 .tox/*
+*.sublime-project
+
+*.sublime-workspace
