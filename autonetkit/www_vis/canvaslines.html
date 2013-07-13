@@ -22,7 +22,7 @@
 		<script src="js/TrackballControls.js"></script>
 		<script type="text/javascript" src="jquery-1.7.2.min.js"></script>
 		<script type="text/javascript" src="underscore-min.js"></script>
-				
+
 
 
 		<script>
@@ -50,6 +50,8 @@
 				document.body.appendChild(container);
 
 				camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
+				camera.position.x = 0;
+				camera.position.y = -600;
 				camera.position.z = 250;
 
 
@@ -65,58 +67,16 @@
 				controls.addEventListener( 'change', render );
 				controls.update();
 
-
-
-
-				// particles
-
-				var PI2 = Math.PI * 2;
-				var material = new THREE.ParticleCanvasMaterial( {
-
-					color: 0x0099ff,
-					program: function ( context ) {
-
-						context.beginPath();
-						context.arc( 0, 0, 1, 0, PI2, true );
-						context.closePath();
-						context.fill();
-
-					}
-
-				} );
-
-				var geometry = new THREE.Geometry();
-
-
-
-
-
-				for ( var i = 0; i < 2; i ++ ) {
-
-					particle = new THREE.Particle( material );
-					particle.position.x = Math.random() * 2 - 1;
-					particle.position.y = Math.random() * 2 - 1;
-					particle.position.z = Math.random() * 2 - 1;
-					particle.position.normalize();
-					particle.position.multiplyScalar( Math.random() * 10 + 450 );
-					particle.scale.x = particle.scale.y = 10;
-					scene.add( particle );
-
-					geometry.vertices.push( particle.position );
-
-				}
-
-				// lines
-				console.log(geometry);
-
-				var line = new THREE.Line( geometry, new THREE.LineBasicMaterial( { color: 0x0099ff, opacity: 1,
-				linewidth: 3 } ) );
-				scene.add( line );
-
 			}
 
 			function build(jsondata, z_index) {
 
+				nodes = jsondata.nodes;
+				all_x = _.map(nodes, function(n){ return n['x']});
+				all_y = _.map(nodes, function(n){ return n['y']});
+				offset_x =  (_.max(all_x) - _.min(all_x))/2;
+				offset_y =  (_.max(all_y) - _.min(all_y))/2;
+
 				var PI2 = Math.PI * 2;
 				var material = new THREE.ParticleCanvasMaterial( {
 
@@ -132,23 +92,63 @@
 
 				} );
 
-				var geometry = new THREE.Geometry();
+				node_locations = [];
 
-				for ( var i = 0; i < 20; i ++ ) {
+				for ( var i = 0; i < jsondata.nodes.length; i ++ ) {
+
+					var item = jsondata.nodes[ i ];
 
 					particle = new THREE.Particle( material );
-					particle.position.x = Math.random() * 2 - 1;
-					particle.position.y = Math.random() * 2 - 1;
-					particle.position.z = Math.random() * 2 - 1;
-					particle.position.normalize();
-					particle.position.multiplyScalar( Math.random() * 10 + 450 );
-					particle.scale.x = particle.scale.y = 10;
+					particle.position.x = item['x'] * 5;
+					particle.position.y = -1 * item['y'] * 5;
+					particle.position.z = z_index * 100;
+					particle.position.x = item['x'] - offset_x;
+					particle.position.y = -1 *item['y'] + offset_y;
+					//particle.position.normalize();
+					//particle.position.multiplyScalar(10);
+					particle.scale.x = particle.scale.y = 7;
 					scene.add( particle );
 
-					geometry.vertices.push( particle.position );
+					//geometry.vertices.push( particle.position );
+					node_locations.push(particle.position);
 
 				}
 
+				//TODO: need to remove if same element already drawn for same overlay_id...
+
+				for ( var i = 0; i < node_locations.length; i ++ ) {
+					var item = node_locations[i]; //the node
+
+					var source = new THREE.Vector3( item['x'], item['y'], 0 );
+					var target = new THREE.Vector3( item['x'], item['y'], z_index * 100 );
+
+					var geometry = new THREE.Geometry();
+					geometry.vertices.push(source);
+					geometry.vertices.push(target);
+					var line = new THREE.Line( geometry, new THREE.LineDashedMaterial( { color: 0xaaaaaa,
+						opacity: 1,
+						linewidth: 1 } ) );
+					scene.add( line );
+
+				}
+
+
+				for ( var i = 0; i < jsondata.links.length; i ++ ) {
+					var item = jsondata.links[ i ];
+					var source = item['source'];
+					var target = item['target'];
+					var geometry = new THREE.Geometry();
+					geometry.vertices.push(node_locations[source]);
+					geometry.vertices.push(node_locations[target]);
+					var line = new THREE.Line( geometry, new THREE.LineBasicMaterial( { color: 0x0099ff,
+						opacity: 0.5,
+						linewidth: 3 } ) );
+					scene.add( line );
+				}
+
+
+
+			render();
 
 			}
 
@@ -167,7 +167,6 @@
 			//
 
 			var numPoints = 100;
-
 			spline = new THREE.SplineCurve3([
 				new THREE.Vector3(0, 0, 0),
 				new THREE.Vector3(0, 200, 0),
@@ -190,7 +189,7 @@
 			}
 
 			var line = new THREE.Line(geometry, material);
-			scene.add(line);
+			//scene.add(line);
 
 			//
 			render();
@@ -234,11 +233,14 @@ ws.onopen = function() {
     ws.send("overlay_id=" + overlay_id);
     overlay_id = "input";
     ws.send("overlay_id=" + overlay_id);
+    ws.send("overlay_id=ebgp");
 };
 ws.onclose = function () {
 };
 
 jsondata = [];
+
+z_index = 0;
 
 ws.onmessage = function (evt) {
     var data = jQuery.parseJSON(evt.data);
@@ -246,7 +248,8 @@ ws.onmessage = function (evt) {
     if ("graph" in data) {
         if (overlay_id != "ip_allocations"){
             jsondata = data;
-            build(jsondata);
+            build(jsondata, z_index);
+            z_index++;
         }
     }
   
