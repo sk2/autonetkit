@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!-- saved from url=(0045)http://threejs.org/examples/canvas_lines.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<title>AutoNetkit 3D Visualisation Demo</title>
+		<title>three.js canvas - lines - random</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 		<style>
@@ -19,11 +19,8 @@
 	<body>
 
 		<script src="three.min.js"></script>
-		<script src="TrackballControls.js"></script>
-		<script src="OrbitControls.js"></script>
-		<script src="FirstPersonControls.js"></script>
+		<script src="js/TrackballControls.js"></script>
 		<script type="text/javascript" src="jquery-1.7.2.min.js"></script>
-		<script type="text/javascript" src="helvetiker_regular.typeface.js"></script>
 		<script type="text/javascript" src="underscore-min.js"></script>
 
 
@@ -44,9 +41,6 @@
 			init();
 			animate();
 
-			var objects = [];
-
-
 			function init() {
 
 				var container, separation = 100, amountX = 50, amountY = 50,
@@ -60,77 +54,28 @@
 				camera.position.y = -600;
 				camera.position.z = 250;
 
+
+
 				scene = new THREE.Scene();
 
 				renderer = new THREE.CanvasRenderer();
 				renderer.setSize( window.innerWidth, window.innerHeight );
 				container.appendChild( renderer.domElement );
 
-				controls = new THREE.OrbitControls( camera, renderer.domElement );
+				controls = new THREE.TrackballControls( camera, renderer.domElement );
 				controls.rotateSpeed = 0.5;
 				controls.addEventListener( 'change', render );
 				controls.update();
 
-				document.addEventListener( 'mousedown', onDocumentMouseDown, false );
-
-
-
 			}
 
-			function onDocumentMouseDown( event ) {
-				//from http://stackoverflow.com/q/7984471
-				projector = new THREE.Projector();
-
-
-				event.preventDefault();
-
-				var mouse = new THREE.Vector2();
-
-
-				mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-				mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-
-
-				var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
-				projector.unprojectVector( vector, camera );
-
-				var ray = new THREE.Raycaster( camera.position, vector.sub( camera.position ).normalize() );
-
-				var intersects = ray.intersectObjects( objects );
-
-				if ( intersects.length > 0 ) {
-					console.log(intersects);
-
-
-				}
-
-    /*
-    // Parse all the faces
-    for ( var i in intersects ) {
-        intersects[ i ].face.material[ 0 ].color
-            .setHex( Math.random() * 0xffffff | 0x80000000 );
-    }
-    */
-}
-
-			function build(jsondata, overlay_id, z_index) {
-				var z_multiplier = 150;
+			function build(jsondata, z_index) {
 
 				nodes = jsondata.nodes;
 				all_x = _.map(nodes, function(n){ return n['x']});
 				all_y = _.map(nodes, function(n){ return n['y']});
 				offset_x =  (_.max(all_x) - _.min(all_x))/2;
 				offset_y =  (_.max(all_y) - _.min(all_y))/2;
-
-				var meshMaterial = new THREE.MeshBasicMaterial({
-					color: 0xCCCCCC,
-					opacity: 0.2,
-				});
-				var mesh = new THREE.Mesh(new THREE.CubeGeometry(offset_x*2,offset_y*2,3,1),meshMaterial);
-				mesh.position.z = z_index * z_multiplier;
-				scene.add(mesh);
-
-				//TODO: replace particles with cylinders.... and embed svg image on
 
 				var PI2 = Math.PI * 2;
 				var material = new THREE.ParticleCanvasMaterial( {
@@ -149,7 +94,6 @@
 
 				node_locations = [];
 
-
 				for ( var i = 0; i < jsondata.nodes.length; i ++ ) {
 
 					var item = jsondata.nodes[ i ];
@@ -157,7 +101,7 @@
 					particle = new THREE.Particle( material );
 					particle.position.x = item['x'] * 5;
 					particle.position.y = -1 * item['y'] * 5;
-					particle.position.z = z_index * z_multiplier;
+					particle.position.z = z_index * 100;
 					particle.position.x = item['x'] - offset_x;
 					particle.position.y = -1 *item['y'] + offset_y;
 					//particle.position.normalize();
@@ -168,72 +112,39 @@
 					//geometry.vertices.push( particle.position );
 					node_locations.push(particle.position);
 
-					objects.push(particle); //store all global particles for intersection detection
-
 				}
 
 				//TODO: need to remove if same element already drawn for same overlay_id...
 
-				//Add line from node in previous plane 
-
 				for ( var i = 0; i < node_locations.length; i ++ ) {
-					if (z_index > 0) {
 					var item = node_locations[i]; //the node
 
-					var source = new THREE.Vector3( item['x'], item['y'], (z_index -1) * z_multiplier );
-					var target = new THREE.Vector3( item['x'], item['y'], z_index * z_multiplier );
+					var source = new THREE.Vector3( item['x'], item['y'], 0 );
+					var target = new THREE.Vector3( item['x'], item['y'], z_index * 100 );
 
 					var geometry = new THREE.Geometry();
 					geometry.vertices.push(source);
 					geometry.vertices.push(target);
-					var line = new THREE.Line( geometry, new THREE.LineBasicMaterial( { color: 0xaaaaaa,
-						opacity: 0.5,
+					var line = new THREE.Line( geometry, new THREE.LineDashedMaterial( { color: 0xaaaaaa,
+						opacity: 1,
 						linewidth: 1 } ) );
 					scene.add( line );
+
 				}
 
 
-			}
-
-
-				//from http://stemkoski.github.io/Three.js/Text3D.html
-				var materialFront = new THREE.MeshBasicMaterial( { color: 0x666666 } );
-				var materialArray = [ materialFront, materialFront ];
-				var textGeom = new THREE.TextGeometry( overlay_id, 
-				{
-					size: 20, height: 1, curveSegments: 3,
-					font: "helvetiker", style: "normal",
-					bevelThickness: 1, bevelSize: 0, bevelEnabled: false,
-					material: 0, extrudeMaterial: 1
-				});
-	// font: helvetiker, gentilis, droid sans, droid serif, optimer
-	// weight: normal, bold
-	
-	var textMaterial = new THREE.MeshFaceMaterial(materialArray);
-	var textMesh = new THREE.Mesh(textGeom, textMaterial );
-	
-	textGeom.computeBoundingBox();
-	var textWidth = textGeom.boundingBox.max.x - textGeom.boundingBox.min.x;
-	var textHeight = textGeom.boundingBox.max.y - textGeom.boundingBox.min.y;
-
-	textMesh.position.set( -1*offset_x + 0.5 * textWidth, -1*offset_y + 0.5 * textHeight, z_index * z_multiplier );
-	//textMesh.rotation.x = -Math.PI / 4;
-	scene.add(textMesh);
-
-
-//add links
-			for ( var i = 0; i < jsondata.links.length; i ++ ) {
-				var item = jsondata.links[ i ];
-				var source = item['source'];
-				var target = item['target'];
-				var geometry = new THREE.Geometry();
-				geometry.vertices.push(node_locations[source]);
-				geometry.vertices.push(node_locations[target]);
-				var line = new THREE.Line( geometry, new THREE.LineBasicMaterial( { color: 0x0099ff,
-					opacity: 0.5,
-					linewidth: 5 } ) );
-				scene.add( line );
-			}
+				for ( var i = 0; i < jsondata.links.length; i ++ ) {
+					var item = jsondata.links[ i ];
+					var source = item['source'];
+					var target = item['target'];
+					var geometry = new THREE.Geometry();
+					geometry.vertices.push(node_locations[source]);
+					geometry.vertices.push(node_locations[target]);
+					var line = new THREE.Line( geometry, new THREE.LineBasicMaterial( { color: 0x0099ff,
+						opacity: 0.5,
+						linewidth: 3 } ) );
+					scene.add( line );
+				}
 
 
 
@@ -297,6 +208,7 @@
 
 			function render() {
 
+console.log("here");
 				//camera.position.x += ( mouseX - camera.position.x ) * .05;
 				//camera.position.y += ( - mouseY + 200 - camera.position.y ) * .05;
 				//camera.lookAt( scene.position );
@@ -313,9 +225,15 @@
 		var socket_url = "ws://" + location.host + "/ws";
 socket_url += "?uuid={{ uuid }}"; //Webserver template fills in the uuid
 
+overlay_id = "phy";
+
 var ws = new WebSocket(socket_url);
 ws.onopen = function() {
-    ws.send("overlay_id=*");
+    ws.send("overlay_list");
+    ws.send("overlay_id=" + overlay_id);
+    overlay_id = "input";
+    ws.send("overlay_id=" + overlay_id);
+    ws.send("overlay_id=ebgp");
 };
 ws.onclose = function () {
 };
@@ -327,17 +245,12 @@ z_index = 0;
 ws.onmessage = function (evt) {
     var data = jQuery.parseJSON(evt.data);
     //TODO: parse to see if valid traceroute path or other data
-    if ("overlay_list" in data) {
-    	//sent automatically
-    }
-    else{
-    	overlays = ['phy', 'ospf', 'ibgp_v4', 'ebgp', 'vrf', 'mpls_ldp'];
-		for ( var i = 0; i < overlays.length; i ++ ) {
-			overlay_id = overlays[i];
-			z_index = i;
-			overlay_data = data[overlay_id];
-			build(overlay_data, overlay_id, z_index);
-		}
+    if ("graph" in data) {
+        if (overlay_id != "ip_allocations"){
+            jsondata = data;
+            build(jsondata, z_index);
+            z_index++;
+        }
     }
   
 }
