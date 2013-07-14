@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0045)http://threejs.org/examples/canvas_lines.html -->
+<!-- saved from url=(0029)http://127.0.0.1:8000/3d.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 		<title>AutoNetkit 3D Visualisation Demo</title>
 		<meta charset="utf-8">
@@ -19,61 +19,25 @@
 				float:left;
 				left: 100px;
 				height: 10px;
-				background-color: #FFFFFF;
-				opacity: 0.9;
+				width: 10px;
 			}
 
 
 		</style>
-	<style type="text/css"></style></head>
+	<style type="text/css"></style><style type="text/css"></style></head>
 	<body>
 
-		<script src="three.min.js"></script>
-		<script src="TrackballControls.js"></script>
-		<script src="OrbitControls.js"></script>
-		<script src="FirstPersonControls.js"></script>
-		<script type="text/javascript" src="jquery-1.7.2.min.js"></script>
-		<script type="text/javascript" src="helvetiker_regular.typeface.js"></script>
-		<script type="text/javascript" src="underscore-min.js"></script>
+		<script src="./AutoNetkit 3D Visualisation Demo_files/three.min.js"></script>
+		<script src="./AutoNetkit 3D Visualisation Demo_files/TrackballControls.js"></script>
+		<script src="./AutoNetkit 3D Visualisation Demo_files/OrbitControls.js"></script>
+		<script src="./AutoNetkit 3D Visualisation Demo_files/FirstPersonControls.js"></script>
+		<script type="text/javascript" src="./AutoNetkit 3D Visualisation Demo_files/jquery-1.7.2.min.js"></script>
+		<script type="text/javascript" src="./AutoNetkit 3D Visualisation Demo_files/helvetiker_regular.typeface.js"></script>
+		<script type="text/javascript" src="./AutoNetkit 3D Visualisation Demo_files/underscore-min.js"></script>
 
 
 		<div class="node_info"></div>
 
-		<script>
-		var data_to_li = function(d, depth) {
-    //TODO: may want to limit recursion depth
-    max_depth = 1;
-    text = "<ul>"; //begin the unordered list
-    for (attr in d) {
-    	if(_.isArray(d[attr])) {
-    		text += "<li><b>" + attr + ":</b> ";
-    		text += d[attr].join(", ");
-    	}
-    	else if (attr == "_interfaces") {
-            //text += "<li><b>Interfaces: </b> ";
-            //text += _.keys(d[attr]).join(", ");
-        }
-        else if (typeof d[attr] == 'object' && d[attr] != null && depth < max_depth) {
-            text += data_to_li(d[attr], depth +1); // recurse
-        }
-        else {
-            text += "<li><b>" + attr + ":</b> " + d[attr] + "</li>"; //add the key/val
-        }
-    }
-    text += "<ul>"; //finish the unordered list
-    return text;
-
-}
-
-//TODO: make recursive, if type is object and not null then call, and repeat...
-var node_info = function(d) {
-    //TODO: append ul/li like table example on http://christopheviau.com/d3_tutorial/
-    text = data_to_li(d, 0);
-    text = "" + text;
-    return text;
-    //status_label.html(text);
-}
-</script>
 
 		<script>
 
@@ -151,14 +115,20 @@ var node_info = function(d) {
 					node = nodes_by_overlay[object.overlay_id][object.node_index];
 					//console.log(event.clientX, event.clientY);
 					console.log(node);
-					html_text = node_info(node);
-					html_text = "<b>" + node.label + "</b> " + "(" + overlay_id + ")<br>" + html_text;
-					$(".node_info").html(html_text);
+					$(".node_info").html(node.label);
 				}
 				else {
 					$(".node_info").html("");
 				}
-			}
+
+    /*
+    // Parse all the faces
+    for ( var i in intersects ) {
+        intersects[ i ].face.material[ 0 ].color
+            .setHex( Math.random() * 0xffffff | 0x80000000 );
+    }
+    */
+}
 
 			function build(jsondata, overlay_id, z_index) {
 				nodes_by_overlay[overlay_id] = jsondata.nodes;
@@ -357,7 +327,7 @@ var node_info = function(d) {
 
 			}
 
-		</script>
+		</script><div><canvas width="3490" height="1176" style="width: 1745px; height: 588px;"></canvas></div>
 
 
 
