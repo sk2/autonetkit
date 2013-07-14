@@ -204,6 +204,7 @@ def jsonify_anm_with_graphics(anm, nidb = None):
                 'x': graphics_graph.node[n]['x'],
                 'y': graphics_graph.node[n]['y'],
                 'asn': graphics_graph.node[n]['asn'],
+                'label': graphics_graph.node[n]['label'],
                 'device_type': graphics_graph.node[n]['device_type'],
                 'device_subtype': graphics_graph.node[n].get('device_subtype'),
                 'pop': graphics_graph.node[n].get('pop'),
