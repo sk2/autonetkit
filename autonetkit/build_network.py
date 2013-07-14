@@ -96,7 +96,7 @@ def initialise(input_graph):
 
     g_graphics = anm.add_overlay("graphics")  # plotting data
     g_graphics.add_nodes_from(g_in, retain=['x', 'y', 'device_type',
-                              'device_subtype', 'pop', 'asn'])
+        'label', 'device_subtype', 'pop', 'asn'])
 
     if g_in.data.Creator == "Maestro":
         # Multiple ASNs set, use label format device.asn
