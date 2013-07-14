@@ -178,7 +178,11 @@ class AnkAccessor():
             return ""
         else:
             try:
-                return anm[overlay_id]
+                if overlay_id == "*":
+                    print "return", anm
+                    return anm
+                else:
+                    return anm[overlay_id]
             except KeyError:
                 print "Unable to find overlay %s in topoplogy with uuid %s" % (overlay_id, uuid)
 
