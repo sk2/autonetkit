@@ -319,8 +319,15 @@ class IpTree(object):
                 iterhosts = node.subnet.iter_hosts() # ensures start at .1 rather than .0
                 sub_children = node.children()
                 for sub_child in sub_children:
+                    #TODO: tidy up this allocation to always record the subnet
                     if sub_child.is_interface() and sub_child.host.is_loopback:
-                        sub_child.ip_address = iterhosts.next()
+                        if sub_child.host.is_loopback_zero:   
+                            # loopback zero, just store the ip address
+                            sub_child.ip_address = iterhosts.next()
+                        else:
+                            # secondary loopback
+                            sub_child.ip_address = iterhosts.next()
+                            sub_child.subnet = node.subnet
                     elif sub_child.is_interface() and sub_child.host.is_physical:
                         # physical interface
                         sub_child.ip_address = iterhosts.next()
@@ -331,6 +338,7 @@ class IpTree(object):
                 return
 
             for child in children:
+                # traverse the tree
                 if child.is_collision_domain():
                     subnet = subnet.next()
                     child.subnet = subnet
@@ -341,6 +349,10 @@ class IpTree(object):
                             interface = sub_child.host
                             if interface.is_physical:
                                 # physical interface
+                                sub_child.ip_address = iterhosts.next()
+                                sub_child.subnet = subnet 
+                            elif interface.is_loopback and not interface.is_loopback_zero:
+                                # secondary loopback interface
                                 sub_child.ip_address = iterhosts.next()
                                 sub_child.subnet = subnet 
                         else:
@@ -354,7 +366,12 @@ class IpTree(object):
                     iterhosts = child.subnet.iter_hosts() # ensures start at .1 rather than .0
                     sub_children = child.children()
                     for sub_child in sub_children:
-                        sub_child.subnet = iterhosts.next()
+                        if sub_child.is_interface() and not sub_child.host.is_loopback_zero:
+                           # secondary loopback
+                           sub_child.ip_address = iterhosts.next()
+                           sub_child.subnet = child.subnet 
+                        else:
+                            sub_child.subnet = iterhosts.next()
                 else:
                     child.subnet = subnet.next()
                     allocate(child) # continue down the tree
@@ -413,7 +430,6 @@ class IpTree(object):
     
     def assign(self):
 # assigns allocated addresses back to hosts
-    
         # don't look at host nodes now - use loopback_groups
         host_tree_nodes = [n for n in self if n.is_host() and n.host.is_l3device]
         #for host_tree_node in host_tree_nodes:
@@ -428,8 +444,13 @@ class IpTree(object):
         interfaces = [n for n in self if n.is_interface()]
         for n in interfaces:
             interface = n.host
-            if interface.is_loopback:
+            if interface.is_loopback and interface.is_loopback_zero:
+                # primary loopback
                 interface.loopback = n.ip_address
+            elif interface.is_loopback and not interface.is_loopback_zero:
+                # secondary loopback
+                interface.loopback = n.ip_address
+                interface.subnet = n.subnet
             elif interface.is_physical:
                 interface.ip_address = n.ip_address
                 interface.subnet = n.subnet
@@ -495,6 +516,8 @@ def allocate_vrf_loopbacks(g_ip, address_block = None):
             if i['vrf'].vrf_name]
 
     ip_tree.add_nodes(vrf_loopbacks)
+
+
     ip_tree.build()
     #secondary_loopback_tree = ip_tree.json()
     ip_tree.assign()
