@@ -179,7 +179,6 @@ class AnkAccessor():
         else:
             try:
                 if overlay_id == "*":
-                    print "return", anm
                     return anm
                 else:
                     return anm[overlay_id]
