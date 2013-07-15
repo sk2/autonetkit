@@ -18,7 +18,7 @@
 			.node_info {
 				float:left;
 				left: 100px;
-				height: 10px;
+				height: 0px;
 				background-color: #FFFFFF;
 				opacity: 0.9;
 			}
@@ -101,12 +101,13 @@ var node_info = function(d) {
 				particles, particle;
 
 				container = document.createElement('div');
+				container.className = "visualisation";
 				document.body.appendChild(container);
 
 				camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
 				camera.position.x = 0;
-				camera.position.y = -600;
-				camera.position.z = 250;
+				camera.position.y = -700;
+				camera.position.z = 300;
 
 				scene = new THREE.Scene();
 
@@ -152,7 +153,7 @@ var node_info = function(d) {
 					//console.log(event.clientX, event.clientY);
 					console.log(node);
 					html_text = node_info(node);
-					html_text = "<b>" + node.label + "</b> " + "(" + overlay_id + ")<br>" + html_text;
+					html_text = "<b>" + node.label + "</b> " + "(" + object.overlay_id + ")<br>" + html_text;
 					$(".node_info").html(html_text);
 				}
 				else {
@@ -162,7 +163,7 @@ var node_info = function(d) {
 
 			function build(jsondata, overlay_id, z_index) {
 				nodes_by_overlay[overlay_id] = jsondata.nodes;
-				var z_multiplier = 150;
+				var z_multiplier = 170;
 
 				nodes = jsondata.nodes;
 				all_x = _.map(nodes, function(n){ return n['x']});
