@@ -42,7 +42,7 @@ class overlay_interface(object):
     def __repr__(self):
         description = self.description or self.interface_id
 #TODO: get the str of the node label rather than just node id
-        return "(%s, %s)" % (self.node_id, description)
+        return "(%s, %s)" % (self.node, description)
 
     def __eq__(self, other):
         return self.__key() == other.__key()
