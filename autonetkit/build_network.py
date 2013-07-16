@@ -712,6 +712,11 @@ def manual_ipv4_infrastructure_allocation(anm):
         else:
             cd.subnet = cd_subnets[0] # take first entry
 
+        # apply to remote interfaces
+        for edge in cd.edges():
+            remote_interface = edge.dst_int
+            edge.dst_int.subnet = cd.subnet
+
     # also need to form aggregated IP blocks (used for e.g. routing prefix
     # advertisement)
     autonetkit.update_http(anm)
