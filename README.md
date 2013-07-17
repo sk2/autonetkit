@@ -5,6 +5,7 @@ For more information, including installation instructions and a how-to guide, pl
 [![PyPi version](https://pypip.in/v/autonetkit/badge.png)](https://crate.io/packages/autonetkit/)
 
 More information on AutoNetkit:
-[AutoNetkit YouTube Channel](http://www.youtube.com/autonetkit)
-[PyCon Australia 2013 Presentation on Autonetkit](http://t.co/H4NWROoAJK) [Slides](http://t.co/x0NXLMATEq)
-[AutoNetkit](http://www.autonetkit.org)
+
+*  [AutoNetkit YouTube Channel](http://www.youtube.com/autonetkit)
+*  [PyCon Australia 2013 Presentation on Autonetkit](http://t.co/H4NWROoAJK) [Slides](http://t.co/x0NXLMATEq)
+*  [AutoNetkit](http://www.autonetkit.org)
