@@ -1035,8 +1035,21 @@ class OverlayGraph(OverlayBase):
 
     def allocate_interfaces(self):
         """allocates edges to interfaces"""
+
+        if self._overlay_id in ("input", "phy"):
+            if (all(len(node['input']._interfaces) > 0
+                for node in self)
+            and all(len(edge['input']._interfaces) > 0
+                for edge in self.edges()) ):
+                input_interfaces_allocated = True
+            else:
+                input_interfaces_allocated = False
+
+
         if self._overlay_id == "input":
-            return
+            # only return if allocated here
+            if input_interfaces_allocated:
+                return # already allocated
   
         # int_counter = (n for n in itertools.count() if n not in
         if self._overlay_id == "phy":
@@ -1045,22 +1058,19 @@ class OverlayGraph(OverlayBase):
             edges = list(self.edges())
             if len(nodes) and len(edges):
                 # allocate called once physical graph populated
-                for node in self:
-                    input_interfaces = node['input']._interfaces
-                    #print "node", type(node), node.id,
-                    #print "label is", node.get("label")
-                    #print "inputs", input_interfaces
-                    #print
-                    if len(input_interfaces):
-                        node._interfaces = input_interfaces
 
-                for edge in self.edges():
-                    edge._interfaces = edge['input']._interfaces
-                    input_interfaces = edge['input']._interfaces
-                    if len(input_interfaces):
-                        edge._interfaces = input_interfaces
+                if input_interfaces_allocated:
+                    for node in self:
+                        input_interfaces = node['input']._interfaces
+                        if len(input_interfaces):
+                            node._interfaces = input_interfaces
 
-                return
+                    for edge in self.edges():
+                        edge._interfaces = edge['input']._interfaces
+                        input_interfaces = edge['input']._interfaces
+                        if len(input_interfaces):
+                            edge._interfaces = input_interfaces
+                    return
 
         self._init_interfaces()
 
