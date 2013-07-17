@@ -762,6 +762,7 @@ def build_ip(anm):
         "is_l3device")]
     for edge in edges_to_split:
         edge.split = True # mark as split for use in building nidb
+
     split_created_nodes = list(
         ank_utils.split(g_ip, edges_to_split, retain=['edge_id', 'split'], id_prepend = "cd"))
     for node in split_created_nodes:
