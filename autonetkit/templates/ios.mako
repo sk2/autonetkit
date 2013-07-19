@@ -50,6 +50,8 @@ cdp run
 %endif
 % if node.use_onepk:
 !
+username cisco privilege 15 password 0 cisco
+!
 onep
  transport socket
  start
