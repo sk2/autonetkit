@@ -15,6 +15,23 @@ def dot_to_underscore(instring):
     """Replace dots with underscores"""
     return instring.replace(".", "_")
 
+def natural_sort(sequence, key=lambda s:s):
+    """
+    Sort the sequence into natural alphanumeric order.
+    """
+    import re
+    sequence = list(sequence)
+    def get_alphanum_key_func(key):
+        convert = lambda text: int(text) if text.isdigit() else text 
+        return lambda s: [convert(c) for c in re.split('([0-9]+)', key(s))]
+    sort_key = get_alphanum_key_func(key)
+    sequence.sort(key=sort_key)
+    return sequence
+
+def sort_sessions(sequence):
+    """Wrapper around natural_sort for bgp sessions"""
+    return natural_sort(sequence, key = lambda x: x.dst.label)
+
 class RouterCompiler(object):
     """Base router compiler"""
     lo_interface = "lo0"
@@ -237,7 +254,7 @@ class RouterCompiler(object):
         ibgp_rr_parents = []
 
         g_ibgp_v4 = self.anm['ibgp_v4']
-        for session in g_ibgp_v4.edges(phy_node):
+        for session in sort_sessions(g_ibgp_v4.edges(phy_node)):
             if session.exclude:
                 log.debug("Skipping excluded ibgp session %s" % session)
                 continue # exclude from regular ibgp config (eg for VRF, VPLS, etc)
@@ -254,7 +271,7 @@ class RouterCompiler(object):
 
         #TODO: check v6 hierarchy only created if node set to being v4 or v6
         g_ibgp_v6 = self.anm['ibgp_v6']
-        for session in g_ibgp_v6.edges(phy_node):
+        for session in sort_sessions(g_ibgp_v6.edges(phy_node)):
             if session.exclude:
                 log.debug("Skipping excluded ibgp session %s" % session)
                 continue # exclude from regular ibgp config (eg for VRF, VPLS, etc)
@@ -278,7 +295,7 @@ class RouterCompiler(object):
 
         ebgp_neighbors = []
         g_ebgp_v4 = self.anm['ebgp_v4']
-        for session in g_ebgp_v4.edges(phy_node):
+        for session in sort_sessions(g_ebgp_v4.edges(phy_node)):
             if session.exclude:
                 log.debug("Skipping excluded ebgp session %s" % session)
                 continue # exclude from regular ibgp config (eg for VRF, VPLS, etc)
@@ -286,7 +303,7 @@ class RouterCompiler(object):
             ebgp_neighbors.append(data)
 
         g_ebgp_v6 = self.anm['ebgp_v6']
-        for session in g_ebgp_v6.edges(phy_node):
+        for session in sort_sessions(g_ebgp_v6.edges(phy_node)):
             if session.exclude:
                 log.debug("Skipping excluded ebgp session %s" % session)
                 continue # exclude from regular ibgp config (eg for VRF, VPLS, etc)
@@ -479,13 +496,13 @@ class IosBaseCompiler(RouterCompiler):
             vrf_ibgp_neighbors = defaultdict(list)
 
             g_ibgp_v4 = self.anm['ibgp_v4']
-            for session in g_ibgp_v4.edges(vrf_node):
+            for session in sort_sessions(g_ibgp_v4.edges(vrf_node)):
                 if session.exclude and session.vrf:
                     data = self.ibgp_session_data(session, ip_version = 4)
                     vrf_ibgp_neighbors[session.vrf].append(data)
 
             g_ibgp_v6 = self.anm['ibgp_v6']
-            for session in g_ibgp_v6.edges(vrf_node):
+            for session in sort_sessions(g_ibgp_v6.edges(vrf_node)):
                 if session.exclude and session.vrf:
                     data = self.ibgp_session_data(session, ip_version = 6)
                     vrf_ibgp_neighbors[session.vrf].append(data)
@@ -494,13 +511,13 @@ class IosBaseCompiler(RouterCompiler):
             vrf_ebgp_neighbors = defaultdict(list)
 
             g_ebgp_v4 = self.anm['ebgp_v4']
-            for session in g_ebgp_v4.edges(vrf_node):
+            for session in sort_sessions(g_ebgp_v4.edges(vrf_node)):
                 if session.exclude and session.vrf:
                     data = self.ebgp_session_data(session, ip_version = 4)
                     vrf_ebgp_neighbors[session.vrf].append(data)
 
             g_ebgp_v6 = self.anm['ebgp_v6']
-            for session in g_ebgp_v6.edges(vrf_node):
+            for session in sort_sessions(g_ebgp_v6.edges(vrf_node)):
                 if session.exclude and session.vrf:
                     data = self.ebgp_session_data(session, ip_version = 6)
                     vrf_ebgp_neighbors[session.vrf].append(data)
@@ -690,6 +707,8 @@ class IosClassicCompiler(IosBaseCompiler):
                 neigh_data = dict(neigh)
                 vpnv4_neighbors.append(neigh_data)
 
+        #vpnv4_neighbors = natural_sort(vpnv4_neighbors, key = lambda x: x['dst_int_ip'])
+        vpnv4_neighbors = sorted(vpnv4_neighbors, key = lambda x: x['loopback'])
         node.bgp.vpnv4_neighbors = vpnv4_neighbors
 
 class IosXrCompiler(IosBaseCompiler):
