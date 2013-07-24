@@ -67,7 +67,7 @@ def allocate_ips(G_ip):
         all_cds = set(d for d in devices if d.collision_domain)
         ptp_cds = [cd for cd in all_cds if cd.degree() == 2]
 
-        for cd in ptp_cds:
+        for cd in sorted(ptp_cds):
             subnet = ptp_subnet.next()
             hosts = subnet.iter_hosts()
             hosts.next() # drop .0 as a host address (valid but can be confusing)
@@ -77,7 +77,7 @@ def allocate_ips(G_ip):
 
         non_ptp_cds = all_cds - set(ptp_cds)
         # break into /96 subnets
-        for cd in non_ptp_cds:
+        for cd in sorted(non_ptp_cds):
             subnet = subnets.next()
             hosts = subnet.iter_hosts()
             hosts.next() # drop .0 as a host address (valid but can be confusing)
