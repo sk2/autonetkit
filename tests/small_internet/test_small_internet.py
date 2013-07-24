@@ -4,6 +4,8 @@ import os
 import gzip
 import json
 import unittest
+import subprocess
+import shutil
 
 def gzip_to_json(filename):
     with gzip.open(filename, "r") as json_fh:
@@ -12,6 +14,10 @@ def gzip_to_json(filename):
 def json_to_gzip(data, filename):
     with gzip.open(filename, "wb") as json_fh:
         return json.dump(data, json_fh)
+
+automated = True # whether to open ksdiff, log to file...
+if __name__ == "__main__":
+    automated = False
 
 dirname, filename = os.path.split(os.path.abspath(__file__))
 
@@ -64,4 +70,18 @@ for routername in routernames:
         with open(actual_filename, "r") as fh:
             actual_result = fh.read()
 
-        assert expected_result == actual_result
+        if expected_result != actual_result:
+            if automated:
+                #TODO: use difflib
+                print "Expected"
+                print expected_result
+                print "Actual"
+                print actual_result
+                raise AssertionError("Invalid result")
+            else:
+                cmd = ["ksdiff", expected_filename, actual_filename]
+                child = subprocess.Popen(cmd)
+                answer = raw_input("Merge (answer yes to merge): ")
+                if answer == "yes":
+                    print "Replacing expected with output"
+                    shutil.move(actual_filename, expected_filename)

@@ -27,7 +27,7 @@ setup (
      include_package_data = True, # include data from MANIFEST.in
 
      package_data = {'': ['settings.cfg', 'config/configspec.cfg', ]},
-     download_url = ("http://pypi.python.org/pypi/AutoNetkit"),
+     download_url = ("http://pypi.python.org/pypi/autonetkit"),
 
      install_requires = [
          'netaddr==0.7.10',
