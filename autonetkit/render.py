@@ -13,27 +13,6 @@ import autonetkit.log as log
 
 #TODO: clean up cache enable/disable
 
-#def resource_path(relative):
-    #"""Used to refer to templates inside installed exe
-    #from http://stackoverflow.com/questions/7674790
-    #"""
-#
-    #return os.path.join(
-        #os.environ.get(
-            #"_MEIPASS2",
-            #os.path.abspath(".")
-        #),
-        #relative
-    #)
-
-def remove_dirs(dirs):
-    for directory in dirs:
-        log.debug("Removing directory %s" % directory)
-        try:
-            shutil.rmtree(directory)
-        except OSError, e:
-            log.warning("Unable to remove %s, %s" % (directory, e))
-
 def resource_path(relative):
     """Makes relative to package"""
     return pkg_resources.resource_filename(__name__, relative)
@@ -206,6 +185,7 @@ def render_node(node, folder_cache):
         return
 
 def cache_folders(nidb):
+    #TODO: see if this is required, revert to old renderer?
     #TODO: look at copying to clobber folders rather than shutil remove
     import tempfile
     render_base = {node.render.base for node in nidb}
@@ -250,7 +230,6 @@ def render(nidb):
     log.info("Rendering Network")
     folder_cache = cache_folders(nidb)
     render_single(nidb, folder_cache)
-    #render_multi(nidb, folder_cache)
     render_topologies(nidb)
 
 #TODO: Also cache for topologies
@@ -262,40 +241,6 @@ def render(nidb):
 def render_single(nidb, folder_cache):
     for node in sorted(nidb):
         render_node(node, folder_cache)
-
-def render_multi(nidb, folder_cache):
-        nidb_node_count = len(nidb)
-        num_worker_threads = 10
-        rendered_nodes = []
-        def worker():
-                while True:
-                    node = q.get()
-                    render_node(node, folder_cache)
-                    q.task_done()
-                    rendered_nodes.append(node.label)
-
-        q = Queue.Queue()
-
-        for i in range(num_worker_threads):
-            t = threading.Thread(target=worker)
-            t.setDaemon(True)
-            t.start()
-
-        # Sort so starup looks neater
-#TODO: fix sort
-        for node in sorted(nidb):
-            q.put(node)
-
-        while True:
-            """ Using this instead of q.join allows easy way to quit all threads (but not allow cleanup)
-            refer http://stackoverflow.com/questions/820111"""
-            time.sleep(1)
-            if len(rendered_nodes) == nidb_node_count:
-# all routers started
-                break
-            else:
-                #print "rendered", len(rendered_nodes)
-                pass
 
 def render_topologies(nidb):
     for topology in nidb.topology:
