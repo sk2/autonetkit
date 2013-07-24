@@ -164,7 +164,7 @@ class IpTree(object):
         groupings = itertools.groupby(unallocated_nodes, key = key_func)
         for attr_value, items in groupings:
 # make subtree for each attr
-            items = list(items)
+            items = sorted(list(items))
             subgraph = nx.DiGraph()
 
             if all(isinstance(item, autonetkit.anm.overlay_interface) for item in items):
