@@ -1,13 +1,29 @@
 #!/usr/bin/env python
 from setuptools import setup
+from setuptools.command.test import test as TestCommand
+import sys
 
 #from setuptools import setup, find_packages
+
+class PyTest(TestCommand):
+    def finalize_options(self):
+        TestCommand.finalize_options(self)
+        self.test_args = []
+        self.test_suite = True
+    def run_tests(self):
+        #import here, cause outside the eggs aren't loaded
+        import pytest
+        errno = pytest.main(self.test_args)
+        sys.exit(errno)
 
 setup (
      name = "autonetkit",
      version = "0.5.2",
      description = 'Automatic configuration generation for emulated networks',
      long_description = 'Automatic configuration generation for emulated networks',
+
+     tests_require=['pytest'],
+     cmdclass = {'test': PyTest},
 
      # simple to run 
      entry_points = {
