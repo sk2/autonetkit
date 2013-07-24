@@ -54,3 +54,5 @@ htmlcov/*
 *.sublime-project
 
 *.sublime-workspace
+
+tests/small_internet/rendered/*
