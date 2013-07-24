@@ -72,7 +72,7 @@ def allocate_ips(G_ip):
             hosts = subnet.iter_hosts()
             hosts.next() # drop .0 as a host address (valid but can be confusing)
             cd.subnet = subnet 
-            for edge in cd.edges():
+            for edge in sorted(cd.edges(), key = lambda x: x.dst.label):
                 edge.ip = hosts.next()
 
         non_ptp_cds = all_cds - set(ptp_cds)
@@ -82,14 +82,14 @@ def allocate_ips(G_ip):
             hosts = subnet.iter_hosts()
             hosts.next() # drop .0 as a host address (valid but can be confusing)
             cd.subnet = subnet 
-            for edge in cd.edges():
+            for edge in sorted(cd.edges(), key = lambda x: x.dst.label):
                 edge.ip = hosts.next()
 
 
         loopback_hosts = loopback_blocks[asn].iter_hosts()
         loopback_hosts.next() # drop .0 as a host address (valid but can be confusing)
         l3hosts = set(d for d in devices if d.is_l3device)
-        for host in sorted(l3hosts):
+        for host in sorted(l3hosts, key = lambda x: x.label):
             host.loopback = loopback_hosts.next()
 
         routers = [n for n in l3hosts if n.is_router] # filter
