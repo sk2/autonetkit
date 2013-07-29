@@ -42,17 +42,17 @@ def grid_2d(dim):
     import networkx as nx
     graph = nx.grid_2d_graph(dim, dim)
 
-    for n in graph:
-        graph.node[n]['asn'] = 1
-        graph.node[n]['x'] = n[0] * 150
-        graph.node[n]['y'] = n[1] * 150
-        graph.node[n]['device_type'] = 'router'
-        graph.node[n]['platform'] = 'cisco'
-        graph.node[n]['syntax'] = 'ios_xr'
-        graph.node[n]['host'] = 'internal'
-        graph.node[n]['ibgp_level'] = 0
+    for node in graph:
+        graph.node[node]['asn'] = 1
+        graph.node[node]['x'] = node[0] * 150
+        graph.node[node]['y'] = node[1] * 150
+        graph.node[node]['device_type'] = 'router'
+        graph.node[node]['platform'] = 'cisco'
+        graph.node[node]['syntax'] = 'ios_xr'
+        graph.node[node]['host'] = 'internal'
+        graph.node[node]['ibgp_level'] = 0
 
-    mapping = {n: "%s_%s" % (n[0], n[1]) for n in graph}
+    mapping = {node: "%s_%s" % (node[0], node[1]) for node in graph}
     nx.relabel_nodes(graph, mapping, copy=False) # Networkx wipes data if remap with same labels
     for index, (src, dst) in enumerate(graph.edges()):
         graph[src][dst]['type'] = "physical"
@@ -134,7 +134,7 @@ def apply_design_rules(anm):
     else:
         anm.add_overlay("ipv6") # placeholder for compiler logic
 
-    default_igp = g_in.data.igp or "ospf" 
+    default_igp = g_in.data.igp or "ospf"
     non_igp_nodes = [n for n in g_in if not n.igp]
 #TODO: should this be modifying g_in?
     g_in.update(non_igp_nodes, igp=default_igp) # store igp onto each node
@@ -182,7 +182,7 @@ def allocate_vrf_roles(g_vrf):
     non_ce_nodes = [node for node in g_vrf if node.vrf_role != "CE"]
 
     for node in non_ce_nodes:
-        phy_neighbors = g_phy.node(node).neighbors("is_router")  
+        phy_neighbors = g_phy.node(node).neighbors("is_router")
         # neighbors from physical graph for connectivity
         phy_neighbors = [neigh for neigh in phy_neighbors]
             # filter to just this asn
@@ -216,7 +216,6 @@ def build_ibgp_vpn_v4(anm):
     g_bgp = anm['bgp']
     g_ibgp_v4 = anm['ibgp_v4']
     g_vrf = anm['vrf']
-    g_phy = anm['phy']
     g_ibgp_vpn_v4= anm.add_overlay("ibgp_vpn_v4", directed=True)
 
     ibgp_v4_nodes = list(g_ibgp_v4.nodes())
@@ -231,7 +230,7 @@ def build_ibgp_vpn_v4(anm):
 
     #TODO: extend this to only connect nodes which are connected in VRFs, so don't set to others
 
-    ibgp_vpn_v4_nodes = (n for n in ibgp_v4_nodes 
+    ibgp_vpn_v4_nodes = (n for n in ibgp_v4_nodes
             if n not in pe_rrc_nodes and n not in ce_nodes)
     g_ibgp_vpn_v4.add_nodes_from(ibgp_vpn_v4_nodes, retain = "ibgp_level")
     g_ibgp_vpn_v4.add_edges_from(g_ibgp_v4.edges(), retain = "direction")
@@ -310,18 +309,20 @@ def build_mpls_ldp(anm):
 def mark_ebgp_vrf(anm):
     g_ebgp = anm['ebgp']
     g_vrf = anm['vrf']
-    g_ebgpv4= anm['ebgp_v4']
-    g_ebgpv6= anm['ebgp_v6']
+    g_ebgpv4 = anm['ebgp_v4']
+    g_ebgpv6 = anm['ebgp_v6']
     pe_nodes = set(g_vrf.nodes(vrf_role = "PE"))
     ce_nodes = set(g_vrf.nodes(vrf_role = "CE"))
     for edge in g_ebgpv4.edges():
         if (edge.src in pe_nodes and edge.dst in ce_nodes):
-            edge.exclude = True # exclude from "regular" ebgp (as put into vrf stanza)
+            # exclude from "regular" ebgp (as put into vrf stanza)
+            edge.exclude = True
             edge.vrf = edge.dst['vrf'].vrf
 
     for edge in g_ebgpv6.edges():
         if (edge.src in pe_nodes and edge.dst in ce_nodes):
-            edge.exclude = True # exclude from "regular" ebgp (as put into vrf stanza)
+             # exclude from "regular" ebgp (as put into vrf stanza)
+            edge.exclude = True
             edge.vrf = edge.dst['vrf'].vrf
 
 def build_vrf(anm):
@@ -368,7 +369,7 @@ def build_vrf(anm):
     for asn, devices in ank_utils.groupby("asn", g_vrf.nodes(vrf_role = "PE")):
         asn_vrfs = [d.node_vrf_names for d in devices]
         # flatten list to unique set
-        asn_vrfs = set(itertools.chain.from_iterable(asn_vrfs)) 
+        asn_vrfs = set(itertools.chain.from_iterable(asn_vrfs))
         route_targets[asn] = {vrf: "%s:%s" % (asn, index)
                 for index, vrf in enumerate(sorted(asn_vrfs), 1)}
 
@@ -377,7 +378,7 @@ def build_vrf(anm):
     for node in g_vrf:
         vrf_loopbacks = node.interfaces("is_loopback", "vrf_name")
         for index, interface in enumerate(vrf_loopbacks, start = 101):
-            interface.index = index 
+            interface.index = index
 
     for edge in g_vrf.edges():
         # Set the vrf of the edge to be that of the CE device (either src or dst)
@@ -455,7 +456,7 @@ def three_tier_ibgp_edges(routers):
     up_links += l1_l3_up_links
     down_links += l1_l3_down_links
     over_links += l1_l3_over_links
-  
+
     return up_links, down_links, over_links
 
 def build_two_tier_ibgp(routers):
@@ -529,9 +530,11 @@ def build_ebgp(anm):
     g_ebgp.add_nodes_from(ebgp_switches, retain=['asn'])
     log.debug("eBGP switches are %s" % ebgp_switches)
     g_ebgp.add_edges_from((e for e in g_in.edges()
-            if e.src in ebgp_switches or e.dst in ebgp_switches), bidirectional=True, type='ebgp')
+            if e.src in ebgp_switches or e.dst in ebgp_switches),
+    bidirectional=True, type='ebgp')
     ank_utils.aggregate_nodes(g_ebgp, ebgp_switches, retain="edge_id")
-    ebgp_switches = list(g_ebgp.nodes("is_switch")) # need to recalculate as may have aggregated
+    # need to recalculate as may have aggregated
+    ebgp_switches = list(g_ebgp.nodes("is_switch"))
     log.debug("aggregated eBGP switches are %s" % ebgp_switches)
     exploded_edges = ank_utils.explode_nodes(g_ebgp, ebgp_switches,
             retain="edge_id")
@@ -700,22 +703,21 @@ def manual_ipv4_infrastructure_allocation(anm):
     collision_domains = [d for d in g_ipv4 if d.collision_domain]
     #TODO: allow this to work with specified ip_address/subnet as well as ip_address/prefixlen
     from netaddr import IPNetwork
-    for cd in collision_domains:
-        connected_interfaces = [edge.dst_int for edge in cd.edges()]
+    for coll_dom in collision_domains:
+        connected_interfaces = [edge.dst_int for edge in coll_dom.edges()]
         cd_subnets = [IPNetwork("%s/%s" % (i.subnet.network, i.prefixlen))
             for i in connected_interfaces]
 
         try:
             assert(len(set(cd_subnets)) == 1)
         except AssertionError:
-            log.warning("Non matching subnets from collision domain %s" % cd)
+            log.warning("Non matching subnets from collision domain %s" % coll_dom)
         else:
-            cd.subnet = cd_subnets[0] # take first entry
+            coll_dom.subnet = cd_subnets[0] # take first entry
 
         # apply to remote interfaces
-        for edge in cd.edges():
-            remote_interface = edge.dst_int
-            edge.dst_int.subnet = cd.subnet
+        for edge in coll_dom.edges():
+            edge.dst_int.subnet = coll_dom.subnet
 
     # also need to form aggregated IP blocks (used for e.g. routing prefix
     # advertisement)
@@ -764,12 +766,15 @@ def build_ip(anm):
         edge.split = True # mark as split for use in building nidb
 
     split_created_nodes = list(
-        ank_utils.split(g_ip, edges_to_split, retain=['edge_id', 'split'], id_prepend = "cd"))
+        ank_utils.split(g_ip, edges_to_split,
+            retain=['edge_id', 'split'], id_prepend = "cd"))
     for node in split_created_nodes:
         node['graphics'].x = ank_utils.neigh_average(g_ip, node, "x",
-                                                     g_graphics) + 0.1 # temporary fix for gh-90
+           g_graphics) + 0.1
+         # temporary fix for gh-90
         node['graphics'].y = ank_utils.neigh_average(g_ip, node, "y",
-                                                     g_graphics) + 0.1 # temporary fix for gh-90
+             g_graphics) + 0.1
+            # temporary fix for gh-90
         asn = ank_utils.neigh_most_frequent(
             g_ip, node, "asn", g_phy)  # arbitrary choice
         node['graphics'].asn = asn
@@ -792,7 +797,7 @@ def build_ip(anm):
         if not node.is_switch:
             # use node sorting, as accomodates for numeric/string names
             neighbors = sorted(neigh for neigh in node.neighbors())
-            label = "_".join(neigh.label for neigh in neighbors) 
+            label = "_".join(neigh.label for neigh in neighbors)
             cd_label = "cd_%s" % label  # switches keep their names
             node.label = cd_label
             node.cd_id = cd_label
@@ -823,7 +828,8 @@ def extract_ipv4_blocks(anm):
     try:
         vrf_loopback_subnet = g_in.data.ipv4_vrf_loopback_subnet
         vrf_loopback_prefix = g_in.data.ipv4_vrf_loopback_prefix
-        vrf_loopback_block = sn_preflen_to_network(vrf_loopback_subnet, vrf_loopback_prefix)
+        vrf_loopback_block = sn_preflen_to_network(vrf_loopback_subnet,
+            vrf_loopback_prefix)
     except Exception, e:
         log.debug("Unable to obtain vrf_loopback_subnet from input graph: %s" % e)
         vrf_loopback_block = IPNetwork("172.16.0.0/24")
@@ -839,7 +845,8 @@ def build_ipv4(anm, infrastructure=True):
     g_ipv4.add_nodes_from(
         g_ip, retain="collision_domain")  # retain if collision domain or not
     # Copy ASN attribute chosen for collision domains (used in alloc algorithm)
-    ank_utils.copy_attr_from(g_ip, g_ipv4, "asn", nbunch = g_ipv4.nodes("collision_domain"))
+    ank_utils.copy_attr_from(g_ip, g_ipv4, "asn",
+        nbunch = g_ipv4.nodes("collision_domain"))
     g_ipv4.add_edges_from(g_ip.edges())
 
     # check if ip ranges have been specified on g_in
@@ -900,16 +907,16 @@ def build_phy(anm):
     # TODO: make this automatic if adding to the physical graph?
 
     if g_in.data.Creator == "Maestro":
-        g_phy.data.mgmt_interfaces_enabled = g_in.data.mgmt_interfaces_enabled 
-        g_phy.data.mgmt_address_start = g_in.data.mgmt_address_start 
-        g_phy.data.mgmt_address_end = g_in.data.mgmt_address_end 
+        g_phy.data.mgmt_interfaces_enabled = g_in.data.mgmt_interfaces_enabled
+        g_phy.data.mgmt_address_start = g_in.data.mgmt_address_start
+        g_phy.data.mgmt_address_end = g_in.data.mgmt_address_end
         g_phy.data.mgmt_prefixlen = g_in.data.mgmt_prefixlen
         ank_utils.copy_attr_from(g_in, g_phy, "use_cdp")
         ank_utils.copy_attr_from(g_in, g_phy, "use_onepk")
         ank_utils.copy_attr_from(g_in, g_phy, "label_full")
         ank_utils.copy_attr_from(g_in, g_phy, "indices")
 
-    g_phy.allocate_interfaces() 
+    g_phy.allocate_interfaces()
     for node in g_phy.nodes("specified_int_names"):
         for interface in node:
             edge = interface.edges()[0]
@@ -1099,7 +1106,7 @@ def build_isis(anm):
     """Build isis overlay"""
     g_in = anm['input']
     # add regardless, so allows quick check of node in anm['isis'] in compilers
-    g_isis = anm.add_overlay("isis") 
+    g_isis = anm.add_overlay("isis")
 
     if not any(n.igp == "isis" for n in g_in):
         log.debug("No ISIS nodes")
