@@ -1,3 +1,4 @@
+"""Compiler for Netkit"""
 import os
 import autonetkit
 import autonetkit.config
@@ -13,6 +14,7 @@ class NetkitCompiler(PlatformCompiler):
     """Netkit Platform Compiler"""
     @staticmethod
     def index_to_int_id(index):
+        """Maps interface index to ethx e.g. eth0, eth1, ..."""
         return "eth%s" % index
 
     def compile(self):
@@ -24,9 +26,12 @@ class NetkitCompiler(PlatformCompiler):
             folder_name = naming.network_hostname(phy_node)
             nidb_node = self.nidb.node(phy_node)
             nidb_node.render.base = os.path.join("templates","quagga")
-            nidb_node.render.template = os.path.join("templates","netkit_startup.mako")
-            nidb_node.render.dst_folder = os.path.join("rendered", self.host, "netkit")
-            nidb_node.render.base_dst_folder = os.path.join("rendered", self.host, "netkit", folder_name)
+            nidb_node.render.template = os.path.join("templates",
+                "netkit_startup.mako")
+            nidb_node.render.dst_folder = os.path.join("rendered",
+                self.host, "netkit")
+            nidb_node.render.base_dst_folder = os.path.join("rendered",
+                self.host, "netkit", folder_name)
             nidb_node.render.dst_file = "%s.startup" % folder_name
 
             nidb_node.render.custom = {
@@ -54,7 +59,6 @@ class NetkitCompiler(PlatformCompiler):
 
             quagga_compiler.compile(nidb_node)
 
-            # TODO: move these into inherited BGP config
             if nidb_node.bgp:
                 nidb_node.bgp.debug = True
                 static_routes = []
@@ -65,26 +69,24 @@ class NetkitCompiler(PlatformCompiler):
         self.lab_topology()
 
     def allocate_tap_ips(self):
+        """Allocates TAP IPs"""
         settings = autonetkit.config.settings
-        # TODO: take tap subnet parameter
-        #TODO: this should be tuple of self.host and platform
         lab_topology = self.nidb.topology[self.host]
-            # TODO: also store platform
         from netaddr import IPNetwork
         address_block = IPNetwork(settings.get("tapsn")
             or "172.16.0.0/16").iter_hosts() # added for backwards compatibility
         lab_topology.tap_host = address_block.next()
         lab_topology.tap_vm = address_block.next()  # for tunnel host
         for node in sorted(self.nidb.nodes("is_l3device", host=self.host)):
-            # TODO: fix sorting order
-            # TODO: check this works for switches
             node.tap.ip = address_block.next()
 
     def lab_topology(self):
 # TODO: replace name/label and use attribute from subgraph
         lab_topology = self.nidb.topology[self.host]
-        lab_topology.render_template = os.path.join("templates","netkit_lab_conf.mako")
-        lab_topology.render_dst_folder = os.path.join("rendered", self.host, "netkit")
+        lab_topology.render_template = os.path.join("templates",
+            "netkit_lab_conf.mako")
+        lab_topology.render_dst_folder = os.path.join("rendered",
+            self.host, "netkit")
         lab_topology.render_dst_file = "lab.conf"
         lab_topology.description = "AutoNetkit Lab"
         lab_topology.author = "AutoNetkit"
@@ -93,14 +95,11 @@ class NetkitCompiler(PlatformCompiler):
             self.nidb.nodes(host=self.host, platform="netkit"))
         if not len(host_nodes):
             log.debug("No Netkit hosts for %s" % self.host)
-            # TODO: make so can return here
-            # return
 # also need collision domains for this host
         cd_nodes = self.nidb.nodes("collision_domain", host=self.host)
         host_nodes += cd_nodes
         subgraph = self.nidb.subgraph(host_nodes, self.host)
 
-# TODO: sort this numerically, not just by string
         lab_topology.machines = " ".join(alpha_sort(naming.network_hostname(phy_node)
             for phy_node in subgraph.nodes("is_l3device")))
 
@@ -108,7 +107,8 @@ class NetkitCompiler(PlatformCompiler):
         for node in sorted(subgraph.nodes("is_l3device")):
             for interface in node.physical_interfaces:
                 collision_domain = str(interface.ipv4_subnet).replace("/", ".")
-                numeric_id = interface.numeric_id #netkit lab.conf uses 1 instead of eth1
+                #netkit lab.conf uses 1 instead of eth1
+                numeric_id = interface.numeric_id
                 lab_topology.config_items.append(
                     device=naming.network_hostname(node),
                     key=numeric_id,
@@ -119,8 +119,6 @@ class NetkitCompiler(PlatformCompiler):
         for node in subgraph:
             if node.tap:
                 lab_topology.tap_ips.append(
-                    # TODO: merge the following and previous into a single
-                    # function
                     device=naming.network_hostname(node),
                     id=node.tap.id.replace("eth", ""),  # strip ethx -> x
                     ip=node.tap.ip,

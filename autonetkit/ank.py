@@ -147,7 +147,7 @@ def save(OverlayGraph):
             if type(val) in replace_as_string:
                 graph[src][dst][key] = str(val)
 
-    mapping = dict( (n.node_id, str(n)) for n in OverlayGraph) 
+    mapping = dict( (n.node_id, str(n)) for n in OverlayGraph)
     nx.relabel_nodes( graph, mapping, copy=False)
 #TODO: See why getting networkx.exception.NetworkXError: GraphML writer does not support <type 'NoneType'> as data values.
 #TODO: process writer to allow writing of IPnetwork class values
@@ -159,7 +159,7 @@ def save(OverlayGraph):
 #TODO: make edges own module
 def wrap_edges(OverlayGraph, edges):
     """ wraps edge ids into edge overlay """
-    edges = list(edges) 
+    edges = list(edges)
     if not any(len(e) for e in edges):
         return []# each edge tuple is empty
 
@@ -289,9 +289,9 @@ def aggregate_nodes(OverlayGraph, nodes, retain = []):
         pass
     total_added_edges = []
     if graph.is_directed():
-        component_nodes_list = nx.strongly_connected_components(subgraph) 
+        component_nodes_list = nx.strongly_connected_components(subgraph)
     else:
-        component_nodes_list = nx.connected_components(subgraph) 
+        component_nodes_list = nx.connected_components(subgraph)
     for component_nodes in component_nodes_list:
         if len(component_nodes) > 1:
             base = component_nodes.pop() # choose one base device to retain
@@ -329,7 +329,7 @@ def aggregate_nodes(OverlayGraph, nodes, retain = []):
                             dst_data = dict( (key, graph[src][dst][key]) for key in retain)
                             dst_data['_interfaces'] = {src: src_int_id}
                             edges_to_add.append((src, base, dst_data))
-                        
+
             graph.add_edges_from(edges_to_add)
             total_added_edges += edges_to_add
             graph.remove_nodes_from(nodes_to_remove)
@@ -347,7 +347,7 @@ def most_frequent(iterable):
     except ValueError, e:
         log.warning("Unable to calculate most_frequent, %s" % e)
         return None
-    
+
 def neigh_most_frequent(OverlayGraph, node, attribute, attribute_graph = None):
     """Used to explicitly force most frequent - useful if integers such as ASN which would otherwise return mean"""
     graph = unwrap_graph(OverlayGraph)
