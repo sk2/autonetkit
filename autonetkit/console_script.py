@@ -53,7 +53,7 @@ def manage_network(input_graph_string, timestamp, build_options, reload_build=Fa
             update_http(anm)
 
         if build_options['validate']:
-            import ank_validate
+            import autonetkit.ank_validate
             ank_validate.validate(anm)
 
     if build_options['compile']:
@@ -87,11 +87,6 @@ def manage_network(input_graph_string, timestamp, build_options, reload_build=Fa
         with open("diff.json", "w") as fh:  # TODO: make file specified in config
             fh.write(data)
 
-    # Note: this clobbers command line options
-    # build_options.update(settings['General']) # update in case build has updated, eg for deploy
-    # build_options.update(settings['General']) # update in case build has
-    # updated, eg for deploy
-
     if build_options['deploy']:
         deploy_network(anm, nidb, input_graph_string)
 
@@ -113,7 +108,6 @@ def parse_options(argument_string = None):
     input_group.add_argument('--stdin', action="store_true", default=False,
                              help="Load topology from STDIN")
 
-    # TODO: move from -f to -i for --input
     parser.add_argument(
         '--monitor', '-m', action="store_true", default=False,
         help="Monitor input file for changes")
@@ -150,8 +144,6 @@ def main(options):
 
     log.info("AutoNetkit %s" % ANK_VERSION)
 
-# TODO: only allow monitor mode with options.file not options.stdin
-
     if options.target == "cisco":
         # output target is Cisco
         log.info("Setting output target as Cisco")
@@ -160,7 +152,7 @@ def main(options):
         settings['Graphml']['Node Defaults']['syntax'] = "ios_xr"
         settings['Compiler']['Cisco']['to memory'] = 1
         settings['General']['deploy'] = 1
-        settings['Deploy Hosts']['internal'] = {'cisco': 
+        settings['Deploy Hosts']['internal'] = {'cisco':
                 {'deploy': 1}}
 
     if options.debug or settings['General']['debug']:
@@ -170,7 +162,6 @@ def main(options):
         logger.setLevel(logging.DEBUG)
 
     if options.quiet or settings['General']['quiet']:
-        # TODO: fix this
         import logging
         logger = logging.getLogger("ANK")
         logger.setLevel(logging.WARNING)
@@ -203,7 +194,6 @@ def main(options):
         input_string = ""
         now = datetime.now()
         timestamp = now.strftime("%Y%m%d_%H%M%S_%f")
-        pass # don't have input file
     else:
         log.info("No input file specified. Exiting")
         raise SystemExit
@@ -243,7 +233,6 @@ def main(options):
                         traceback.print_exc()
 
         except KeyboardInterrupt:
-            # TODO: need to close filehandles for input and output
             log.info("Exiting")
 
 def create_nidb(anm):
@@ -251,7 +240,6 @@ def create_nidb(anm):
     g_phy = anm['phy']
     g_ip = anm['ip']
     g_graphics = anm['graphics']
-# TODO: build this on a platform by platform basis
     nidb.add_nodes_from(
         g_phy, retain=['label', 'host', 'platform', 'Network', 'update'])
 
@@ -260,7 +248,6 @@ def create_nidb(anm):
     nidb.add_nodes_from(
         cd_nodes, retain=['label', 'host'], collision_domain=True)
 
-    #TODO: write a helper functions to do this
     for node in nidb.nodes("collision_domain"):
         ipv4_node = anm['ipv4'].node(node)
         node.ipv4_subnet = ipv4_node.subnet
@@ -273,7 +260,6 @@ def create_nidb(anm):
     edges_to_add += [edge for edge in g_ip.edges() if edge.split] # cd edges from split
     nidb.add_edges_from(edges_to_add, retain='edge_id')
 
-# TODO: boundaries is still a work in progress...
     nidb.copy_graphics(g_graphics)
 
     return nidb
@@ -281,7 +267,6 @@ def create_nidb(anm):
 def compile_network(anm):
     nidb = create_nidb(anm)
     g_phy = anm['phy']
-    import autonetkit.compilers.platform
 
     for target, target_data in config.settings['Compile Targets'].items():
         host = target_data['host']
@@ -310,10 +295,8 @@ def compile_network(anm):
 
 def deploy_network(anm, nidb, input_graph_string = None):
 
-    # TODO: make this driven from config file
     log.info("Deploying Network")
 
-# TODO: pick up platform, host, filenames from nidb (as set in there)
     deploy_hosts = config.settings['Deploy Hosts']
     for hostname, host_data in deploy_hosts.items():
         for platform, platform_data in host_data.items():
@@ -343,7 +326,8 @@ def deploy_network(anm, nidb, input_graph_string = None):
                     if create_new_xml:
                         cisco_deploy.create_xml(anm, nidb, input_graph_string)
                     else:
-                        cisco_deploy.package(nidb, config_path, input_graph_string)
+                        cisco_deploy.package(nidb, config_path,
+                         input_graph_string)
                 continue
 
             username = platform_data['username']
@@ -356,10 +340,10 @@ def deploy_network(anm, nidb, input_graph_string = None):
                 netkit_deploy.transfer(
                     host, username, tar_file, tar_file, key_file)
                 netkit_deploy.extract(host, username, tar_file,
-                                      config_path, timeout=60, key_filename=key_file)
-            if platform == "cisco":
-                #TODO: check why using nklab here
-                cisco_deploy.package(config_path, "nklab")
+                  config_path, timeout=60, key_filename=key_file)
+                if platform == "cisco":
+                    #TODO: check why using nklab here
+                    cisco_deploy.package(config_path, "nklab")
 
 def collect_sh_ip_route(anm, nidb, start_node = None):
     if not start_node:
