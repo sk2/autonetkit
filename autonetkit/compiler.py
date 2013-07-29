@@ -92,8 +92,8 @@ class RouterCompiler(object):
             }
         return data
 
-    """Base Router compiler"""
     def __init__(self, nidb, anm):
+        """Base Router compiler"""
         self.nidb = nidb
         self.anm = anm
 
@@ -188,8 +188,6 @@ class RouterCompiler(object):
                 # secondary loopbacks
                 #TODO: check why vrf names not showing up for all
                 #print vrf_interface.vrf_name
-                pass
-
             continue
 
     def ospf(self, node):
@@ -257,7 +255,7 @@ class RouterCompiler(object):
         for session in sort_sessions(g_ibgp_v4.edges(phy_node)):
             if session.exclude:
                 log.debug("Skipping excluded ibgp session %s" % session)
-                continue # exclude from regular ibgp config (eg for VRF, VPLS, etc)
+                continue # exclude from regular ibgp config (eg VRF, VPLS, etc)
 
             data = self.ibgp_session_data(session, ip_version = 4)
 
@@ -274,7 +272,7 @@ class RouterCompiler(object):
         for session in sort_sessions(g_ibgp_v6.edges(phy_node)):
             if session.exclude:
                 log.debug("Skipping excluded ibgp session %s" % session)
-                continue # exclude from regular ibgp config (eg for VRF, VPLS, etc)
+                continue # exclude from regular ibgp config (eg VRF, VPLS, etc)
             data = self.ibgp_session_data(session, ip_version = 6)
 
             direction = session.direction
@@ -298,7 +296,7 @@ class RouterCompiler(object):
         for session in sort_sessions(g_ebgp_v4.edges(phy_node)):
             if session.exclude:
                 log.debug("Skipping excluded ebgp session %s" % session)
-                continue # exclude from regular ibgp config (eg for VRF, VPLS, etc)
+                continue # exclude from regular ibgp config (eg VRF, VPLS, etc)
             data = self.ebgp_session_data(session, ip_version = 4)
             ebgp_neighbors.append(data)
 
@@ -306,7 +304,7 @@ class RouterCompiler(object):
         for session in sort_sessions(g_ebgp_v6.edges(phy_node)):
             if session.exclude:
                 log.debug("Skipping excluded ebgp session %s" % session)
-                continue # exclude from regular ibgp config (eg for VRF, VPLS, etc)
+                continue # exclude from regular ibgp config (eg VRF, VPLS, etc)
             data = self.ebgp_session_data(session, ip_version = 6)
             ebgp_neighbors.append(data)
 
@@ -366,8 +364,8 @@ class QuaggaCompiler(RouterCompiler):
         if phy_node.is_l3device:
             node.loopback_zero.id = self.lo_interface
             node.loopback_zero.description = "Loopback"
-            node.loopback_zero.ipv4_address=ipv4_node.loopback
-            node.loopback_zero.ipv4_subnet=node.loopback_subnet
+            node.loopback_zero.ipv4_address = ipv4_node.loopback
+            node.loopback_zero.ipv4_subnet = node.loopback_subnet
 
     def ospf(self, node):
         """Quagga ospf compiler"""
@@ -399,8 +397,6 @@ class QuaggaCompiler(RouterCompiler):
         isis_node = g_isis.node(node)
         node.isis.net = isis_node.net
         node.isis.process_id = isis_node.process_id
-
-# TODO: Don't render netkit lab topology if no netkit hosts
 
 class IosBaseCompiler(RouterCompiler):
     """Base IOS compiler"""
