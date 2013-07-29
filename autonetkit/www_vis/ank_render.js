@@ -1684,7 +1684,7 @@ function redraw_paths() {
         .x(path_x)
         .y(path_y)
         .interpolate("cardinal")
-        .tension(0.9)
+        .tension(0.8)
         ;
 
     trace_path = g_traces.selectAll(".trace_path")
