@@ -1251,6 +1251,7 @@ class AbstractNetworkModel(object):
 
     def save(self):
         """"""
+        #TODO: take optional filename as parameter
         import autonetkit.ank_json as ank_json
         import os
         import gzip

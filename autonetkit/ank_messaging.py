@@ -196,37 +196,13 @@ def publish_data(data, type_key):
 class AnkMessaging(object):
 
     def __init__(self, host = None):
-        try:
-            if use_rabbitmq:
-                log.debug("Using Rabbitmq with server %s " % host)
-                self.connection = pika.BlockingConnection(pika.ConnectionParameters(
-                    host = host))
-                self.channel = self.connection.channel()
-                self.channel.exchange_declare(exchange='www',
-                        type='direct')
-                self.publish = self.publish_pika
-                self.publish_compressed = self.publish_compressed_pika
+        if use_http_post:
+            host = config.settings['Http Post']['server']
+            port = config.settings['Http Post']['port']
+            self.http_url = "http://%s:%s/publish" % (host, port)
+            self.publish = self.publish_http_post
+            self.publish_compressed = self.publish_http_post
 
-            if use_http_post:
-                host = config.settings['Http Post']['server']
-                port = config.settings['Http Post']['port']
-                self.http_url = "http://%s:%s/publish" % (host, port)
-                self.publish = self.publish_http_post
-                self.publish_compressed = self.publish_http_post
-
-            if not (use_rabbitmq or use_http_post):
-                log.debug("Not using Rabbitmq or telnet")
-                self.publish = self.publish_blank_stub
-                self.publish_compressed = self.publish_blank_stub
-        except socket.timeout: #TODO: check if these should move up to the use_rabbitmq block
-            log.warning("Socket Timeout: not using Rabbitmq")
-            self.publish = self.publish_blank_stub
-            self.publish_compressed = self.publish_blank_stub
-        except socket.error:
-            log.warning("Socket Error: not using Rabbitmq")
-            self.publish = self.publish_blank_stub
-            self.publish_compressed = self.publish_blank_stub
-    
     def publish(self):
         pass # will be replaced at init
 
@@ -251,17 +227,6 @@ class AnkMessaging(object):
 #TODO: note don't compress - no upper bound if telnet sockets
         #body = zlib.compress(body, 9)
         self.tn.write(body + "__end__")
-
-    def publish_pika(self, exchange, routing_key, body):
-        self.channel.basic_publish(exchange= exchange,
-                routing_key = routing_key,
-                body= body)
-
-    def publish_compressed_pika(self, exchange, routing_key, body):
-        """Compresses body using zlib before sending"""
-        import zlib
-        body = zlib.compress(body, 9)
-        self.publish(exchange, routing_key, body)
 
         #TODO: implement callback
     def publish_blank_stub(self, exchange, routing_key, body):
