@@ -2,7 +2,7 @@ from autonetkit.compilers.device.router_base import RouterCompiler
 
 class QuaggaCompiler(RouterCompiler):
     """Base Quagga compiler"""
-    lo_interface = "lo0:1"
+    lo_interface = "lo:1"
 
     def compile(self, node):
         super(QuaggaCompiler, self).compile(node)
