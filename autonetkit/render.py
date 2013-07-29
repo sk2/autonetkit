@@ -10,7 +10,6 @@ import fnmatch
 import pkg_resources
 import autonetkit.log as log
 
-
 #TODO: clean up cache enable/disable
 
 def resource_path(relative):
@@ -73,7 +72,7 @@ def render_node(node, folder_cache):
                     pass # created by another process, safe to ignore
                 else:
                     raise e
-                
+
 
         if render_template_file:
             try:
@@ -103,7 +102,7 @@ def render_node(node, folder_cache):
                         log.warning( "Unable to render %s: %s." % (node, error))
                         from mako import exceptions
                         log.warning(exceptions.text_error_template().render())
-                                            
+
 
             if node.render.to_memory:
 # Render directly to NIDB
@@ -141,12 +140,12 @@ def render_node(node, folder_cache):
                     dst_file, _ = os.path.splitext(dst_file) # remove .mako suffix
                     with open( dst_file, 'wb') as dst_fh:
                         dst_fh.write(mytemplate.render(
-                            node = node, 
+                            node = node,
                             ank_version = ank_version,
                             date = date,
                             ))
                 return
-                
+
             render_base = resource_path(render_base)
             fs_mako_templates = []
             for root, dirnames, filenames in os.walk(render_base):
@@ -164,7 +163,7 @@ def render_node(node, folder_cache):
                 shutil.rmtree(render_base_output_dir)
             except OSError:
                 pass # doesn't exist
-            shutil.copytree(render_base, render_base_output_dir, 
+            shutil.copytree(render_base, render_base_output_dir,
                     ignore=shutil.ignore_patterns('*.mako', '.DS_Store'))
 # now use templates
             for template_file in fs_mako_templates:
@@ -178,7 +177,7 @@ def render_node(node, folder_cache):
                 #print("Writing %s"% dst_file)
                 with open( dst_file, 'wb') as dst_fh:
                     dst_fh.write(mytemplate.render(
-                        node = node, 
+                        node = node,
                         ank_version = ank_version,
                         date = date,
                         ))
@@ -202,7 +201,7 @@ def cache_folders(nidb):
         folder_list = []
         full_base = resource_path(base)
         base_cache_dir = os.path.join(folder_cache_dir, base)
-        shutil.copytree(full_base, base_cache_dir, 
+        shutil.copytree(full_base, base_cache_dir,
                 ignore=shutil.ignore_patterns('*.mako'))
 
         fs_mako_templates = []
@@ -261,7 +260,7 @@ def render_topology(topology):
         return
 
     if not render_template_file:
-        log.debug("No render template specified for topology %s, skipping" 
+        log.debug("No render template specified for topology %s, skipping"
                 % topology)
         return
 
@@ -271,7 +270,7 @@ def render_topology(topology):
         log.warning("Unable to render %s: Syntax error in template: %s" % (topology, error))
         return
 
-            
+
     if not os.path.isdir(render_output_dir):
         try:
             os.makedirs(render_output_dir)
