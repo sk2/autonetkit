@@ -85,6 +85,10 @@ def compare(graph_a, graph_b):
 
     diff['graph'] = elem_diff(graph_a.graph, graph_b.graph)
 
+    diff['nodes'] = {
+    'm': {},
+    }
+
     nodes_a = set(graph_a.nodes())
     nodes_b = set(graph_b.nodes())
     common_nodes = nodes_a & nodes_b
@@ -94,9 +98,6 @@ def compare(graph_a, graph_b):
     removed_nodes = nodes_a - nodes_b
     if removed_nodes:
         diff['nodes']['r'] = list(removed_nodes)
-    diff['nodes'] = {
-            'm': {},
-            }
 
     for node in common_nodes:
         dict_a = graph_a.node[node]
@@ -113,6 +114,9 @@ def compare(graph_a, graph_b):
     if not len(diff['nodes']):
         del diff['nodes']
 
+    diff['edges'] = {
+    'm': {},
+    }
     edges_a = set(graph_a.edges())
     edges_b = set(graph_b.edges())
     added_edges = edges_b - edges_a
@@ -121,10 +125,6 @@ def compare(graph_a, graph_b):
     removed_edges = edges_a - edges_b
     if removed_edges:
         diff['edges']['r'] = list(removed_edges)
-
-    diff['edges'] = {
-            'm': {},
-            }
 
     common_edges = edges_a & edges_b
     for (src, dst) in common_edges:
