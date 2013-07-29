@@ -34,7 +34,8 @@ render_hostname = "localhost"
 
 nidb = console_script.create_nidb(anm)
 nidb_a = nidb # store for diffing
-nk_compiler = autonetkit.compiler.NetkitCompiler(nidb, anm, render_hostname)
+import autonetkit.compilers.platform.netkit as pl_netkit
+nk_compiler = pl_netkit.NetkitCompiler(nidb, anm, render_hostname)
 nk_compiler.compile()
 
 import autonetkit.render

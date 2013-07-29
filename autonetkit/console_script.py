@@ -281,18 +281,23 @@ def create_nidb(anm):
 def compile_network(anm):
     nidb = create_nidb(anm)
     g_phy = anm['phy']
+    import autonetkit.compilers.platform
 
     for target, target_data in config.settings['Compile Targets'].items():
         host = target_data['host']
         platform = target_data['platform']
         if platform == "netkit":
-            platform_compiler = compiler.NetkitCompiler(nidb, anm, host)
+            import autonetkit.compilers.platform.netkit as pl_netkit
+            platform_compiler = pl_netkit.NetkitCompiler(nidb, anm, host)
         elif platform == "cisco":
-            platform_compiler = compiler.CiscoCompiler(nidb, anm, host)
+            import autonetkit.compilers.platform.cisco as pl_cisco
+            platform_compiler = pl_cisco.CiscoCompiler(nidb, anm, host)
         elif platform == "dynagen":
-            platform_compiler = compiler.DynagenCompiler(nidb, anm, host)
+            import autonetkit.compilers.platform.dynagen as pl_dynagen
+            platform_compiler = pl_dynagen.DynagenCompiler(nidb, anm, host)
         elif platform == "junosphere":
-            platform_compiler = compiler.JunosphereCompiler(nidb, anm, host)
+            import autonetkit.compilers.platform.junosphere as pl_junosphere
+            platform_compiler = pl_junosphere.JunosphereCompiler(nidb, anm, host)
 
         if any(g_phy.nodes(host=host, platform=platform)):
             log.info("Compile for %s on %s" % (platform, host))
