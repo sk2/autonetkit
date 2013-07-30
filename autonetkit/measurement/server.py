@@ -75,7 +75,8 @@ def worker(socket):
            message = json.dumps(result)
            socket.send(message)
 
-num_worker_threads = 2
+num_worker_threads = 5
+#NOTE: need pts/x available for worst-case of all threads at once
 for i in range(num_worker_threads):
     context = zmq.Context()
     socket = context.socket(zmq.REP)
