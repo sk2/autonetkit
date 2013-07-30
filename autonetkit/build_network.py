@@ -396,6 +396,7 @@ def three_tier_ibgp_corner_cases(rtrs):
     down_links = []
     over_links = []
     for l3_cluster, l3d in ank_utils.groupby("ibgp_l3_cluster", rtrs):
+        l3d = list(l3d)
         for l2_cluster, l2d in ank_utils.groupby("ibgp_l2_cluster", l3d):
             l2d = list(l2d)
             if any(r.ibgp_level == 2 for r in l2d):
@@ -403,8 +404,22 @@ def three_tier_ibgp_corner_cases(rtrs):
                           "adding extra links" % (l3_cluster, l2_cluster))
             elif all(r.ibgp_level == 1 for r in l2d):
                 # No l2 or l3 routers -> full-mesh of l1 routers
-                over_links += [(s, t) for s in l2d for t in l2d if s != t]
-                log.debug("Cluster (%s, %s) has no level 2 or 3 iBGP routers."
+                # test if l3_cluster contains any l3 routers
+                if any(r.ibgp_level == 3 for r in l3d):
+                    l1_rtrs = [r for r in l2d if r.ibgp_level == 1]
+                    l3_rtrs = [r for r in l3d if r.ibgp_level == 3]
+                    if not(len(l1_rtrs) and len(l3_rtrs)):
+                        break  # no routers to connect
+                        log.debug("Cluster (%s, %s) has no level 2 iBGP routers."
+                          "Connecting l1 routers (%s) to l3 routers (%s)"
+                          % (l3_cluster, l2_cluster, l1_rtrs, l3_rtrs))
+
+                    l1_l3_up_links = [(s, t) for s in l1_rtrs for t in l3_rtrs]
+                    up_links += l1_l3_up_links
+                    down_links += [(t, s) for (s, t) in l1_l3_up_links]
+                else:
+                    over_links += [(s, t) for s in l2d for t in l2d if s != t]
+                    log.debug("Cluster (%s, %s) has no level 2 or 3 iBGP routers."
                         "Connecting l1 routers (%s) in full-mesh"
                         % (l3_cluster, l2_cluster, l2d))
             else:
@@ -471,6 +486,12 @@ def build_two_tier_ibgp(routers):
     over_links = [(s, t) for (s, t) in all_pairs
                   if s.ibgp_level == t.ibgp_level == 2
                   and s.ibgp_l3_cluster == t.ibgp_l3_cluster]
+
+    l1_l3_up_links, l1_l3_down_links, l1_l3_over_links = three_tier_ibgp_corner_cases(routers)
+    up_links += l1_l3_up_links
+    down_links += l1_l3_down_links
+    over_links += l1_l3_over_links
+
     return up_links, down_links, over_links
 
 def build_ibgp_v4(anm):
@@ -609,6 +630,7 @@ def build_bgp(anm):
             up_links, down_links, over_links = three_tier_ibgp_edges(ibgp_routers)
 
         elif max_level == 2:
+            #TODO: check when this is reached - as RR is not HRR.... due to naming/levels mapping
             up_links, down_links, over_links = build_two_tier_ibgp(ibgp_routers)
 
         elif max_level == 1:

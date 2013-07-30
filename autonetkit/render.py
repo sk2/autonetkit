@@ -41,147 +41,109 @@ except ImportError:
 
 #TODO: Add support for both src template and src folder (eg for quagga, servers)
 def render_node(node, folder_cache):
-        log.debug("Rendering %s" % node)
-        try:
-            render_output_dir = node.render.dst_folder
-            #TODO: could check if base is set, so don't put error into debug log
-            render_base = node.render.base
-            render_base_output_dir = node.render.base_dst_folder
-            render_template_file = node.render.template
-            render_custom = node.render.custom
-        except KeyError, error:
-            #TODO: make sure allows case of just custom render
-            return
+    log.debug("Rendering %s" % node)
+    try:
+        render_output_dir = node.render.dst_folder
+        #TODO: could check if base is set, so don't put error into debug log
+        render_base = node.render.base
+        render_base_output_dir = node.render.base_dst_folder
+        render_template_file = node.render.template
+        render_custom = node.render.custom
+    except KeyError, error:
+        #TODO: make sure allows case of just custom render
+        return
 
-        try:
-            ank_version = "autonetkit_%s" % pkg_resources.get_distribution("autonetkit").version #TODO: pick up name automatically
-        except pkg_resources.DistributionNotFound:
-            ank_version = "autonetkit_dev"
+    try:
+        ank_version = ("autonetkit_%s" %
+            pkg_resources.get_distribution("autonetkit").version)
+         #TODO: pick up name automatically
+    except pkg_resources.DistributionNotFound:
+        ank_version = "autonetkit_dev"
 
-        date = time.strftime("%Y-%m-%d %H:%M", time.localtime())
-        if render_custom:
-            #print render_custom
-            pass
+    date = time.strftime("%Y-%m-%d %H:%M", time.localtime())
+    if render_custom:
+        #print render_custom
+        pass
 
 #TODO: make sure is an abspath here so don't wipe user directory!!!
-        if render_output_dir and not os.path.isdir(render_output_dir):
-            try:
-                os.makedirs(render_output_dir)
-            except OSError, e:
-                if e.strerror == "File exists":
-                    pass # created by another process, safe to ignore
-                else:
-                    raise e
+    if render_output_dir and not os.path.isdir(render_output_dir):
+        try:
+            os.makedirs(render_output_dir)
+        except OSError, e:
+            if e.strerror == "File exists":
+                pass # created by another process, safe to ignore
+            else:
+                raise e
 
 
-        if render_template_file:
-            try:
-                render_template = lookup.get_template(render_template_file)
-            except SyntaxException, error:
-                log.warning( "Unable to render %s: Syntax error in template: %s" % (node, error))
-                return
+    if render_template_file:
+        try:
+            render_template = lookup.get_template(render_template_file)
+        except SyntaxException, error:
+            log.warning( "Unable to render %s: "
+                "Syntax error in template: %s" % (node, error))
+            return
 
-            if node.render.dst_file:
-                dst_file = os.path.join(render_output_dir, node.render.dst_file)
-                with open( dst_file, 'wb') as dst_fh:
-                    try:
-                        dst_fh.write(render_template.render(
-                            node = node,
-                            ank_version = ank_version,
-                            date = date,
-                            ))
-                    except KeyError, error:
-                        log.warning( "Unable to render %s: %s not set" % (node, error))
-                    except AttributeError, error:
-                        log.warning( "Unable to render %s: %s " % (node, error))
-                        from mako import exceptions
-                        log.warning(exceptions.text_error_template().render())
-                    except NameError, error:
-                        log.warning( "Unable to render %s: %s. Check all variables used are defined" % (node, error))
-                    except TypeError, error:
-                        log.warning( "Unable to render %s: %s." % (node, error))
-                        from mako import exceptions
-                        log.warning(exceptions.text_error_template().render())
-
-
-            if node.render.to_memory:
-# Render directly to NIDB
-                node.render.render_output = render_template.render(
-                            node = node,
-                            ank_version = ank_version,
-                            date = date,
-                            )
-
-
-        if render_base:
-            mako_tmp_dir = "cache"
-            if render_base in folder_cache:
-                src_folder = folder_cache[render_base]['folder']
-                fs_mako_templates = folder_cache[render_base]['templates']
-                folder_list = folder_cache[render_base]['folder_list']
-
+        if node.render.dst_file:
+            dst_file = os.path.join(render_output_dir, node.render.dst_file)
+            with open( dst_file, 'wb') as dst_fh:
                 try:
-                    shutil.rmtree(render_base_output_dir)
-                except OSError:
-                    pass # doesn't exist
-                shutil.copytree(src_folder, render_base_output_dir)
-                #for folder in folder_list:
-                    #folder = os.path.normpath((os.path.join(render_base_output_dir, folder)))
-                    #os.mkdir(folder)
-
-                for template_file in fs_mako_templates:
-                    render_base_rel = resource_path(render_base)
-                    template_file_path = os.path.normpath(os.path.join(render_base_rel, template_file))
-                    mytemplate = mako.template.Template(filename=template_file_path,
-# disabled cache
-#module_directory= mako_tmp_dir
-                            )
-                    dst_file = os.path.normpath((os.path.join(render_base_output_dir, template_file)))
-                    dst_file, _ = os.path.splitext(dst_file) # remove .mako suffix
-                    with open( dst_file, 'wb') as dst_fh:
-                        dst_fh.write(mytemplate.render(
-                            node = node,
-                            ank_version = ank_version,
-                            date = date,
-                            ))
-                return
-
-            render_base = resource_path(render_base)
-            fs_mako_templates = []
-            for root, dirnames, filenames in os.walk(render_base):
-                for filename in fnmatch.filter(filenames, '*.mako'):
-                    rel_root = os.path.relpath(root, render_base) # relative to fs root
-                    fs_mako_templates.append(os.path.join(rel_root, filename))
+                    dst_fh.write(render_template.render(
+                        node = node,
+                        ank_version = ank_version,
+                        date = date,
+                        ))
+                except KeyError, error:
+                    log.warning( "Unable to render %s:"
+                        " %s not set" % (node, error))
+                except AttributeError, error:
+                    log.warning( "Unable to render %s: %s " % (node, error))
+                    from mako import exceptions
+                    log.warning(exceptions.text_error_template().render())
+                except NameError, error:
+                    log.warning( "Unable to render %s: %s. "
+                        "Check all variables used are defined" % (node, error))
+                except TypeError, error:
+                    log.warning( "Unable to render %s: %s." % (node, error))
+                    from mako import exceptions
+                    log.warning(exceptions.text_error_template().render())
 
 
+        if node.render.to_memory:
+# Render directly to NIDB
+            node.render.render_output = render_template.render(
+                        node = node,
+                        ank_version = ank_version,
+                        date = date,
+                        )
+    if render_base:
+        if render_base in folder_cache:
+            src_folder = folder_cache[render_base]['folder']
+            fs_mako_templates = folder_cache[render_base]['templates']
 
-#TODO: rather than checking every time for .mako files, create a tmp folder with these stripped out, then copy this across to each rendered node
-
-            #print("Copying fs for node %s" % (node))
-#TODO: make sure render_base_output_dir is subdir of this one.. and abspath....
             try:
                 shutil.rmtree(render_base_output_dir)
             except OSError:
                 pass # doesn't exist
-            shutil.copytree(render_base, render_base_output_dir,
-                    ignore=shutil.ignore_patterns('*.mako', '.DS_Store'))
-# now use templates
+            shutil.copytree(src_folder, render_base_output_dir)
+
             for template_file in fs_mako_templates:
-                template_file_path = os.path.normpath(os.path.join(render_base, template_file))
+                render_base_rel = resource_path(render_base)
+                template_file_path = os.path.normpath(os.path.join(render_base_rel,
+                    template_file))
                 mytemplate = mako.template.Template(filename=template_file_path,
 # disabled cache
-                        module_directory= mako_tmp_dir
+#module_directory= mako_tmp_dir
                         )
                 dst_file = os.path.normpath((os.path.join(render_base_output_dir, template_file)))
                 dst_file, _ = os.path.splitext(dst_file) # remove .mako suffix
-                #print("Writing %s"% dst_file)
                 with open( dst_file, 'wb') as dst_fh:
                     dst_fh.write(mytemplate.render(
                         node = node,
                         ank_version = ank_version,
                         date = date,
                         ))
-        return
+            return
 
 def cache_folders(nidb):
     #TODO: see if this is required, revert to old renderer?
@@ -205,11 +167,10 @@ def cache_folders(nidb):
                 ignore=shutil.ignore_patterns('*.mako'))
 
         fs_mako_templates = []
-        for root, dirnames, filenames in os.walk(full_base):
+        for root, _, filenames in os.walk(full_base):
             rel_root = os.path.relpath(root, full_base) # relative to fs root
             folder_list.append(rel_root)
             mako_templates = {f for f in filenames if f.endswith(".mako")}
-            other_files = set(filenames) - set(mako_templates)
             for filename in mako_templates:
                 fs_mako_templates.append(os.path.join(rel_root, filename))
 
