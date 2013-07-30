@@ -14,10 +14,10 @@ if __name__ == "__main__":
     automated = False
 
 
-remote_server = "54.252.202.245"
+remote_server = "54.252.148.199"
 config.settings['Rabbitmq']['server'] = remote_server
 
-enabled = False
+enabled = True
 if enabled:
     dirname, filename = os.path.split(os.path.abspath(__file__))
 
@@ -47,4 +47,4 @@ if enabled:
     nk_deploy.deploy(remote_server, username, dst_folder,
     	key_filename, parallel_count = 10)
 
-    console_script.measure_network(anm, nidb)
+    #console_script.measure_network(anm, nidb)

@@ -1,10 +1,89 @@
 import zmq
-context = zmq.Context()
-socket = context.socket(zmq.REP)
-socket.bind("tcp://127.0.0.1:5000")
+import json
+import telnetlib
+from threading import Thread
+import time
+
+def do_connect(host, username, password, command, vtysh = False):
+    #Note: user prompt and priv prompt have same password
+    print host, username, password, command, vtysh
+
+    print "Connecting to %s" % (host)
+    try:
+        tn = telnetlib.Telnet(host, timeout = 10)
+    except Exception, e:
+        print "Unable to connect to %s: %s" % (host, e)
+
+    tn.set_debuglevel(0)
+    print "Connected to %s" % host
+
+    welcome_banner = tn.read_until("login:")
+    last_line = welcome_banner.splitlines()[-1]
+    hostname = last_line.replace("login:", "").strip()
+
+    linux_prompt = hostname + ":~#"
+
+    print "Hostname is %s" % hostname
+
+    #TODO: check why need the below for ascii/unicode/pzmq?
+    username = str(username)
+    password = str(password)
+    command = str(command)
+    tn.write(username + '\n')
+    tn.read_until("Password:")
+    tn.write(password + '\n')
+    tn.read_until(linux_prompt)
+    if vtysh:
+        vtysh_prompt = hostname + "#"
+        tn.write("vtysh" + "\n")
+        tn.read_until(vtysh_prompt)
+        tn.write(command + "\n")
+        result = tn.read_until(vtysh_prompt, timeout = 10)
+        tn.write("exit" + "\n")
+        #TODO: check if need to parse result also to strip out prompt
+    else:
+        tn.write(command + "\n")
+        result = tn.read_until(linux_prompt, timeout = 10)
+        result = "\n".join(result.splitlines()[1:-1])
+
+    print "Finished for %s" % hostname
+
+    tn.write("exit" + "\n")
+    return result
+
+port = "5560" # TODO: make this side IPC
+
+def worker(socket):
+     while True:
+           #  Wait for next request from client
+           print "waiting for message"
+           message = socket.recv()
+           #socket.send(json.dumps("hello"))
+           #continue
+           print type(message)
+           print "Received request: ", message
+           data = json.loads(message)
+           print data
+           host = data['host']
+           username = data['username']
+           password = data['password']
+           command = data['command']
+           vtysh = data.get('vtysh', False)
+           print "command is", command
+           result = do_connect(host, username, password, command, vtysh)
+           #print "result is", result
+           message = json.dumps(result)
+           socket.send(message)
+
+num_worker_threads = 2
+for i in range(num_worker_threads):
+    context = zmq.Context()
+    socket = context.socket(zmq.REP)
+    socket.connect("tcp://localhost:%s" % port)
+    kwargs = {'socket': socket}
+    t = Thread(target=worker, kwargs=kwargs)
+    t.daemon = True
+    t.start()
 
 while True:
-    msg = socket.recv()
-    print "Got", msg
-    socket.send(msg)
-
+    time.sleep(1)
