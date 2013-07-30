@@ -45,7 +45,7 @@ def send(nidb, command, hosts, server = "measure_client", threads = 3):
             'vtysh -c "show ip route"': process_data.sh_ip_route,
             "traceroute": process_data.traceroute,
             }
-    
+
     parse_result = []
 
     # wait for responses
@@ -76,7 +76,7 @@ def send(nidb, command, hosts, server = "measure_client", threads = 3):
                     parse_command = parsing["traceroute"]
                     log.info(command_result)
                     trace_result = parse_command(src_host, nidb, command_result)
-                    trace_result.insert(0, src_host) 
+                    trace_result.insert(0, src_host)
                     log.info(trace_result)
                     parse_result.append(trace_result)
                     if str(trace_result[-1]) == str(dst_host[1]): #TODO: fix so direct comparison, not string, either here or in anm object comparison: eg compare on label?

@@ -10,10 +10,11 @@ except ImportError:
     log.warning("Deployment requires Exscript: "
     "pip install https://github.com/knipknap/exscript/tarball/master")
 
-def deploy(host, username, dst_folder, key_filename = None):
+def deploy(host, username, dst_folder, key_filename = None, parallel_count = 5):
     tar_file = package(dst_folder)
     transfer(host, username, tar_file, key_filename = key_filename)
-    extract(host, username, tar_file, dst_folder, key_filename = key_filename)
+    extract(host, username, tar_file, dst_folder, key_filename = key_filename,
+        parallel_count = parallel_count)
 
 def package(src_dir, target = "netkit_lab"):
     log.info("Packaging %s" % src_dir)
@@ -31,22 +32,28 @@ def transfer(host, username, local, remote = None, key_filename = None):
     if not remote:
         remote = local # same filename
     import paramiko
+    #import logging
+    #logging.getLogger("paramiko").setLevel(logging.DEBUG)
+
     ssh = paramiko.SSHClient()
+    #ssh.set_log_channel("ANK")
     ssh.set_missing_host_key_policy( paramiko.AutoAddPolicy())
     if key_filename:
-        log.debug("Connecting to %s with %s and key %s" % (host, username, key_filename))
+        log.debug("Connecting to %s with %s and key %s" % (host,
+            username, key_filename))
         ssh.connect(host, username = username, key_filename = key_filename)
     else:
         log.info("Connecting to %s with %s" % (host, username))
         ssh.connect(host, username = username)
-    log.debug("Opening SSH for SFTP")
+    log.info("Opening SSH for SFTP")
     ftp = ssh.open_sftp()
-    log.debug("Putting file %s to %s" % (local, remote))
+    log.info("Putting file %s to %s" % (local, remote))
     ftp.put(local, remote)
-    log.debug("Put file %s to %s" % (local, remote))
+    log.info("Put file %s to %s" % (local, remote))
     ftp.close()
 
-def extract(host, username, tar_file, cd_dir, timeout = 45, key_filename = None, verbosity = 0):
+def extract(host, username, tar_file, cd_dir, timeout = 45,
+    key_filename = None, verbosity = 0, parallel_count = 5):
     """Extract and start lab"""
     log.debug("Extracting and starting lab on %s" % (host))
     log.info("Extracting and starting Netkit lab")
@@ -58,9 +65,6 @@ def extract(host, username, tar_file, cd_dir, timeout = 45, key_filename = None,
 
     messaging = ank_messaging
 
-
-    lab_vlist = {}
-
     def starting_host(protocol, index, data):
         log.info("Starting %s" % data.group(1))
 
@@ -71,12 +75,11 @@ def extract(host, username, tar_file, cd_dir, timeout = 45, key_filename = None,
     def make_not_found(protocol, index, data):
         log.warning("Make not installed on remote host %s. Please install make and retry." % host)
         return
-    
+
     def process_vlist(response):
         """Obtain VM to PID listing: required if terminating a numeric VM"""
         #TODO: could process using textfsm template
         vm_to_pid = {}
-        import re
         for line in response.splitlines():
             match = re.match(r'^\w+\s+(\w+)\s+(\d+)', line)
             if match:
@@ -120,22 +123,22 @@ def extract(host, username, tar_file, cd_dir, timeout = 45, key_filename = None,
         response = str(conn.response)
         lab_vlist = process_vlist(response)
 
-        for vm in lab_vlist:
-            if vm in vm_list:
-                if vm.isdigit:
+        for virtual_machine in lab_vlist:
+            if virtual_machine in vm_list:
+                if virtual_machine.isdigit:
                     # convert to PID if numeric, as vcrash can't crash numeric ids (treats as PID)
-                    crash_id = lab_vlist.get(vm)
+                    crash_id = lab_vlist.get(virtual_machine)
                 else:
-                    crash_id = vm # use name
+                    crash_id = virtual_machine # use name
 
                 if crash_id:
                     # crash_id may not be set, if machine not present in initial vlist, if so then ignore
-                    log.info("Stopping running VM %s" % vm)
+                    log.info("Stopping running VM %s" % virtual_machine)
                     conn.execute("vcrash %s" % crash_id)
 
         conn.execute('vlist')
         conn.execute("lclean")
-        start_command = 'lstart -p5 -o --con0=none'
+        start_command = 'lstart -p%s -o --con0=none' % parallel_count
         lab_is_started = False
         while lab_is_started == False:
             try:
@@ -155,16 +158,16 @@ def extract(host, username, tar_file, cd_dir, timeout = 45, key_filename = None,
                             running_vm = line.split('"')[1]
                             running_vms.append(running_vm)
 
-                    for vm in running_vms:
-                        if vm.isdigit:
+                    for virtual_machine in running_vms:
+                        if virtual_machine.isdigit:
                             # convert to PID if numeric, as vcrash can't crash numeric ids (treats as PID)
-                            crash_id = lab_vlist.get(vm)
+                            crash_id = lab_vlist.get(virtual_machine)
                         else:
-                            crash_id = vm # use name
+                            crash_id = virtual_machine # use name
 
                         if crash_id:
                             # crash_id may not be set, if machine not present in initial vlist, if so then ignore
-                            log.info("Stopping running VM %s" % vm)
+                            log.info("Stopping running VM %s" % virtual_machine)
                             conn.execute("vcrash %s" % crash_id)
 
                     time.sleep(1)
@@ -177,11 +180,12 @@ def extract(host, username, tar_file, cd_dir, timeout = 45, key_filename = None,
 
     if key_filename:
         key = PrivateKey.from_file(key_filename)
-        log.debug("Connecting to %s with username %s and key %s" % (host, username, key_filename))
-        accounts = [Account(username, key = key)] 
+        log.debug("Connecting to %s with username %s and key %s" % (host,
+            username, key_filename))
+        accounts = [Account(username, key = key)]
     else:
         log.debug("Connecting to %s with username %s" % (host, username))
-        accounts = [Account(username)] 
+        accounts = [Account(username)]
 
     hosts = ['ssh://%s' % host]
     verbosity = -1
