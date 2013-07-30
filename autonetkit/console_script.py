@@ -331,7 +331,7 @@ def deploy_network(anm, nidb, input_graph_string = None):
                 continue
 
             username = platform_data['username']
-            key_file = platform_data['key file']
+            key_file = platform_data['key_file']
             host = platform_data['host']
 
             if platform == "netkit":
@@ -340,7 +340,8 @@ def deploy_network(anm, nidb, input_graph_string = None):
                 netkit_deploy.transfer(
                     host, username, tar_file, tar_file, key_file)
                 netkit_deploy.extract(host, username, tar_file,
-                  config_path, timeout=60, key_filename=key_file)
+                  config_path, timeout=60, key_filename=key_file,
+                  parallel_count = 10)
                 if platform == "cisco":
                     #TODO: check why using nklab here
                     cisco_deploy.package(config_path, "nklab")

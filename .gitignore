@@ -58,3 +58,4 @@ htmlcov/*
 tests/small_internet/rendered/*
 tests/diff/rendered/*
 tests/rendered/*
+tests/deploy/rendered/*
