@@ -18,3 +18,8 @@ chmod 644 /root/.ssh/authorized_keys
 /etc/init.d/inetd restart
 echo pts/0 >> /etc/securetty
 echo pts/1 >> /etc/securetty
+echo pts/2 >> /etc/securetty
+echo pts/3 >> /etc/securetty
+echo pts/4 >> /etc/securetty
+echo pts/5 >> /etc/securetty
+echo pts/6 >> /etc/securetty

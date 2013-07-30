@@ -19,8 +19,8 @@ import Queue
 from threading import Thread
 source = [
      {'host': "172.16.0.3",   'username': "root", "password": "1234", "command": "ls -lah", },
-     #{'host': "172.16.0.3",   'username': "root", "password": "1234", "command": "ls -lah", },
-     #{'host': "172.16.0.3",   'username': "root", "password": "1234", "command": "uname", },
+     {'host': "172.16.0.3",   'username': "root", "password": "1234", "command": "ls -lah", },
+     {'host': "172.16.0.3",   'username': "root", "password": "1234", "command": "uname", },
      {'host': "172.16.0.4",   'username': "root", "password": "1234", "command": "ls -lah", },
      {'host': "172.16.0.3",   'username': "root", "password": "1234", "command": "ls -lah", },
      ]
@@ -39,13 +39,16 @@ results_queue = Queue.Queue()
 #TODO: check why can't ctrl+c
 def worker(socket):
     while True:
-        item = q.get()
+        try:
+            item = q.get(timeout=1)
+        except Queue.Empty:
+            return
         result = do_work(socket, item)
         results_queue.put([item, result])
         q.task_done()
 
 q = Queue.Queue()
-num_worker_threads = 1
+num_worker_threads = 3
 for i in range(num_worker_threads):
     context = zmq.Context()
     socket = context.socket(zmq.REQ)
@@ -59,6 +62,8 @@ for item in source:
     q.put(item)
 
 q.join()
+
+print "DONE"
 
 # now read off results queue
 output_results = []
