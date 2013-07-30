@@ -92,7 +92,7 @@ class overlay_interface(object):
         # check overlay requested exists
         if self.overlay_id == "phy":
             return self
-        return overlay_interface(self.anm, 'phy', 
+        return overlay_interface(self.anm, 'phy',
                 self.node_id, self.interface_id)
 
     def __getitem__(self, overlay_id):
@@ -103,7 +103,7 @@ class overlay_interface(object):
             return None
 
         if not self.node_id in self.anm.overlay_nx_graphs[overlay_id]:
-            log.debug("Trying to access interface %s for non-existent node %s in overlay %s" 
+            log.debug("Trying to access interface %s for non-existent node %s in overlay %s"
                     % (self, self.node_id, self.overlay_id))
             return None
 
@@ -170,7 +170,7 @@ class overlay_interface(object):
             return
 
     def get(self, key):
-        """For consistency, node.get(key) is neater 
+        """For consistency, node.get(key) is neater
         than getattr(interface, key)"""
         return getattr(self, key)
 
@@ -302,7 +302,7 @@ class OverlayNode(object):
         if self.overlay_id != 'phy' and self.phy:
             next_id = self.phy._next_int_id
             self.phy._interfaces[next_id] = {'type': type,
-                                             'description': description} 
+                                             'description': description}
             #TODO: fix this workaround for not returning description from phy graph
             data['description'] = description
         else:
@@ -316,13 +316,13 @@ class OverlayNode(object):
     def add_loopback(self, *args, **kwargs):
         """Public function to add a loopback interface"""
         interface_id = self._add_interface(type="loopback", *args, **kwargs)
-        return overlay_interface(self.anm, self.overlay_id, 
+        return overlay_interface(self.anm, self.overlay_id,
                 self.node_id, interface_id)
 
     def add_interface(self,*args,  **kwargs):
         """Public function to add interface"""
         interface_id = self._add_interface(*args, **kwargs)
-        return overlay_interface(self.anm, self.overlay_id, 
+        return overlay_interface(self.anm, self.overlay_id,
                 self.node_id, interface_id)
 
     def interfaces(self, *args, **kwargs):
@@ -346,13 +346,13 @@ class OverlayNode(object):
         """Returns interface based on interface id"""
         try:
             if key.interface_id in self._interface_ids:
-                return overlay_interface(self.anm, self.overlay_id, 
+                return overlay_interface(self.anm, self.overlay_id,
                         self.node_id, key.interface_id)
         except AttributeError:
             #try with key as id
             try:
                 if key in self._interface_ids:
-                    return overlay_interface(self.anm, self.overlay_id, 
+                    return overlay_interface(self.anm, self.overlay_id,
                             self.node_id, key)
             except AttributeError:
                 # no match for either
@@ -421,10 +421,15 @@ class OverlayNode(object):
         except KeyError:
             # try from phy
             try:
-                return self.anm.overlay_nx_graphs['phy'].node[self.node_id]['asn'] 
+                return self.anm.overlay_nx_graphs['phy'].node[self.node_id]['asn']
             except KeyError:
                 if self.node_id not in self.anm.overlay_nx_graphs['phy']:
-                    log.warning("Node id %s not found in physical overlay" % self.node_id)
+                    message = "Node id %s not found in physical overlay" % self.node_id
+                    if self.overlay_id == "input":
+                        # don't warn, most likely node not copied across
+                        log.debug(message)
+                    else:
+                        log.warning(message)
                     return
 
     @property
@@ -449,7 +454,7 @@ class OverlayNode(object):
     def neighbor_interfaces(self, *args, **kwargs):
         #TODO: implement filtering for args and kwargs
         if len(args) or len(kwargs):
-            log.warning("Attribute-based filtering not currently supported" 
+            log.warning("Attribute-based filtering not currently supported"
                     " for neighbor_interfaces")
 
         return iter(edge.dst_int for edge in self.edges())
@@ -513,7 +518,7 @@ class OverlayNode(object):
             self.set(key, val)
 
     def set(self, key, val):
-        """For consistency, node.set(key, value) is neater 
+        """For consistency, node.set(key, value) is neater
         than setattr(node, key, value)"""
         return self.__setattr__(key, val)
 
@@ -563,7 +568,7 @@ class OverlayEdge(object):
 
     def __lt__(self, other):
         """"""
-        return ((self.src.node_id, self.dst.node_id) < (other.src.node_id, 
+        return ((self.src.node_id, self.dst.node_id) < (other.src.node_id,
             other.dst.node_id))
 
     def __setstate__(self, state):
@@ -594,22 +599,22 @@ class OverlayEdge(object):
     def src_int(self):
         """Interface bound to source node of edge"""
         src_int_id = self._interfaces[self.src_id]
-        return overlay_interface(self.anm, self.overlay_id, self.src_id, src_int_id) 
+        return overlay_interface(self.anm, self.overlay_id, self.src_id, src_int_id)
 
     @property
     def dst_int(self):
         """Interface bound to destination node of edge"""
         dst_int_id = self._interfaces[self.dst_id]
-        return overlay_interface(self.anm, self.overlay_id, self.dst_id, dst_int_id) 
+        return overlay_interface(self.anm, self.overlay_id, self.dst_id, dst_int_id)
 
     def attr_equal(self, *args):
         """Return edges which both src and dst have attributes equal"""
-        return all(getattr(self.src, key) == getattr(self.dst, key) 
+        return all(getattr(self.src, key) == getattr(self.dst, key)
                 for key in args)
 
     def attr_both(self, *args):
         """Return edges which both src and dst have attributes set"""
-        return all((getattr(self.src, key) and getattr(self.dst, key)) 
+        return all((getattr(self.src, key) and getattr(self.dst, key))
                 for key in args)
 
     def attr_any(self, *args):
@@ -631,7 +636,7 @@ class OverlayEdge(object):
 
     def interfaces(self):
         #TODO: warn if interface doesn't exist on node
-        return iter(overlay_interface(self.anm, self.overlay_id, node_id, interface_id) 
+        return iter(overlay_interface(self.anm, self.overlay_id, node_id, interface_id)
                 for (node_id, interface_id) in self._interfaces.items())
 
     @property
@@ -644,7 +649,7 @@ class OverlayEdge(object):
         return self.__getattr__(key)
 
     def set(self, key, val):
-        """For consistency, edge.set(key, value) is neater than 
+        """For consistency, edge.set(key, value) is neater than
         setattr(edge, key, value)"""
         return self.__setattr__(key, val)
 
@@ -763,7 +768,7 @@ class OverlayBase(object):
             try:
                 if self._graph[src][dst]['edge_id'] == search_id:
                     return OverlayEdge(self._anm, self._overlay_id, src, dst)
-                elif (src, dst) == (src_id, search_id): 
+                elif (src, dst) == (src_id, search_id):
                     # searching by nodes
                     return OverlayEdge(self._anm, self._overlay_id, src, dst)
             except KeyError:
@@ -1050,7 +1055,7 @@ class OverlayGraph(OverlayBase):
             # only return if allocated here
             if input_interfaces_allocated:
                 return # already allocated
-  
+
         # int_counter = (n for n in itertools.count() if n not in
         if self._overlay_id == "phy":
             # check if nodes added
@@ -1136,11 +1141,11 @@ class OverlayGraph(OverlayBase):
 
     def add_edges_from(self, ebunch, bidirectional=False,
             retain=None, **kwargs):
-        """Add edges. Unlike NetworkX, can only add an edge if both 
+        """Add edges. Unlike NetworkX, can only add an edge if both
         src and dst in graph already.
         If they are not, then they will not be added (silently ignored)
 
-        Bidirectional will add edge in both directions. Useful if going 
+        Bidirectional will add edge in both directions. Useful if going
         from an undirected graph to a
         directed, eg G_in to G_bgp
         """
@@ -1171,7 +1176,7 @@ class OverlayGraph(OverlayBase):
                   in ebunch if src in self._graph and dst in self._graph]
         if bidirectional:
             ebunch += [(dst, src, data) for (
-                src, dst, data) in ebunch if src in self._graph 
+                src, dst, data) in ebunch if src in self._graph
                 and dst in self._graph]
 
         self._graph.add_edges_from(ebunch, **kwargs)
@@ -1195,7 +1200,7 @@ class OverlayGraph(OverlayBase):
     def subgraph(self, nbunch, name=None):
         """"""
         nbunch = (n.node_id for n in nbunch)  # only store the id in overlay
-        return OverlaySubgraph(self._anm, self._overlay_id, 
+        return OverlaySubgraph(self._anm, self._overlay_id,
                 self._graph.subgraph(nbunch), name)
 
 
@@ -1305,13 +1310,13 @@ class AbstractNetworkModel(object):
 
     def initialise_graph(self, graph):
         #TODO: check why this isn't used in build_network
-        """Sets input graph. Converts to undirected. 
+        """Sets input graph. Converts to undirected.
         Initialises graphics overlay."""
         graph = nx.Graph(graph)
         g_graphics = self['graphics']
         g_in = self.add_overlay("input", graph=graph, directed=False)
         g_graphics.add_nodes_from(g_in, retain=['x', 'y', 'device_type',
-                                                'device_subtype', 'pop', 
+                                                'device_subtype', 'pop',
                                                 'asn'])
         return g_in
 

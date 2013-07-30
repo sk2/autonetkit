@@ -13,7 +13,7 @@ class MyWebHandler(tornado.web.RequestHandler):
     def initialize(self, ank_accessor, singleuser_mode = False):
         self.ank_accessor = ank_accessor
         self.singleuser_mode = singleuser_mode
-    
+
     def get(self):
         self.write("Hello, world")
 
@@ -24,7 +24,7 @@ class MyWebHandler(tornado.web.RequestHandler):
             uuid = "singleuser"
         else:
             uuid = self.get_argument('uuid', 'singleuser')
-        
+
         # get listeners for this uuid
         uuid_socket_listeners = self.application.socket_listeners[uuid]
 
@@ -50,20 +50,20 @@ class MyWebHandler(tornado.web.RequestHandler):
         elif data_type == "starting_host":
             for listener in uuid_socket_listeners:
                 #TODO: use a json format of {'type': type, 'data': data} in client-side script
-                listener.write_message({'starting': data}) 
+                listener.write_message({'starting': data})
 
         elif data_type == "lab started":
             for listener in uuid_socket_listeners:
-                listener.write_message({'lab started': data}) 
+                listener.write_message({'lab started': data})
 
         elif data_type == "highlight":
             body_parsed = json.loads(data)
             for listener in uuid_socket_listeners:
-                listener.write_message({'highlight': body_parsed}) 
+                listener.write_message({'highlight': body_parsed})
         else:
             #print "Received unknown data type %s" % data_type
             pass
-    
+
 class MyWebSocketHandler(websocket.WebSocketHandler):
     def initialize(self, ank_accessor, overlay_id, singleuser_mode = False):
         """ Store the overlay_id this listener is currently viewing.
@@ -83,7 +83,7 @@ class MyWebSocketHandler(websocket.WebSocketHandler):
         if self.singleuser_mode:
             uuid = "singleuser"
         else:
-            uuid = self.get_argument("uuid", "singleuser") 
+            uuid = self.get_argument("uuid", "singleuser")
 
         self.uuid = uuid
 
@@ -91,10 +91,10 @@ class MyWebSocketHandler(websocket.WebSocketHandler):
 
         #print "Client connected from %s, with uuid %s" % (self.request.remote_ip, uuid)
         print "Client connected from %s" % self.request.remote_ip
-        self.uuid_socket_listeners.add(self) 
+        self.uuid_socket_listeners.add(self)
 
     def on_close(self):
-        self.uuid_socket_listeners.remove(self) 
+        self.uuid_socket_listeners.remove(self)
         #print "Client disconnected from %s" % self.request.remote_ip
         try:
             self.application.pc.remove_event_listener(self)
@@ -164,7 +164,7 @@ class AnkAccessor():
             oldest_uuid = self.uuid_list.popleft()
             logging.debug("Removing uuid %s" % oldest_uuid)
 
-            del self.anm_index[oldest_uuid] 
+            del self.anm_index[oldest_uuid]
 
         self.uuid_list.append(uuid)
         self.anm_index[uuid] = overlay
@@ -216,11 +216,11 @@ class IndexHandler(tornado.web.RequestHandler):
 
     def get(self):
         # if not set, use default uuid of "singleuser"
-        uuid = self.get_argument("uuid", "singleuser") 
+        uuid = self.get_argument("uuid", "singleuser")
         logging.info("Rendering template with uuid %s" % uuid)
         template = os.path.join(self.content_path, "index.html")
         self.render(template, uuid = uuid)
- 
+
 def main():
 
     try:
@@ -267,7 +267,7 @@ def main():
         print "Running webserver in single-user mode"
 
     application = tornado.web.Application([
-        (r'/ws', MyWebSocketHandler, {"ank_accessor": ank_accessor, 
+        (r'/ws', MyWebSocketHandler, {"ank_accessor": ank_accessor,
             'singleuser_mode': singleuser_mode,
             "overlay_id": "phy"}),
         (r'/publish', MyWebHandler, {"ank_accessor": ank_accessor,
