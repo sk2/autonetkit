@@ -47,7 +47,7 @@ def transfer(host, username, local, remote = None, key_filename = None):
         ssh.connect(host, username = username)
     log.info("Opening SSH for SFTP")
     ftp = ssh.open_sftp()
-    log.info("Putting file %s to %s" % (local, remote))
+    log.info("Putting file %s tspoto %s" % (local, remote))
     ftp.put(local, remote)
     log.info("Put file %s to %s" % (local, remote))
     ftp.close()
