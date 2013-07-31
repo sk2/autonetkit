@@ -121,22 +121,6 @@ autonetkit Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`measure` Module
----------------------
-
-.. automodule:: autonetkit.measure
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`measure_client` Module
-----------------------------
-
-.. automodule:: autonetkit.measure_client
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`nidb` Module
 ------------------
 
@@ -157,14 +141,6 @@ autonetkit Package
 --------------------
 
 .. automodule:: autonetkit.render
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`verify` Module
---------------------
-
-.. automodule:: autonetkit.verify
     :members:
     :undoc-members:
     :show-inheritance:

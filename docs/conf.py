@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # autonetkit documentation build configuration file, created by
-# sphinx-quickstart on Wed Jul 31 17:05:07 2013.
+# sphinx-quickstart on Wed Jul 31 20:34:15 2013.
 #
 # This file is execfile()d with the current directory set to its containing dir.
 #
