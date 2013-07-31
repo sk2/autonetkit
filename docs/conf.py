@@ -41,7 +41,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'autonetkit'
-copyright = u'2013, Author'
+copyright = u'2013, AutoNetkit'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
