@@ -267,16 +267,7 @@ router bgp ${node.asn}
 % endif
 address-family ipv4 vrf ${vrf.vrf}
 % for neigh in vrf.vrf_ibgp_neighbors:
-  % if loop.first:
-  % endif
-  % if neigh['use_ipv4']:
-  neighbor ${neigh['dst_int_ip']} remote-as ${neigh['asn']}
-  neighbor ${neigh['dst_int_ip']} activate
-  %endif
-  !
-% endfor
-% for neigh in vrf.vrf_ebgp_neighbors:
-  % if loop.first:
+    % if loop.first:
   % endif
   % if neigh['use_ipv4']:
   neighbor ${neigh['dst_int_ip']} remote-as ${neigh['asn']}

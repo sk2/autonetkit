@@ -9,7 +9,7 @@ from autonetkit.compilers.platform.platform_base import PlatformCompiler
 import itertools
 
 
-from autonetkit.compilers.device.cisco import IosBaseCompiler, IosClassicCompiler, IosXrCompiler, NxOsCompiler
+from autonetkit.compilers.device.cisco import IosBaseCompiler, IosClassicCompiler, IosXrCompiler, NxOsCompiler, StarOsCompiler
 
 class CiscoCompiler(PlatformCompiler):
     """Platform compiler for Cisco"""
@@ -17,7 +17,7 @@ class CiscoCompiler(PlatformCompiler):
     @staticmethod
     def numeric_to_interface_label_ios(x):
         """Starts at GigabitEthernet0/1 """
-        x = x + 1 
+        x = x + 1
         return "GigabitEthernet0/%s" % x
 
     @staticmethod
@@ -34,6 +34,10 @@ class CiscoCompiler(PlatformCompiler):
     @staticmethod
     def numeric_to_interface_label_ios_xr(x):
         return "GigabitEthernet0/0/0/%s" % x
+
+    @staticmethod
+    def numeric_to_interface_label_star_os(x):
+        return "ethernet 1/%s" % x
 
     @staticmethod
     def numeric_to_interface_label_linux(x):
@@ -78,7 +82,7 @@ class CiscoCompiler(PlatformCompiler):
         to_memory = settings['Compiler']['Cisco']['to memory']
 #TODO: need to copy across the interface name from edge to the interface
         g_phy = self.anm['phy']
-        use_mgmt_interfaces = g_phy.data.mgmt_interfaces_enabled 
+        use_mgmt_interfaces = g_phy.data.mgmt_interfaces_enabled
         if use_mgmt_interfaces:
             log.info("Allocating management interfaces for Cisco")
         else:
@@ -116,9 +120,9 @@ class CiscoCompiler(PlatformCompiler):
                 phy_numeric_id = phy_node.interface(interface).numeric_id
                 if phy_numeric_id is None:
                     #TODO: remove numeric ID code
-                    interface.numeric_id = numeric_int_ids.next() 
+                    interface.numeric_id = numeric_int_ids.next()
                 else:
-                    interface.numeric_id = int(phy_numeric_id) 
+                    interface.numeric_id = int(phy_numeric_id)
 
         for phy_node in g_phy.nodes('is_server', host=self.host):
             #TODO: look at server syntax also, same as for routers
@@ -174,7 +178,7 @@ class CiscoCompiler(PlatformCompiler):
                 log.warning("Unexpected subtype %s for %s" % (phy_node.device_subtype, phy_node))
                 int_ids = self.interface_ids_ios()
                 numeric_to_interface_label = self.numeric_to_interface_label_ios
-                
+
             if use_mgmt_interfaces:
                 mgmt_int_id = int_ids.next()  # 0/0 is used for management ethernet
 
@@ -233,6 +237,30 @@ class CiscoCompiler(PlatformCompiler):
                 mgmt_int = nidb_node.add_interface(management = True)
                 mgmt_int.id = mgmt_int_id
 
+        staros_compiler = StarOsCompiler(self.nidb, self.anm)
+        for phy_node in g_phy.nodes('is_router', host=self.host, syntax='StarOS'):
+            nidb_node = self.nidb.node(phy_node)
+            nidb_node.render.template = os.path.join("templates","staros.mako")
+            if to_memory:
+                nidb_node.render.to_memory = True
+            else:
+                nidb_node.render.dst_folder = dst_folder
+                nidb_node.render.dst_file = "%s.conf" % naming.network_hostname(
+                    phy_node)
+
+            # Assign interfaces
+            int_ids = self.interface_ids_nxos()
+            for interface in nidb_node.physical_interfaces:
+                interface.id = self.numeric_to_interface_label_nxos(interface.numeric_id)
+
+            staros_compiler.compile(nidb_node)
+            #TODO: make this work other way around
+
+            if use_mgmt_interfaces:
+                mgmt_int_id = "ethernet 1/1"
+                mgmt_int = nidb_node.add_interface(management = True)
+                mgmt_int.id = mgmt_int_id
+
 
         other_nodes = [phy_node for phy_node in g_phy.nodes('is_router', host=self.host)
                        if phy_node.syntax not in ("ios", "ios_xr")]
@@ -256,8 +284,8 @@ class CiscoCompiler(PlatformCompiler):
         #TODO: make this seperate function
         from netaddr import IPNetwork, IPRange
 
-        mgmt_address_start = g_phy.data.mgmt_address_start 
-        mgmt_address_end = g_phy.data.mgmt_address_end 
+        mgmt_address_start = g_phy.data.mgmt_address_start
+        mgmt_address_end = g_phy.data.mgmt_address_end
         mgmt_prefixlen = int(g_phy.data.mgmt_prefixlen)
 
         #TODO: need to check if range is insufficient
