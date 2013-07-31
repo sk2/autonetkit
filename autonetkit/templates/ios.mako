@@ -1,4 +1,4 @@
-! IOS Config generated on ${date} 
+! IOS Config generated on ${date}
 % if node.ank_cisco_version:
 ! by ${ank_version} and autonetkit_cisco ${node.ank_cisco_version}
 % else:
@@ -18,11 +18,12 @@ license feature csr
 no aaa new-model
 !
 !
+##TODO: disable if not ipv6
 ip cef
 ipv6 unicast-routing
 ipv6 cef
-! 
-!      
+!
+!
 service timestamps debug datetime msec
 service timestamps log datetime msec
 no service password-encryption
@@ -72,21 +73,21 @@ exit-address-family
 %endfor
 !
 ## Physical Interfaces
-% for interface in node.interfaces:  
+% for interface in node.interfaces:
 interface ${interface.id}
   description ${interface.description}
   % if interface.vrf:
-  vrf forwarding ${interface.vrf} 
+  vrf forwarding ${interface.vrf}
   %endif
   % if interface.use_ipv4:
       %if interface.use_dhcp:
   ip address dhcp
       %else:
-  ip address ${interface.ipv4_address} ${interface.ipv4_subnet.netmask}   
+  ip address ${interface.ipv4_address} ${interface.ipv4_subnet.netmask}
     %endif
   %endif
   % if interface.use_ipv6:
-  ipv6 address ${interface.ipv6_address} 
+  ipv6 address ${interface.ipv6_address}
   %endif
   % if interface.use_cdp:
   cdp enable
@@ -136,119 +137,119 @@ interface ${interface.id}
   mpls ip
   %endif
 !
-% endfor 
-!               
+% endfor
+!
 ## OSPF
 % if node.ospf:
-% if node.ospf.use_ipv4: 
-router ospf ${node.ospf.process_id} 
+% if node.ospf.use_ipv4:
+router ospf ${node.ospf.process_id}
 # Loopback
   network ${node.loopback} 0.0.0.0 area ${node.ospf.loopback_area}
   log-adjacency-changes
   passive-interface ${node.ospf.lo_interface}
 % for ospf_link in node.ospf.ospf_links:
-  network ${ospf_link.network.network} ${ospf_link.network.hostmask} area ${ospf_link.area} 
-% endfor    
-% endif           
-% if node.ospf.use_ipv6: 
+  network ${ospf_link.network.network} ${ospf_link.network.hostmask} area ${ospf_link.area}
+% endfor
+% endif
+% if node.ospf.use_ipv6:
 router ospfv3 ${node.ospf.process_id}
   router-id ${node.loopback}
   !
   address-family ipv6 unicast
   exit-address-family
-% endif  
-% endif           
+% endif
+% endif
 ## ISIS
-% if node.isis: 
+% if node.isis:
 router isis ${node.isis.process_id}
   net ${node.isis.net}
   metric-style wide
-% if node.isis.use_ipv6: 
+% if node.isis.use_ipv6:
   !
   address-family ipv6
     multi-topology
   exit-address-family
-% endif  
-% endif  
-% if node.eigrp: 
-router eigrp ${node.eigrp.process_id}       
-% endif   
-!                
+% endif
+% endif
+% if node.eigrp:
+router eigrp ${node.eigrp.process_id}
+% endif
+!
 % if node.mpls.enabled:
 mpls ldp router-id ${node.mpls.router_id}
 %endif
 !
 ## BGP
-% if node.bgp: 
-router bgp ${node.asn}   
+% if node.bgp:
+router bgp ${node.asn}
   bgp router-id ${node.loopback}
   no synchronization
 % for subnet in node.bgp.ipv4_advertise_subnets:
   network ${subnet.network} mask ${subnet.netmask}
-% endfor 
+% endfor
 ! ibgp
 ## iBGP Route Reflector Clients
-% for client in node.bgp.ibgp_rr_clients:   
+% for client in node.bgp.ibgp_rr_clients:
 % if loop.first:
   ! ibgp clients
-% endif    
+% endif
   !
   neighbor ${client.loopback} remote-as ${client.asn}
   neighbor ${client.loopback} description rr client ${client.neighbor}
-  neighbor ${client.loopback} update-source ${node.bgp.lo_interface} 
-  neighbor ${client.loopback} route-reflector-client                                                   
-  % if node.bgp.ebgp_neighbors: 
+  neighbor ${client.loopback} update-source ${node.bgp.lo_interface}
+  neighbor ${client.loopback} route-reflector-client
+  % if node.bgp.ebgp_neighbors:
   neighbor ${client.loopback} next-hop-self
   % endif
-% endfor            
+% endfor
 ## iBGP Route Reflectors (Parents)
-% for parent in node.bgp.ibgp_rr_parents:   
+% for parent in node.bgp.ibgp_rr_parents:
 % if loop.first:
   ! ibgp route reflector servers
-% endif    
+% endif
   !
   neighbor ${parent.loopback} remote-as ${parent.asn}
   neighbor ${parent.loopback} description rr parent ${parent.neighbor}
-  neighbor ${parent.loopback} update-source ${node.bgp.lo_interface} 
-  % if node.bgp.ebgp_neighbors: 
+  neighbor ${parent.loopback} update-source ${node.bgp.lo_interface}
+  % if node.bgp.ebgp_neighbors:
   neighbor ${parent.loopback} next-hop-self
   % endif
 % endfor
 ## iBGP peers
-% for neigh in node.bgp.ibgp_neighbors:      
+% for neigh in node.bgp.ibgp_neighbors:
 % if loop.first:
   ! ibgp peers
-% endif 
+% endif
   !
   neighbor ${neigh.loopback} remote-as ${neigh.asn}
   neighbor ${neigh.loopback} description iBGP peer ${neigh.neighbor}
   neighbor ${neigh.loopback} update-source ${node.bgp.lo_interface}
-  % if node.bgp.ebgp_neighbors: 
+  % if node.bgp.ebgp_neighbors:
   neighbor ${neigh.loopback} next-hop-self
   % endif
 % endfor
 ## vpnv4 peers
-% for neigh in node.bgp.vpnv4_neighbors:      
+% for neigh in node.bgp.vpnv4_neighbors:
 % if loop.first:
   ! vpnv4 peers
   address-family vpnv4
-% endif 
+% endif
     neighbor ${neigh.loopback} activate
-  % if neigh.rr_client: 
-    neighbor ${neigh.loopback} route-reflector-client                                                   
+  % if neigh.rr_client:
+    neighbor ${neigh.loopback} route-reflector-client
   % endif
     neighbor ${neigh.loopback} send-community extended
-  % if node.bgp.ebgp_neighbors: 
+  % if node.bgp.ebgp_neighbors:
     neighbor ${neigh.loopback} next-hop-self
   % endif
   % if loop.last:
   exit-address-family
   %else:
-  % endif 
+  % endif
 % endfor
 !
 ## eBGP peers
-% for neigh in node.bgp.ebgp_neighbors:      
+% for neigh in node.bgp.ebgp_neighbors:
 % if loop.first:
 ! ebgp
 % endif
@@ -257,16 +258,16 @@ router bgp ${node.asn}
   neighbor ${neigh.dst_int_ip} description eBGP to ${neigh.neighbor}
   neighbor ${neigh.dst_int_ip} send-community
   neighbor ${neigh.dst_int_ip} next-hop-self
-% endfor    
-% endif 
+% endfor
+% endif
 !
 ## VRFs
-% for vrf in node.bgp.vrfs:      
+% for vrf in node.bgp.vrfs:
 % if loop.first:
 ! vrfs
-% endif    
+% endif
 address-family ipv4 vrf ${vrf.vrf}
-% for neigh in vrf.vrf_ibgp_neighbors:      
+% for neigh in vrf.vrf_ibgp_neighbors:
   % if loop.first:
   % endif
   % if neigh['use_ipv4']:
@@ -274,8 +275,8 @@ address-family ipv4 vrf ${vrf.vrf}
   neighbor ${neigh['dst_int_ip']} activate
   %endif
   !
-% endfor    
-% for neigh in vrf.vrf_ebgp_neighbors:      
+% endfor
+% for neigh in vrf.vrf_ebgp_neighbors:
   % if loop.first:
   % endif
   % if neigh['use_ipv4']:
@@ -284,7 +285,7 @@ address-family ipv4 vrf ${vrf.vrf}
   neighbor ${neigh['dst_int_ip']} as-override
   %endif
   !
-  % endfor    
+  % endfor
 %endfor
 !
 end
