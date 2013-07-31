@@ -36,6 +36,8 @@ def main():
     cmd = "traceroute -n -a -U -w 0.5 %s" % dest_ip
     #cmd = "traceroute -n -a -U -w 0.5 10.5.0.2"
 
+#TODO: also take port argument (default of 23), and method argument (telnet (default), ssh, ..., etc)
+
     for node in nidb.routers():
         commands.append({'host': str(node.tap.ip),
          'username': "root", "password": "1234",
