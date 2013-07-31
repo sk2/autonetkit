@@ -18,7 +18,6 @@ license feature csr
 no aaa new-model
 !
 !
-##TODO: disable if not ipv6
 ip cef
 ipv6 unicast-routing
 ipv6 cef
