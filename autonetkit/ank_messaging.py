@@ -3,10 +3,6 @@ import autonetkit.log as log
 import socket
 import autonetkit.ank_json
 
-use_rabbitmq = config.settings['Rabbitmq']['active']
-if use_rabbitmq:
-    import pika
-
 use_http_post = config.settings['Http Post']['active']
 if use_http_post:
     import urllib
@@ -235,7 +231,6 @@ class AnkMessaging(object):
 
         #TODO: implement callback
     def publish_blank_stub(self, exchange, routing_key, body):
-        """use if not using rabbitmq, simplifies calls elsewhere (publish does nothing)"""
 #TODO: log that not sending for debug purposes
         return
 
