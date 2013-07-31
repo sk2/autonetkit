@@ -1,20 +1,6 @@
 #!/usr/bin/env python
-from setuptools import setup
-from setuptools.command.test import test as TestCommand
+from setuptools import setup, find_packages
 import sys
-
-#from setuptools import setup, find_packages
-
-class PyTest(TestCommand):
-    def finalize_options(self):
-        TestCommand.finalize_options(self)
-        self.test_args = []
-        self.test_suite = True
-    def run_tests(self):
-        #import here, cause outside the eggs aren't loaded
-        import pytest
-        errno = pytest.main(self.test_args)
-        sys.exit(errno)
 
 setup (
      name = "autonetkit",
@@ -22,10 +8,7 @@ setup (
      description = 'Automatic configuration generation for emulated networks',
      long_description = 'Automatic configuration generation for emulated networks',
 
-     tests_require=['pytest'],
-     cmdclass = {'test': PyTest},
-
-     # simple to run 
+     # simple to run
      entry_points = {
          'console_scripts': [
              'autonetkit = autonetkit.console_script:console_entry',
@@ -37,20 +20,21 @@ setup (
      author = 'Simon Knight',
      author_email = "simon.knight@gmail.com",
      url = "http://www.autonetkit.org",
-     packages = ['autonetkit', 'autonetkit.deploy',
-     'autonetkit.load', 'autonetkit.plugins'],
+     #packages = ['autonetkit', 'autonetkit.deploy', 'autonetkit.load', 'autonetkit.plugins'],
+
+     packages=find_packages(exclude=('tests', 'docs')),
 
      include_package_data = True, # include data from MANIFEST.in
 
-     package_data = {'': ['settings.cfg', 'config/configspec.cfg', ]},
+     #package_data = {'': ['settings.cfg', 'config/configspec.cfg', ]},
      download_url = ("http://pypi.python.org/pypi/autonetkit"),
 
      install_requires = [
          'netaddr==0.7.10',
          'mako==0.8.0',
-         'networkx==1.7', 
-         'configobj==4.7.2', 
-         'tornado==3.0.1', 
+         'networkx==1.7',
+         'configobj==4.7.2',
+         'tornado==3.0.1',
          #'textfsm', 'pika',
          # 'exscript==0.0.1'
          ],
@@ -70,9 +54,9 @@ setup (
          "Topic :: System :: Networking",
          "Topic :: System :: Software Distribution",
          "Topic :: Scientific/Engineering :: Mathematics",
-         ],     
-     
- 
+         ],
+
+
 )
 
 
