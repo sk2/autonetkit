@@ -1,3 +1,5 @@
+"""Zmq based measurement server"""
+
 import zmq
 import json
 import telnetlib

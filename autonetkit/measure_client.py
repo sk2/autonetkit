@@ -7,8 +7,8 @@ def main():
     import argparse
     usage = "ank_measure_client"
     parser = argparse.ArgumentParser(description = usage)
-    parser.add_argument('--hostname',  default= "measure_client", help="Hostname for messaging")   
-    parser.add_argument('--server', '-s',  default= None, help="RabbitMQ server")   
+    parser.add_argument('--hostname',  default= "measure_client", help="Hostname for messaging")
+    parser.add_argument('--server', '-s',  default= None, help="RabbitMQ server")
     arguments = parser.parse_args()
 
     server = arguments.hostname
@@ -64,8 +64,8 @@ def run_command(rmq_channel, command, hosts,  threads):
                 routing_key = "result",
                 body= body)
         #conn.execute("exit")
-        
-    accounts = [Account("root", password = "1234")] 
+
+    accounts = [Account("root", password = "1234")]
 
     hosts = [Host(h, default_protocol = "ssh") for h in hosts]
 #TODO: open multiple ssh sessions
