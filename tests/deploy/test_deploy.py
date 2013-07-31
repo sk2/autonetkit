@@ -10,14 +10,15 @@ import autonetkit.config as config
 #logger.setLevel(logging.DEBUG)
 
 automated = True # whether to open ksdiff, log to file...
+enabled = False
 if __name__ == "__main__":
+     # not called by test
     automated = False
-
+    enabled = True
 
 remote_server = "54.252.148.199"
 config.settings['Rabbitmq']['server'] = remote_server
 
-enabled = True
 if enabled:
     dirname, filename = os.path.split(os.path.abspath(__file__))
 
