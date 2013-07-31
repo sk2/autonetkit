@@ -25,10 +25,10 @@ import sys, os
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.coverage', 
-              'sphinx.ext.viewcode', 'sphinx.ext.autosummary', 
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.coverage',
+              'sphinx.ext.viewcode', 'sphinx.ext.autosummary',
               'sphinx.ext.pngmath']
-                                    
+
 # generate autosummary pages
 autosummary_generate=True
 
@@ -105,9 +105,9 @@ pygments_style = 'sphinx'
 #html_theme = 'nature'
 
 # Activate the theme.
-sys.path.append(os.path.abspath('_themes'))
-html_theme_path = ['_themes']
-html_theme = 'bootstrap'
+#sys.path.append(os.path.abspath('_themes'))
+#html_theme_path = ['_themes']
+#html_theme = 'bootstrap'
 
 # (Optional) Use a shorter name to conserve nav. bar space.
 html_short_title = "AutoNetkit"
@@ -153,12 +153,12 @@ html_static_path = ['_static']
 
 # If true, SmartyPants will be used to convert quotes and dashes to
 # typographically correct entities.
-html_use_smartypants = True     
+html_use_smartypants = True
 
 html_theme_options = {
-}      
+}
 
-html_title = "AutoNetkit"   
+html_title = "AutoNetkit"
 html_use_modindex= "False"
 html_use_index = "False"
 
