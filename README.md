@@ -1,5 +1,5 @@
 AutoNetkit.
-This is the current development alpha. 
+This is the current development alpha.
 For more information, including installation instructions and a how-to guide, please see www.autonetkit.org
 
 [![PyPi version](https://pypip.in/v/autonetkit/badge.png)](https://crate.io/packages/autonetkit/)
@@ -7,5 +7,6 @@ For more information, including installation instructions and a how-to guide, pl
 More information on AutoNetkit:
 
 *  [AutoNetkit YouTube Channel](http://www.youtube.com/autonetkit)
-*  [PyCon Australia 2013 Presentation on Autonetkit](http://t.co/H4NWROoAJK) [Slides](http://t.co/x0NXLMATEq)
+*  [PyCon Australia 2013 Presentation on Autonetkit](http://t.co/H4NWROoAJK) [(Slides)](http://t.co/x0NXLMATEq)
 *  [AutoNetkit](http://www.autonetkit.org)
+*  [API Documentation](https://autonetkit.readthedocs.org/)
