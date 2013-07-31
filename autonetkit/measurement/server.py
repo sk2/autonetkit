@@ -75,16 +75,22 @@ def worker(socket):
            message = json.dumps(result)
            socket.send(message)
 
-num_worker_threads = 5
-#NOTE: need pts/x available for worst-case of all threads at once
-for i in range(num_worker_threads):
-    context = zmq.Context()
-    socket = context.socket(zmq.REP)
-    socket.connect("tcp://localhost:%s" % port)
-    kwargs = {'socket': socket}
-    t = Thread(target=worker, kwargs=kwargs)
-    t.daemon = True
-    t.start()
 
-while True:
-    time.sleep(1)
+
+def main():
+  num_worker_threads = 5
+  #NOTE: need pts/x available for worst-case of all threads at once
+  for i in range(num_worker_threads):
+      context = zmq.Context()
+      socket = context.socket(zmq.REP)
+      socket.connect("tcp://localhost:%s" % port)
+      kwargs = {'socket': socket}
+      t = Thread(target=worker, kwargs=kwargs)
+      t.daemon = True
+      t.start()
+
+  while True:
+      time.sleep(1)
+
+if __name__ == "__main__":
+  main()
