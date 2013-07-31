@@ -279,7 +279,7 @@ class IosClassicCompiler(IosBaseCompiler):
                         'use_ipv4': False,
                         'use_ipv6': node.ip.use_ipv6,
                         'multipoint': False,
-                        } #TODO: add wrapper for this        
+                        } #TODO: add wrapper for this
 
     def compile(self, node):
         super(IosClassicCompiler, self).compile(node)
@@ -390,4 +390,6 @@ class NxOsCompiler(IosBaseCompiler):
                 'use_ipv6': node.ip.use_ipv6,
                 } #TODO: add wrapper for this
 
-        # T
+
+class StarOsCompiler(IosBaseCompiler):
+    pass
