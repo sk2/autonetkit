@@ -16,13 +16,13 @@ if __name__ == "__main__":
     automated = False
     enabled = True
 
-remote_server = "54.252.148.199"
+remote_server = "54.252.204.52"
 config.settings['Rabbitmq']['server'] = remote_server
 
 if enabled:
     dirname, filename = os.path.split(os.path.abspath(__file__))
 
-    input_file = os.path.join(dirname, "topology.graphml")
+    input_file = os.path.join(dirname, "../small_internet.graphml")
     input_graph = graphml.load_graphml(input_file)
 
     import autonetkit.build_network as build_network

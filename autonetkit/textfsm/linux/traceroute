@@ -1,6 +1,7 @@
-Value IP (\d+(\.\d+){3})
+Value Hop (\d+(\.\d+){3})
+Value delay (\d+)
 
 Start
-  ^\s\d+\s+${IP}\s+\d+ ms\s+\d+ ms\s+\d+ ms -> Record
-  ^\s\d+\s+${IP}\s+\d+ ms -> Record
-  ^\s\d+\s+${IP}\s+\d+ ms\s+\d+ ms -> Record
+  ^ \d+ +${Hop} +${delay}+ ms +\d+ ms +\d+ ms -> Record
+  ^ \d+ +${Hop} +${delay}+ ms -> Record
+  ^ \d+ +${Hop} +${delay}+ ms +\d+ ms -> Record
