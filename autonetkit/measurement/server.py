@@ -39,6 +39,8 @@ def do_connect(host, username, password, command, vtysh = False):
         vtysh_prompt = hostname + "#"
         tn.write("vtysh" + "\n")
         tn.read_until(vtysh_prompt)
+        tn.write("terminal length 0" + "\n")
+        tn.read_until(vtysh_prompt)
         tn.write(command + "\n")
         result = tn.read_until(vtysh_prompt, timeout = 10)
         tn.write("exit" + "\n")
