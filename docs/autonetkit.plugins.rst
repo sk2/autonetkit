@@ -33,11 +33,3 @@ plugins Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`process_data` Module
---------------------------
-
-.. automodule:: autonetkit.plugins.process_data
-    :members:
-    :undoc-members:
-    :show-inheritance:
-

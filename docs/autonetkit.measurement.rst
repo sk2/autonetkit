@@ -9,6 +9,14 @@ measurement Package
     :undoc-members:
     :show-inheritance:
 
+:mod:`process` Module
+---------------------
+
+.. automodule:: autonetkit.measurement.process
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :mod:`queue_device` Module
 --------------------------
 
@@ -21,6 +29,14 @@ measurement Package
 --------------------
 
 .. automodule:: autonetkit.measurement.server
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`verify` Module
+--------------------
+
+.. automodule:: autonetkit.measurement.verify
     :members:
     :undoc-members:
     :show-inheritance:
