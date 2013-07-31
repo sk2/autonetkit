@@ -77,3 +77,7 @@ icon.graffle
 rsync.sh
 
 icon.pdf
+
+cleanup_nren.py
+
+run_tests.sh
