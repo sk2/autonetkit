@@ -56,7 +56,7 @@ class CiscoCompiler(PlatformCompiler):
             yield "GigabitEthernet0/%s" % x
 
     @staticmethod
-    def interface_ids_ultra():
+    def interface_ids_csr1000v():
         #TODO: make this skip if in list of allocated ie [interface.name for interface in node]
         for x in itertools.count(0):
             yield "GigabitEthernet%s" % x
@@ -153,7 +153,10 @@ class CiscoCompiler(PlatformCompiler):
                         interface.ipv6_address = sn_preflen_to_network(ipv6_int.ip_address,
                                 interface.ipv6_subnet.prefixlen)
 
-        for phy_node in g_phy.nodes('is_router', host=self.host, syntax='ios'):
+
+        ios_nodes = (n for n in g_phy.nodes('is_router', host=self.host)
+                if n.syntax in ("ios", "ios_xe"))
+        for phy_node in ios_nodes:
             nidb_node = self.nidb.node(phy_node)
             nidb_node.render.template = os.path.join("templates","ios.mako")
             if to_memory:
@@ -169,8 +172,8 @@ class CiscoCompiler(PlatformCompiler):
             if phy_node.device_subtype == "vios":
                 int_ids = self.interface_ids_ios()
                 numeric_to_interface_label = self.numeric_to_interface_label_ios
-            elif phy_node.device_subtype == "ultra":
-                int_ids = self.interface_ids_ultra()
+            elif phy_node.device_subtype == "CSR1000v":
+                int_ids = self.interface_ids_csr1000v()
                 numeric_to_interface_label = self.numeric_to_interface_label_ra
             else:
                 # default if no subtype specified
@@ -327,8 +330,9 @@ class CiscoCompiler(PlatformCompiler):
                     interface.description = "OOB Management"
                     interface.physical = True
                     interface.mgmt = True
+                    interface.comment = "Configured on launch"
                     if nidb_node.ip.use_ipv4:
-                        interface.use_ipv4 = True
+                        interface.use_ipv4 = False
                     if nidb_node.use_cdp:
                         interface.use_cdp = True # ensure CDP activated
                     if nidb_node in dhcp_hosts:
