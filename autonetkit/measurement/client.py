@@ -6,15 +6,11 @@ import pkg_resources
 import os
 import autonetkit.measurement.process as process
 import autonetkit.ank_messaging as ank_messaging
+import autonetkit.config as config
 
-server = "54.252.205.75"
-port = "5559"
-
-#print "Connecting to server..."
-#socket = context.socket(zmq.REQ)
-#socket.connect ("tcp://54.252.148.199:%s" % port)
-#socket = context.socket(zmq.REQ)
-#socket.connect ("tcp://localhost:%s" % port)
+server = config.settings['Measurement']['host']
+port = config.settings['Measurement']['port']
+print server, port
 
 def main():
     import Queue
