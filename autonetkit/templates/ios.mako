@@ -75,6 +75,9 @@ exit-address-family
 % for interface in node.interfaces:
 interface ${interface.id}
   description ${interface.description}
+  % if interface.comment:
+  ! ${interface.comment}
+  %endif
   % if interface.vrf:
   vrf forwarding ${interface.vrf}
   %endif
@@ -84,6 +87,8 @@ interface ${interface.id}
       %else:
   ip address ${interface.ipv4_address} ${interface.ipv4_subnet.netmask}
     %endif
+  %else:
+  no ip address
   %endif
   % if interface.use_ipv6:
   ipv6 address ${interface.ipv6_address}
