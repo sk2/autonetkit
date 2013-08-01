@@ -82,7 +82,7 @@ def worker(socket):
 
 
 def main():
-  num_worker_threads = 5
+  num_worker_threads = 10
   #NOTE: need pts/x available for worst-case of all threads at once
   for i in range(num_worker_threads):
       context = zmq.Context()

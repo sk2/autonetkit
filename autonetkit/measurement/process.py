@@ -47,8 +47,8 @@ def reverse_map_path(rev_map, path, interfaces = False):
                 result.append(iface)
             else:
                 result.append(iface.node)
-        elif hop in reverse_mappings['loopbacks']:
-            node = reverse_mappings['loopbacks'][hop]
+        elif hop in rev_map['loopbacks']:
+            node = rev_map['loopbacks'][hop]
             result.append(node)
 
     return result

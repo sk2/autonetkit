@@ -3,11 +3,6 @@ import os
 import autonetkit
 import autonetkit.load.graphml as graphml
 import autonetkit.diff
-import autonetkit.config as config
-
-#import logging
-#logger = logging.getLogger("ANK")
-#logger.setLevel(logging.DEBUG)
 
 automated = True # whether to open ksdiff, log to file...
 enabled = False
@@ -16,20 +11,18 @@ if __name__ == "__main__":
     automated = False
     enabled = True
 
-remote_server = "54.252.204.52"
-config.settings['Rabbitmq']['server'] = remote_server
+remote_server = "54.252.205.75"
 
 if enabled:
     dirname, filename = os.path.split(os.path.abspath(__file__))
 
-    input_file = os.path.join(dirname, "../small_internet.graphml")
+    input_file = os.path.join(dirname, "../big.graphml")
     input_graph = graphml.load_graphml(input_file)
 
     import autonetkit.build_network as build_network
     anm = build_network.initialise(input_graph)
     anm = build_network.apply_design_rules(anm)
 
-    import autonetkit.console_script as console_script
     render_hostname = "localhost"
 
     nidb = console_script.create_nidb(anm)
