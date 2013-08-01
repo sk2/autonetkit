@@ -5,6 +5,7 @@ import json
 import telnetlib
 from threading import Thread
 import time
+import sys
 
 def do_connect(host, username, password, command, vtysh = False):
     #Note: user prompt and priv prompt have same password
@@ -60,7 +61,7 @@ port = "5560" # TODO: make this side IPC
 def worker(socket):
      while True:
            #  Wait for next request from client
-           print "waiting for message"
+           print "Waiting for message"
            message = socket.recv()
            #socket.send(json.dumps("hello"))
            #continue
@@ -83,6 +84,10 @@ def worker(socket):
 
 def main():
   num_worker_threads = 10
+  try:
+    num_worker_threads = int(sys.argv[1])
+  except IndexError:
+    pass
   #NOTE: need pts/x available for worst-case of all threads at once
   for i in range(num_worker_threads):
       context = zmq.Context()
