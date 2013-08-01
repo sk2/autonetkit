@@ -17,11 +17,11 @@
     <link rel="alternate stylesheet" type="text/css" title="maximised" href = "maximised.css">
 
     <link rel="stylesheet" type="text/css" media="print" href="print.css">
-    
+
 
   </head>
    <body>
- 
+
        <div class="navbar">
           <b>AutoNetkit</b>
           <span id="websocket_icon"></span>
@@ -43,11 +43,11 @@
             <i class="icon-plus-sign-alt"></i>
         </label>
          <input type="checkbox" id="display_interfaces" value="display_interfaces" />
- 
+
          |<select id = "node_label_select"></select>
          <select id = "edge_group_select"></select>
         <select id = "interface_label_select"></select>
- 
+
         |        <button onclick="toggle_visibility('node_filter');">
             <i class="icon-filter "></i> Node Filter
          </button>
@@ -130,7 +130,7 @@ var status_label = d3.select("navbar").append("text")
 .attr("class", "status label")
 .attr("y", 15)
 .attr("x", 0)
-.attr("font-size", "14") 
+.attr("font-size", "14")
 .text("")
 ;
 

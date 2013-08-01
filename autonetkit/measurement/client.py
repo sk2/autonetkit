@@ -47,6 +47,8 @@ def main():
 
     def do_work(socket, data):
         #TODO: make username and password optional
+        #print "Sent", ", ".join(["%s: %s" % (k, v) for k, v in data.items()])
+        print "Sent %s to %s" % (data['command'], data['host'])
         message = json.dumps(data)
         socket.send (message)
         #print "waiting for response for %s" % message
