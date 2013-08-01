@@ -1,15 +1,13 @@
 """Zmq based measurement client"""
 import zmq
-import sys
-import random
-import time
 import json
 import autonetkit
 import pkg_resources
 import os
 import autonetkit.measurement.process as process
+import autonetkit.ank_messaging as ank_messaging
 
-server = "54.252.204.52"
+server = "54.252.205.75"
 port = "5559"
 
 #print "Connecting to server..."
@@ -32,6 +30,8 @@ def main():
     commands = []
     import random
     dest_node = random.choice([n for n in nidb.nodes("is_l3device")])
+    print "tracing path to ", dest_node
+    ank_messaging.highlight(nodes = [dest_node])
     dest_ip = list(dest_node.physical_interfaces)[0].ipv4_address
     cmd = "traceroute -n -a -U -w 0.5 %s" % dest_ip
     #cmd = "traceroute -n -a -U -w 0.5 10.5.0.2"
@@ -42,17 +42,18 @@ def main():
         commands.append({'host': str(node.tap.ip),
          'username': "root", "password": "1234",
          "command": cmd, "template": template_file, "rev_map" : rev_map,
-         "source": node,
+         "source": node, "destination": dest_node,
           })
 
     def do_work(socket, data):
         #TODO: make username and password optional
         message = json.dumps(data)
         socket.send (message)
-        print "waiting for response for %s" % message
+        #print "waiting for response for %s" % message
         message = socket.recv()
         data = json.loads(message)
-        print data
+        import q
+        q(data)
         return str(data)
 
     def process_data(user_data, result):
@@ -60,15 +61,19 @@ def main():
         template = user_data['template']
         rev_map = user_data['rev_map']
         source = user_data['source']
+        destination = user_data['destination']
         header, routes = process.process_traceroute(template_file, result)
         path = process.extract_path_from_parsed_traceroute(header, routes)
         hosts = process.reverse_map_path(rev_map, path)
         hosts.insert(0, source)
         #TODO: push processing results onto return values
-        import autonetkit.ank_messaging as ank_messaging
-        path_data = {'path': hosts}
         print hosts
-        ank_messaging.highlight(paths = [path_data])
+        # only send if complete path
+        if hosts[-1] == destination:
+            path_data = {'path': hosts}
+            ank_messaging.highlight(paths = [path_data])
+        else:
+            print "Incomplete path", hosts, destination
 
     results_queue = Queue.Queue()
 
@@ -95,7 +100,7 @@ def main():
             q.task_done()
 
     q = Queue.PriorityQueue()
-    num_worker_threads = 3
+    num_worker_threads = 5
     for i in range(num_worker_threads):
         t = Thread(target=worker)
         t.daemon = True
