@@ -15,15 +15,16 @@ path.link {
 }
 
 #path_verified_marker{
-  stroke: rgb(0,120,33);
-  fill: rgb(0,120,33);
-    stroke: green;
+  stroke: green;
   fill: green;
 }
 
 #path_marker {
-  stroke: rgb(25,52,65);
-  fill: rgb(25,52,65);
+  stroke: black;
+  fill: black;
+}
+
+#path_unverified_marker {
   stroke: red;
   fill: red;
 }
