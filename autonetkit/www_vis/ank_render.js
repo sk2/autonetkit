@@ -88,7 +88,7 @@ ws.onmessage = function (evt) {
             propagate_revision_dropdown(graph_history); //TODO: update this with revision from webserver
             ip_allocations = [];
             filtered_nodes= []; //reset filtering
-            redraw_ip_allocations(); 
+            redraw_ip_allocations();
             redraw();
         }
     }
@@ -102,7 +102,7 @@ ws.onmessage = function (evt) {
     }
     else if("starting" in data) {
         status_label.html("Starting: " + data['starting']);
-        node_id = data['starting']; 
+        node_id = data['starting'];
         node = nodes_by_id[node_id];
         if (node != null) {
             starting_hosts = [node];
@@ -123,7 +123,7 @@ ws.onmessage = function (evt) {
             redraw();
             redraw_ip_allocations();
         }
-    } 
+    }
     else if("highlight" in data) {
         apply_highlight(data['highlight']);
     }
@@ -219,13 +219,13 @@ function redraw_ip_allocations() {
         d3.select(this).style("fill", "steelblue");
     });
 
-    $('.ip_node').tipsy({ 
+    $('.ip_node').tipsy({
         //based on http://bl.ocks.org/1373263
-        gravity: 'w', 
-        html: true, 
+        gravity: 'w',
+        html: true,
         title: function() {
             var d = this.__data__
-        return ip_node_info(d); 
+        return ip_node_info(d);
         }
     });
 
@@ -250,11 +250,11 @@ function redraw_ip_allocations() {
         .attr("r", 1e-6);
 
     nodeEnter.append("svg:text")
-        .attr("x", function(d) { return d.children || d._children ? -15 : 15; }) 
+        .attr("x", function(d) { return d.children || d._children ? -15 : 15; })
         .attr("dy", ".3em")
         .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; }) //left if children otherwise right
-        .attr("font-family", "helvetica") 
-        .attr("font-size", 10) 
+        .attr("font-family", "helvetica")
+        .attr("font-size", 10)
         .text(function(d) { return d.name; })
         .style("fill-opacity", 1e-6);
 
@@ -311,7 +311,7 @@ var propagate_revision_dropdown = function(d) {
         $('#revision_select').show();
     } else {
         $('#revision_select').hide();
-    }        
+    }
 
     revision_dropdown
         .selectAll("option")
@@ -458,11 +458,10 @@ var node_y = function(d) {
 }
 
 // based on http://bl.ocks.org/2920551
-var fill = d3.scale.category10();
+var fill = d3.scale.category20b();
 
 var edge_stroke_colors = d3.scale.ordinal();
 
-var groupFill = function(d, i) { return fill(i); };
 var edgeStroke = function(d, i) { return fill(d); };
 
 var interface_angle = function(d){
@@ -541,9 +540,9 @@ var groupPath = function(d) {
             return retval;
         } else {
             interface_offset = 5;
-            retval = "M" + 
-                d3.geom.hull(d.values.map(function(i) { 
-                    return [interface_x(i) + interface_offset, interface_y(i) + interface_offset]; 
+            retval = "M" +
+                d3.geom.hull(d.values.map(function(i) {
+                    return [interface_x(i) + interface_offset, interface_y(i) + interface_offset];
                 }))
             .join("L")
                 + "Z";
@@ -594,7 +593,7 @@ var groupPath = function(d) {
         retval += "Z";
         return retval;
     }
-    retval = "M" + 
+    retval = "M" +
         d3.geom.hull(d.values.map(function(i) { return [i.x + x_offset + icon_width/2, i.y + y_offset + icon_height/2]; }))
         .join("L")
         + "Z";
@@ -688,7 +687,7 @@ var interface_info = function(d) {
 //g_traces.append("svg:defs").selectAll("marker")
 //TODO: check this still works
 chart.select("defs").selectAll("marker")
-.data(["path_marker", "path_verified_marker"])
+.data(["path_marker", "path_verified_marker", "path_unverified_marker"])
 .enter().append("svg:marker")
 .attr("id", String)
 .attr("refX", 2.4)
@@ -719,7 +718,7 @@ var graph_edge = function(d) {
     var source_x = nodes[d.source].x + x_offset + icon_width/2;
     source_y =  nodes[d.source].y + y_offset + icon_height/2;
     target_x =  nodes[d.target].x + x_offset + icon_width/2;
-    target_y =  nodes[d.target].y + y_offset + icon_height/2; 
+    target_y =  nodes[d.target].y + y_offset + icon_height/2;
 
     if (jsondata.directed) {
         var dx = target_x - source_x,
@@ -837,27 +836,27 @@ var status_label = d3.select(".infobar").append("text")
 .attr("class", "status label")
 .attr("y", 15)
 .attr("x", 0)
-.attr("font-size", "14") 
+.attr("font-size", "14")
 .text("")
 ;
 
 var history_start = function() {
     revision_id = 0;
     load_revision();
-    redraw(); 
+    redraw();
 }
 
 var history_end = function() {
     revision_id = graph_history.length - 1;
     load_revision();
-    redraw(); 
+    redraw();
 }
 
 var history_back = function() {
     if (revision_id - 1 >= 0) {
         revision_id--;
         load_revision();
-        redraw(); 
+        redraw();
     } else {
         //status_label.text("Already at first revision");
     }
@@ -868,7 +867,7 @@ var history_forward = function() {
     if ((revision_id + 1) < graph_history.length) {
         revision_id++;
         load_revision();
-        redraw(); 
+        redraw();
     } else {
         //status_label.text("Already at latest revision");
     }
@@ -974,7 +973,7 @@ var zoom_fit = function() {
 var filtered_nodes = [];
 
 function numeric_strings_to_float(array){
-    array = _.map(array, function(x) {    
+    array = _.map(array, function(x) {
         if ($.isNumeric(x.value)) x.value = parseFloat(x.value); //float if numeric
         return x;
     });
@@ -1020,9 +1019,9 @@ var interface_opacity = function(x) {
     if (filtered_nodes.length == 0) return 1;
     //no filtered, so display all at full opacity
 
-    if (_.contains(filtered_nodes, x.node)) 
+    if (_.contains(filtered_nodes, x.node))
     {
-        return 1; 
+        return 1;
     }//some are filtered, full opacity for these
     return 0.2; //drop opacity for non filtered
 };
@@ -1079,7 +1078,7 @@ function redraw() {
     var form = '<b>' + "<i class='icon-filter '></i> " + 'Filter:</b><br>';
     form += '<form action="javascript:applyNodeFilter()" id="nodeFilterForm" name="nodeFilterForm">';
     form += "<table>";
-    previous_form_values = $("#nodeFilterForm").serializeArray(); 
+    previous_form_values = $("#nodeFilterForm").serializeArray();
     previous_form_values = numeric_strings_to_float(previous_form_values);
     previous_form_values = serialized_array_to_grouped_list(previous_form_values);
     previous_form_values = _.object(previous_form_values);
@@ -1120,7 +1119,7 @@ function redraw() {
 
     //TODO: make this a memoized function to save computation
     interface_attributes = _.map(nodes, function(node) {
-        return _.map(node._interfaces, function(interface){ 
+        return _.map(node._interfaces, function(interface){
             return _.keys(interface);
         });
     });
@@ -1163,7 +1162,7 @@ function redraw() {
 
         interface_data = _.flatten(interface_data); //collapse from hierarchical nested structure
     } else {
-        interface_data = {}; //reset 
+        interface_data = {}; //reset
     }
 
 
@@ -1189,6 +1188,16 @@ function redraw() {
         return 80;
     }
 
+    group_size = _.size(node_attr_groups)
+    //TODO: make this a max function
+    range_group_size = group_size;
+    if (group_size < 3) {
+        range_group_size = 3; // for colorbrewer
+    }
+    var fill = d3.scale.quantize()
+    .domain([0, group_size])
+    .range(colorbrewer.RdYlBu[range_group_size]);
+    var groupFill = function(d, i) { return fill(i); };
 
     //TODO: make group path change/exit with node data
     groupings = g_groupings.selectAll(".attr_group")
@@ -1201,7 +1210,7 @@ function redraw() {
         .style("stroke", groupFill)
         .style("stroke-width", hull_stroke_width)
         .style("stroke-linejoin", "round")
-        .style("opacity", 0.15)
+        .style("opacity", 0.3)
         .on("mouseover", function(d){
             group_info(d);
         })
@@ -1219,13 +1228,13 @@ function redraw() {
         .style("opacity",0)
         .remove();
 
-    $('.attr_group').tipsy({ 
+    $('.attr_group').tipsy({
         //based on http://bl.ocks.org/1373263
-        gravity: 'w', 
-        html: true, 
+        gravity: 'w',
+        html: true,
         title: function() {
             var d = this.__data__
-        return group_info(d); 
+        return group_info(d);
         }
     });
 
@@ -1257,23 +1266,23 @@ function redraw() {
 
 
     var line = g_links.selectAll(".link_edge")
-        .data(jsondata.links, 
+        .data(jsondata.links,
                 function(d) { return d.source + "_" +  d.target})
 
         //line.enter().append("line")
         line.enter().append("svg:path")
         .attr("class", "link_edge")
         .style("opacity", line_opacity)
-        //.attr("id", 
-                //function(d) { 
-                    //return "path"+d.source+"_"+d.target; 
-                //}) 
+        //.attr("id",
+                //function(d) {
+                    //return "path"+d.source+"_"+d.target;
+                //})
     .attr("d", graph_edge)
         .style("stroke-width", function() {
             //TODO: use this stroke-width function on mouseout too
             if (jsondata.directed) {
                 return 2;
-            } 
+            }
             return 2;
         })
     //.attr("marker-end", marker_end)
@@ -1308,13 +1317,13 @@ function redraw() {
         .style("opacity",0)
         .remove();
 
-    $('.link_edge').tipsy({ 
+    $('.link_edge').tipsy({
         //based on http://bl.ocks.org/1373263
-        gravity: 'w', 
-        html: true, 
+        gravity: 'w',
+        html: true,
         title: function() {
             var d = this.__data__
-        return link_info(d); 
+        return link_info(d);
         }
     });
 
@@ -1325,16 +1334,16 @@ function redraw() {
         //line.enter().append("line")
         highlight_line.enter().append("svg:path")
         .attr("class", "highlight_line")
-        .attr("id", 
-                function(d) { 
-                    return "path"+d.source+"_"+d.target; 
-                }) 
+        .attr("id",
+                function(d) {
+                    return "path"+d.source+"_"+d.target;
+                })
     .attr("d", graph_edge)
         .style("stroke-width", function() {
             //TODO: use this stroke-width function on mouseout too
             if (jsondata.directed) {
                 return 5;
-            } 
+            }
             return 5;
         })
     //.attr("marker-end", marker_end)
@@ -1405,13 +1414,13 @@ function redraw() {
         //d3.select(this).attr("marker-end", marker_end);
     })
 
-    $('.interface_icon').tipsy({ 
+    $('.interface_icon').tipsy({
         //based on http://bl.ocks.org/1373263
-        gravity: 'w', 
-    html: true, 
+        gravity: 'w',
+    html: true,
     title: function() {
         var d = this.__data__
-        return interface_info(d); 
+        return interface_info(d);
     }
     });
 
@@ -1433,13 +1442,13 @@ function redraw() {
         .attr("x", interface_x)
         .attr("y", interface_y)
         .attr("class", "interface_label")
-        .attr("text-anchor", "middle") 
-        .attr("font-family", "helvetica") 
-        //.attr("font-size", "small") 
-        .attr("font-size", 10) 
+        .attr("text-anchor", "middle")
+        .attr("font-family", "helvetica")
+        //.attr("font-size", "small")
+        .attr("font-size", 10)
 
         //TODO: use a general accessor for x/y of nodes
-        interface_labels 
+        interface_labels
         .attr("dx", interface_width/2) // padding-right
         .attr("dy", -interface_height + 3) // vertical-align: middle
         .text(interface_label);
@@ -1462,12 +1471,12 @@ function redraw() {
         .attr("x",link_label_x)
         .attr("y", link_label_y )
         .attr("class", "link_label")
-        .attr("text-anchor", "middle") 
-        .attr("font-family", "helvetica") 
-        .attr("font-size", "small") 
+        .attr("text-anchor", "middle")
+        .attr("font-family", "helvetica")
+        .attr("font-size", "small")
 
         //TODO: use a general accessor for x/y of nodes
-        link_labels 
+        link_labels
         .attr("dx", 0) // padding-right
         .attr("dy", 0) // vertical-align: middle
         .text(function (d) {
@@ -1514,7 +1523,7 @@ function redraw() {
         .attr("class", "icondef")
         .attr("xlink:href", function (d){ return "icons/" + d + ".svg";})
         .attr("id", function(d) {return "icon_" + d})
-        .attr("width", icon_width) 
+        .attr("width", icon_width)
         .attr("height", icon_height);
 
     var image = g_nodes.selectAll(".device_icon")
@@ -1553,13 +1562,13 @@ function redraw() {
         .style("opacity",0)
         .remove();
 
-    $('.device_icon').tipsy({ 
+    $('.device_icon').tipsy({
         //based on http://bl.ocks.org/1373263
-        gravity: 'w', 
-        html: true, 
+        gravity: 'w',
+        html: true,
         title: function() {
             var d = this.__data__
-        return node_info(d); 
+        return node_info(d);
         }
     });
 
@@ -1570,13 +1579,13 @@ function redraw() {
         .attr("x", function(d) { return d.x + x_offset; })
         .attr("y", function(d) { return d.y + y_offset + 3; } )
         .attr("class", "device_label")
-        .attr("text-anchor", "middle") 
-        .attr("font-family", "helvetica") 
+        .attr("text-anchor", "middle")
+        .attr("font-family", "helvetica")
         .style("opacity", icon_opacity)
-        .attr("font-size", "small") 
+        .attr("font-size", "small")
 
         //TODO: use a general accessor for x/y of nodes
-        device_labels 
+        device_labels
         .attr("dx", icon_width/2) // padding-right
         .attr("dy", icon_height + 3) // vertical-align: middle
         .text(device_label);
@@ -1592,7 +1601,7 @@ function redraw() {
         .style("opacity",0)
         .remove();
     //});
-    
+
 
         //reset paths
         pathinfo = [];
@@ -1638,7 +1647,7 @@ function draw_path_node_annotations(data) {
         .attr("height", 50)
         .attr("width", 120)
         .attr("class", "path_node_annotation_backing")
-        .attr("fill", "white") 
+        .attr("fill", "white")
         .style("opacity", 0.8)
 
         path_node_annotation_backings.exit().transition()
@@ -1653,14 +1662,14 @@ function draw_path_node_annotations(data) {
         .attr("x", function(d) { return annotation_x(d.host) + x_offset; })
         .attr("y", function(d) { return annotation_y(d.host) + y_offset + 3; } )
         .attr("class", "path_node_annotation")
-        .attr("text-anchor", "middle") 
-        .attr("font-family", "helvetica") 
-        .attr("background-color", "red") 
+        .attr("text-anchor", "middle")
+        .attr("font-family", "helvetica")
+        .attr("background-color", "red")
         //.style("opacity", 1)
-        .attr("font-size", 18) 
+        .attr("font-size", 18)
 
         //TODO: use a general accessor for x/y of nodes
-        path_node_annotations 
+        path_node_annotations
         .attr("dx", icon_width/2) // padding-right
         .attr("dy", icon_height + 3) // vertical-align: middle
         .text(node_annotation);
@@ -1692,30 +1701,40 @@ function redraw_paths() {
             elements = path['path'];
             return _.first(elements) + "_" + _.last(elements);;
         })
-    
+
     var path_total_length = function(d) {
         return d.node().getTotalLength()
     }
 
-    var path_marker_end = function(d) { 
+    var path_marker_end = function(d) {
         if ("verified" in d && d['verified'] == true) {
             return "url(#path_verified_marker)";
+        }
+        else if ("verified" in d && d['verified'] == false) {
+            return "url(#path_un_verified_marker)";
         }
         return "url(#path_marker)";
     }
 
-    var path_color = function(d) { 
+    var path_color = function(d) {
         if ("verified" in d && d['verified'] == true) {
             return "green";
         }
-        return "red";
+        if ("verified" in d && d['verified'] == false) {
+            return "red";
+        }
+        return "black";
+    }
+
+    var transition_time = function(d) {
+        return 200* _.size(d.path);
     }
 
     trace_path.enter().append("svg:path")
         .attr("d", function(d) { return svg_line(d['path'])})
         .attr("class", "trace_path")
         .style("stroke-width", 5)
-        .style("stroke", "red")
+        .style("stroke", "orange")
         .style("fill", "none")
         .attr("stroke-dasharray", function(d) {
             return path_total_length(d3.select(this)) + " " + path_total_length(d3.select(this))})
@@ -1728,7 +1747,7 @@ function redraw_paths() {
         .attr("d", function(d) { return svg_line(d['path'])})
         .ease("linear")
         .attr("stroke-dashoffset", 0)
-        .duration(1000)
+        .duration(transition_time)
         .transition()
         .attr("stroke-dasharray", "0")
         .attr("marker-end", path_marker_end)
@@ -1740,7 +1759,6 @@ function redraw_paths() {
             d3.select(this).style("stroke", "red");
             d3.select(this).style("stroke-width", "4");
             //path_info(d);
-            //console.log(d.verified);
         })
     .on("mouseout", function(){
         d3.select(this).style("stroke-width", "3");
