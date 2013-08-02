@@ -1,4 +1,6 @@
 """Zmq based measurement server"""
+# based on https://learning-0mq-with-pyzmq.readthedocs.org/en/latest/pyzmq/patterns/pushpull.html
+
 
 import zmq
 import json
@@ -8,7 +10,23 @@ from threading import Thread
 import time
 import sys
 
-def do_connect(host, username, password, command, vtysh = False):
+
+def streamer_device(port_in, port_out):
+    from zmq.devices import ProcessDevice
+
+    pd = ProcessDevice(zmq.QUEUE, zmq.PULL, zmq.PUSH)
+    pd.bind_in('tcp://*:%s' % port_in)
+    pd.bind_out('tcp://*:%s' % port_out)
+    pd.setsockopt_in(zmq.IDENTITY, 'PULL')
+    pd.setsockopt_out(zmq.IDENTITY, 'PUSH')
+    pd.start()
+# it will now be running in a background process
+
+
+CONNECTORS = {}
+
+#TODO: inherit from base autonetkit connector abstract function
+def netkit_connector(host, username, password, command, vtysh = False):
     #Note: user prompt and priv prompt have same password
     print host, username, password, command, vtysh
 
@@ -30,9 +48,7 @@ def do_connect(host, username, password, command, vtysh = False):
     print "Hostname is %s" % hostname
 
     #TODO: check why need the below for ascii/unicode/pzmq?
-    username = str(username)
-    password = str(password)
-    command = str(command)
+
     tn.write(username + '\n')
     tn.read_until("Password:", timeout = 10)
     tn.write(password + '\n')
@@ -57,32 +73,59 @@ def do_connect(host, username, password, command, vtysh = False):
     tn.write("exit" + "\n")
     return result
 
-port = "5560" # TODO: make this side IPC
+CONNECTORS['netkit'] = netkit_connector
+try:
+  import autonetkit_cisco
+  import autonetkit_cisco.measure_connectors
+except ImportError:
+  pass # not installed
+else:
+  CONNECTORS['ios_classic'] = autonetkit_cisco.measure_connectors.ios_classic_connector
+  CONNECTORS['ios_xr'] = autonetkit_cisco.measure_connectors.ios_xr_connector
 
-def worker(socket):
-     while True:
-           #  Wait for next request from client
-           print "Waiting for message"
-           message = socket.recv()
-           #socket.send(json.dumps("hello"))
-           #continue
-           print type(message)
-           print "Received request: ", message
-           data = json.loads(message)
-           print data
-           host = data['host']
-           username = data['username']
-           password = data['password']
-           command = data['command']
-           vtysh = data.get('vtysh', False)
-           print "command is", command
-           try:
-               result = do_connect(host, username, password, command, vtysh)
-           except python_socket.timeout:
-              pass
-           else:
-               message = json.dumps(result)
-               socket.send(message)
+
+def do_connect(host, connector, username, password, command, vtysh = False):
+  #TODO: use a function map
+  connector_fn = CONNECTORS[connector] #TODO: capture if not found
+  try:
+    return connector_fn(host, username, password, command, vtysh)
+  except EOFError:
+    return ""
+
+def worker():
+    context = zmq.Context()
+    # recieve work
+    consumer_receiver = context.socket(zmq.PULL)
+    consumer_receiver.connect("tcp://127.0.0.1:5560")
+    # send work
+    consumer_sender = context.socket(zmq.PUSH)
+    consumer_sender.connect("tcp://127.0.0.1:5561")
+    while True:
+       #  Wait for next request from client
+       print "Waiting for message"
+       work = consumer_receiver.recv_json()
+       #socket.send(json.dumps("hello"))
+       #continue
+       print "Received request: ", work
+       data = json.loads(work)
+       host = data['host'] #TODO: rename this to host_ip
+       #TODO: add support for host port (default 23)
+       connector = data['connector']
+       username = data['username']
+       password = data['password']
+       command = data['command']
+       vtysh = data.get('vtysh', False)
+       username = str(username)
+       password = str(password)
+       command = str(command)
+       print "command is", command
+       try:
+         result = do_connect(host, connector, username, password, command, vtysh)
+       except python_socket.timeout:
+        pass
+       else:
+         message = json.dumps({'command': data, 'result': result})
+         consumer_sender.send_json(message)
 
 
 
@@ -94,13 +137,14 @@ def main():
     pass
   #NOTE: need pts/x available for worst-case of all threads at once
   for i in range(num_worker_threads):
-      context = zmq.Context()
-      socket = context.socket(zmq.REP)
-      socket.connect("tcp://localhost:%s" % port)
-      kwargs = {'socket': socket}
-      t = Thread(target=worker, kwargs=kwargs)
+      t = Thread(target=worker)
       t.daemon = True
       t.start()
+
+
+  # start the streamer device
+  streamer_device(5559, 5560)
+  streamer_device(5561, 5562)
 
   while True:
       time.sleep(1)

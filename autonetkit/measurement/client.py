@@ -36,15 +36,17 @@ def main():
 
     for node in nidb.routers():
         commands.append({'host': str(node.tap.ip),
-         'username': "root", "password": "1234",
-         "command": cmd, "template": template_file, "rev_map" : rev_map,
-         "source": node, "destination": dest_node,
-          })
+            'connector': 'netkit',
+            'username': "root", "password": "1234",
+            "command": cmd, "template": template_file, "rev_map" : rev_map,
+            "hostname": node, "destination": dest_node,
+            })
 
     def do_work(socket, user_data):
         #TODO: make username and password optional
         #print "Sent", ", ".join(["%s: %s" % (k, v) for k, v in data.items()])
-        core_keys = ("host", "username", "password", "command")
+        core_keys = ("host", "hostname", "connector",
+            "username", "password", "command")
         core_data = {k: v for k,v in user_data.items() if k in core_keys}
         print "Sent %s to %s" % (core_data['command'], core_data['host'])
         message = json.dumps(core_data)
@@ -58,12 +60,12 @@ def main():
 
         template = user_data['template']
         rev_map = user_data['rev_map']
-        source = user_data['source']
+        hostname = user_data['hostname']
         destination = user_data['destination']
         header, routes = process.process_traceroute(template_file, result)
         path = process.extract_path_from_parsed_traceroute(header, routes)
         hosts = process.reverse_map_path(rev_map, path)
-        hosts.insert(0, source)
+        hosts.insert(0, hostname)
         #TODO: push processing results onto return values
         print hosts
         # only send if complete path
@@ -79,12 +81,12 @@ def main():
         # TODO: test if command is traceroute
         template = user_data['template']
         rev_map = user_data['rev_map']
-        source = user_data['source']
+        hostname = user_data['hostname']
         destination = user_data['destination']
         header, routes = process.process_traceroute(template_file, result)
         path = process.extract_path_from_parsed_traceroute(header, routes)
         hosts = process.reverse_map_path(rev_map, path)
-        hosts.insert(0, source)
+        hosts.insert(0, hostname)
         #TODO: push processing results onto return values
         print hosts
         # only send if complete path
