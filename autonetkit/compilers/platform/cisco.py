@@ -89,7 +89,6 @@ class CiscoCompiler(PlatformCompiler):
             log.info("Not allocating management interfaces for Cisco")
 
         log.info("Compiling Cisco for %s" % self.host)
-        ios_compiler = IosClassicCompiler(self.nidb, self.anm)
         now = datetime.now()
         if settings['Compiler']['Cisco']['timestamp']:
             timestamp = now.strftime("%Y%m%d_%H%M%S_%f")
@@ -154,6 +153,7 @@ class CiscoCompiler(PlatformCompiler):
                                 interface.ipv6_subnet.prefixlen)
 
 
+        ios_compiler = IosClassicCompiler(self.nidb, self.anm)
         ios_nodes = (n for n in g_phy.nodes('is_router', host=self.host)
                 if n.syntax in ("ios", "ios_xe"))
         for phy_node in ios_nodes:
