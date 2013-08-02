@@ -26,15 +26,6 @@ class IosBaseCompiler(RouterCompiler):
         phy_node = self.anm['phy'].node(node)
 
         node.use_cdp = phy_node.use_cdp
-        if phy_node.device_subtype == "vios":
-            # only copy across for certain reference platforms
-            node.use_onepk = phy_node.use_onepk
-            node.no_service_config = True
-
-        if phy_node.device_subtype == "ultra":
-            # only copy across for certain reference platforms
-            node.transport_input_ssh_telnet = True
-            node.include_csr = True
 
         if node in self.anm['ospf']:
             node.ospf.use_ipv4 = phy_node.use_ipv4
@@ -242,7 +233,7 @@ class IosBaseCompiler(RouterCompiler):
             if src_type == "xrvr":
                 if dst_type == "vios":
                     interface.isis.hello_padding_disable = True
-                elif dst_type == "ultra":
+                elif dst_type == "CSR1000v":
                     interface.isis.hello_padding_disable = True
                 elif dst_type == "titanium":
                     interface.isis.hello_padding_disable = True
@@ -251,7 +242,7 @@ class IosBaseCompiler(RouterCompiler):
                 if dst_type == "xrvr":
                     interface.isis.mtu = 1430
 
-            if src_type == "ultra":
+            if src_type == "CSR1000v":
                 if dst_type == "xrvr":
                     interface.isis.mtu = 1430
 
@@ -261,13 +252,29 @@ class IosBaseCompiler(RouterCompiler):
                     interface.isis.hello_padding_disable = True
                 elif dst_type == "vios":
                     interface.isis.hello_padding_disable = True
-                elif dst_type == "ultra":
+                elif dst_type == "CSR1000v":
                     interface.isis.hello_padding_disable = True
 
             interface.isis_mtu = interface.isis.mtu
             interface.hello_padding_disable = interface.isis.hello_padding_disable
 
 class IosClassicCompiler(IosBaseCompiler):
+
+    def compile(self, node):
+        super(IosClassicCompiler, self).compile(node)
+        phy_node = self.anm['phy'].node(node)
+        if phy_node.device_subtype == "vios":
+            # only copy across for certain reference platforms
+            node.use_onepk = phy_node.use_onepk
+            node.no_service_config = True
+
+        if phy_node.device_subtype == "CSR1000v":
+            # only copy across for certain reference platforms
+            node.transport_input_ssh_telnet = True
+            node.include_csr = True
+            # Set secret password to "cisco"
+            node.enable_secret = "tnhtc92DXBhelxjYk8LWJrPV36S2i4ntXrpb4RFmfqY"
+
     def ospf(self, node):
         super(IosClassicCompiler, self).ospf(node)
         loopback_zero = node.loopback_zero
@@ -280,9 +287,6 @@ class IosClassicCompiler(IosBaseCompiler):
                         'use_ipv6': node.ip.use_ipv6,
                         'multipoint': False,
                         } #TODO: add wrapper for this
-
-    def compile(self, node):
-        super(IosClassicCompiler, self).compile(node)
 
     def bgp(self, node):
         super(IosClassicCompiler, self).bgp(node)
