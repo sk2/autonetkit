@@ -2,6 +2,7 @@
 
 import zmq
 import json
+import socket as python_socket
 import telnetlib
 from threading import Thread
 import time
@@ -20,7 +21,7 @@ def do_connect(host, username, password, command, vtysh = False):
     tn.set_debuglevel(0)
     print "Connected to %s" % host
 
-    welcome_banner = tn.read_until("login:")
+    welcome_banner = tn.read_until("login:", timeout = 10)
     last_line = welcome_banner.splitlines()[-1]
     hostname = last_line.replace("login:", "").strip()
 
@@ -33,15 +34,15 @@ def do_connect(host, username, password, command, vtysh = False):
     password = str(password)
     command = str(command)
     tn.write(username + '\n')
-    tn.read_until("Password:")
+    tn.read_until("Password:", timeout = 10)
     tn.write(password + '\n')
-    tn.read_until(linux_prompt)
+    tn.read_until(linux_prompt, timeout = 10)
     if vtysh:
         vtysh_prompt = hostname + "#"
         tn.write("vtysh" + "\n")
-        tn.read_until(vtysh_prompt)
+        tn.read_until(vtysh_prompt, timeout = 10)
         tn.write("terminal length 0" + "\n")
-        tn.read_until(vtysh_prompt)
+        tn.read_until(vtysh_prompt, timeout = 10)
         tn.write(command + "\n")
         result = tn.read_until(vtysh_prompt, timeout = 10)
         tn.write("exit" + "\n")
@@ -75,10 +76,13 @@ def worker(socket):
            command = data['command']
            vtysh = data.get('vtysh', False)
            print "command is", command
-           result = do_connect(host, username, password, command, vtysh)
-           #print "result is", result
-           message = json.dumps(result)
-           socket.send(message)
+           try:
+               result = do_connect(host, username, password, command, vtysh)
+           except python_socket.timeout:
+              pass
+           else:
+               message = json.dumps(result)
+               socket.send(message)
 
 
 

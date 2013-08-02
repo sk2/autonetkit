@@ -29,7 +29,7 @@ def main():
     print "tracing path to ", dest_node
     ank_messaging.highlight(nodes = [dest_node])
     dest_ip = list(dest_node.physical_interfaces)[0].ipv4_address
-    cmd = "traceroute -n -a -U -w 0.5 %s" % dest_ip
+    cmd = "traceroute -n -a -U -w 1.0 %s" % dest_ip
     #cmd = "traceroute -n -a -U -w 0.5 10.5.0.2"
 
 #TODO: also take port argument (default of 23), and method argument (telnet (default), ssh, ..., etc)
@@ -41,18 +41,39 @@ def main():
          "source": node, "destination": dest_node,
           })
 
-    def do_work(socket, data):
+    def do_work(socket, user_data):
         #TODO: make username and password optional
         #print "Sent", ", ".join(["%s: %s" % (k, v) for k, v in data.items()])
-        print "Sent %s to %s" % (data['command'], data['host'])
-        message = json.dumps(data)
+        core_keys = ("host", "username", "password", "command")
+        core_data = {k: v for k,v in user_data.items() if k in core_keys}
+        print "Sent %s to %s" % (core_data['command'], core_data['host'])
+        message = json.dumps(core_data)
         socket.send (message)
         #print "waiting for response for %s" % message
         message = socket.recv()
-        data = json.loads(message)
-        import q
-        q(data)
-        return str(data)
+        result = str(json.loads(message))
+        #import q
+        #q(result)
+        print result
+
+        template = user_data['template']
+        rev_map = user_data['rev_map']
+        source = user_data['source']
+        destination = user_data['destination']
+        header, routes = process.process_traceroute(template_file, result)
+        path = process.extract_path_from_parsed_traceroute(header, routes)
+        hosts = process.reverse_map_path(rev_map, path)
+        hosts.insert(0, source)
+        #TODO: push processing results onto return values
+        print hosts
+        # only send if complete path
+        if hosts[-1] == destination:
+            path_data = {'path': hosts}
+            ank_messaging.highlight(paths = [path_data])
+        else:
+            print "Incomplete path", hosts, destination
+
+        return str(result)
 
     def process_data(user_data, result):
         # TODO: test if command is traceroute
@@ -87,10 +108,8 @@ def main():
                 return
             if key == "command":
                 # only send the core information: not extra info for parsing
-                core_keys = ("host", "username", "password", "command")
-                core_data = {k: v for k,v in item.items() if k in core_keys}
-                result = do_work(socket, core_data)
-                q.put((10, "process", (item, result)))
+                result = do_work(socket, item)
+                #q.put((10, "process", (item, result)))
             if key == "process":
                 user_data, result = item
                 process_data(user_data, result)
@@ -98,7 +117,7 @@ def main():
             q.task_done()
 
     q = Queue.PriorityQueue()
-    num_worker_threads = 5
+    num_worker_threads = 10
     for i in range(num_worker_threads):
         t = Thread(target=worker)
         t.daemon = True
