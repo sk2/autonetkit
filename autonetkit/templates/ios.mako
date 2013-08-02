@@ -30,6 +30,9 @@ no service password-encryption
 no service config
 %endif
 enable password cisco
+% if node.enable_secret:
+enable secret 4 ${node.enable_secret}
+%endif
 ip classless
 ip subnet-zero
 no ip domain lookup
