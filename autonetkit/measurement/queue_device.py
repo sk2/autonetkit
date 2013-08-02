@@ -1,3 +1,22 @@
+import time
+import zmq
+import pprint
+
+def result_collector():
+    context = zmq.Context()
+    results_receiver = context.socket(zmq.PULL)
+    results_receiver.bind("tcp://127.0.0.1:5558")
+    collecter_data = {}
+    for x in xrange(1000):
+        result = results_receiver.recv_json()
+        print result
+
+
+result_collector()
+
+raise SystemExit
+
+
 import zmq
 # from https://learning-0mq-with-pyzmq.readthedocs.org/en/latest/pyzmq/devices/queue.html
 
@@ -23,4 +42,4 @@ def main():
         context.term()
 
 if __name__ == "__main__":
-    main()
+    main(   )

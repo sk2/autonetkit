@@ -37,7 +37,7 @@ class CiscoCompiler(PlatformCompiler):
 
     @staticmethod
     def numeric_to_interface_label_star_os(x):
-        return "ethernet 1/%s" % x
+        return "ethernet 1/%s" % (x + 10)
 
     @staticmethod
     def numeric_to_interface_label_linux(x):
@@ -254,7 +254,7 @@ class CiscoCompiler(PlatformCompiler):
             # Assign interfaces
             int_ids = self.interface_ids_nxos()
             for interface in nidb_node.physical_interfaces:
-                interface.id = self.numeric_to_interface_label_nxos(interface.numeric_id)
+                interface.id = self.numeric_to_interface_label_star_os(interface.numeric_id)
 
             staros_compiler.compile(nidb_node)
             #TODO: make this work other way around
