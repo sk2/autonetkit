@@ -128,7 +128,7 @@ def ank_json_custom_loads(data):
             except AttributeError:
                 pass # not a string
 # handle lists of IP addresses
-            
+
             if isinstance(val, list):
                 if any(isinstance(elem, basestring) for elem in val):
                     # list contains a string
