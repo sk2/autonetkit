@@ -35,6 +35,7 @@ def netkit_connector(host, username, password, command, vtysh = False):
         tn = telnetlib.Telnet(host, timeout = 10)
     except Exception, e:
         print "Unable to connect to %s: %s" % (host, e)
+        return
 
     tn.set_debuglevel(0)
     print "Connected to %s" % host
