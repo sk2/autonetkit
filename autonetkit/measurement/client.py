@@ -9,10 +9,74 @@ import autonetkit.ank_messaging as ank_messaging
 import autonetkit.config as config
 
 server = config.settings['Measurement']['host']
-port = config.settings['Measurement']['port']
-print server, port
 
 def main():
+    import zmq
+    import json
+    import sys
+    cmd = "show ip route"
+
+    print cmd
+    port = "5559"
+
+    context = zmq.Context()
+    zmq_socket = context.socket(zmq.PUSH)
+    zmq_socket.connect("tcp://%s:%s" % (server, port))
+
+    nidb = autonetkit.NIDB()
+    nidb.restore_latest()
+    rev_map = process.build_reverse_mappings_from_nidb(nidb)
+
+    template_file = pkg_resources.resource_filename(__name__, "../textfsm/linux/traceroute")
+    template_file = os.path.abspath(template_file)
+
+    commands = []
+    import random
+    dest_node = random.choice([n for n in nidb.nodes("is_l3device")])
+    print "tracing path to ", dest_node
+    ank_messaging.highlight(nodes = [dest_node])
+    dest_ip = list(dest_node.physical_interfaces)[0].ipv4_address
+    #cmd = "traceroute -n -a -U -w 1.0 %s" % dest_ip
+    #cmd = "traceroute -n -a -U -w 0.5 10.5.0.2"
+
+    cmd = "show ip route"
+
+#TODO: also take port argument (default of 23), and method argument (telnet (default), ssh, ..., etc)
+
+    for node in nidb.routers():
+        hostname = str(node)
+        commands.append({'host': str(node.tap.ip),
+            'connector': 'netkit',
+            'username': "root", "password": "1234",
+            "command": cmd,
+            #"template": template_file, "rev_map" : rev_map,
+            "connector": "netkit",
+            "vtysh": True,
+            "hostname": hostname, "destination": str(dest_node),
+            })
+
+    for command in commands:
+        #TODO: Strip off all extra params that are intended for the processing steps...
+        # ie keep the host, user, pass,... but drop the templates etc
+        work_message = json.dumps(command)
+        print "sending", work_message
+        zmq_socket.send_json(work_message)
+
+    print "Collecting results"
+    context = zmq.Context()
+    results_receiver = context.socket(zmq.PULL)
+    rev_port = "5562"
+    results_receiver.connect("tcp://%s:%s" % (server, rev_port))
+    results = []
+    for x in range(len(commands)):
+        result = results_receiver.recv_json()
+        print result
+        results.append(json.loads(result))
+
+    print results
+
+
+def main2():
     import Queue
     from threading import Thread
 
