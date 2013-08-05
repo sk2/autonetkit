@@ -18,10 +18,22 @@ def streamer_device(port_in, port_out):
     pd.bind_in('tcp://*:%s' % port_in)
     pd.bind_out('tcp://*:%s' % port_out)
     pd.setsockopt_in(zmq.IDENTITY, 'PULL')
+
     pd.setsockopt_out(zmq.IDENTITY, 'PUSH')
     pd.start()
 # it will now be running in a background process
 
+def forwarder_device(port_in, port_out):
+    from zmq.devices import ProcessDevice
+
+    pd = ProcessDevice(zmq.FORWARDER, zmq.SUB, zmq.PUB)
+    pd.bind_in('tcp://*:%s' % port_in)
+    pd.bind_out('tcp://*:%s' % port_out)
+    pd.setsockopt_in(zmq.IDENTITY, 'SUB')
+    pd.setsockopt_in(zmq.SUBSCRIBE, "")
+    pd.setsockopt_out(zmq.IDENTITY, 'PUB')
+    pd.start()
+# it will now be running in a background process
 
 CONNECTORS = {}
 
@@ -72,7 +84,7 @@ def netkit_connector(host, username, password, command, vtysh = False):
     print "Finished for %s" % hostname
 
     tn.write("exit" + "\n")
-    return result
+    return hostname, result
 
 CONNECTORS['netkit'] = netkit_connector
 try:
@@ -82,14 +94,16 @@ except ImportError:
   pass # not installed
 else:
   CONNECTORS['ios_classic'] = autonetkit_cisco.measure_connectors.ios_classic_connector
+  CONNECTORS['ios_classic_ns'] = autonetkit_cisco.measure_connectors.ios_classic_ns_connector
   CONNECTORS['ios_xr'] = autonetkit_cisco.measure_connectors.ios_xr_connector
+  CONNECTORS['ios_xr_ns'] = autonetkit_cisco.measure_connectors.ios_xr_ns_connector
 
-
-def do_connect(host, connector, username, password, command, vtysh = False):
+def do_connect(**kwargs):
   #TODO: use a function map
+  connector = kwargs.get("connector")
   connector_fn = CONNECTORS[connector] #TODO: capture if not found
   try:
-    return connector_fn(host, username, password, command, vtysh)
+    return connector_fn(**kwargs)
   except EOFError:
     return ""
 
@@ -99,7 +113,7 @@ def worker():
     consumer_receiver = context.socket(zmq.PULL)
     consumer_receiver.connect("tcp://127.0.0.1:5560")
     # send work
-    consumer_sender = context.socket(zmq.PUSH)
+    consumer_sender = context.socket(zmq.PUB)
     consumer_sender.connect("tcp://127.0.0.1:5561")
     while True:
        #  Wait for next request from client
@@ -120,18 +134,30 @@ def worker():
        password = str(password)
        command = str(command)
        print "command is", command
+       data = {k: str(v) for k, v in data.items()}
        try:
-         result = do_connect(host, connector, username, password, command, vtysh)
-       except python_socket.timeout:
-        pass
-       else:
-         message = json.dumps({'command': data, 'result': result})
-         consumer_sender.send_json(message)
-
-
+         hostname, result = do_connect(**data)
+       except Exception, e:
+        print e
+        hostname = "error"
+        result = ""
+       finally:
+        try:
+          data = str(data)
+          hostname = str(hostname)
+          result = str(result)
+          message = json.dumps({'command': data,
+            'hostname': hostname,
+            'result': result})
+        except Exception, e:
+          print "cant dump", e
+        else:
+          topic = ""
+          consumer_sender.send("%s %s" % (topic, message))
+          print "Sent to zmq"
 
 def main():
-  num_worker_threads = 10
+  num_worker_threads = 1
   try:
     num_worker_threads = int(sys.argv[1])
   except IndexError:
@@ -145,7 +171,7 @@ def main():
 
   # start the streamer device
   streamer_device(5559, 5560)
-  streamer_device(5561, 5562)
+  forwarder_device(5561, 5562)
 
   while True:
       time.sleep(1)
