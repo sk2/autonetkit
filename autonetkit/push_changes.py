@@ -9,7 +9,7 @@ def apply_difference(nidb_a, nidb_diff):
     except KeyError:
         print "no nodes modified"
         modified_nodes = {}
-        
+
     ank_messaging.highlight(modified_nodes, [], [])
 
     for node_id, node_data in modified_nodes.items():
@@ -34,7 +34,7 @@ def apply_difference(nidb_a, nidb_diff):
                     "ip ospf cost %s " % cost_2])
 
                     command = 'vtysh -c "%s"' % command
-                    
+
                     remote_hosts = [nidb_node.tap.ip]
                     measure.send(nidb_a, command, remote_hosts)
                     command = "show ip ospf interface %s" % interface.id
