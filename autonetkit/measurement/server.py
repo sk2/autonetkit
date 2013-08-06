@@ -129,7 +129,9 @@ def worker():
        username = data['username']
        password = data['password']
        command = data['command']
+       message_key = data['message_key']
        vtysh = data.get('vtysh', False)
+       message_key = str(message_key)
        username = str(username)
        password = str(password)
        command = str(command)
@@ -137,23 +139,25 @@ def worker():
        data = {k: str(v) for k, v in data.items()}
        try:
          hostname, result = do_connect(**data)
+         success = True
        except Exception, e:
         print e
-        hostname = "error"
-        result = ""
+        hostname = ""
+        success = False
+        result = str(e)
        finally:
         try:
           data = str(data)
           hostname = str(hostname)
           result = str(result)
-          message = json.dumps({'command': data,
+          message = json.dumps({'command': work,
+            "success": success,
             'hostname': hostname,
             'result': result})
         except Exception, e:
           print "cant dump", e
         else:
-          topic = ""
-          consumer_sender.send("%s %s" % (topic, message))
+          consumer_sender.send("%s %s" % (message_key, message))
           print "Sent to zmq"
 
 def main():
