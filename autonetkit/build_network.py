@@ -39,6 +39,7 @@ def load(input_graph_string):
     return input_graph
 
 def grid_2d(dim):
+    """Creates a 2d grid of dimension dim"""
     import networkx as nx
     graph = nx.grid_2d_graph(dim, dim)
 
@@ -68,6 +69,7 @@ def grid_2d(dim):
     return graph
 
 def initialise(input_graph):
+    """Initialises the input graph with from a NetworkX graph"""
     anm = autonetkit.anm.AbstractNetworkModel()
 
     input_undirected = nx.Graph(input_graph)
@@ -106,6 +108,7 @@ def initialise(input_graph):
     return anm
 
 def apply_design_rules(anm):
+    """Applies appropriate design rules to ANM"""
     g_in = anm['input']
 
     build_phy(anm)

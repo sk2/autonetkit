@@ -16,7 +16,25 @@ def build_reverse_mappings_from_nidb(nidb):
 
     return rev_map
 
-def process_traceroute(template_file, data):
+def build_reverse_mappings_from_anm_input(anm):
+    """Builds reverse mappings from ANM input graph,
+    assumes addresses have already been allocated onto input graph,
+    either externally or by previous run"""
+    g_in = anm['input']
+    rev_map = {
+            "loopbacks": {},
+            "infra_interfaces": {},
+    }
+
+    for node in g_in:
+        rev_map["loopbacks"][str(node.loopback_v4)] = node
+        for interface in node.physical_interfaces:
+            rev_map["infra_interfaces"][str(interface.ipv4_address)] = interface
+
+    return rev_map
+
+
+def process_textfsm(template_file, data):
     """
     TODO: make template return data other than just hops, and have reverse_map_path() handle accordingly
     """
@@ -24,9 +42,9 @@ def process_traceroute(template_file, data):
     with open(template_file, "r") as template:
         re_table = textfsm.TextFSM(template)
 
-    routes = re_table.ParseText(data)
+    data = re_table.ParseText(data)
     header = re_table.header
-    return header, routes
+    return header, data
 
 def extract_path_from_parsed_traceroute(header, routes, hop_id = "Hop"):
     """Returns the hop IPs from the TextFSM returned data"""

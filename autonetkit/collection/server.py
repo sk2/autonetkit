@@ -105,6 +105,7 @@ def do_connect(**kwargs):
   try:
     return connector_fn(**kwargs)
   except EOFError:
+    print "Unable to connect with connector %s" % connector
     return ""
 
 def worker():

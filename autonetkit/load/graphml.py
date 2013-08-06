@@ -11,6 +11,7 @@ import autonetkit.exception
 from cStringIO import StringIO
 from collections import defaultdict
 
+
 def load_graphml(input_data):
     #TODO: allow default properties to be passed in as dicts
 
@@ -23,6 +24,7 @@ def load_graphml(input_data):
             63, # input string too long for filename
             ])
         if e.errno in acceptable_errors:
+            from xml.etree.cElementTree import ParseError
             # try as data string rather than filename string
             try:
                 input_pseduo_fh = StringIO(input_data) # load into filehandle to networkx
@@ -30,6 +32,10 @@ def load_graphml(input_data):
             except IOError:
                 raise autonetkit.exception.AnkIncorrectFileFormat
             except IndexError:
+                raise autonetkit.exception.AnkIncorrectFileFormat
+            except ParseError:
+                raise autonetkit.exception.AnkIncorrectFileFormat
+            except ParseError:
                 raise autonetkit.exception.AnkIncorrectFileFormat
         else:
             raise e
@@ -68,7 +74,7 @@ def load_graphml(input_data):
         if key not in graph.graph:
             graph.graph[key] = val
 
-    # handle yEd exported booleans: if a boolean is set, then only the nodes marked true have the attribute. need to map the remainder to be false to allow ANK logic 
+    # handle yEd exported booleans: if a boolean is set, then only the nodes marked true have the attribute. need to map the remainder to be false to allow ANK logic
     #for node in graph.nodes(data=True):
         #print node
 
