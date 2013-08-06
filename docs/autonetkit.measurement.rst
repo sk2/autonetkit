@@ -1,10 +1,10 @@
 measurement Package
 ===================
 
-:mod:`client` Module
---------------------
+:mod:`collection` Module
+------------------------
 
-.. automodule:: autonetkit.measurement.client
+.. automodule:: autonetkit.measurement.collection
     :members:
     :undoc-members:
     :show-inheritance:
@@ -13,14 +13,6 @@ measurement Package
 ---------------------
 
 .. automodule:: autonetkit.measurement.process
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`queue_device` Module
---------------------------
-
-.. automodule:: autonetkit.measurement.queue_device
     :members:
     :undoc-members:
     :show-inheritance:
