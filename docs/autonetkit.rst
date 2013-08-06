@@ -158,9 +158,9 @@ Subpackages
 
 .. toctree::
 
+    autonetkit.collection
     autonetkit.compilers
     autonetkit.deploy
     autonetkit.load
-    autonetkit.measurement
     autonetkit.plugins
 

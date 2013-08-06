@@ -13,7 +13,7 @@ setup (
          'console_scripts': [
              'autonetkit = autonetkit.console_script:console_entry',
              'ank_webserver = autonetkit.webserver:main',
-             'ank_measure_server = autonetkit.measurement.server:main',
+             'ank_collection_server = autonetkit.collection.server:main',
          ],
      },
 
