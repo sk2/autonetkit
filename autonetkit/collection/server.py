@@ -38,8 +38,10 @@ def forwarder_device(port_in, port_out):
 CONNECTORS = {}
 
 #TODO: inherit from base autonetkit connector abstract function
-def netkit_connector(host, username, password, command, vtysh = False):
+def netkit_connector(host, username, password, command, *args, **kwargs):
     #Note: user prompt and priv prompt have same password
+    vtysh = kwargs.get("vtysh", False)
+
     print host, username, password, command, vtysh
 
     print "Connecting to %s" % (host)

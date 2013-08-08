@@ -144,15 +144,16 @@ class overlay_interface(object):
         if self.interface_id == 0:
             return "loopback"
 
-        if self.overlay_id != "phy":  # prevent recursion
+        if self.overlay_id == "input":
+            return object.__getattr__(self, 'type')
+
+        elif self.overlay_id != "phy":  # prevent recursion
             return self.phy._interface.get("type")
 
         retval = self._interface.get("type")
         if retval:
+            print "retval",  retval
             return retval
-
-        if self.overlay_id != "phy":  # prevent recursion
-            return self.phy._interface.get("type")
 
     @property
     def node(self):
