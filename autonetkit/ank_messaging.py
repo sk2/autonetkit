@@ -122,11 +122,14 @@ def get_uuid(anm):
         return "singleuser"
 
 
-def highlight(nodes = None, edges = None, paths = None, uuid = "singleuser", http_url = None):
+def highlight(nodes = None, edges = None, paths = None, path = None, uuid = "singleuser", http_url = None):
     if http_url is None:
         http_url = default_http_url
     if not paths:
         paths = []
+
+    if path:
+        paths.append(path)
 
     if nodes is None:
         nodes = []
