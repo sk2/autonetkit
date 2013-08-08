@@ -152,7 +152,6 @@ class overlay_interface(object):
 
         retval = self._interface.get("type")
         if retval:
-            print "retval",  retval
             return retval
 
     @property
