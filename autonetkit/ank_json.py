@@ -163,6 +163,12 @@ def rebind_interfaces(anm):
 
 #TODO: need to also rebind_interfaces for nidb
 
+def rebind_nidb_interfaces(nidb):
+    for node in nidb.nodes():
+        unbound_interfaces = node._interfaces
+        if len(unbound_interfaces): # is list if none set
+            interfaces = {int(key): val for key, val in unbound_interfaces.items()}
+            node._interfaces = interfaces
 
 
 def ank_json_loads(data):

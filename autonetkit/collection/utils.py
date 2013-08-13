@@ -5,6 +5,7 @@ def get_results(server, commands, send_port = 5559, receive_port = 5562):
     import uuid # create key for unique zmq channel for replies
     message_key = uuid.uuid4()
     message_key = str(message_key)
+    import autonetkit.ank_json as ank_json
 
     context = zmq.Context()
     zmq_socket = context.socket(zmq.PUSH)
@@ -18,7 +19,8 @@ def get_results(server, commands, send_port = 5559, receive_port = 5562):
 
     for command in commands:
         command["message_key"] = message_key
-        work_message = json.dumps(command)
+
+        work_message = json.dumps(command, cls=ank_json.AnkEncoder, indent=4)
         #print "sending", work_message
         log.debug("Sending %s to %s" % (command['command'], command['host']))
         zmq_socket.send_json(work_message)
