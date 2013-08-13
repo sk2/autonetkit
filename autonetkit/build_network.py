@@ -942,6 +942,13 @@ def build_phy(anm):
         ank_utils.copy_attr_from(g_in, g_phy, "indices")
 
     g_phy.allocate_interfaces()
+
+    for node in g_phy:
+        for interface in node:
+            specified_id = interface['input'].get("specified_id")
+            if specified_id:
+                interface.specified_id = specified_id # map across
+
     for node in g_phy.nodes("specified_int_names"):
         for interface in node:
             edge = interface.edges()[0]

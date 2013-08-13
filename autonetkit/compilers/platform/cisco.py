@@ -29,7 +29,7 @@ class CiscoCompiler(PlatformCompiler):
 
     @staticmethod
     def numeric_to_interface_label_nxos(x):
-        return "Ethernet2/%s" % x
+        return "Ethernet2/%s" % (x+1)
 
     @staticmethod
     def numeric_to_interface_label_ios_xr(x):
@@ -123,6 +123,10 @@ class CiscoCompiler(PlatformCompiler):
                 else:
                     interface.numeric_id = int(phy_numeric_id)
 
+                phy_specified_id = phy_node.interface(interface).specified_id
+                if phy_specified_id is not None:
+                    interface.id = phy_specified_id
+
         for phy_node in g_phy.nodes('is_server', host=self.host):
             #TODO: look at server syntax also, same as for routers
             nidb_node = self.nidb.node(phy_node)
@@ -186,7 +190,9 @@ class CiscoCompiler(PlatformCompiler):
                 mgmt_int_id = int_ids.next()  # 0/0 is used for management ethernet
 
             for interface in nidb_node.physical_interfaces:
-                interface.id = numeric_to_interface_label(interface.numeric_id)
+                #TODO: use this code block once for all routers
+                if not interface.id:
+                    interface.id = numeric_to_interface_label(interface.numeric_id)
 
             ios_compiler.compile(nidb_node)
             if use_mgmt_interfaces:
@@ -207,7 +213,8 @@ class CiscoCompiler(PlatformCompiler):
             # Assign interfaces
             int_ids = self.interface_ids_ios_xr()
             for interface in nidb_node.physical_interfaces:
-                interface.id = self.numeric_to_interface_label_ios_xr(interface.numeric_id)
+                if not interface.id:
+                    interface.id = self.numeric_to_interface_label_ios_xr(interface.numeric_id)
 
             ios_xr_compiler.compile(nidb_node)
 
@@ -230,7 +237,8 @@ class CiscoCompiler(PlatformCompiler):
             # Assign interfaces
             int_ids = self.interface_ids_nxos()
             for interface in nidb_node.physical_interfaces:
-                interface.id = self.numeric_to_interface_label_nxos(interface.numeric_id)
+                if not interface.id:
+                    interface.id = self.numeric_to_interface_label_nxos(interface.numeric_id)
 
             nxos_compiler.compile(nidb_node)
             #TODO: make this work other way around
@@ -254,7 +262,8 @@ class CiscoCompiler(PlatformCompiler):
             # Assign interfaces
             int_ids = self.interface_ids_nxos()
             for interface in nidb_node.physical_interfaces:
-                interface.id = self.numeric_to_interface_label_star_os(interface.numeric_id)
+                if not interface.id:
+                    interface.id = self.numeric_to_interface_label_star_os(interface.numeric_id)
 
             staros_compiler.compile(nidb_node)
             #TODO: make this work other way around
