@@ -844,6 +844,7 @@ class NIDB_base(object):
             log.warning("No previous NIDB saved. Please compile new NIDB")
             return
         self.restore(latest_file)
+        ank_json.rebind_nidb_interfaces(self)
 
     def restore(self, pickle_file):
         import gzip
@@ -853,6 +854,7 @@ class NIDB_base(object):
             data = fh.read()
             self._graph = ank_json.ank_json_loads(data)
 
+        ank_json.rebind_nidb_interfaces(self)
 
     @property
     def name(self):

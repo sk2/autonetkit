@@ -158,8 +158,8 @@ def highlight(nodes = None, edges = None, paths = None, path = None, uuid = "sin
         else:
             import random
             is_verified = bool(random.randint(0,1))
-            path_data = {'path': path,
-                    'verified': is_verified}
+            #path_data = {'path': path, 'verified': is_verified}
+            path_data = {'path': path}
 
         path_data['path'] = [nfilter(n) for n in path_data['path']]
         filtered_paths.append(path_data)

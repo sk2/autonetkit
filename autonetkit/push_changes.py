@@ -1,8 +1,10 @@
 import autonetkit.ank_messaging as ank_messaging
-import autonetkit.measure as measure
 import autonetkit.log as log
 
-def apply_difference(nidb_a, nidb_diff):
+from autonetkit.collection.utils import get_results
+
+
+def apply_difference(nidb_a, nidb_diff, emulation_server):
 #TODO: batch node updates
     try:
         modified_nodes = nidb_diff['nodes']['m']
@@ -28,17 +30,28 @@ def apply_difference(nidb_a, nidb_diff):
 
                     # TODO: use a template for this (even inline would be an improvement)
                     #TODO: can vtysh take \n delimeted data?
-                    command = "\n".join([
+                    change_command = "\n".join([
                     "conf t",
                     "interface %s" % interface.id,
                     "ip ospf cost %s " % cost_2])
+                    # run as vtysh -c from linux shell rather than vtysh shell
+                    change_command = 'vtysh -c "%s"' % change_command
 
-                    command = 'vtysh -c "%s"' % command
+                    host = nidb_node.tap.ip
+                    commands = [{"host": host, "username": "root",
+                    "password": "1234","connector": "netkit",
+                    "command": change_command, "vtysh": False}]
+                    for response in get_results(emulation_server, commands):
+                        print response["result"]
 
-                    remote_hosts = [nidb_node.tap.ip]
-                    measure.send(nidb_a, command, remote_hosts)
-                    command = "show ip ospf interface %s" % interface.id
-                    command = 'vtysh -c "%s"' % command
-                    measure.send(nidb_a, command, remote_hosts)
+                    # and now view changed result
+
+
+                    collect_command = "show ip ospf interface %s" % interface.id
+                    commands = [{"host": host, "username": "root",
+                    "password": "1234","connector": "netkit",
+                    "command": collect_command, "vtysh": True}]
+                    for response in get_results(emulation_server, commands):
+                        print response["result"]
 
     log.info("Differences applied")

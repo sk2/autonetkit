@@ -28,7 +28,12 @@ def nidb_diff(directory = None, length = 1):
 
 def elem_diff(elem_a, elem_b):
     if type(elem_a) != type(elem_b):
-        return "different types"
+        #TODO: fix this
+        string_types = (str, unicode)
+        if type(elem_a) in string_types and type(elem_b) in string_types:
+            pass 
+        else:
+            return "different types"
 
     if isinstance(elem_a, dict):
         retval = {}

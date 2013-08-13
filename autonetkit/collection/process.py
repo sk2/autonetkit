@@ -46,10 +46,41 @@ def process_textfsm(template_file, data):
     header = re_table.header
     return header, data
 
+def extract_route_from_parsed_routing_table(header, routes, proto_id = "Proto",
+    network_id = "Network", via_id = "Via"):
+    network_index = header.index(network_id)
+    proto_index = header.index(proto_id)
+    via_index = header.index(via_id)
+    return [(item[proto_index], item[network_index], item[via_index]) for item in routes]
+
 def extract_path_from_parsed_traceroute(header, routes, hop_id = "Hop"):
     """Returns the hop IPs from the TextFSM returned data"""
     hop_index = header.index(hop_id)
     return [item[hop_index] for item in routes]
+
+def reverse_map_routing(rev_map, data):
+    """Returns list of nodes in path
+    interfaces selects whether to return only nodes, or interfaces
+    e.g. eth0.r1 or just r1
+    """
+
+    #print data
+
+    result = []
+    for protocol, network, via in data:
+        print "reversing", protocol, network, via
+        if network in rev_map['subnets']:
+            cd = rev_map['subnets'][network]
+            if via is None:
+                result.append((protocol, cd, None))
+
+            if via in rev_map['infra_interfaces']:
+                iface = rev_map['infra_interfaces'][via]
+                print "adding", protocol, cd, iface.node
+                result.append((protocol, cd, iface.node))
+    return result
+
+
 
 def reverse_map_path(rev_map, path, interfaces = False):
     """Returns list of nodes in path
