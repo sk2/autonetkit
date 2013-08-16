@@ -1,0 +1,4317 @@
+{
+    "bgp": {
+        "directed": true, 
+        "graph": [], 
+        "links": [
+            {
+                "_interfaces": {
+                    "3430020387561": 0
+                }, 
+                "direction": "over", 
+                "source": 0, 
+                "target": 3, 
+                "type": "ibgp"
+            }, 
+            {
+                "_interfaces": {
+                    "3430020387561": 0
+                }, 
+                "direction": "over", 
+                "source": 0, 
+                "target": 2, 
+                "type": "ibgp"
+            }, 
+            {
+                "_interfaces": {
+                    "3430020387561": 0
+                }, 
+                "direction": "over", 
+                "source": 0, 
+                "target": 1, 
+                "type": "ibgp"
+            }, 
+            {
+                "_interfaces": {
+                    "3430022387567": 0
+                }, 
+                "direction": "over", 
+                "source": 1, 
+                "target": 0, 
+                "type": "ibgp"
+            }, 
+            {
+                "_interfaces": {
+                    "3430022387567": 0
+                }, 
+                "direction": "over", 
+                "source": 1, 
+                "target": 2, 
+                "type": "ibgp"
+            }, 
+            {
+                "_interfaces": {
+                    "3430022387567": 0
+                }, 
+                "direction": "over", 
+                "source": 1, 
+                "target": 3, 
+                "type": "ibgp"
+            }, 
+            {
+                "_interfaces": {
+                    "3430019387558": 0
+                }, 
+                "direction": "over", 
+                "source": 2, 
+                "target": 0, 
+                "type": "ibgp"
+            }, 
+            {
+                "_interfaces": {
+                    "3430019387558": 0
+                }, 
+                "direction": "over", 
+                "source": 2, 
+                "target": 1, 
+                "type": "ibgp"
+            }, 
+            {
+                "_interfaces": {
+                    "3430019387558": 0
+                }, 
+                "direction": "over", 
+                "source": 2, 
+                "target": 3, 
+                "type": "ibgp"
+            }, 
+            {
+                "_interfaces": {
+                    "3430021387564": 0
+                }, 
+                "direction": "over", 
+                "source": 3, 
+                "target": 0, 
+                "type": "ibgp"
+            }, 
+            {
+                "_interfaces": {
+                    "3430021387564": 0
+                }, 
+                "direction": "over", 
+                "source": 3, 
+                "target": 2, 
+                "type": "ibgp"
+            }, 
+            {
+                "_interfaces": {
+                    "3430021387564": 0
+                }, 
+                "direction": "over", 
+                "source": 3, 
+                "target": 1, 
+                "type": "ibgp"
+            }
+        ], 
+        "multigraph": false, 
+        "nodes": [
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": null, 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "multipoint": false, 
+                        "type": "physical"
+                    }, 
+                    "1": {
+                        "description": null, 
+                        "id": "GigabitEthernet1", 
+                        "id_brief": "ge1", 
+                        "multipoint": false, 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": null, 
+                        "id": "GigabitEthernet2", 
+                        "id_brief": "ge2", 
+                        "multipoint": false, 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": null, 
+                        "id": "GigabitEthernet3", 
+                        "id_brief": "ge3", 
+                        "multipoint": false, 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "CSR1000v", 
+                "device_type": "router", 
+                "ibgp_l2_cluster": "default_l2_cluster", 
+                "ibgp_l3_cluster": 1, 
+                "ibgp_level": 1, 
+                "ibgp_role": "RRC", 
+                "id": "3430020387561", 
+                "label": "ultra-1", 
+                "pop": null, 
+                "x": 221.0, 
+                "y": 3.0
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": null, 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "multipoint": false, 
+                        "type": "physical"
+                    }, 
+                    "1": {
+                        "description": null, 
+                        "id": "Ethernet2/2", 
+                        "id_brief": "Ethernet2/2", 
+                        "multipoint": false, 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": null, 
+                        "id": "Ethernet2/3", 
+                        "id_brief": "Ethernet2/3", 
+                        "multipoint": false, 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": null, 
+                        "id": "Ethernet2/9", 
+                        "id_brief": "Ethernet2/9", 
+                        "multipoint": false, 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "titanium", 
+                "device_type": "router", 
+                "ibgp_l2_cluster": "default_l2_cluster", 
+                "ibgp_l3_cluster": 1, 
+                "ibgp_level": 1, 
+                "ibgp_role": "RRC", 
+                "id": "3430022387567", 
+                "label": "titanium-1", 
+                "pop": null, 
+                "x": 212.0, 
+                "y": 147.0
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": null, 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "multipoint": false, 
+                        "type": "physical"
+                    }, 
+                    "1": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/0/0/0", 
+                        "id_brief": "ge0", 
+                        "multipoint": false, 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/0/0/1", 
+                        "id_brief": "ge1", 
+                        "multipoint": false, 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/0/0/2", 
+                        "id_brief": "ge2", 
+                        "multipoint": false, 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "xrvr", 
+                "device_type": "router", 
+                "ibgp_l2_cluster": "default_l2_cluster", 
+                "ibgp_l3_cluster": 1, 
+                "ibgp_level": 1, 
+                "ibgp_role": "RRC", 
+                "id": "3430019387558", 
+                "label": "xrvr-1", 
+                "pop": null, 
+                "x": 0.0, 
+                "y": 0.0
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": null, 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "multipoint": false, 
+                        "type": "physical"
+                    }, 
+                    "1": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/1", 
+                        "id_brief": "ge0/1", 
+                        "multipoint": false, 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/2", 
+                        "id_brief": "ge0/2", 
+                        "multipoint": false, 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/3", 
+                        "id_brief": "ge0/3", 
+                        "multipoint": false, 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "vios", 
+                "device_type": "router", 
+                "ibgp_l2_cluster": "default_l2_cluster", 
+                "ibgp_l3_cluster": 1, 
+                "ibgp_level": 1, 
+                "ibgp_role": "RRC", 
+                "id": "3430021387564", 
+                "label": "vios-1", 
+                "pop": null, 
+                "x": 11.0, 
+                "y": 122.0
+            }
+        ]
+    }, 
+    "ebgp": {
+        "directed": true, 
+        "graph": [], 
+        "links": [], 
+        "multigraph": false, 
+        "nodes": [
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": null, 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "type": "physical"
+                    }, 
+                    "1": {
+                        "description": null, 
+                        "id": "GigabitEthernet1", 
+                        "id_brief": "ge1", 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": null, 
+                        "id": "GigabitEthernet2", 
+                        "id_brief": "ge2", 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": null, 
+                        "id": "GigabitEthernet3", 
+                        "id_brief": "ge3", 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "CSR1000v", 
+                "device_type": "router", 
+                "id": "3430020387561", 
+                "label": "ultra-1", 
+                "pop": null, 
+                "x": 221.0, 
+                "y": 3.0
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": null, 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "type": "physical"
+                    }, 
+                    "1": {
+                        "description": null, 
+                        "id": "Ethernet2/2", 
+                        "id_brief": "Ethernet2/2", 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": null, 
+                        "id": "Ethernet2/3", 
+                        "id_brief": "Ethernet2/3", 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": null, 
+                        "id": "Ethernet2/9", 
+                        "id_brief": "Ethernet2/9", 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "titanium", 
+                "device_type": "router", 
+                "id": "3430022387567", 
+                "label": "titanium-1", 
+                "pop": null, 
+                "x": 212.0, 
+                "y": 147.0
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": null, 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "type": "physical"
+                    }, 
+                    "1": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/0/0/0", 
+                        "id_brief": "ge0", 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/0/0/1", 
+                        "id_brief": "ge1", 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/0/0/2", 
+                        "id_brief": "ge2", 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "xrvr", 
+                "device_type": "router", 
+                "id": "3430019387558", 
+                "label": "xrvr-1", 
+                "pop": null, 
+                "x": 0.0, 
+                "y": 0.0
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": null, 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "type": "physical"
+                    }, 
+                    "1": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/1", 
+                        "id_brief": "ge0/1", 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/2", 
+                        "id_brief": "ge0/2", 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/3", 
+                        "id_brief": "ge0/3", 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "vios", 
+                "device_type": "router", 
+                "id": "3430021387564", 
+                "label": "vios-1", 
+                "pop": null, 
+                "x": 11.0, 
+                "y": 122.0
+            }
+        ]
+    }, 
+    "ebgp_v4": {
+        "directed": true, 
+        "graph": [], 
+        "links": [], 
+        "multigraph": false, 
+        "nodes": [
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": null, 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "type": "physical"
+                    }, 
+                    "1": {
+                        "description": null, 
+                        "id": "GigabitEthernet1", 
+                        "id_brief": "ge1", 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": null, 
+                        "id": "GigabitEthernet2", 
+                        "id_brief": "ge2", 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": null, 
+                        "id": "GigabitEthernet3", 
+                        "id_brief": "ge3", 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "CSR1000v", 
+                "device_type": "router", 
+                "id": "3430020387561", 
+                "label": "ultra-1", 
+                "pop": null, 
+                "x": 221.0, 
+                "y": 3.0
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": null, 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "type": "physical"
+                    }, 
+                    "1": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/1", 
+                        "id_brief": "ge0/1", 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/2", 
+                        "id_brief": "ge0/2", 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/3", 
+                        "id_brief": "ge0/3", 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "vios", 
+                "device_type": "router", 
+                "id": "3430021387564", 
+                "label": "vios-1", 
+                "pop": null, 
+                "x": 11.0, 
+                "y": 122.0
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": null, 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "type": "physical"
+                    }, 
+                    "1": {
+                        "description": null, 
+                        "id": "Ethernet2/2", 
+                        "id_brief": "Ethernet2/2", 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": null, 
+                        "id": "Ethernet2/3", 
+                        "id_brief": "Ethernet2/3", 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": null, 
+                        "id": "Ethernet2/9", 
+                        "id_brief": "Ethernet2/9", 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "titanium", 
+                "device_type": "router", 
+                "id": "3430022387567", 
+                "label": "titanium-1", 
+                "pop": null, 
+                "x": 212.0, 
+                "y": 147.0
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": null, 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "type": "physical"
+                    }, 
+                    "1": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/0/0/0", 
+                        "id_brief": "ge0", 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/0/0/1", 
+                        "id_brief": "ge1", 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/0/0/2", 
+                        "id_brief": "ge2", 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "xrvr", 
+                "device_type": "router", 
+                "id": "3430019387558", 
+                "label": "xrvr-1", 
+                "pop": null, 
+                "x": 0.0, 
+                "y": 0.0
+            }
+        ]
+    }, 
+    "ebgp_v6": {
+        "directed": true, 
+        "graph": [], 
+        "links": [], 
+        "multigraph": false, 
+        "nodes": []
+    }, 
+    "graphics": {
+        "directed": false, 
+        "graph": [], 
+        "links": [], 
+        "multigraph": false, 
+        "nodes": [
+            {
+                "asn": 1, 
+                "device_subtype": null, 
+                "device_type": "collision_domain", 
+                "id": "cd3430019387558_3430022387567", 
+                "label": "cd_xrvr-1_titanium-1", 
+                "pop": null, 
+                "x": 106.10000000000002, 
+                "y": 73.60000000000002
+            }, 
+            {
+                "asn": 1, 
+                "device_subtype": null, 
+                "device_type": "collision_domain", 
+                "id": "cd3430019387558_3430021387564", 
+                "label": "cd_xrvr-1_vios-1", 
+                "pop": null, 
+                "x": 5.599999999999994, 
+                "y": 61.10000000000002
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": "loopback", 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "type": "loopback"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "CSR1000v", 
+                "device_type": "router", 
+                "id": "3430020387561", 
+                "label": "ultra-1", 
+                "pop": null, 
+                "x": 221.0, 
+                "y": 3.0
+            }, 
+            {
+                "asn": 1, 
+                "device_subtype": null, 
+                "device_type": "collision_domain", 
+                "id": "cd3430020387561_3430021387564", 
+                "label": "cd_ultra-1_vios-1", 
+                "pop": null, 
+                "x": 116.10000000000002, 
+                "y": 62.60000000000002
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": "loopback", 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "type": "loopback"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "titanium", 
+                "device_type": "router", 
+                "id": "3430022387567", 
+                "label": "titanium-1", 
+                "pop": null, 
+                "x": 212.0, 
+                "y": 147.0
+            }, 
+            {
+                "asn": 1, 
+                "device_subtype": null, 
+                "device_type": "collision_domain", 
+                "id": "cd3430019387558_3430020387561", 
+                "label": "cd_xrvr-1_ultra-1", 
+                "pop": null, 
+                "x": 110.60000000000002, 
+                "y": 1.6000000000000227
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": "loopback", 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "type": "loopback"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "vios", 
+                "device_type": "router", 
+                "id": "3430021387564", 
+                "label": "vios-1", 
+                "pop": null, 
+                "x": 11.0, 
+                "y": 122.0
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": "loopback", 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "type": "loopback"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "xrvr", 
+                "device_type": "router", 
+                "id": "3430019387558", 
+                "label": "xrvr-1", 
+                "pop": null, 
+                "x": 0.0, 
+                "y": 0.0
+            }, 
+            {
+                "asn": 1, 
+                "device_subtype": null, 
+                "device_type": "collision_domain", 
+                "id": "cd3430021387564_3430022387567", 
+                "label": "cd_vios-1_titanium-1", 
+                "pop": null, 
+                "x": 111.60000000000002, 
+                "y": 134.60000000000002
+            }, 
+            {
+                "asn": 1, 
+                "device_subtype": null, 
+                "device_type": "collision_domain", 
+                "id": "cd3430020387561_3430022387567", 
+                "label": "cd_ultra-1_titanium-1", 
+                "pop": null, 
+                "x": 216.60000000000002, 
+                "y": 75.10000000000002
+            }
+        ]
+    }, 
+    "ibgp_v4": {
+        "directed": true, 
+        "graph": [], 
+        "links": [
+            {
+                "_interfaces": {
+                    "3430020387561": 0
+                }, 
+                "direction": "over", 
+                "edge_id": null, 
+                "source": 0, 
+                "target": 1
+            }, 
+            {
+                "_interfaces": {
+                    "3430020387561": 0
+                }, 
+                "direction": "over", 
+                "edge_id": null, 
+                "source": 0, 
+                "target": 3
+            }, 
+            {
+                "_interfaces": {
+                    "3430020387561": 0
+                }, 
+                "direction": "over", 
+                "edge_id": null, 
+                "source": 0, 
+                "target": 2
+            }, 
+            {
+                "_interfaces": {
+                    "3430021387564": 0
+                }, 
+                "direction": "over", 
+                "edge_id": null, 
+                "source": 1, 
+                "target": 0
+            }, 
+            {
+                "_interfaces": {
+                    "3430021387564": 0
+                }, 
+                "direction": "over", 
+                "edge_id": null, 
+                "source": 1, 
+                "target": 3
+            }, 
+            {
+                "_interfaces": {
+                    "3430021387564": 0
+                }, 
+                "direction": "over", 
+                "edge_id": null, 
+                "source": 1, 
+                "target": 2
+            }, 
+            {
+                "_interfaces": {
+                    "3430022387567": 0
+                }, 
+                "direction": "over", 
+                "edge_id": null, 
+                "source": 2, 
+                "target": 0
+            }, 
+            {
+                "_interfaces": {
+                    "3430022387567": 0
+                }, 
+                "direction": "over", 
+                "edge_id": null, 
+                "source": 2, 
+                "target": 3
+            }, 
+            {
+                "_interfaces": {
+                    "3430022387567": 0
+                }, 
+                "direction": "over", 
+                "edge_id": null, 
+                "source": 2, 
+                "target": 1
+            }, 
+            {
+                "_interfaces": {
+                    "3430019387558": 0
+                }, 
+                "direction": "over", 
+                "edge_id": null, 
+                "source": 3, 
+                "target": 0
+            }, 
+            {
+                "_interfaces": {
+                    "3430019387558": 0
+                }, 
+                "direction": "over", 
+                "edge_id": null, 
+                "source": 3, 
+                "target": 2
+            }, 
+            {
+                "_interfaces": {
+                    "3430019387558": 0
+                }, 
+                "direction": "over", 
+                "edge_id": null, 
+                "source": 3, 
+                "target": 1
+            }
+        ], 
+        "multigraph": false, 
+        "nodes": [
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": null, 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "type": "physical"
+                    }, 
+                    "1": {
+                        "description": null, 
+                        "id": "GigabitEthernet1", 
+                        "id_brief": "ge1", 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": null, 
+                        "id": "GigabitEthernet2", 
+                        "id_brief": "ge2", 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": null, 
+                        "id": "GigabitEthernet3", 
+                        "id_brief": "ge3", 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "CSR1000v", 
+                "device_type": "router", 
+                "ibgp_l2_cluster": "default_l2_cluster", 
+                "ibgp_l3_cluster": 1, 
+                "ibgp_level": 1, 
+                "id": "3430020387561", 
+                "label": "ultra-1", 
+                "pop": null, 
+                "x": 221.0, 
+                "y": 3.0
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": null, 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "type": "physical"
+                    }, 
+                    "1": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/1", 
+                        "id_brief": "ge0/1", 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/2", 
+                        "id_brief": "ge0/2", 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/3", 
+                        "id_brief": "ge0/3", 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "vios", 
+                "device_type": "router", 
+                "ibgp_l2_cluster": "default_l2_cluster", 
+                "ibgp_l3_cluster": 1, 
+                "ibgp_level": 1, 
+                "id": "3430021387564", 
+                "label": "vios-1", 
+                "pop": null, 
+                "x": 11.0, 
+                "y": 122.0
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": null, 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "type": "physical"
+                    }, 
+                    "1": {
+                        "description": null, 
+                        "id": "Ethernet2/2", 
+                        "id_brief": "Ethernet2/2", 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": null, 
+                        "id": "Ethernet2/3", 
+                        "id_brief": "Ethernet2/3", 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": null, 
+                        "id": "Ethernet2/9", 
+                        "id_brief": "Ethernet2/9", 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "titanium", 
+                "device_type": "router", 
+                "ibgp_l2_cluster": "default_l2_cluster", 
+                "ibgp_l3_cluster": 1, 
+                "ibgp_level": 1, 
+                "id": "3430022387567", 
+                "label": "titanium-1", 
+                "pop": null, 
+                "x": 212.0, 
+                "y": 147.0
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": null, 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "type": "physical"
+                    }, 
+                    "1": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/0/0/0", 
+                        "id_brief": "ge0", 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/0/0/1", 
+                        "id_brief": "ge1", 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/0/0/2", 
+                        "id_brief": "ge2", 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "xrvr", 
+                "device_type": "router", 
+                "ibgp_l2_cluster": "default_l2_cluster", 
+                "ibgp_l3_cluster": 1, 
+                "ibgp_level": 1, 
+                "id": "3430019387558", 
+                "label": "xrvr-1", 
+                "pop": null, 
+                "x": 0.0, 
+                "y": 0.0
+            }
+        ]
+    }, 
+    "ibgp_v6": {
+        "directed": true, 
+        "graph": [], 
+        "links": [], 
+        "multigraph": false, 
+        "nodes": []
+    }, 
+    "ibgp_vpn_v4": {
+        "directed": true, 
+        "graph": [], 
+        "links": [], 
+        "multigraph": false, 
+        "nodes": []
+    }, 
+    "input": {
+        "directed": false, 
+        "graph": [
+            [
+                "ipv4_infra_prefix", 
+                8
+            ], 
+            [
+                "mgmt_prefixlen", 
+                24
+            ], 
+            [
+                "address_family", 
+                "v4"
+            ], 
+            [
+                "ipv4_loopback_prefix", 
+                22
+            ], 
+            [
+                "igp", 
+                "isis"
+            ], 
+            [
+                "file_type", 
+                "virl"
+            ], 
+            [
+                "use_onepk", 
+                false
+            ], 
+            [
+                "Creator", 
+                "Maestro"
+            ], 
+            [
+                "ipv4_loopback_subnet", 
+                "192.168.0.0"
+            ], 
+            [
+                "mgmt_interfaces_enabled", 
+                true
+            ], 
+            [
+                "alloc_ipv4_loopbacks", 
+                false
+            ], 
+            [
+                "ipv4_infra_subnet", 
+                "10.0.0.0"
+            ], 
+            [
+                "mgmt_address_end", 
+                "172.16.254.254"
+            ], 
+            [
+                "ipv4_vrf_loopback_prefix", 
+                24
+            ], 
+            [
+                "use_cdp", 
+                false
+            ], 
+            [
+                "ipv4_vrf_loopback_subnet", 
+                "172.16.0.0"
+            ], 
+            [
+                "specified_int_names", 
+                false
+            ], 
+            [
+                "mgmt_address_start", 
+                "172.16.254.2"
+            ]
+        ], 
+        "links": [
+            {
+                "_interfaces": {
+                    "3430020387561": 3, 
+                    "3430021387564": 3
+                }, 
+                "source": 0, 
+                "target": 1, 
+                "type": "physical"
+            }, 
+            {
+                "_interfaces": {
+                    "3430020387561": 2, 
+                    "3430022387567": 3
+                }, 
+                "source": 0, 
+                "target": 3, 
+                "type": "physical"
+            }, 
+            {
+                "_interfaces": {
+                    "3430019387558": 1, 
+                    "3430020387561": 1
+                }, 
+                "source": 0, 
+                "target": 2, 
+                "type": "physical"
+            }, 
+            {
+                "_interfaces": {
+                    "3430021387564": 1, 
+                    "3430022387567": 1
+                }, 
+                "source": 1, 
+                "target": 3, 
+                "type": "physical"
+            }, 
+            {
+                "_interfaces": {
+                    "3430019387558": 2, 
+                    "3430021387564": 2
+                }, 
+                "source": 1, 
+                "target": 2, 
+                "type": "physical"
+            }, 
+            {
+                "_interfaces": {
+                    "3430019387558": 3, 
+                    "3430022387567": 2
+                }, 
+                "source": 2, 
+                "target": 3, 
+                "type": "physical"
+            }
+        ], 
+        "multigraph": false, 
+        "nodes": [
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": "loopback", 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "type": "loopback"
+                    }, 
+                    "1": {
+                        "description": "GigabitEthernet1", 
+                        "id": "GigabitEthernet1", 
+                        "id_brief": "ge1", 
+                        "ipv4_address": "10.0.0.2", 
+                        "ipv4_prefixlen": "30", 
+                        "numeric_id": "0", 
+                        "specified_id": "GigabitEthernet1", 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": "GigabitEthernet2", 
+                        "id": "GigabitEthernet2", 
+                        "id_brief": "ge2", 
+                        "ipv4_address": "10.0.0.9", 
+                        "ipv4_prefixlen": "30", 
+                        "numeric_id": "1", 
+                        "specified_id": "GigabitEthernet2", 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": "GigabitEthernet3", 
+                        "id": "GigabitEthernet3", 
+                        "id_brief": "ge3", 
+                        "ipv4_address": "10.0.128.5", 
+                        "ipv4_prefixlen": "30", 
+                        "numeric_id": "2", 
+                        "specified_id": "GigabitEthernet3", 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "CSR1000v", 
+                "device_type": "router", 
+                "host": "internal", 
+                "id": "3430020387561", 
+                "igp": "isis", 
+                "indices": [
+                    2
+                ], 
+                "label": "ultra-1", 
+                "label_full": "ultra-1", 
+                "loopback_v4": "192.168.0.2", 
+                "mgmt_ip": null, 
+                "platform": "cisco", 
+                "pop": null, 
+                "syntax": "ios_xe", 
+                "update": true, 
+                "use_cdp": false, 
+                "use_onepk": false, 
+                "x": 221.0, 
+                "y": 3.0
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": "loopback", 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "type": "loopback"
+                    }, 
+                    "1": {
+                        "description": "GigabitEthernet0/1", 
+                        "id": "GigabitEthernet0/1", 
+                        "id_brief": "ge0/1", 
+                        "ipv4_address": "10.0.0.13", 
+                        "ipv4_prefixlen": "30", 
+                        "numeric_id": "0", 
+                        "specified_id": "GigabitEthernet0/1", 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": "GigabitEthernet0/2", 
+                        "id": "GigabitEthernet0/2", 
+                        "id_brief": "ge0/2", 
+                        "ipv4_address": "10.0.0.6", 
+                        "ipv4_prefixlen": "30", 
+                        "numeric_id": "1", 
+                        "specified_id": "GigabitEthernet0/2", 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": "GigabitEthernet0/3", 
+                        "id": "GigabitEthernet0/3", 
+                        "id_brief": "ge0/3", 
+                        "ipv4_address": "10.0.128.6", 
+                        "ipv4_prefixlen": "30", 
+                        "numeric_id": "2", 
+                        "specified_id": "GigabitEthernet0/3", 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "vios", 
+                "device_type": "router", 
+                "host": "internal", 
+                "id": "3430021387564", 
+                "igp": "isis", 
+                "indices": [
+                    3
+                ], 
+                "label": "vios-1", 
+                "label_full": "vios-1", 
+                "loopback_v4": "192.168.0.3", 
+                "mgmt_ip": null, 
+                "platform": "cisco", 
+                "pop": null, 
+                "syntax": "ios", 
+                "update": true, 
+                "use_cdp": false, 
+                "use_onepk": false, 
+                "x": 11.0, 
+                "y": 122.0
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": "loopback", 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "type": "loopback"
+                    }, 
+                    "1": {
+                        "description": "GigabitEthernet0/0/0/0", 
+                        "id": "GigabitEthernet0/0/0/0", 
+                        "id_brief": "ge0", 
+                        "ipv4_address": "10.0.0.1", 
+                        "ipv4_prefixlen": "30", 
+                        "numeric_id": "0", 
+                        "specified_id": "GigabitEthernet0/0/0/0", 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": "GigabitEthernet0/0/0/1", 
+                        "id": "GigabitEthernet0/0/0/1", 
+                        "id_brief": "ge1", 
+                        "ipv4_address": "10.0.0.5", 
+                        "ipv4_prefixlen": "30", 
+                        "numeric_id": "1", 
+                        "specified_id": "GigabitEthernet0/0/0/1", 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": "GigabitEthernet0/0/0/2", 
+                        "id": "GigabitEthernet0/0/0/2", 
+                        "id_brief": "ge2", 
+                        "ipv4_address": "10.0.128.1", 
+                        "ipv4_prefixlen": "30", 
+                        "numeric_id": "2", 
+                        "specified_id": "GigabitEthernet0/0/0/2", 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "xrvr", 
+                "device_type": "router", 
+                "host": "internal", 
+                "id": "3430019387558", 
+                "igp": "isis", 
+                "indices": [
+                    1
+                ], 
+                "label": "xrvr-1", 
+                "label_full": "xrvr-1", 
+                "loopback_v4": "192.168.0.1", 
+                "mgmt_ip": null, 
+                "platform": "cisco", 
+                "pop": null, 
+                "syntax": "ios_xr", 
+                "update": true, 
+                "use_cdp": false, 
+                "use_onepk": false, 
+                "x": 0.0, 
+                "y": 0.0
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": "loopback", 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "type": "loopback"
+                    }, 
+                    "1": {
+                        "description": "Ethernet2/2", 
+                        "id": "Ethernet2/2", 
+                        "id_brief": "Ethernet2/2", 
+                        "ipv4_address": "10.0.0.14", 
+                        "ipv4_prefixlen": "30", 
+                        "numeric_id": "1", 
+                        "specified_id": "Ethernet2/2", 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": "Ethernet2/3", 
+                        "id": "Ethernet2/3", 
+                        "id_brief": "Ethernet2/3", 
+                        "ipv4_address": "10.0.128.2", 
+                        "ipv4_prefixlen": "30", 
+                        "numeric_id": "2", 
+                        "specified_id": "Ethernet2/3", 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": "Ethernet2/9", 
+                        "id": "Ethernet2/9", 
+                        "id_brief": "Ethernet2/9", 
+                        "ipv4_address": "10.0.0.10", 
+                        "ipv4_prefixlen": "30", 
+                        "numeric_id": "8", 
+                        "specified_id": "Ethernet2/9", 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "titanium", 
+                "device_type": "router", 
+                "host": "internal", 
+                "id": "3430022387567", 
+                "igp": "isis", 
+                "indices": [
+                    4
+                ], 
+                "label": "titanium-1", 
+                "label_full": "titanium-1", 
+                "loopback_v4": "192.168.0.4", 
+                "mgmt_ip": null, 
+                "platform": "cisco", 
+                "pop": null, 
+                "syntax": "nx_os", 
+                "update": true, 
+                "use_cdp": false, 
+                "use_onepk": false, 
+                "x": 212.0, 
+                "y": 147.0
+            }
+        ]
+    }, 
+    "input_directed": {
+        "directed": true, 
+        "graph": [
+            [
+                "ipv4_infra_prefix", 
+                8
+            ], 
+            [
+                "mgmt_prefixlen", 
+                24
+            ], 
+            [
+                "mgmt_address_start", 
+                "172.16.254.2"
+            ], 
+            [
+                "ipv4_loopback_prefix", 
+                22
+            ], 
+            [
+                "igp", 
+                "isis"
+            ], 
+            [
+                "file_type", 
+                "virl"
+            ], 
+            [
+                "ipv4_vrf_loopback_subnet", 
+                "172.16.0.0"
+            ], 
+            [
+                "Creator", 
+                "Maestro"
+            ], 
+            [
+                "ipv4_loopback_subnet", 
+                "192.168.0.0"
+            ], 
+            [
+                "mgmt_interfaces_enabled", 
+                true
+            ], 
+            [
+                "alloc_ipv4_loopbacks", 
+                false
+            ], 
+            [
+                "ipv4_infra_subnet", 
+                "10.0.0.0"
+            ], 
+            [
+                "mgmt_address_end", 
+                "172.16.254.254"
+            ], 
+            [
+                "ipv4_vrf_loopback_prefix", 
+                24
+            ], 
+            [
+                "use_cdp", 
+                false
+            ], 
+            [
+                "use_onepk", 
+                false
+            ], 
+            [
+                "address_family", 
+                "v4"
+            ]
+        ], 
+        "links": [
+            {
+                "_interfaces": {
+                    "3430019387558": 1, 
+                    "3430020387561": 1
+                }, 
+                "source": 0, 
+                "target": 1, 
+                "type": "physical"
+            }, 
+            {
+                "_interfaces": {
+                    "3430019387558": 2, 
+                    "3430022387567": 1
+                }, 
+                "source": 0, 
+                "target": 2, 
+                "type": "physical"
+            }, 
+            {
+                "_interfaces": {
+                    "3430020387561": 2, 
+                    "3430021387564": 1
+                }, 
+                "source": 1, 
+                "target": 3, 
+                "type": "physical"
+            }, 
+            {
+                "_interfaces": {
+                    "3430020387561": 3, 
+                    "3430022387567": 2
+                }, 
+                "source": 1, 
+                "target": 2, 
+                "type": "physical"
+            }, 
+            {
+                "_interfaces": {
+                    "3430021387564": 3, 
+                    "3430022387567": 3
+                }, 
+                "source": 2, 
+                "target": 3, 
+                "type": "physical"
+            }, 
+            {
+                "_interfaces": {
+                    "3430019387558": 3, 
+                    "3430021387564": 2
+                }, 
+                "source": 3, 
+                "target": 0, 
+                "type": "physical"
+            }
+        ], 
+        "multigraph": false, 
+        "nodes": [
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": "loopback", 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "type": "loopback"
+                    }, 
+                    "1": {
+                        "description": "xrvr-1 to ultra-1", 
+                        "id": "GigabitEthernet0/0/0/0", 
+                        "id_brief": "ge0", 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": "xrvr-1 to titanium-1", 
+                        "id": "GigabitEthernet0/0/0/1", 
+                        "id_brief": "ge1", 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": "xrvr-1 to vios-1", 
+                        "id": "GigabitEthernet0/0/0/2", 
+                        "id_brief": "ge2", 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "xrvr", 
+                "device_type": "router", 
+                "host": "internal", 
+                "id": "3430019387558", 
+                "indices": [
+                    1
+                ], 
+                "label": "xrvr-1", 
+                "label_full": "xrvr-1", 
+                "loopback_v4": "192.168.0.1", 
+                "mgmt_ip": null, 
+                "platform": "cisco", 
+                "pop": null, 
+                "syntax": "ios_xr", 
+                "update": true, 
+                "use_cdp": false, 
+                "use_onepk": false, 
+                "x": 0.0, 
+                "y": 0.0
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": "loopback", 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "type": "loopback"
+                    }, 
+                    "1": {
+                        "description": "ultra-1 to xrvr-1", 
+                        "id": "GigabitEthernet1", 
+                        "id_brief": "ge1", 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": "ultra-1 to vios-1", 
+                        "id": "GigabitEthernet2", 
+                        "id_brief": "ge2", 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": "ultra-1 to titanium-1", 
+                        "id": "GigabitEthernet3", 
+                        "id_brief": "ge3", 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "CSR1000v", 
+                "device_type": "router", 
+                "host": "internal", 
+                "id": "3430020387561", 
+                "indices": [
+                    2
+                ], 
+                "label": "ultra-1", 
+                "label_full": "ultra-1", 
+                "loopback_v4": "192.168.0.2", 
+                "mgmt_ip": null, 
+                "platform": "cisco", 
+                "pop": null, 
+                "syntax": "ios_xe", 
+                "update": true, 
+                "use_cdp": false, 
+                "use_onepk": false, 
+                "x": 221.0, 
+                "y": 3.0
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": "loopback", 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "type": "loopback"
+                    }, 
+                    "1": {
+                        "description": "titanium-1 to xrvr-1", 
+                        "id": "Ethernet2/2", 
+                        "id_brief": "Ethernet2/2", 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": "titanium-1 to ultra-1", 
+                        "id": "Ethernet2/3", 
+                        "id_brief": "Ethernet2/3", 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": "titanium-1 to vios-1", 
+                        "id": "Ethernet2/9", 
+                        "id_brief": "Ethernet2/9", 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "titanium", 
+                "device_type": "router", 
+                "host": "internal", 
+                "id": "3430022387567", 
+                "indices": [
+                    4
+                ], 
+                "label": "titanium-1", 
+                "label_full": "titanium-1", 
+                "loopback_v4": "192.168.0.4", 
+                "mgmt_ip": null, 
+                "platform": "cisco", 
+                "pop": null, 
+                "syntax": "nx_os", 
+                "update": true, 
+                "use_cdp": false, 
+                "use_onepk": false, 
+                "x": 212.0, 
+                "y": 147.0
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": "loopback", 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "type": "loopback"
+                    }, 
+                    "1": {
+                        "description": "vios-1 to ultra-1", 
+                        "id": "GigabitEthernet0/1", 
+                        "id_brief": "ge0/1", 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": "vios-1 to xrvr-1", 
+                        "id": "GigabitEthernet0/2", 
+                        "id_brief": "ge0/2", 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": "vios-1 to titanium-1", 
+                        "id": "GigabitEthernet0/3", 
+                        "id_brief": "ge0/3", 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "vios", 
+                "device_type": "router", 
+                "host": "internal", 
+                "id": "3430021387564", 
+                "indices": [
+                    3
+                ], 
+                "label": "vios-1", 
+                "label_full": "vios-1", 
+                "loopback_v4": "192.168.0.3", 
+                "mgmt_ip": null, 
+                "platform": "cisco", 
+                "pop": null, 
+                "syntax": "ios", 
+                "update": true, 
+                "use_cdp": false, 
+                "use_onepk": false, 
+                "x": 11.0, 
+                "y": 122.0
+            }
+        ]
+    }, 
+    "ip": {
+        "directed": false, 
+        "graph": [], 
+        "links": [
+            {
+                "_interfaces": {
+                    "3430019387558": 3
+                }, 
+                "edge_id": null, 
+                "source": 0, 
+                "split": true, 
+                "target": 7
+            }, 
+            {
+                "_interfaces": {
+                    "3430022387567": 2
+                }, 
+                "edge_id": null, 
+                "source": 0, 
+                "split": true, 
+                "target": 4
+            }, 
+            {
+                "_interfaces": {
+                    "3430021387564": 2
+                }, 
+                "edge_id": null, 
+                "source": 1, 
+                "split": true, 
+                "target": 6
+            }, 
+            {
+                "_interfaces": {
+                    "3430019387558": 2
+                }, 
+                "edge_id": null, 
+                "source": 1, 
+                "split": true, 
+                "target": 7
+            }, 
+            {
+                "_interfaces": {
+                    "3430020387561": 1
+                }, 
+                "edge_id": null, 
+                "source": 2, 
+                "split": true, 
+                "target": 5
+            }, 
+            {
+                "_interfaces": {
+                    "3430020387561": 3
+                }, 
+                "edge_id": null, 
+                "source": 2, 
+                "split": true, 
+                "target": 3
+            }, 
+            {
+                "_interfaces": {
+                    "3430020387561": 2
+                }, 
+                "edge_id": null, 
+                "source": 2, 
+                "split": true, 
+                "target": 9
+            }, 
+            {
+                "_interfaces": {
+                    "3430021387564": 3
+                }, 
+                "edge_id": null, 
+                "source": 3, 
+                "split": true, 
+                "target": 6
+            }, 
+            {
+                "_interfaces": {
+                    "3430022387567": 3
+                }, 
+                "edge_id": null, 
+                "source": 4, 
+                "split": true, 
+                "target": 9
+            }, 
+            {
+                "_interfaces": {
+                    "3430022387567": 1
+                }, 
+                "edge_id": null, 
+                "source": 4, 
+                "split": true, 
+                "target": 8
+            }, 
+            {
+                "_interfaces": {
+                    "3430019387558": 1
+                }, 
+                "edge_id": null, 
+                "source": 5, 
+                "split": true, 
+                "target": 7
+            }, 
+            {
+                "_interfaces": {
+                    "3430021387564": 1
+                }, 
+                "edge_id": null, 
+                "source": 6, 
+                "split": true, 
+                "target": 8
+            }
+        ], 
+        "multigraph": false, 
+        "nodes": [
+            {
+                "asn": 1, 
+                "cd_id": "cd_xrvr-1_titanium-1", 
+                "collision_domain": true, 
+                "device_subtype": null, 
+                "device_type": "collision_domain", 
+                "host": "internal", 
+                "id": "cd3430019387558_3430022387567", 
+                "label": "cd_xrvr-1_titanium-1", 
+                "pop": null, 
+                "x": 106.10000000000002, 
+                "y": 73.60000000000002
+            }, 
+            {
+                "asn": 1, 
+                "cd_id": "cd_xrvr-1_vios-1", 
+                "collision_domain": true, 
+                "device_subtype": null, 
+                "device_type": "collision_domain", 
+                "host": "internal", 
+                "id": "cd3430019387558_3430021387564", 
+                "label": "cd_xrvr-1_vios-1", 
+                "pop": null, 
+                "x": 5.599999999999994, 
+                "y": 61.10000000000002
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": null, 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "type": "physical"
+                    }, 
+                    "1": {
+                        "description": null, 
+                        "id": "GigabitEthernet1", 
+                        "id_brief": "ge1", 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": null, 
+                        "id": "GigabitEthernet2", 
+                        "id_brief": "ge2", 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": null, 
+                        "id": "GigabitEthernet3", 
+                        "id_brief": "ge3", 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "CSR1000v", 
+                "device_type": "router", 
+                "id": "3430020387561", 
+                "label": "ultra-1", 
+                "pop": null, 
+                "x": 221.0, 
+                "y": 3.0
+            }, 
+            {
+                "asn": 1, 
+                "cd_id": "cd_ultra-1_vios-1", 
+                "collision_domain": true, 
+                "device_subtype": null, 
+                "device_type": "collision_domain", 
+                "host": "internal", 
+                "id": "cd3430020387561_3430021387564", 
+                "label": "cd_ultra-1_vios-1", 
+                "pop": null, 
+                "x": 116.10000000000002, 
+                "y": 62.60000000000002
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": null, 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "type": "physical"
+                    }, 
+                    "1": {
+                        "description": null, 
+                        "id": "Ethernet2/2", 
+                        "id_brief": "Ethernet2/2", 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": null, 
+                        "id": "Ethernet2/3", 
+                        "id_brief": "Ethernet2/3", 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": null, 
+                        "id": "Ethernet2/9", 
+                        "id_brief": "Ethernet2/9", 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "titanium", 
+                "device_type": "router", 
+                "id": "3430022387567", 
+                "label": "titanium-1", 
+                "pop": null, 
+                "x": 212.0, 
+                "y": 147.0
+            }, 
+            {
+                "asn": 1, 
+                "cd_id": "cd_xrvr-1_ultra-1", 
+                "collision_domain": true, 
+                "device_subtype": null, 
+                "device_type": "collision_domain", 
+                "host": "internal", 
+                "id": "cd3430019387558_3430020387561", 
+                "label": "cd_xrvr-1_ultra-1", 
+                "pop": null, 
+                "x": 110.60000000000002, 
+                "y": 1.6000000000000227
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": null, 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "type": "physical"
+                    }, 
+                    "1": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/1", 
+                        "id_brief": "ge0/1", 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/2", 
+                        "id_brief": "ge0/2", 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/3", 
+                        "id_brief": "ge0/3", 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "vios", 
+                "device_type": "router", 
+                "id": "3430021387564", 
+                "label": "vios-1", 
+                "pop": null, 
+                "x": 11.0, 
+                "y": 122.0
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": null, 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "type": "physical"
+                    }, 
+                    "1": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/0/0/0", 
+                        "id_brief": "ge0", 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/0/0/1", 
+                        "id_brief": "ge1", 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/0/0/2", 
+                        "id_brief": "ge2", 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "xrvr", 
+                "device_type": "router", 
+                "id": "3430019387558", 
+                "label": "xrvr-1", 
+                "pop": null, 
+                "x": 0.0, 
+                "y": 0.0
+            }, 
+            {
+                "asn": 1, 
+                "cd_id": "cd_vios-1_titanium-1", 
+                "collision_domain": true, 
+                "device_subtype": null, 
+                "device_type": "collision_domain", 
+                "host": "internal", 
+                "id": "cd3430021387564_3430022387567", 
+                "label": "cd_vios-1_titanium-1", 
+                "pop": null, 
+                "x": 111.60000000000002, 
+                "y": 134.60000000000002
+            }, 
+            {
+                "asn": 1, 
+                "cd_id": "cd_ultra-1_titanium-1", 
+                "collision_domain": true, 
+                "device_subtype": null, 
+                "device_type": "collision_domain", 
+                "host": "internal", 
+                "id": "cd3430020387561_3430022387567", 
+                "label": "cd_ultra-1_titanium-1", 
+                "pop": null, 
+                "x": 216.60000000000002, 
+                "y": 75.10000000000002
+            }
+        ]
+    }, 
+    "ipv4": {
+        "directed": false, 
+        "graph": [
+            [
+                "infra_blocks", 
+                {
+                    "1": [
+                        "10.0.0.0/28", 
+                        "10.0.128.0/29"
+                    ]
+                }
+            ], 
+            [
+                "loopback_blocks", 
+                {
+                    "1": [
+                        "192.168.0.1/32", 
+                        "192.168.0.2/31", 
+                        "192.168.0.4/32"
+                    ]
+                }
+            ]
+        ], 
+        "links": [
+            {
+                "_interfaces": {
+                    "3430019387558": 3
+                }, 
+                "edge_id": null, 
+                "source": 0, 
+                "target": 7
+            }, 
+            {
+                "_interfaces": {
+                    "3430022387567": 2
+                }, 
+                "edge_id": null, 
+                "source": 0, 
+                "target": 4
+            }, 
+            {
+                "_interfaces": {
+                    "3430021387564": 2
+                }, 
+                "edge_id": null, 
+                "source": 1, 
+                "target": 6
+            }, 
+            {
+                "_interfaces": {
+                    "3430019387558": 2
+                }, 
+                "edge_id": null, 
+                "source": 1, 
+                "target": 7
+            }, 
+            {
+                "_interfaces": {
+                    "3430020387561": 2
+                }, 
+                "edge_id": null, 
+                "source": 2, 
+                "target": 9
+            }, 
+            {
+                "_interfaces": {
+                    "3430020387561": 3
+                }, 
+                "edge_id": null, 
+                "source": 2, 
+                "target": 3
+            }, 
+            {
+                "_interfaces": {
+                    "3430020387561": 1
+                }, 
+                "edge_id": null, 
+                "source": 2, 
+                "target": 5
+            }, 
+            {
+                "_interfaces": {
+                    "3430021387564": 3
+                }, 
+                "edge_id": null, 
+                "source": 3, 
+                "target": 6
+            }, 
+            {
+                "_interfaces": {
+                    "3430022387567": 1
+                }, 
+                "edge_id": null, 
+                "source": 4, 
+                "target": 8
+            }, 
+            {
+                "_interfaces": {
+                    "3430022387567": 3
+                }, 
+                "edge_id": null, 
+                "source": 4, 
+                "target": 9
+            }, 
+            {
+                "_interfaces": {
+                    "3430019387558": 1
+                }, 
+                "edge_id": null, 
+                "source": 5, 
+                "target": 7
+            }, 
+            {
+                "_interfaces": {
+                    "3430021387564": 1
+                }, 
+                "edge_id": null, 
+                "source": 6, 
+                "target": 8
+            }
+        ], 
+        "multigraph": false, 
+        "nodes": [
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": "loopback", 
+                        "type": "loopback"
+                    }
+                }, 
+                "asn": 1, 
+                "collision_domain": true, 
+                "device_subtype": null, 
+                "device_type": "collision_domain", 
+                "id": "cd3430019387558_3430022387567", 
+                "label": "cd_xrvr-1_titanium-1", 
+                "pop": null, 
+                "subnet": "10.0.128.0/30", 
+                "x": 106.10000000000002, 
+                "y": 73.60000000000002
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": "loopback", 
+                        "type": "loopback"
+                    }
+                }, 
+                "asn": 1, 
+                "collision_domain": true, 
+                "device_subtype": null, 
+                "device_type": "collision_domain", 
+                "id": "cd3430019387558_3430021387564", 
+                "label": "cd_xrvr-1_vios-1", 
+                "pop": null, 
+                "subnet": "10.0.0.4/30", 
+                "x": 5.599999999999994, 
+                "y": 61.10000000000002
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": null, 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "ip_address": "192.168.0.2", 
+                        "type": "physical"
+                    }, 
+                    "1": {
+                        "description": null, 
+                        "id": "GigabitEthernet1", 
+                        "id_brief": "ge1", 
+                        "ip_address": "10.0.0.2", 
+                        "prefixlen": "30", 
+                        "subnet": "10.0.0.0/30", 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": null, 
+                        "id": "GigabitEthernet2", 
+                        "id_brief": "ge2", 
+                        "ip_address": "10.0.0.9", 
+                        "prefixlen": "30", 
+                        "subnet": "10.0.0.8/30", 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": null, 
+                        "id": "GigabitEthernet3", 
+                        "id_brief": "ge3", 
+                        "ip_address": "10.0.128.5", 
+                        "prefixlen": "30", 
+                        "subnet": "10.0.128.4/30", 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "collision_domain": null, 
+                "device_subtype": "CSR1000v", 
+                "device_type": "router", 
+                "id": "3430020387561", 
+                "label": "ultra-1", 
+                "loopback": "192.168.0.2", 
+                "pop": null, 
+                "x": 221.0, 
+                "y": 3.0
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": "loopback", 
+                        "type": "loopback"
+                    }
+                }, 
+                "asn": 1, 
+                "collision_domain": true, 
+                "device_subtype": null, 
+                "device_type": "collision_domain", 
+                "id": "cd3430020387561_3430021387564", 
+                "label": "cd_ultra-1_vios-1", 
+                "pop": null, 
+                "subnet": "10.0.128.4/30", 
+                "x": 116.10000000000002, 
+                "y": 62.60000000000002
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": null, 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "ip_address": "192.168.0.4", 
+                        "type": "physical"
+                    }, 
+                    "1": {
+                        "description": null, 
+                        "id": "Ethernet2/2", 
+                        "id_brief": "Ethernet2/2", 
+                        "ip_address": "10.0.0.14", 
+                        "prefixlen": "30", 
+                        "subnet": "10.0.0.12/30", 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": null, 
+                        "id": "Ethernet2/3", 
+                        "id_brief": "Ethernet2/3", 
+                        "ip_address": "10.0.128.2", 
+                        "prefixlen": "30", 
+                        "subnet": "10.0.128.0/30", 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": null, 
+                        "id": "Ethernet2/9", 
+                        "id_brief": "Ethernet2/9", 
+                        "ip_address": "10.0.0.10", 
+                        "prefixlen": "30", 
+                        "subnet": "10.0.0.8/30", 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "collision_domain": null, 
+                "device_subtype": "titanium", 
+                "device_type": "router", 
+                "id": "3430022387567", 
+                "label": "titanium-1", 
+                "loopback": "192.168.0.4", 
+                "pop": null, 
+                "x": 212.0, 
+                "y": 147.0
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": "loopback", 
+                        "type": "loopback"
+                    }
+                }, 
+                "asn": 1, 
+                "collision_domain": true, 
+                "device_subtype": null, 
+                "device_type": "collision_domain", 
+                "id": "cd3430019387558_3430020387561", 
+                "label": "cd_xrvr-1_ultra-1", 
+                "pop": null, 
+                "subnet": "10.0.0.0/30", 
+                "x": 110.60000000000002, 
+                "y": 1.6000000000000227
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": null, 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "ip_address": "192.168.0.3", 
+                        "type": "physical"
+                    }, 
+                    "1": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/1", 
+                        "id_brief": "ge0/1", 
+                        "ip_address": "10.0.0.13", 
+                        "prefixlen": "30", 
+                        "subnet": "10.0.0.12/30", 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/2", 
+                        "id_brief": "ge0/2", 
+                        "ip_address": "10.0.0.6", 
+                        "prefixlen": "30", 
+                        "subnet": "10.0.0.4/30", 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/3", 
+                        "id_brief": "ge0/3", 
+                        "ip_address": "10.0.128.6", 
+                        "prefixlen": "30", 
+                        "subnet": "10.0.128.4/30", 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "collision_domain": null, 
+                "device_subtype": "vios", 
+                "device_type": "router", 
+                "id": "3430021387564", 
+                "label": "vios-1", 
+                "loopback": "192.168.0.3", 
+                "pop": null, 
+                "x": 11.0, 
+                "y": 122.0
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": null, 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "ip_address": "192.168.0.1", 
+                        "type": "physical"
+                    }, 
+                    "1": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/0/0/0", 
+                        "id_brief": "ge0", 
+                        "ip_address": "10.0.0.1", 
+                        "prefixlen": "30", 
+                        "subnet": "10.0.0.0/30", 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/0/0/1", 
+                        "id_brief": "ge1", 
+                        "ip_address": "10.0.0.5", 
+                        "prefixlen": "30", 
+                        "subnet": "10.0.0.4/30", 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/0/0/2", 
+                        "id_brief": "ge2", 
+                        "ip_address": "10.0.128.1", 
+                        "prefixlen": "30", 
+                        "subnet": "10.0.128.0/30", 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "collision_domain": null, 
+                "device_subtype": "xrvr", 
+                "device_type": "router", 
+                "id": "3430019387558", 
+                "label": "xrvr-1", 
+                "loopback": "192.168.0.1", 
+                "pop": null, 
+                "x": 0.0, 
+                "y": 0.0
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": "loopback", 
+                        "type": "loopback"
+                    }
+                }, 
+                "asn": 1, 
+                "collision_domain": true, 
+                "device_subtype": null, 
+                "device_type": "collision_domain", 
+                "id": "cd3430021387564_3430022387567", 
+                "label": "cd_vios-1_titanium-1", 
+                "pop": null, 
+                "subnet": "10.0.0.12/30", 
+                "x": 111.60000000000002, 
+                "y": 134.60000000000002
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": "loopback", 
+                        "type": "loopback"
+                    }
+                }, 
+                "asn": 1, 
+                "collision_domain": true, 
+                "device_subtype": null, 
+                "device_type": "collision_domain", 
+                "id": "cd3430020387561_3430022387567", 
+                "label": "cd_ultra-1_titanium-1", 
+                "pop": null, 
+                "subnet": "10.0.0.8/30", 
+                "x": 216.60000000000002, 
+                "y": 75.10000000000002
+            }
+        ]
+    }, 
+    "ipv6": {
+        "directed": false, 
+        "graph": [], 
+        "links": [], 
+        "multigraph": false, 
+        "nodes": []
+    }, 
+    "isis": {
+        "directed": false, 
+        "graph": [], 
+        "links": [
+            {
+                "_interfaces": {
+                    "3430020387561": 3, 
+                    "3430021387564": 3
+                }, 
+                "edge_id": null, 
+                "metric": 1, 
+                "source": 0, 
+                "target": 3
+            }, 
+            {
+                "_interfaces": {
+                    "3430019387558": 1, 
+                    "3430020387561": 1
+                }, 
+                "edge_id": null, 
+                "metric": 1, 
+                "source": 0, 
+                "target": 2
+            }, 
+            {
+                "_interfaces": {
+                    "3430020387561": 2, 
+                    "3430022387567": 3
+                }, 
+                "edge_id": null, 
+                "metric": 1, 
+                "source": 0, 
+                "target": 1
+            }, 
+            {
+                "_interfaces": {
+                    "3430019387558": 3, 
+                    "3430022387567": 2
+                }, 
+                "edge_id": null, 
+                "metric": 1, 
+                "source": 1, 
+                "target": 2
+            }, 
+            {
+                "_interfaces": {
+                    "3430021387564": 1, 
+                    "3430022387567": 1
+                }, 
+                "edge_id": null, 
+                "metric": 1, 
+                "source": 1, 
+                "target": 3
+            }, 
+            {
+                "_interfaces": {
+                    "3430019387558": 2, 
+                    "3430021387564": 2
+                }, 
+                "edge_id": null, 
+                "metric": 1, 
+                "source": 2, 
+                "target": 3
+            }
+        ], 
+        "multigraph": false, 
+        "nodes": [
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": null, 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "type": "physical"
+                    }, 
+                    "1": {
+                        "description": null, 
+                        "id": "GigabitEthernet1", 
+                        "id_brief": "ge1", 
+                        "metric": 1, 
+                        "multipoint": null, 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": null, 
+                        "id": "GigabitEthernet2", 
+                        "id_brief": "ge2", 
+                        "metric": 1, 
+                        "multipoint": null, 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": null, 
+                        "id": "GigabitEthernet3", 
+                        "id_brief": "ge3", 
+                        "metric": 1, 
+                        "multipoint": null, 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "CSR1000v", 
+                "device_type": "router", 
+                "id": "3430020387561", 
+                "label": "ultra-1", 
+                "net": "49.1921.6800.0002.00", 
+                "pop": null, 
+                "process_id": 1, 
+                "x": 221.0, 
+                "y": 3.0
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": null, 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "type": "physical"
+                    }, 
+                    "1": {
+                        "description": null, 
+                        "id": "Ethernet2/2", 
+                        "id_brief": "Ethernet2/2", 
+                        "metric": 1, 
+                        "multipoint": null, 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": null, 
+                        "id": "Ethernet2/3", 
+                        "id_brief": "Ethernet2/3", 
+                        "metric": 1, 
+                        "multipoint": null, 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": null, 
+                        "id": "Ethernet2/9", 
+                        "id_brief": "Ethernet2/9", 
+                        "metric": 1, 
+                        "multipoint": null, 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "titanium", 
+                "device_type": "router", 
+                "id": "3430022387567", 
+                "label": "titanium-1", 
+                "net": "49.1921.6800.0004.00", 
+                "pop": null, 
+                "process_id": 1, 
+                "x": 212.0, 
+                "y": 147.0
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": null, 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "type": "physical"
+                    }, 
+                    "1": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/0/0/0", 
+                        "id_brief": "ge0", 
+                        "metric": 1, 
+                        "multipoint": null, 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/0/0/1", 
+                        "id_brief": "ge1", 
+                        "metric": 1, 
+                        "multipoint": null, 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/0/0/2", 
+                        "id_brief": "ge2", 
+                        "metric": 1, 
+                        "multipoint": null, 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "xrvr", 
+                "device_type": "router", 
+                "id": "3430019387558", 
+                "label": "xrvr-1", 
+                "net": "49.1921.6800.0001.00", 
+                "pop": null, 
+                "process_id": 1, 
+                "x": 0.0, 
+                "y": 0.0
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": null, 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "type": "physical"
+                    }, 
+                    "1": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/1", 
+                        "id_brief": "ge0/1", 
+                        "metric": 1, 
+                        "multipoint": null, 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/2", 
+                        "id_brief": "ge0/2", 
+                        "metric": 1, 
+                        "multipoint": null, 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/3", 
+                        "id_brief": "ge0/3", 
+                        "metric": 1, 
+                        "multipoint": null, 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "vios", 
+                "device_type": "router", 
+                "id": "3430021387564", 
+                "label": "vios-1", 
+                "net": "49.1921.6800.0003.00", 
+                "pop": null, 
+                "process_id": 1, 
+                "x": 11.0, 
+                "y": 122.0
+            }
+        ]
+    }, 
+    "l3_conn": {
+        "directed": false, 
+        "graph": [], 
+        "links": [
+            {
+                "_interfaces": {
+                    "3430020387561": 3, 
+                    "3430021387564": 3
+                }, 
+                "edge_id": null, 
+                "source": 0, 
+                "target": 3
+            }, 
+            {
+                "_interfaces": {
+                    "3430019387558": 1, 
+                    "3430020387561": 1
+                }, 
+                "edge_id": null, 
+                "source": 0, 
+                "target": 2
+            }, 
+            {
+                "_interfaces": {
+                    "3430020387561": 2, 
+                    "3430022387567": 3
+                }, 
+                "edge_id": null, 
+                "source": 0, 
+                "target": 1
+            }, 
+            {
+                "_interfaces": {
+                    "3430019387558": 3, 
+                    "3430022387567": 2
+                }, 
+                "edge_id": null, 
+                "source": 1, 
+                "target": 2
+            }, 
+            {
+                "_interfaces": {
+                    "3430021387564": 1, 
+                    "3430022387567": 1
+                }, 
+                "edge_id": null, 
+                "source": 1, 
+                "target": 3
+            }, 
+            {
+                "_interfaces": {
+                    "3430019387558": 2, 
+                    "3430021387564": 2
+                }, 
+                "edge_id": null, 
+                "source": 2, 
+                "target": 3
+            }
+        ], 
+        "multigraph": false, 
+        "nodes": [
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": null, 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "type": "physical"
+                    }, 
+                    "1": {
+                        "description": null, 
+                        "id": "GigabitEthernet1", 
+                        "id_brief": "ge1", 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": null, 
+                        "id": "GigabitEthernet2", 
+                        "id_brief": "ge2", 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": null, 
+                        "id": "GigabitEthernet3", 
+                        "id_brief": "ge3", 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "CSR1000v", 
+                "device_type": "router", 
+                "host": "internal", 
+                "id": "3430020387561", 
+                "label": "ultra-1", 
+                "platform": "cisco", 
+                "pop": null, 
+                "specified_int_names": null, 
+                "syntax": "ios_xe", 
+                "update": true, 
+                "x": 221.0, 
+                "y": 3.0
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": null, 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "type": "physical"
+                    }, 
+                    "1": {
+                        "description": null, 
+                        "id": "Ethernet2/2", 
+                        "id_brief": "Ethernet2/2", 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": null, 
+                        "id": "Ethernet2/3", 
+                        "id_brief": "Ethernet2/3", 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": null, 
+                        "id": "Ethernet2/9", 
+                        "id_brief": "Ethernet2/9", 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "titanium", 
+                "device_type": "router", 
+                "host": "internal", 
+                "id": "3430022387567", 
+                "label": "titanium-1", 
+                "platform": "cisco", 
+                "pop": null, 
+                "specified_int_names": null, 
+                "syntax": "nx_os", 
+                "update": true, 
+                "x": 212.0, 
+                "y": 147.0
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": null, 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "type": "physical"
+                    }, 
+                    "1": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/0/0/0", 
+                        "id_brief": "ge0", 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/0/0/1", 
+                        "id_brief": "ge1", 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/0/0/2", 
+                        "id_brief": "ge2", 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "xrvr", 
+                "device_type": "router", 
+                "host": "internal", 
+                "id": "3430019387558", 
+                "label": "xrvr-1", 
+                "platform": "cisco", 
+                "pop": null, 
+                "specified_int_names": null, 
+                "syntax": "ios_xr", 
+                "update": true, 
+                "x": 0.0, 
+                "y": 0.0
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": null, 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "type": "physical"
+                    }, 
+                    "1": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/1", 
+                        "id_brief": "ge0/1", 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/2", 
+                        "id_brief": "ge0/2", 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": null, 
+                        "id": "GigabitEthernet0/3", 
+                        "id_brief": "ge0/3", 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "vios", 
+                "device_type": "router", 
+                "host": "internal", 
+                "id": "3430021387564", 
+                "label": "vios-1", 
+                "platform": "cisco", 
+                "pop": null, 
+                "specified_int_names": null, 
+                "syntax": "ios", 
+                "update": true, 
+                "x": 11.0, 
+                "y": 122.0
+            }
+        ]
+    }, 
+    "nidb": {
+        "directed": false, 
+        "graph": [
+            [
+                "topologies", 
+                {
+                    "internal": {
+                        "oob_management_ips": {
+                            "titanium-1": "172.16.254.4", 
+                            "ultra-1": "172.16.254.3", 
+                            "vios-1": "dhcp", 
+                            "xrvr-1": "172.16.254.2"
+                        }
+                    }
+                }
+            ], 
+            [
+                "timestamp", 
+                "20130814_173911"
+            ]
+        ], 
+        "links": [
+            {
+                "_interfaces": {
+                    "3430020387561": 3
+                }, 
+                "edge_id": null, 
+                "source": 0, 
+                "target": 2
+            }, 
+            {
+                "_interfaces": {
+                    "3430021387564": 3
+                }, 
+                "edge_id": null, 
+                "source": 0, 
+                "target": 6
+            }, 
+            {
+                "_interfaces": {
+                    "3430021387564": 2
+                }, 
+                "edge_id": null, 
+                "source": 1, 
+                "target": 6
+            }, 
+            {
+                "_interfaces": {
+                    "3430019387558": 2
+                }, 
+                "edge_id": null, 
+                "source": 1, 
+                "target": 7
+            }, 
+            {
+                "_interfaces": {
+                    "3430020387561": 1
+                }, 
+                "edge_id": null, 
+                "source": 2, 
+                "target": 5
+            }, 
+            {
+                "_interfaces": {
+                    "3430020387561": 2
+                }, 
+                "edge_id": null, 
+                "source": 2, 
+                "target": 9
+            }, 
+            {
+                "_interfaces": {
+                    "3430019387558": 3
+                }, 
+                "edge_id": null, 
+                "source": 3, 
+                "target": 7
+            }, 
+            {
+                "_interfaces": {
+                    "3430022387567": 2
+                }, 
+                "edge_id": null, 
+                "source": 3, 
+                "target": 4
+            }, 
+            {
+                "_interfaces": {
+                    "3430022387567": 3
+                }, 
+                "edge_id": null, 
+                "source": 4, 
+                "target": 9
+            }, 
+            {
+                "_interfaces": {
+                    "3430022387567": 1
+                }, 
+                "edge_id": null, 
+                "source": 4, 
+                "target": 8
+            }, 
+            {
+                "_interfaces": {
+                    "3430019387558": 1
+                }, 
+                "edge_id": null, 
+                "source": 5, 
+                "target": 7
+            }, 
+            {
+                "_interfaces": {
+                    "3430021387564": 1
+                }, 
+                "edge_id": null, 
+                "source": 6, 
+                "target": 8
+            }
+        ], 
+        "multigraph": false, 
+        "nodes": [
+            {
+                "_interfaces": {}, 
+                "collision_domain": true, 
+                "device_subtype": null, 
+                "device_type": "collision_domain", 
+                "graphics": {
+                    "device_subtype": null, 
+                    "device_type": "collision_domain", 
+                    "x": 269.1, 
+                    "y": 421.6
+                }, 
+                "host": "internal", 
+                "id": "cd3430020387561_3430021387564", 
+                "ipv4_subnet": "10.0.128.4/30", 
+                "ipv6_subnet": null, 
+                "label": "cd_ultra-1_vios-1", 
+                "x": 116.10000000000002, 
+                "y": 62.60000000000002
+            }, 
+            {
+                "_interfaces": {}, 
+                "collision_domain": true, 
+                "device_subtype": null, 
+                "device_type": "collision_domain", 
+                "graphics": {
+                    "device_subtype": null, 
+                    "device_type": "collision_domain", 
+                    "x": 158.6, 
+                    "y": 420.1
+                }, 
+                "host": "internal", 
+                "id": "cd3430019387558_3430021387564", 
+                "ipv4_subnet": "10.0.0.4/30", 
+                "ipv6_subnet": null, 
+                "label": "cd_xrvr-1_vios-1", 
+                "x": 5.599999999999994, 
+                "y": 61.10000000000002
+            }, 
+            {
+                "Network": null, 
+                "_interfaces": {
+                    "0": {
+                        "description": "Loopback", 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "ipv4_address": "192.168.0.2", 
+                        "ipv4_cidr": "192.168.0.2/32", 
+                        "ipv4_subnet": "0.0.0.0/32", 
+                        "isis": {
+                            "use_ipv4": true, 
+                            "use_ipv6": false
+                        }, 
+                        "type": "loopback", 
+                        "use_ipv4": true
+                    }, 
+                    "1": {
+                        "description": "to xrvr-1", 
+                        "hello_padding_disable": null, 
+                        "id": "GigabitEthernet1", 
+                        "id_brief": "ge1", 
+                        "ipv4_address": "10.0.0.2", 
+                        "ipv4_cidr": "10.0.0.2/30", 
+                        "ipv4_subnet": "10.0.0.0/30", 
+                        "isis": {
+                            "metric": 1, 
+                            "mtu": 1430, 
+                            "multipoint": null, 
+                            "process_id": 1, 
+                            "use_ipv4": true, 
+                            "use_ipv6": false
+                        }, 
+                        "isis_mtu": 1430, 
+                        "numeric_id": 0, 
+                        "physical": true, 
+                        "type": "physical", 
+                        "use_cdp": "False", 
+                        "use_ipv4": true
+                    }, 
+                    "2": {
+                        "description": "to titanium-1", 
+                        "hello_padding_disable": null, 
+                        "id": "GigabitEthernet2", 
+                        "id_brief": "ge2", 
+                        "ipv4_address": "10.0.0.9", 
+                        "ipv4_cidr": "10.0.0.9/30", 
+                        "ipv4_subnet": "10.0.0.8/30", 
+                        "isis": {
+                            "metric": 1, 
+                            "multipoint": null, 
+                            "process_id": 1, 
+                            "use_ipv4": true, 
+                            "use_ipv6": false
+                        }, 
+                        "isis_mtu": null, 
+                        "numeric_id": 1, 
+                        "physical": true, 
+                        "type": "physical", 
+                        "use_cdp": "False", 
+                        "use_ipv4": true
+                    }, 
+                    "3": {
+                        "description": "to vios-1", 
+                        "hello_padding_disable": null, 
+                        "id": "GigabitEthernet3", 
+                        "id_brief": "ge3", 
+                        "ipv4_address": "10.0.128.5", 
+                        "ipv4_cidr": "10.0.128.5/30", 
+                        "ipv4_subnet": "10.0.128.4/30", 
+                        "isis": {
+                            "metric": 1, 
+                            "multipoint": null, 
+                            "process_id": 1, 
+                            "use_ipv4": true, 
+                            "use_ipv6": false
+                        }, 
+                        "isis_mtu": null, 
+                        "numeric_id": 2, 
+                        "physical": true, 
+                        "type": "physical", 
+                        "use_cdp": "False", 
+                        "use_ipv4": true
+                    }, 
+                    "4": {
+                        "comment": "Configured on launch", 
+                        "description": "OOB Management", 
+                        "id": "GigabitEthernet0", 
+                        "id_brief": "ge0", 
+                        "ipv4_address": "172.16.254.3", 
+                        "ipv4_cidr": "172.16.254.3/24", 
+                        "ipv4_subnet": "172.16.254.0/24", 
+                        "management": true, 
+                        "mgmt": true, 
+                        "physical": true, 
+                        "type": "physical", 
+                        "use_ipv4": false
+                    }
+                }, 
+                "ank_cisco_version": "0.2.7", 
+                "asn": 1, 
+                "bgp": {
+                    "ebgp_neighbors": [], 
+                    "ibgp_neighbors": [
+                        {
+                            "asn": 1, 
+                            "loopback": "192.168.0.4", 
+                            "neighbor": "titanium-1", 
+                            "update_source": null, 
+                            "use_ipv4": true, 
+                            "use_ipv6": false
+                        }, 
+                        {
+                            "asn": 1, 
+                            "loopback": "192.168.0.3", 
+                            "neighbor": "vios-1", 
+                            "update_source": null, 
+                            "use_ipv4": true, 
+                            "use_ipv6": false
+                        }, 
+                        {
+                            "asn": 1, 
+                            "loopback": "192.168.0.1", 
+                            "neighbor": "xrvr-1", 
+                            "update_source": null, 
+                            "use_ipv4": true, 
+                            "use_ipv6": false
+                        }
+                    ], 
+                    "ibgp_rr_clients": [], 
+                    "ibgp_rr_parents": [], 
+                    "ipv4_advertise_subnets": [
+                        "192.168.0.2/32"
+                    ], 
+                    "ipv6_advertise_subnets": [], 
+                    "lo_interface": "Loopback0", 
+                    "vpnv4_neighbors": [], 
+                    "vrfs": []
+                }, 
+                "device_subtype": "CSR1000v", 
+                "device_type": "router", 
+                "enable_secret": "tnhtc92DXBhelxjYk8LWJrPV36S2i4ntXrpb4RFmfqY", 
+                "graphics": {
+                    "device_subtype": "CSR1000v", 
+                    "device_type": "router", 
+                    "x": 374.0, 
+                    "y": 362.0
+                }, 
+                "host": "internal", 
+                "id": "3430020387561", 
+                "include_csr": true, 
+                "indices": [
+                    2
+                ], 
+                "input_label": "3430020387561", 
+                "interfaces": [], 
+                "ip": {
+                    "use_ipv4": true, 
+                    "use_ipv6": false
+                }, 
+                "isis": {
+                    "lo_interface": "Loopback0", 
+                    "net": "49.1921.6800.0002.00", 
+                    "process_id": 1, 
+                    "use_ipv4": true, 
+                    "use_ipv6": null
+                }, 
+                "label": "ultra-1", 
+                "loopback": "192.168.0.2", 
+                "loopback_subnet": "192.168.0.2/32", 
+                "platform": "cisco", 
+                "render": {
+                    "dst_file": "ultra_1.conf", 
+                    "dst_folder": "rendered/internal/cisco", 
+                    "template": "templates/ios.mako"
+                }, 
+                "transport_input_ssh_telnet": true, 
+                "update": true, 
+                "use_cdp": false, 
+                "vrf": {
+                    "use_ipv4": true, 
+                    "use_ipv6": false, 
+                    "vrfs": []
+                }, 
+                "x": 221.0, 
+                "y": 3.0
+            }, 
+            {
+                "_interfaces": {}, 
+                "collision_domain": true, 
+                "device_subtype": null, 
+                "device_type": "collision_domain", 
+                "graphics": {
+                    "device_subtype": null, 
+                    "device_type": "collision_domain", 
+                    "x": 259.1, 
+                    "y": 432.6
+                }, 
+                "host": "internal", 
+                "id": "cd3430019387558_3430022387567", 
+                "ipv4_subnet": "10.0.128.0/30", 
+                "ipv6_subnet": null, 
+                "label": "cd_xrvr-1_titanium-1", 
+                "x": 106.10000000000002, 
+                "y": 73.60000000000002
+            }, 
+            {
+                "Network": null, 
+                "_interfaces": {
+                    "0": {
+                        "description": "Loopback", 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "ipv4_address": "192.168.0.4", 
+                        "ipv4_cidr": "192.168.0.4/32", 
+                        "ipv4_subnet": "0.0.0.0/32", 
+                        "isis": {
+                            "use_ipv4": true, 
+                            "use_ipv6": false
+                        }, 
+                        "type": "loopback", 
+                        "use_ipv4": true
+                    }, 
+                    "1": {
+                        "description": "to vios-1", 
+                        "hello_padding_disable": true, 
+                        "id": "Ethernet2/2", 
+                        "id_brief": "Ethernet2/2", 
+                        "ipv4_address": "10.0.0.14", 
+                        "ipv4_cidr": "10.0.0.14/30", 
+                        "ipv4_subnet": "10.0.0.12/30", 
+                        "isis": {
+                            "hello_padding_disable": true, 
+                            "metric": 1, 
+                            "multipoint": null, 
+                            "process_id": 1, 
+                            "use_ipv4": true, 
+                            "use_ipv6": false
+                        }, 
+                        "isis_mtu": null, 
+                        "numeric_id": 1, 
+                        "physical": true, 
+                        "type": "physical", 
+                        "use_cdp": "False", 
+                        "use_ipv4": true
+                    }, 
+                    "2": {
+                        "description": "to xrvr-1", 
+                        "hello_padding_disable": true, 
+                        "id": "Ethernet2/3", 
+                        "id_brief": "Ethernet2/3", 
+                        "ipv4_address": "10.0.128.2", 
+                        "ipv4_cidr": "10.0.128.2/30", 
+                        "ipv4_subnet": "10.0.128.0/30", 
+                        "isis": {
+                            "hello_padding_disable": true, 
+                            "metric": 1, 
+                            "multipoint": null, 
+                            "process_id": 1, 
+                            "use_ipv4": true, 
+                            "use_ipv6": false
+                        }, 
+                        "isis_mtu": null, 
+                        "mtu": 1430, 
+                        "numeric_id": 2, 
+                        "physical": true, 
+                        "type": "physical", 
+                        "use_cdp": "False", 
+                        "use_ipv4": true
+                    }, 
+                    "3": {
+                        "description": "to ultra-1", 
+                        "hello_padding_disable": true, 
+                        "id": "Ethernet2/9", 
+                        "id_brief": "Ethernet2/9", 
+                        "ipv4_address": "10.0.0.10", 
+                        "ipv4_cidr": "10.0.0.10/30", 
+                        "ipv4_subnet": "10.0.0.8/30", 
+                        "isis": {
+                            "hello_padding_disable": true, 
+                            "metric": 1, 
+                            "multipoint": null, 
+                            "process_id": 1, 
+                            "use_ipv4": true, 
+                            "use_ipv6": false
+                        }, 
+                        "isis_mtu": null, 
+                        "numeric_id": 8, 
+                        "physical": true, 
+                        "type": "physical", 
+                        "use_cdp": "False", 
+                        "use_ipv4": true
+                    }, 
+                    "4": {
+                        "comment": "Configured on launch", 
+                        "description": "OOB Management", 
+                        "id": "mgmt0", 
+                        "id_brief": "mgmt0", 
+                        "ipv4_address": "172.16.254.4", 
+                        "ipv4_cidr": "172.16.254.4/24", 
+                        "ipv4_subnet": "172.16.254.0/24", 
+                        "management": true, 
+                        "mgmt": true, 
+                        "physical": true, 
+                        "type": "physical", 
+                        "use_ipv4": false
+                    }
+                }, 
+                "ank_cisco_version": "0.2.7", 
+                "asn": 1, 
+                "bgp": {
+                    "ebgp_neighbors": [], 
+                    "ibgp_neighbors": [
+                        {
+                            "asn": 1, 
+                            "loopback": "192.168.0.2", 
+                            "neighbor": "ultra-1", 
+                            "update_source": null, 
+                            "use_ipv4": true, 
+                            "use_ipv6": false
+                        }, 
+                        {
+                            "asn": 1, 
+                            "loopback": "192.168.0.3", 
+                            "neighbor": "vios-1", 
+                            "update_source": null, 
+                            "use_ipv4": true, 
+                            "use_ipv6": false
+                        }, 
+                        {
+                            "asn": 1, 
+                            "loopback": "192.168.0.1", 
+                            "neighbor": "xrvr-1", 
+                            "update_source": null, 
+                            "use_ipv4": true, 
+                            "use_ipv6": false
+                        }
+                    ], 
+                    "ibgp_rr_clients": [], 
+                    "ibgp_rr_parents": [], 
+                    "ipv4_advertise_subnets": [
+                        "192.168.0.4/32"
+                    ], 
+                    "ipv6_advertise_subnets": [], 
+                    "lo_interface": "Loopback0", 
+                    "vrfs": []
+                }, 
+                "device_subtype": "titanium", 
+                "device_type": "router", 
+                "graphics": {
+                    "device_subtype": "titanium", 
+                    "device_type": "router", 
+                    "x": 365.0, 
+                    "y": 506.0
+                }, 
+                "host": "internal", 
+                "id": "3430022387567", 
+                "indices": [
+                    4
+                ], 
+                "input_label": "3430022387567", 
+                "interfaces": [], 
+                "ip": {
+                    "use_ipv4": true, 
+                    "use_ipv6": false
+                }, 
+                "isis": {
+                    "lo_interface": "Loopback0", 
+                    "net": "49.1921.6800.0004.00", 
+                    "process_id": 1, 
+                    "use_ipv4": true, 
+                    "use_ipv6": null
+                }, 
+                "label": "titanium-1", 
+                "loopback": "192.168.0.4", 
+                "loopback_subnet": "192.168.0.4/32", 
+                "platform": "cisco", 
+                "render": {
+                    "dst_file": "titanium_1.conf", 
+                    "dst_folder": "rendered/internal/cisco", 
+                    "template": "templates/nx_os.mako"
+                }, 
+                "update": true, 
+                "use_cdp": false, 
+                "vrf": {
+                    "use_ipv4": true, 
+                    "use_ipv6": false, 
+                    "vrfs": []
+                }, 
+                "x": 212.0, 
+                "y": 147.0
+            }, 
+            {
+                "_interfaces": {}, 
+                "collision_domain": true, 
+                "device_subtype": null, 
+                "device_type": "collision_domain", 
+                "graphics": {
+                    "device_subtype": null, 
+                    "device_type": "collision_domain", 
+                    "x": 263.6, 
+                    "y": 360.6
+                }, 
+                "host": "internal", 
+                "id": "cd3430019387558_3430020387561", 
+                "ipv4_subnet": "10.0.0.0/30", 
+                "ipv6_subnet": null, 
+                "label": "cd_xrvr-1_ultra-1", 
+                "x": 110.60000000000002, 
+                "y": 1.6000000000000227
+            }, 
+            {
+                "Network": null, 
+                "_interfaces": {
+                    "0": {
+                        "description": "Loopback", 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "ipv4_address": "192.168.0.3", 
+                        "ipv4_cidr": "192.168.0.3/32", 
+                        "ipv4_subnet": "0.0.0.0/32", 
+                        "isis": {
+                            "use_ipv4": true, 
+                            "use_ipv6": false
+                        }, 
+                        "type": "loopback", 
+                        "use_ipv4": true
+                    }, 
+                    "1": {
+                        "description": "to titanium-1", 
+                        "hello_padding_disable": null, 
+                        "id": "GigabitEthernet0/1", 
+                        "id_brief": "ge0/1", 
+                        "ipv4_address": "10.0.0.13", 
+                        "ipv4_cidr": "10.0.0.13/30", 
+                        "ipv4_subnet": "10.0.0.12/30", 
+                        "isis": {
+                            "metric": 1, 
+                            "multipoint": null, 
+                            "process_id": 1, 
+                            "use_ipv4": true, 
+                            "use_ipv6": false
+                        }, 
+                        "isis_mtu": null, 
+                        "numeric_id": 0, 
+                        "physical": true, 
+                        "type": "physical", 
+                        "use_cdp": "False", 
+                        "use_ipv4": true
+                    }, 
+                    "2": {
+                        "description": "to xrvr-1", 
+                        "hello_padding_disable": null, 
+                        "id": "GigabitEthernet0/2", 
+                        "id_brief": "ge0/2", 
+                        "ipv4_address": "10.0.0.6", 
+                        "ipv4_cidr": "10.0.0.6/30", 
+                        "ipv4_subnet": "10.0.0.4/30", 
+                        "isis": {
+                            "metric": 1, 
+                            "mtu": 1430, 
+                            "multipoint": null, 
+                            "process_id": 1, 
+                            "use_ipv4": true, 
+                            "use_ipv6": false
+                        }, 
+                        "isis_mtu": 1430, 
+                        "numeric_id": 1, 
+                        "physical": true, 
+                        "type": "physical", 
+                        "use_cdp": "False", 
+                        "use_ipv4": true
+                    }, 
+                    "3": {
+                        "description": "to ultra-1", 
+                        "hello_padding_disable": null, 
+                        "id": "GigabitEthernet0/3", 
+                        "id_brief": "ge0/3", 
+                        "ipv4_address": "10.0.128.6", 
+                        "ipv4_cidr": "10.0.128.6/30", 
+                        "ipv4_subnet": "10.0.128.4/30", 
+                        "isis": {
+                            "metric": 1, 
+                            "multipoint": null, 
+                            "process_id": 1, 
+                            "use_ipv4": true, 
+                            "use_ipv6": false
+                        }, 
+                        "isis_mtu": null, 
+                        "numeric_id": 2, 
+                        "physical": true, 
+                        "type": "physical", 
+                        "use_cdp": "False", 
+                        "use_ipv4": true
+                    }, 
+                    "4": {
+                        "comment": "Configured on launch", 
+                        "description": "OOB Management", 
+                        "id": "GigabitEthernet0/0", 
+                        "id_brief": "ge0/0", 
+                        "management": true, 
+                        "mgmt": true, 
+                        "physical": true, 
+                        "type": "physical", 
+                        "use_dhcp": true, 
+                        "use_ipv4": false
+                    }
+                }, 
+                "ank_cisco_version": "0.2.7", 
+                "asn": 1, 
+                "bgp": {
+                    "ebgp_neighbors": [], 
+                    "ibgp_neighbors": [
+                        {
+                            "asn": 1, 
+                            "loopback": "192.168.0.4", 
+                            "neighbor": "titanium-1", 
+                            "update_source": null, 
+                            "use_ipv4": true, 
+                            "use_ipv6": false
+                        }, 
+                        {
+                            "asn": 1, 
+                            "loopback": "192.168.0.2", 
+                            "neighbor": "ultra-1", 
+                            "update_source": null, 
+                            "use_ipv4": true, 
+                            "use_ipv6": false
+                        }, 
+                        {
+                            "asn": 1, 
+                            "loopback": "192.168.0.1", 
+                            "neighbor": "xrvr-1", 
+                            "update_source": null, 
+                            "use_ipv4": true, 
+                            "use_ipv6": false
+                        }
+                    ], 
+                    "ibgp_rr_clients": [], 
+                    "ibgp_rr_parents": [], 
+                    "ipv4_advertise_subnets": [
+                        "192.168.0.3/32"
+                    ], 
+                    "ipv6_advertise_subnets": [], 
+                    "lo_interface": "Loopback0", 
+                    "vpnv4_neighbors": [], 
+                    "vrfs": []
+                }, 
+                "device_subtype": "vios", 
+                "device_type": "router", 
+                "graphics": {
+                    "device_subtype": "vios", 
+                    "device_type": "router", 
+                    "x": 164.0, 
+                    "y": 481.0
+                }, 
+                "host": "internal", 
+                "id": "3430021387564", 
+                "indices": [
+                    3
+                ], 
+                "input_label": "3430021387564", 
+                "interfaces": [], 
+                "ip": {
+                    "use_ipv4": true, 
+                    "use_ipv6": false
+                }, 
+                "isis": {
+                    "lo_interface": "Loopback0", 
+                    "net": "49.1921.6800.0003.00", 
+                    "process_id": 1, 
+                    "use_ipv4": true, 
+                    "use_ipv6": null
+                }, 
+                "label": "vios-1", 
+                "loopback": "192.168.0.3", 
+                "loopback_subnet": "192.168.0.3/32", 
+                "no_service_config": true, 
+                "platform": "cisco", 
+                "render": {
+                    "dst_file": "vios_1.conf", 
+                    "dst_folder": "rendered/internal/cisco", 
+                    "template": "templates/ios.mako"
+                }, 
+                "update": true, 
+                "use_cdp": false, 
+                "use_onepk": false, 
+                "vrf": {
+                    "use_ipv4": true, 
+                    "use_ipv6": false, 
+                    "vrfs": []
+                }, 
+                "x": 11.0, 
+                "y": 122.0
+            }, 
+            {
+                "Network": null, 
+                "_interfaces": {
+                    "0": {
+                        "description": "Loopback", 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "ipv4_address": "192.168.0.1", 
+                        "ipv4_cidr": "192.168.0.1/32", 
+                        "ipv4_subnet": "0.0.0.0/32", 
+                        "isis": {
+                            "use_ipv4": true, 
+                            "use_ipv6": false
+                        }, 
+                        "type": "loopback", 
+                        "use_ipv4": true
+                    }, 
+                    "1": {
+                        "description": "to ultra-1", 
+                        "hello_padding_disable": true, 
+                        "id": "GigabitEthernet0/0/0/0", 
+                        "id_brief": "ge0", 
+                        "ipv4_address": "10.0.0.1", 
+                        "ipv4_cidr": "10.0.0.1/30", 
+                        "ipv4_subnet": "10.0.0.0/30", 
+                        "isis": {
+                            "hello_padding_disable": true, 
+                            "metric": 1, 
+                            "multipoint": null, 
+                            "process_id": 1, 
+                            "use_ipv4": true, 
+                            "use_ipv6": false
+                        }, 
+                        "isis_mtu": null, 
+                        "numeric_id": 0, 
+                        "physical": true, 
+                        "type": "physical", 
+                        "use_cdp": "False", 
+                        "use_ipv4": true
+                    }, 
+                    "2": {
+                        "description": "to vios-1", 
+                        "hello_padding_disable": true, 
+                        "id": "GigabitEthernet0/0/0/1", 
+                        "id_brief": "ge1", 
+                        "ipv4_address": "10.0.0.5", 
+                        "ipv4_cidr": "10.0.0.5/30", 
+                        "ipv4_subnet": "10.0.0.4/30", 
+                        "isis": {
+                            "hello_padding_disable": true, 
+                            "metric": 1, 
+                            "multipoint": null, 
+                            "process_id": 1, 
+                            "use_ipv4": true, 
+                            "use_ipv6": false
+                        }, 
+                        "isis_mtu": null, 
+                        "numeric_id": 1, 
+                        "physical": true, 
+                        "type": "physical", 
+                        "use_cdp": "False", 
+                        "use_ipv4": true
+                    }, 
+                    "3": {
+                        "description": "to titanium-1", 
+                        "hello_padding_disable": true, 
+                        "id": "GigabitEthernet0/0/0/2", 
+                        "id_brief": "ge2", 
+                        "ipv4_address": "10.0.128.1", 
+                        "ipv4_cidr": "10.0.128.1/30", 
+                        "ipv4_subnet": "10.0.128.0/30", 
+                        "isis": {
+                            "hello_padding_disable": true, 
+                            "metric": 1, 
+                            "multipoint": null, 
+                            "process_id": 1, 
+                            "use_ipv4": true, 
+                            "use_ipv6": false
+                        }, 
+                        "isis_mtu": null, 
+                        "numeric_id": 2, 
+                        "physical": true, 
+                        "type": "physical", 
+                        "use_cdp": "False", 
+                        "use_ipv4": true
+                    }, 
+                    "4": {
+                        "comment": "Configured on launch", 
+                        "description": "OOB Management", 
+                        "id": "mgmteth0/0/CPU0/0", 
+                        "id_brief": "mgmteth0/0/CPU0/0", 
+                        "ipv4_address": "172.16.254.2", 
+                        "ipv4_cidr": "172.16.254.2/24", 
+                        "ipv4_subnet": "172.16.254.0/24", 
+                        "management": true, 
+                        "mgmt": true, 
+                        "physical": true, 
+                        "type": "physical", 
+                        "use_ipv4": false
+                    }
+                }, 
+                "ank_cisco_version": "0.2.7", 
+                "asn": 1, 
+                "bgp": {
+                    "ebgp_neighbors": [], 
+                    "ibgp_neighbors": [
+                        {
+                            "asn": 1, 
+                            "loopback": "192.168.0.4", 
+                            "neighbor": "titanium-1", 
+                            "update_source": null, 
+                            "use_ipv4": true, 
+                            "use_ipv6": false
+                        }, 
+                        {
+                            "asn": 1, 
+                            "loopback": "192.168.0.2", 
+                            "neighbor": "ultra-1", 
+                            "update_source": null, 
+                            "use_ipv4": true, 
+                            "use_ipv6": false
+                        }, 
+                        {
+                            "asn": 1, 
+                            "loopback": "192.168.0.3", 
+                            "neighbor": "vios-1", 
+                            "update_source": null, 
+                            "use_ipv4": true, 
+                            "use_ipv6": false
+                        }
+                    ], 
+                    "ibgp_rr_clients": [], 
+                    "ibgp_rr_parents": [], 
+                    "ipv4_advertise_subnets": [
+                        "192.168.0.1/32"
+                    ], 
+                    "ipv6_advertise_subnets": [], 
+                    "lo_interface": "Loopback0", 
+                    "vrfs": []
+                }, 
+                "device_subtype": "xrvr", 
+                "device_type": "router", 
+                "graphics": {
+                    "device_subtype": "xrvr", 
+                    "device_type": "router", 
+                    "x": 153.0, 
+                    "y": 359.0
+                }, 
+                "host": "internal", 
+                "id": "3430019387558", 
+                "indices": [
+                    1
+                ], 
+                "input_label": "3430019387558", 
+                "interfaces": [], 
+                "ip": {
+                    "use_ipv4": true, 
+                    "use_ipv6": false
+                }, 
+                "isis": {
+                    "isis_links": [
+                        {
+                            "hello_padding_disable": true, 
+                            "id": "GigabitEthernet0/0/0/0", 
+                            "metric": 1, 
+                            "multipoint": null
+                        }, 
+                        {
+                            "hello_padding_disable": true, 
+                            "id": "GigabitEthernet0/0/0/1", 
+                            "metric": 1, 
+                            "multipoint": null
+                        }, 
+                        {
+                            "hello_padding_disable": true, 
+                            "id": "GigabitEthernet0/0/0/2", 
+                            "metric": 1, 
+                            "multipoint": null
+                        }
+                    ], 
+                    "lo_interface": "Loopback0", 
+                    "net": "49.1921.6800.0001.00", 
+                    "process_id": 1, 
+                    "use_ipv4": true, 
+                    "use_ipv6": null
+                }, 
+                "label": "xrvr-1", 
+                "loopback": "192.168.0.1", 
+                "loopback_subnet": "192.168.0.1/32", 
+                "platform": "cisco", 
+                "render": {
+                    "dst_file": "xrvr_1.conf", 
+                    "dst_folder": "rendered/internal/cisco", 
+                    "template": "templates/ios_xr/router.conf.mako"
+                }, 
+                "update": true, 
+                "use_cdp": false, 
+                "vrf": {
+                    "use_ipv4": true, 
+                    "use_ipv6": false, 
+                    "vrfs": []
+                }, 
+                "x": 0.0, 
+                "y": 0.0
+            }, 
+            {
+                "_interfaces": {}, 
+                "collision_domain": true, 
+                "device_subtype": null, 
+                "device_type": "collision_domain", 
+                "graphics": {
+                    "device_subtype": null, 
+                    "device_type": "collision_domain", 
+                    "x": 264.6, 
+                    "y": 493.6
+                }, 
+                "host": "internal", 
+                "id": "cd3430021387564_3430022387567", 
+                "ipv4_subnet": "10.0.0.12/30", 
+                "ipv6_subnet": null, 
+                "label": "cd_vios-1_titanium-1", 
+                "x": 111.60000000000002, 
+                "y": 134.60000000000002
+            }, 
+            {
+                "_interfaces": {}, 
+                "collision_domain": true, 
+                "device_subtype": null, 
+                "device_type": "collision_domain", 
+                "graphics": {
+                    "device_subtype": null, 
+                    "device_type": "collision_domain", 
+                    "x": 369.6, 
+                    "y": 434.1
+                }, 
+                "host": "internal", 
+                "id": "cd3430020387561_3430022387567", 
+                "ipv4_subnet": "10.0.0.8/30", 
+                "ipv6_subnet": null, 
+                "label": "cd_ultra-1_titanium-1", 
+                "x": 216.60000000000002, 
+                "y": 75.10000000000002
+            }
+        ]
+    }, 
+    "ospf": {
+        "directed": false, 
+        "graph": [], 
+        "links": [], 
+        "multigraph": false, 
+        "nodes": []
+    }, 
+    "phy": {
+        "directed": false, 
+        "graph": [
+            [
+                "mgmt_prefixlen", 
+                24
+            ], 
+            [
+                "mgmt_interfaces_enabled", 
+                true
+            ], 
+            [
+                "mgmt_address_end", 
+                "172.16.254.254"
+            ], 
+            [
+                "mgmt_address_start", 
+                "172.16.254.2"
+            ], 
+            [
+                "uuid", 
+                "a81332f6b8"
+            ]
+        ], 
+        "links": [
+            {
+                "_interfaces": {
+                    "3430020387561": 3, 
+                    "3430021387564": 3
+                }, 
+                "edge_id": null, 
+                "source": 0, 
+                "target": 3
+            }, 
+            {
+                "_interfaces": {
+                    "3430019387558": 1, 
+                    "3430020387561": 1
+                }, 
+                "edge_id": null, 
+                "source": 0, 
+                "target": 2
+            }, 
+            {
+                "_interfaces": {
+                    "3430020387561": 2, 
+                    "3430022387567": 3
+                }, 
+                "edge_id": null, 
+                "source": 0, 
+                "target": 1
+            }, 
+            {
+                "_interfaces": {
+                    "3430019387558": 3, 
+                    "3430022387567": 2
+                }, 
+                "edge_id": null, 
+                "source": 1, 
+                "target": 2
+            }, 
+            {
+                "_interfaces": {
+                    "3430021387564": 1, 
+                    "3430022387567": 1
+                }, 
+                "edge_id": null, 
+                "source": 1, 
+                "target": 3
+            }, 
+            {
+                "_interfaces": {
+                    "3430019387558": 2, 
+                    "3430021387564": 2
+                }, 
+                "edge_id": null, 
+                "source": 2, 
+                "target": 3
+            }
+        ], 
+        "multigraph": false, 
+        "nodes": [
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": "loopback", 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "type": "loopback"
+                    }, 
+                    "1": {
+                        "description": "GigabitEthernet1", 
+                        "id": "GigabitEthernet1", 
+                        "id_brief": "ge1", 
+                        "ipv4_address": "10.0.0.2", 
+                        "ipv4_prefixlen": "30", 
+                        "numeric_id": "0", 
+                        "specified_id": "GigabitEthernet1", 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": "GigabitEthernet2", 
+                        "id": "GigabitEthernet2", 
+                        "id_brief": "ge2", 
+                        "ipv4_address": "10.0.0.9", 
+                        "ipv4_prefixlen": "30", 
+                        "numeric_id": "1", 
+                        "specified_id": "GigabitEthernet2", 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": "GigabitEthernet3", 
+                        "id": "GigabitEthernet3", 
+                        "id_brief": "ge3", 
+                        "ipv4_address": "10.0.128.5", 
+                        "ipv4_prefixlen": "30", 
+                        "numeric_id": "2", 
+                        "specified_id": "GigabitEthernet3", 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "CSR1000v", 
+                "device_type": "router", 
+                "host": "internal", 
+                "id": "3430020387561", 
+                "indices": [
+                    2
+                ], 
+                "label": "ultra-1", 
+                "label_full": "ultra-1", 
+                "platform": "cisco", 
+                "pop": null, 
+                "specified_int_names": null, 
+                "syntax": "ios_xe", 
+                "update": true, 
+                "use_cdp": false, 
+                "use_ipv4": true, 
+                "use_onepk": false, 
+                "x": 221.0, 
+                "y": 3.0
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": "loopback", 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "type": "loopback"
+                    }, 
+                    "1": {
+                        "description": "Ethernet2/2", 
+                        "id": "Ethernet2/2", 
+                        "id_brief": "Ethernet2/2", 
+                        "ipv4_address": "10.0.0.14", 
+                        "ipv4_prefixlen": "30", 
+                        "numeric_id": "1", 
+                        "specified_id": "Ethernet2/2", 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": "Ethernet2/3", 
+                        "id": "Ethernet2/3", 
+                        "id_brief": "Ethernet2/3", 
+                        "ipv4_address": "10.0.128.2", 
+                        "ipv4_prefixlen": "30", 
+                        "numeric_id": "2", 
+                        "specified_id": "Ethernet2/3", 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": "Ethernet2/9", 
+                        "id": "Ethernet2/9", 
+                        "id_brief": "Ethernet2/9", 
+                        "ipv4_address": "10.0.0.10", 
+                        "ipv4_prefixlen": "30", 
+                        "numeric_id": "8", 
+                        "specified_id": "Ethernet2/9", 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "titanium", 
+                "device_type": "router", 
+                "host": "internal", 
+                "id": "3430022387567", 
+                "indices": [
+                    4
+                ], 
+                "label": "titanium-1", 
+                "label_full": "titanium-1", 
+                "platform": "cisco", 
+                "pop": null, 
+                "specified_int_names": null, 
+                "syntax": "nx_os", 
+                "update": true, 
+                "use_cdp": false, 
+                "use_ipv4": true, 
+                "use_onepk": false, 
+                "x": 212.0, 
+                "y": 147.0
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": "loopback", 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "type": "loopback"
+                    }, 
+                    "1": {
+                        "description": "GigabitEthernet0/0/0/0", 
+                        "id": "GigabitEthernet0/0/0/0", 
+                        "id_brief": "ge0", 
+                        "ipv4_address": "10.0.0.1", 
+                        "ipv4_prefixlen": "30", 
+                        "numeric_id": "0", 
+                        "specified_id": "GigabitEthernet0/0/0/0", 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": "GigabitEthernet0/0/0/1", 
+                        "id": "GigabitEthernet0/0/0/1", 
+                        "id_brief": "ge1", 
+                        "ipv4_address": "10.0.0.5", 
+                        "ipv4_prefixlen": "30", 
+                        "numeric_id": "1", 
+                        "specified_id": "GigabitEthernet0/0/0/1", 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": "GigabitEthernet0/0/0/2", 
+                        "id": "GigabitEthernet0/0/0/2", 
+                        "id_brief": "ge2", 
+                        "ipv4_address": "10.0.128.1", 
+                        "ipv4_prefixlen": "30", 
+                        "numeric_id": "2", 
+                        "specified_id": "GigabitEthernet0/0/0/2", 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "xrvr", 
+                "device_type": "router", 
+                "host": "internal", 
+                "id": "3430019387558", 
+                "indices": [
+                    1
+                ], 
+                "label": "xrvr-1", 
+                "label_full": "xrvr-1", 
+                "platform": "cisco", 
+                "pop": null, 
+                "specified_int_names": null, 
+                "syntax": "ios_xr", 
+                "update": true, 
+                "use_cdp": false, 
+                "use_ipv4": true, 
+                "use_onepk": false, 
+                "x": 0.0, 
+                "y": 0.0
+            }, 
+            {
+                "_interfaces": {
+                    "0": {
+                        "description": "loopback", 
+                        "id": "Loopback0", 
+                        "id_brief": "Loopback0", 
+                        "type": "loopback"
+                    }, 
+                    "1": {
+                        "description": "GigabitEthernet0/1", 
+                        "id": "GigabitEthernet0/1", 
+                        "id_brief": "ge0/1", 
+                        "ipv4_address": "10.0.0.13", 
+                        "ipv4_prefixlen": "30", 
+                        "numeric_id": "0", 
+                        "specified_id": "GigabitEthernet0/1", 
+                        "type": "physical"
+                    }, 
+                    "2": {
+                        "description": "GigabitEthernet0/2", 
+                        "id": "GigabitEthernet0/2", 
+                        "id_brief": "ge0/2", 
+                        "ipv4_address": "10.0.0.6", 
+                        "ipv4_prefixlen": "30", 
+                        "numeric_id": "1", 
+                        "specified_id": "GigabitEthernet0/2", 
+                        "type": "physical"
+                    }, 
+                    "3": {
+                        "description": "GigabitEthernet0/3", 
+                        "id": "GigabitEthernet0/3", 
+                        "id_brief": "ge0/3", 
+                        "ipv4_address": "10.0.128.6", 
+                        "ipv4_prefixlen": "30", 
+                        "numeric_id": "2", 
+                        "specified_id": "GigabitEthernet0/3", 
+                        "type": "physical"
+                    }
+                }, 
+                "asn": 1, 
+                "device_subtype": "vios", 
+                "device_type": "router", 
+                "host": "internal", 
+                "id": "3430021387564", 
+                "indices": [
+                    3
+                ], 
+                "label": "vios-1", 
+                "label_full": "vios-1", 
+                "platform": "cisco", 
+                "pop": null, 
+                "specified_int_names": null, 
+                "syntax": "ios", 
+                "update": true, 
+                "use_cdp": false, 
+                "use_ipv4": true, 
+                "use_onepk": false, 
+                "x": 11.0, 
+                "y": 122.0
+            }
+        ]
+    }, 
+    "vrf": {
+        "directed": false, 
+        "graph": [], 
+        "links": [], 
+        "multigraph": false, 
+        "nodes": []
+    }
+}

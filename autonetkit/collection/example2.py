@@ -31,7 +31,7 @@ command = "show ip route"
 
 node = nidb.node("5")
 #node = random.choice(list(nidb.routers()))
-if True:
+while True:
 #for node in nidb.routers():
     host = node.tap.ip
     cmd = {"host": host, "username": "root",
@@ -42,27 +42,30 @@ if True:
     command_list.append(cmd)
     #break
 
-for response in get_results(emulation_server, command_list):
-        data = response["result"]
-        print "response is", response
-        if not response['success']:
-            print "Skipping response"
-            continue
-        header, parsed_data = ank_process.process_textfsm(parse_template, data)
-        print header, parsed_data
-        extracted = ank_process.extract_route_from_parsed_routing_table(header, parsed_data)
-        mapped = ank_process.reverse_map_routing(reverse_mappings, extracted)
-        print "mapped", mapped
-        for entry in mapped:
-            print response["command"]
-            original_command = json.loads(response["command"])
-            original_node = original_command["original_node"]
-            protocol, cd, node = entry
-            if node is None:
-                #vis = [original_node, cd] # direct connection?
+    for response in get_results(emulation_server, command_list):
+            data = response["result"]
+            print "response is", response
+            if not response['success']:
+                print "Skipping response"
                 continue
-            else:
-                vis = [original_node, node, cd]
-                #TODO: netx compare
-            print "vis", vis
-            ank_messaging.highlight(path = vis )
+            header, parsed_data = ank_process.process_textfsm(parse_template, data)
+            print header, parsed_data
+            extracted = ank_process.extract_route_from_parsed_routing_table(header, parsed_data)
+            mapped = ank_process.reverse_map_routing(reverse_mappings, extracted)
+            print "mapped", mapped
+            for entry in mapped:
+                print response["command"]
+                original_command = json.loads(response["command"])
+                original_node = original_command["original_node"]
+                protocol, cd, node = entry
+                if node is None:
+                    #vis = [original_node, cd] # direct connection?
+                    continue
+                else:
+                    vis = [original_node, node, cd]
+                    #TODO: netx compare
+                print "vis", vis
+                ank_messaging.highlight(path = vis )
+
+    import time
+    time.sleep(5)

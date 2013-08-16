@@ -27,6 +27,10 @@ def update_http(anm = None, nidb = None, http_url = None):
         import json
         body = json.dumps({}) # blank to test visualisation server running
 
+    with open("test.txt", "w") as fh:
+        print "HERE"
+        fh.write(body)
+
     uuid = get_uuid(anm)
 
     params = urllib.urlencode({
