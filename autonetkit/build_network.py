@@ -26,7 +26,7 @@ def load(input_graph_string):
         try:
             from autonetkit_cisco import load as cisco_load
         except ImportError, e:
-            print "Unable to load autonetkit_cisco %s" % e
+            log.debug("Unable to load autonetkit_cisco %s" % e)
             return  # module not present (development module)
         input_graph = cisco_load.load(input_graph_string)
 # add local deployment host
@@ -145,6 +145,13 @@ def apply_design_rules(anm):
 
     ank_utils.copy_attr_from(g_in, g_phy, "include_csr")
 
+    try:
+        from autonetkit_cisco import build_network as cisco_build_network
+    except ImportError, e:
+        log.debug("Unable to load autonetkit_cisco %s" % e)
+    else:
+        cisco_build_network.pre_design(anm)
+
     build_ospf(anm)
     build_eigrp(anm)
     build_isis(anm)
@@ -155,6 +162,14 @@ def apply_design_rules(anm):
     mark_ebgp_vrf(anm)
     build_ibgp_vpn_v4(anm) # build after bgp as is based on
     #autonetkit.update_http(anm)
+
+    try:
+        from autonetkit_cisco import build_network as cisco_build_network
+    except ImportError, e:
+        log.debug("Unable to load autonetkit_cisco %s" % e)
+    else:
+        cisco_build_network.post_design(anm)
+
     return anm
 
 
