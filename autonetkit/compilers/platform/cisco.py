@@ -199,7 +199,12 @@ class CiscoCompiler(PlatformCompiler):
                 mgmt_int = nidb_node.add_interface(management = True)
                 mgmt_int.id = mgmt_int_id
 
-        ios_xr_compiler = IosXrCompiler(self.nidb, self.anm)
+        try:
+            from autonetkit_cisco.compilers.device.cisco import IosXrCompiler
+            ios_xr_compiler = IosXrCompiler(self.nidb, self.anm)
+        except ImportError:
+            ios_xr_compiler = IosXrCompiler(self.nidb, self.anm)
+
         for phy_node in g_phy.nodes('is_router', host=self.host, syntax='ios_xr'):
             nidb_node = self.nidb.node(phy_node)
             nidb_node.render.template = os.path.join("templates","ios_xr","router.conf.mako")
