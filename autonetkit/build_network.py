@@ -25,7 +25,8 @@ def load(input_graph_string):
 # try a different reader
         try:
             from autonetkit_cisco import load as cisco_load
-        except ImportError:
+        except ImportError, e:
+            print "Unable to load autonetkit_cisco %s" % e
             return  # module not present (development module)
         input_graph = cisco_load.load(input_graph_string)
 # add local deployment host
@@ -145,6 +146,7 @@ def apply_design_rules(anm):
     ank_utils.copy_attr_from(g_in, g_phy, "include_csr")
 
     build_ospf(anm)
+    build_eigrp(anm)
     build_isis(anm)
     build_bgp(anm)
     autonetkit.update_http(anm)
@@ -1133,6 +1135,44 @@ def ip_to_net_ent_title_ios(ip_addr):
         octet) for octet in ip_words)  # single string, padded if needed
     return ".".join([area_id, ip_octets[0:4], ip_octets[4:8], ip_octets[8:12],
                      "00"])
+
+def build_eigrp(anm):
+    """Build eigrp overlay"""
+    g_in = anm['input']
+    # add regardless, so allows quick check of node in anm['isis'] in compilers
+    g_eigrp = anm.add_overlay("eigrp")
+
+    if not any(n.igp == "eigrp" for n in g_in):
+        log.debug("No EIGRP nodes")
+        return
+    g_ipv4 = anm['ipv4']
+    g_eigrp.add_nodes_from(g_in.nodes("is_router", igp = "eigrp"), retain=['asn'])
+    g_eigrp.add_nodes_from(g_in.nodes("is_server", igp = "eigrp"), retain=['asn'])
+    g_eigrp.add_nodes_from(g_in.nodes("is_switch"), retain=['asn'])
+    g_eigrp.add_edges_from(g_in.edges(), retain=['edge_id'])
+# Merge and explode switches
+    ank_utils.aggregate_nodes(g_eigrp, g_eigrp.nodes("is_switch"),
+                              retain="edge_id")
+    exploded_edges = ank_utils.explode_nodes(g_eigrp, g_eigrp.nodes("is_switch"),
+                            retain="edge_id")
+    for edge in exploded_edges:
+        edge.multipoint = True
+
+    g_eigrp.remove_edges_from(
+        [link for link in g_eigrp.edges() if link.src.asn != link.dst.asn])
+
+    for node in g_eigrp:
+        ip_node = g_ipv4.node(node)
+        node.net = ip_to_net_ent_title_ios(ip_node.loopback)
+        node.name = "one"  # default
+
+    for link in g_eigrp.edges():
+        link.metric = 1  # default
+
+    for edge in g_eigrp.edges():
+        for interface in edge.interfaces():
+            interface.metric = edge.metric
+            interface.multipoint = edge.multipoint
 
 def build_isis(anm):
     """Build isis overlay"""

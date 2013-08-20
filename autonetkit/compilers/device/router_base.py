@@ -90,6 +90,8 @@ class RouterCompiler(object):
             self.ospf(node)
         if node in self.anm['isis']:
             self.isis(node)
+        if node in self.anm['eigrp']:
+            self.eigrp(node)
         if node in self.anm['bgp']:
             self.bgp(node)
 
@@ -107,7 +109,7 @@ class RouterCompiler(object):
             if not phy_int:
                 # for instance if added as management interface to nidb in compile
                 continue
-                
+
             interface.description = phy_int.description
             remote_edges = phy_int.edges()
             if len(remote_edges):
@@ -258,7 +260,7 @@ class RouterCompiler(object):
         #TODO: update this to use ibgp_v4 and ibgp_v6 overlays
 
         node.bgp.ibgp_neighbors = ibgp_neighbors
-        node.bgp.ibgp_rr_clients = ibgp_rr_clients 
+        node.bgp.ibgp_rr_clients = ibgp_rr_clients
         node.bgp.ibgp_rr_parents = ibgp_rr_parents
 
         #ebgp
@@ -284,6 +286,29 @@ class RouterCompiler(object):
         node.bgp.ebgp_neighbors.sort("asn")
 
         return
+
+    def eigrp(self, node):
+        g_eigrp = self.anm['eigrp']
+        g_ipv4 = self.anm['ipv4']
+        eigrp_node = self.anm['eigrp'].node(node)
+        node.eigrp.name = eigrp_node.name
+
+        ipv4_networks = set()
+        for interface in node.physical_interfaces:
+            if interface.exclude_igp:
+                continue # don't configure IGP for this interface
+            ipv4_int = g_ipv4.interface(interface)
+            eigrp_int = g_eigrp.interface(interface)
+            if not eigrp_int.is_bound:
+                continue # not an EIGRP interface
+            network = ipv4_int.subnet
+            if eigrp_int and eigrp_int.is_bound:
+                ipv4_networks.add(network)
+
+        # Loopback zero subnet
+        ipv4_networks.add(node.loopback_zero.ipv4_cidr)
+
+        node.eigrp.ipv4_networks = sorted(list(ipv4_networks))
 
     def isis(self, node):
         g_isis = self.anm['isis']
@@ -311,7 +336,7 @@ class RouterCompiler(object):
         node.isis.process_id = isis_node.process_id
         node.isis.lo_interface = self.lo_interface
 # set isis on loopback_zero
-        
+
         node.loopback_zero.isis = {
                         'use_ipv4': node.ip.use_ipv4,
                         'use_ipv6': node.ip.use_ipv6,
