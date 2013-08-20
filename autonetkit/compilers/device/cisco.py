@@ -398,7 +398,8 @@ class IosXrCompiler(IosBaseCompiler):
         data = {'id': node.loopback_zero.id, 'passive': True}
         if node.eigrp.use_ipv4:
             ipv4_interfaces.append(data)
-        # Note: Don't advertise loopback into ipv6
+        if node.eigrp.use_ipv6:
+            ipv6_interfaces.append(data)
 
         node.eigrp.ipv4_interfaces = ipv4_interfaces
         node.eigrp.ipv6_interfaces = ipv6_interfaces
