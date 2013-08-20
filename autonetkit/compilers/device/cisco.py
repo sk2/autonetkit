@@ -31,6 +31,10 @@ class IosBaseCompiler(RouterCompiler):
             node.ospf.use_ipv4 = phy_node.use_ipv4
             node.ospf.use_ipv6 = phy_node.use_ipv6
 
+        if node in self.anm['eigrp']:
+            node.eigrp.use_ipv4 = phy_node.use_ipv4
+            node.eigrp.use_ipv6 = phy_node.use_ipv6
+
         if node in self.anm['isis']:
             node.isis.use_ipv4 = phy_node.use_ipv4
             node.isis.use_ipv6 = phy_node.use_ipv6
@@ -213,6 +217,25 @@ class IosBaseCompiler(RouterCompiler):
                         } #TODO: add wrapper for this
 
 
+    def eigrp(self, node):
+        super(IosBaseCompiler, self).eigrp(node)
+        for interface in node.physical_interfaces:
+            phy_int = self.anm['phy'].interface(interface)
+
+            eigrp_int = phy_int['eigrp']
+            if eigrp_int and eigrp_int.is_bound:
+                if interface.exclude_igp:
+                    continue # don't configure IGP for this interface
+
+                interface.eigrp = {
+                        'metric': eigrp_int.metric,
+                        'area': eigrp_int.area,
+                        'name': node.eigrp.name,
+                        'use_ipv4': node.ip.use_ipv4,
+                        'use_ipv6': node.ip.use_ipv6,
+                        'multipoint': eigrp_int.multipoint,
+                        } #TODO: add wrapper for this
+
     def isis(self, node):
         super(IosBaseCompiler, self).isis(node)
         for interface in node.physical_interfaces:
@@ -350,6 +373,35 @@ class IosXrCompiler(IosBaseCompiler):
 
         node.ospf.interfaces = dict( interfaces_by_area)
 
+    def eigrp(self, node):
+        super(IosXrCompiler, self).eigrp(node)
+
+        node.eigrp.name = 1 #TODO: check if this should be ASN
+
+        g_eigrp = self.anm['eigrp']
+        ipv4_interfaces = []
+        ipv6_interfaces = []
+
+        for interface in node.physical_interfaces:
+            if interface.exclude_igp:
+                continue # don't configure IGP for this interface
+
+            eigrp_int = g_eigrp.interface(interface)
+            if eigrp_int and eigrp_int.is_bound:
+                data = {'id': interface.id, 'passive': False}
+                if node.eigrp.use_ipv4:
+                    ipv4_interfaces.append(data)
+                if node.eigrp.use_ipv6:
+                    ipv6_interfaces.append(data)
+
+        loopback_zero = node.loopback_zero
+        data = {'id': node.loopback_zero.id, 'passive': True}
+        if node.eigrp.use_ipv4:
+            ipv4_interfaces.append(data)
+        # Note: Don't advertise loopback into ipv6
+
+        node.eigrp.ipv4_interfaces = ipv4_interfaces
+        node.eigrp.ipv6_interfaces = ipv6_interfaces
 
     def isis(self, node):
         super(IosXrCompiler, self).isis(node)
@@ -393,6 +445,15 @@ class NxOsCompiler(IosBaseCompiler):
                 'use_ipv4': node.ip.use_ipv4,
                 'use_ipv6': node.ip.use_ipv6,
                 } #TODO: add wrapper for this
+
+    def eigrp(self, node):
+        ##TODO: do we want to specify the name or hard-code (as currently)?
+        super(NxOsCompiler, self).eigrp(node)
+        loopback_zero = node.loopback_zero
+        loopback_zero.eigrp = {
+                'use_ipv4': node.ip.use_ipv4,
+                'use_ipv6': node.ip.use_ipv6,
+                }
 
 
 class StarOsCompiler(IosBaseCompiler):

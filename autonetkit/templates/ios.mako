@@ -179,7 +179,27 @@ router isis ${node.isis.process_id}
 % endif
 % endif
 % if node.eigrp:
-router eigrp ${node.eigrp.process_id}
+router eigrp ${node.eigrp.name}
+ !
+% if node.eigrp.use_ipv4:
+ address-family ipv4 unicast autonomous-system ${node.asn}
+  !
+  topology base
+  exit-af-topology
+  % for subnet in node.eigrp.ipv4_networks:
+  network ${subnet.network} ${subnet.hostmask}
+  % endfor
+ exit-address-family
+ !
+% endif
+% if node.eigrp.use_ipv4:
+ address-family ipv6 unicast autonomous-system ${node.asn}
+  !
+  topology base
+  exit-af-topology
+ exit-address-family
+!
+% endif
 % endif
 !
 % if node.mpls.enabled:
