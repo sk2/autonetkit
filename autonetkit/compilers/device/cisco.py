@@ -248,7 +248,7 @@ class IosBaseCompiler(RouterCompiler):
             edge = edges[0]
             dst = edge.dst
             if not dst.is_router:
-                log.warning("Extended IOS config support not valid for non router ISIS connections")
+                log.debug("Connection to non-router host not added to IGP")
                 continue
 
             src_type = node.device_subtype
