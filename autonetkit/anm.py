@@ -810,6 +810,9 @@ class OverlayBase(object):
         """"""
         return self.__repr__()
 
+    def __nonzero__(self):
+        return self.anm.has_overlay(self._overlay_id)
+
     def node_label(self, node):
         """"""
         return repr(OverlayNode(self._anm, self._overlay_id, node))
