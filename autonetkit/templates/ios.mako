@@ -286,7 +286,6 @@ router bgp ${node.asn}
   neighbor ${neigh.dst_int_ip} send-community
   neighbor ${neigh.dst_int_ip} next-hop-self
 % endfor
-% endif
 !
 ## VRFs
 % for vrf in node.bgp.vrfs:
@@ -307,3 +306,4 @@ address-family ipv4 vrf ${vrf.vrf}
 %endfor
 !
 end
+% endif
