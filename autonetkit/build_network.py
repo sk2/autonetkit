@@ -904,7 +904,6 @@ def build_ipv4(anm, infrastructure=True):
             if interface.is_bound ):
             manual_alloc_devices.add(device) # add as a manual allocated device
 
-    print manual_alloc_devices, l3_devices
     if manual_alloc_devices == set(l3_devices):
         manual_alloc_ipv4_infrastructure = True
     else:
