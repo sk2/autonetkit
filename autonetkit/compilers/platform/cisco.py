@@ -298,6 +298,8 @@ class CiscoCompiler(PlatformCompiler):
         lab_topology = self.nidb.topology[self.host]
         oob_management_ips = {}
 
+        #TODO: remove this code now allocated externally
+
         #TODO: make this seperate function
         from netaddr import IPNetwork, IPRange
 
