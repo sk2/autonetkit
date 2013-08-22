@@ -31,7 +31,7 @@ else:
 	ws = create_connection("ws://localhost:8000/ws")
 	ws.send("overlay_list")
 	result =  ws.recv()
-	expected = '{"overlay_list": ["bgp", "ebgp", "ebgp_v4", "ebgp_v6", "graphics", "ibgp_v4", "ibgp_v6", "ibgp_vpn_v4", "input", "input_directed", "ip", "ipv4", "ipv6", "isis", "l3_conn", "ospf", "phy", "vrf"]}'
+	expected = '{"overlay_list": ["bgp", "ebgp", "ebgp_v4", "ebgp_v6", "eigrp", graphics", "ibgp_v4", "ibgp_v6", "ibgp_vpn_v4", "input", "input_directed", "ip", "ipv4", "ipv6", "isis", "l3_conn", "ospf", "phy", "vrf"]}'
 	assert(result == expected)
 
 	overlay_id = "phy"
@@ -57,7 +57,7 @@ else:
 	ws = create_connection("ws://localhost:8000/ws")
 	ws.send("overlay_list")
 	result =  ws.recv()
-	expected = '{"overlay_list": ["bgp", "ebgp", "ebgp_v4", "ebgp_v6", "graphics", "ibgp_v4", "ibgp_v6", "ibgp_vpn_v4", "input", "input_directed", "ip", "ipv4", "ipv6", "isis", "l3_conn", "nidb", "ospf", "phy", "vrf"]}'
+	expected = '{"overlay_list": ["bgp", "ebgp", "ebgp_v4", "ebgp_v6", "eigrp", graphics", "ibgp_v4", "ibgp_v6", "ibgp_vpn_v4", "input", "input_directed", "ip", "ipv4", "ipv6", "isis", "l3_conn", "nidb", "ospf", "phy", "vrf"]}'
 	assert(result == expected)
 
 	overlay_id = "nidb"
