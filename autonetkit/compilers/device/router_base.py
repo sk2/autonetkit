@@ -86,13 +86,13 @@ class RouterCompiler(object):
         node.loopback_subnet.prefixlen = 32
 
         self.interfaces(node)
-        if node in self.anm['ospf']:
+        if self.anm.has_overlay("ospf") and node in self.anm['ospf']:
             self.ospf(node)
-        if node in self.anm['isis']:
+        if self.anm.has_overlay("isis") and node in self.anm['isis']:
             self.isis(node)
-        if node in self.anm['eigrp']:
+        if self.anm.has_overlay("eigrp") and node in self.anm['eigrp']:
             self.eigrp(node)
-        if node in self.anm['bgp']:
+        if self.anm.has_overlay("bgp") and node in self.anm['bgp']:
             self.bgp(node)
 
     def interfaces(self, node):

@@ -159,8 +159,9 @@ def apply_design_rules(anm):
     autonetkit.update_http(anm)
 
 # post-processing
-    mark_ebgp_vrf(anm)
-    build_ibgp_vpn_v4(anm) # build after bgp as is based on
+    if anm['phy'].data.enable_routing:
+        mark_ebgp_vrf(anm)
+        build_ibgp_vpn_v4(anm) # build after bgp as is based on
     #autonetkit.update_http(anm)
 
     try:
@@ -588,6 +589,10 @@ def build_bgp(anm):
     g_in = anm['input']
     g_phy = anm['phy']
 
+    if not anm['phy'].data.enable_routing:
+        log.info("Routing disabled, not configuring BGP")
+        return
+
     build_ebgp(anm)
     build_ebgp_v4(anm)
     build_ebgp_v6(anm)
@@ -933,6 +938,10 @@ def build_phy(anm):
     g_in = anm['input']
     g_phy = anm['phy']
 
+    g_phy.data.enable_routing = g_in.data.enable_routing
+    if g_phy.data.enable_routing is None:
+        g_in.data.enable_routing = True # default if not set
+
     # apply uuid if not set
     g_phy.data.uuid = g_phy.data.uuid
     if not g_phy.data.uuid:
@@ -951,9 +960,12 @@ def build_phy(anm):
 
     if g_in.data.Creator == "Maestro":
         g_phy.data.mgmt_interfaces_enabled = g_in.data.mgmt_interfaces_enabled
+        #TODO: remove this code now allocated externally
         g_phy.data.mgmt_address_start = g_in.data.mgmt_address_start
         g_phy.data.mgmt_address_end = g_in.data.mgmt_address_end
         g_phy.data.mgmt_prefixlen = g_in.data.mgmt_prefixlen
+        g_phy.data.mgmt_prefixlen = g_in.data.mgmt_prefixlen
+
         ank_utils.copy_attr_from(g_in, g_phy, "use_cdp")
         ank_utils.copy_attr_from(g_in, g_phy, "use_onepk")
         ank_utils.copy_attr_from(g_in, g_phy, "label_full")
@@ -1020,6 +1032,10 @@ def build_ospf(anm):
     g_in = anm['input']
     # add regardless, so allows quick check of node in anm['ospf'] in compilers
     g_ospf = anm.add_overlay("ospf")
+
+    if not anm['phy'].data.enable_routing:
+        log.info("Routing disabled, not configuring OSPF")
+        return
 
     if not any(n.igp == "ospf" for n in g_in):
         log.debug("No OSPF nodes")
@@ -1158,6 +1174,10 @@ def build_eigrp(anm):
     # add regardless, so allows quick check of node in anm['isis'] in compilers
     g_eigrp = anm.add_overlay("eigrp")
 
+    if not anm['phy'].data.enable_routing:
+        log.info("Routing disabled, not configuring EIGRP")
+        return
+
     if not any(n.igp == "eigrp" for n in g_in):
         log.debug("No EIGRP nodes")
         return
@@ -1196,6 +1216,10 @@ def build_isis(anm):
     # add regardless, so allows quick check of node in anm['isis'] in compilers
     g_isis = anm.add_overlay("isis")
 
+    if not anm['phy'].data.enable_routing:
+        log.info("Routing disabled, not configuring EIGRP")
+        return
+
     if not any(n.igp == "isis" for n in g_in):
         log.debug("No ISIS nodes")
         return
@@ -1215,7 +1239,7 @@ def build_isis(anm):
     g_isis.remove_edges_from(
         [link for link in g_isis.edges() if link.src.asn != link.dst.asn])
 
-    for node in g_isis:
+    for node in g_isis.nodes("is_router"):
         ip_node = g_ipv4.node(node)
         node.net = ip_to_net_ent_title_ios(ip_node.loopback)
         node.process_id = 1  # default
