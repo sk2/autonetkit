@@ -209,7 +209,7 @@ mpls ldp router-id ${node.mpls.router_id}
 ## BGP
 % if node.bgp:
 router bgp ${node.asn}
-  bgp router-id ${node.loopback}
+  bgp router-id ${node.router_id}
   no synchronization
 % for subnet in node.bgp.ipv4_advertise_subnets:
   network ${subnet.network} mask ${subnet.netmask}
