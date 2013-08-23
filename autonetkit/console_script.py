@@ -250,9 +250,9 @@ def create_nidb(anm):
 
     for node in nidb.nodes("collision_domain"):
         ipv4_node = anm['ipv4'].node(node)
-        node.ipv4_subnet = ipv4_node.subnet
-        node.ipv6_subnet = ipv4_node['ipv6'].subnet
-
+        if ipv4_node:
+            node.ipv4_subnet = ipv4_node.subnet
+            node.ipv6_subnet = ipv4_node['ipv6'].subnet
 
 # add edges to switches
     edges_to_add = [edge for edge in g_phy.edges()
