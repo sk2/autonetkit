@@ -36,6 +36,9 @@ def duplicate_items(items):
 
 def validate_ipv4(anm):
     #TODO: make this generic to also handle IPv6
+    if not anm.has_overlay("ipv4"):
+        log.debug("No IPv4 overlay created, skipping ipv4 validation")
+        return
     g_ipv4 = anm['ipv4']
     # interface IP uniqueness
     tests_passed = True
@@ -44,7 +47,7 @@ def validate_ipv4(anm):
 
     # check globally unique ip addresses
     all_ints = [i for n in g_ipv4.nodes("is_l3device")
-            for i in n.physical_interfaces 
+            for i in n.physical_interfaces
             if i.is_bound] # don't include unbound interfaces
     all_int_ips = [i.ip_address for i in all_ints]
 
@@ -54,7 +57,7 @@ def validate_ipv4(anm):
         tests_passed = False
         duplicates = duplicate_items(all_int_ips)
         duplicate_ips = set(duplicate_items(all_int_ips))
-        duplicate_ints = [n for n in all_ints 
+        duplicate_ints = [n for n in all_ints
                 if n.ip_address in duplicate_ips]
         duplicates = ", ".join("%s: %s" % (i.node, i.ip_address)
             for i in duplicate_ints)
@@ -79,8 +82,8 @@ def validate_ipv4(anm):
                     if i.ip_address not in i.subnet]
         if len(ip_subnet_mismatches):
             tests_passed = False
-            mismatches = ", ".join("%s not in %s on %s" % 
-                    (i.ip_address, i.subnet, i.node) 
+            mismatches = ", ".join("%s not in %s on %s" %
+                    (i.ip_address, i.subnet, i.node)
                     for i in ip_subnet_mismatches)
             log.warning("Mismatched IP subnets for %s: %s" %
                     (cd, mismatches))
@@ -94,7 +97,7 @@ def validate_ipv4(anm):
         else:
             tests_passed = False
             duplicate_ips = set(duplicate_items(neigh_int_ips))
-            duplicate_ints = [n for n in neigh_ints 
+            duplicate_ints = [n for n in neigh_ints
                     if n.ip_address in duplicate_ips]
             duplicates = ", ".join("%s: %s" % (i.node, i.ip_address)
                     for i in duplicate_ints)
