@@ -21,18 +21,18 @@ def three_tier_ibgp_corner_cases(rtrs):
                     l1_rtrs = [r for r in l2d if r.ibgp_level == 1]
                     l3_rtrs = [r for r in l3d if r.ibgp_level == 3]
                     if not(len(l1_rtrs) and len(l3_rtrs)):
-                        break  # no routers to connect
                         log.debug("Cluster (%s, %s) has no level 2 iBGP routers."
                           "Connecting l1 routers (%s) to l3 routers (%s)"
                           % (l3_cluster, l2_cluster, l1_rtrs, l3_rtrs))
+                        break  # no routers to connect
 
                     l1_l3_up_links = [(s, t) for s in l1_rtrs for t in l3_rtrs]
                     up_links += l1_l3_up_links
                     down_links += [(t, s) for (s, t) in l1_l3_up_links]
                 else:
                     over_links += [(s, t) for s in l2d for t in l2d if s != t]
-                    log.debug("Cluster (%s, %s) has no level 2 or 3 iBGP routers."
-                        "Connecting l1 routers (%s) in full-mesh"
+                    log.debug("Cluster (%s, %s) has no level 2 or 3 "
+                        "iBGP routers. Connecting l1 routers (%s) in full-mesh"
                         % (l3_cluster, l2_cluster, l2d))
             else:
                 l1_rtrs = [r for r in l2d if r.ibgp_level == 1]
