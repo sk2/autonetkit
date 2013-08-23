@@ -14,7 +14,6 @@ def build_ospf(anm):
     Not-allowed:
     x -> x (x != y != 0)
 
-    #TODO: build check that verifies these rules
     """
     import netaddr
     g_in = anm['input']
@@ -35,7 +34,8 @@ def build_ospf(anm):
     g_ospf.add_edges_from(g_in.edges(), retain=['edge_id'])
 
     ank_utils.copy_attr_from(g_in, g_ospf, "ospf_area", dst_attr="area")
-    ank_utils.copy_edge_attr_from(g_in, g_ospf, "ospf_cost", dst_attr="cost",  type=float)
+    ank_utils.copy_edge_attr_from(g_in, g_ospf, "ospf_cost",
+        dst_attr="cost",  type=float)
 
     ank_utils.aggregate_nodes(g_ospf, g_ospf.nodes("is_switch"),
                               retain="edge_id")
@@ -55,7 +55,6 @@ def build_ospf(anm):
         # string comparison as hasn't yet been cast to IPAddress
         default_area = area_zero_ip
 
-    #TODO: use interfaces throughout, rather than edges
 
     for router in g_ospf:
         if not router.area or router.area == "None":
@@ -72,6 +71,7 @@ def build_ospf(anm):
                                 " of %s" % (router.area, router, default_area))
                     router.area = default_area
 
+    #TODO: use interfaces throughout, rather than edges
     for router in g_ospf:
 # and set area on interface
         for edge in router.edges():
@@ -170,14 +170,17 @@ def build_eigrp(anm):
         log.debug("No EIGRP nodes")
         return
     g_ipv4 = anm['ipv4']
-    g_eigrp.add_nodes_from(g_in.nodes("is_router", igp = "eigrp"), retain=['asn'])
-    g_eigrp.add_nodes_from(g_in.nodes("is_server", igp = "eigrp"), retain=['asn'])
+    g_eigrp.add_nodes_from(g_in.nodes("is_router",
+        igp = "eigrp"), retain=['asn'])
+    g_eigrp.add_nodes_from(g_in.nodes("is_server",
+        igp = "eigrp"), retain=['asn'])
     g_eigrp.add_nodes_from(g_in.nodes("is_switch"), retain=['asn'])
     g_eigrp.add_edges_from(g_in.edges(), retain=['edge_id'])
 # Merge and explode switches
     ank_utils.aggregate_nodes(g_eigrp, g_eigrp.nodes("is_switch"),
                               retain="edge_id")
-    exploded_edges = ank_utils.explode_nodes(g_eigrp, g_eigrp.nodes("is_switch"),
+    exploded_edges = ank_utils.explode_nodes(g_eigrp,
+        g_eigrp.nodes("is_switch"),
                             retain="edge_id")
     for edge in exploded_edges:
         edge.multipoint = True
