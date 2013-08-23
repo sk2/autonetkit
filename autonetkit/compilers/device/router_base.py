@@ -77,13 +77,17 @@ class RouterCompiler(object):
         node.ip.use_ipv6 = phy_node.use_ipv6 or False
         if not (node.ip.use_ipv4 and node.ip.use_ipv6):
             log.debug("Neither IPv4 nor IPv6 specified for %s, using IPv4" % node)
-            node.ip.use_ipv4 = True
+            #node.ip.use_ipv4 = True
 
         node.label = naming.network_hostname(phy_node)
         node.input_label = phy_node.id
-        node.loopback = ipv4_node.loopback
-        node.loopback_subnet = netaddr.IPNetwork(node.loopback)
-        node.loopback_subnet.prefixlen = 32
+        if node.ip.use_ipv4:
+            node.loopback = ipv4_node.loopback
+            node.loopback_subnet = netaddr.IPNetwork(node.loopback)
+            node.loopback_subnet.prefixlen = 32
+
+        if self.anm['phy'].data.enable_routing:
+            node.router_id = ipv4_node.loopback # applies even if ipv4 disabled, used for eg eigrp, bgp, ...
 
         self.interfaces(node)
         if self.anm.has_overlay("ospf") and node in self.anm['ospf']:
