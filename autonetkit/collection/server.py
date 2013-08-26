@@ -165,7 +165,7 @@ def worker():
           print "Sent to zmq"
 
 def main():
-  num_worker_threads = 1
+  num_worker_threads = 5
   try:
     num_worker_threads = int(sys.argv[1])
   except IndexError:
