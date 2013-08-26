@@ -476,7 +476,9 @@ class OverlayNode(object):
 
     def dump(self):
         """Dump attributes of this node"""
-        return str(self._graph.node[self.node_id])
+        data = dict(self._graph.node[self.node_id])
+        del  data["_interfaces"]
+        return str(data)
 
     def edges(self, *args, **kwargs):
         """Edges to/from this node"""
