@@ -100,6 +100,27 @@ def reverse_map_routing(rev_map, data):
                 result.append((protocol, cd, iface.node))
     return result
 
+def extract_node_path_info(header, parsed_data, mapped_data, exclude_keys = None):
+    if len(parsed_data) != len(mapped_data):
+        log.warning("Parsed data different length to mapped data, not extracting node data")
+
+    if exclude_keys:
+        exclude_keys = set(exclude_keys)
+    else:
+        exclude_keys = set() # empty set for simpler test logic
+
+    retval = []
+    for index, hop in enumerate(mapped_data):
+        node_vals = parsed_data[index] # TextFSM output for this hop
+        node_data = dict(zip(header, node_vals))
+
+        filtered_data = {k: v for k, v in node_data.items()
+        if len(v) and k not in exclude_keys}
+        filtered_data['host'] = str(hop.id)
+        retval.append(filtered_data)
+
+    return retval
+
 def reverse_map_path(rev_map, path, interfaces = False):
     """Returns list of nodes in path
     interfaces selects whether to return only nodes, or interfaces
