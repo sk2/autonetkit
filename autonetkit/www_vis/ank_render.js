@@ -18,8 +18,7 @@ var g_node_labels = chart.append("svg:g")
 .attr("id", "g_node_labels");
 
 
-var g_path_node_annotation_backings = chart.append("svg:g")
-.attr("id", "g_path_node_annotation_backings");
+
 
 var g_link_labels = chart.append("svg:g")
 .attr("id", "g_link_labels");
@@ -29,6 +28,9 @@ var g_traces = chart.append("svg:g")
 
 var g_highlights = chart.append("svg:g")
 .attr("id", "g_highlights");
+
+var g_path_node_annotation_backings = chart.append("svg:g")
+.attr("id", "g_path_node_annotation_backings");
 
 var g_path_node_annotations = chart.append("svg:g")
 .attr("id", "g_path_node_annotations");
