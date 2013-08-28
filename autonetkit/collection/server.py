@@ -149,6 +149,12 @@ def worker():
         hostname = ""
         success = False
         result = str(e)
+        if "No route to host" in e:
+          # simpler message
+          result = "No route to host"
+        if "pexpect.TIMEOUT" in str(e):
+          #TODO: test for timeout exception directly
+          result = "Pexpect timeout"
        finally:
         try:
           data = str(data)
