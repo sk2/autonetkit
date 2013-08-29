@@ -285,24 +285,38 @@ router bgp ${node.asn}
   neighbor ${neigh.dst_int_ip} description eBGP to ${neigh.neighbor}
   neighbor ${neigh.dst_int_ip} send-community
   neighbor ${neigh.dst_int_ip} next-hop-self
-% endfor
+% if loop.last:
 !
+% endif
+% endfor
 ## VRFs
 % for vrf in node.bgp.vrfs:
 % if loop.first:
 ! vrfs
 % endif
-address-family ipv4 vrf ${vrf.vrf}
+  address-family ipv4 vrf ${vrf.vrf}
 % for neigh in vrf.vrf_ibgp_neighbors:
-    % if loop.first:
+  % if loop.first:
   % endif
   % if neigh['use_ipv4']:
-  neighbor ${neigh['dst_int_ip']} remote-as ${neigh['asn']}
-  neighbor ${neigh['dst_int_ip']} activate
-  neighbor ${neigh['dst_int_ip']} as-override
+    neighbor ${neigh['dst_int_ip']} remote-as ${neigh['asn']}
+    neighbor ${neigh['dst_int_ip']} activate
+    neighbor ${neigh['dst_int_ip']} as-override
+    !
   %endif
+% endfor
+% for neigh in vrf.vrf_ebgp_neighbors:
+  % if loop.first:
+  % endif
+  % if neigh['use_ipv4']:
+    neighbor ${neigh['dst_int_ip']} remote-as ${neigh['asn']}
+    neighbor ${neigh['dst_int_ip']} activate
+    neighbor ${neigh['dst_int_ip']} as-override
+    !
+  %endif
+% endfor
+  exit-address-family
   !
-  % endfor
 %endfor
 !
 end
