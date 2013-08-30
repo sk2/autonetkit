@@ -116,7 +116,7 @@ def measure(anm = None, nidb = None, hosts = None, command = None, server = None
 
 def get_uuid(anm):
     try:
-        return anm['phy'].data['uuid']
+        return config.settings['Http Post']['uuid']
     except KeyError:
         log.warning("UUID not set, returning singleuser uuid")
         return "singleuser"

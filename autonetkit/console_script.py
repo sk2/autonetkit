@@ -132,6 +132,7 @@ def parse_options(argument_string = None):
     parser.add_argument('--webserver', action="store_true", default=False, help="Webserver")
     parser.add_argument('--grid', type=int, help="Grid Size (n * n)")
     parser.add_argument('--target', choices=['netkit', 'cisco'], default = None)
+    parser.add_argument('--vis_uuid', default=None, help="UUID for multi-user visualisation")
     if argument_string:
         arguments = parser.parse_args(argument_string.split())
     else:
@@ -141,6 +142,9 @@ def parse_options(argument_string = None):
 
 def main(options):
     settings = config.settings
+
+    if options.vis_uuid:
+        config.settings['Http Post']['uuid'] = options.vis_uuid
 
     log.info("AutoNetkit %s" % ANK_VERSION)
 
@@ -379,8 +383,7 @@ def collect_sh_ip_route(anm, nidb, start_node = None):
             })
 
     autonetkit.update_http(anm, nidb)
-    uuid = ank_messaging.get_uuid(anm)
-    ank_messaging.highlight([], [], processed_with_results, uuid)
+    ank_messaging.highlight([], [], processed_with_results)
 
 
 def measure_network(anm, nidb):

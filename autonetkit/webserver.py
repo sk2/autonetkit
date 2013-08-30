@@ -127,7 +127,7 @@ class MyWebSocketHandler(websocket.WebSocketHandler):
 
 class AnkAccessor():
     """ Used to store published topologies"""
-    def __init__(self, maxlen = 5):
+    def __init__(self, maxlen = 25):
         from collections import deque
         self.anm_index = {}
         self.uuid_list = deque(maxlen = maxlen)  # use for circular buffer
@@ -259,7 +259,7 @@ def main():
             "static_url_prefix": "unused", # otherwise content with folder /static won't get mapped
             }
 
-    singleuser_mode = True # default for now
+    singleuser_mode = False # default for now
     if arguments.multi_user:
         singleuser_mode = False
 
