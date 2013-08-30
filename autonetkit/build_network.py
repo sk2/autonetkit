@@ -441,13 +441,6 @@ def build_phy(anm):
     if g_phy.data.enable_routing is None:
         g_in.data.enable_routing = True # default if not set
 
-    # apply uuid if not set
-    g_phy.data.uuid = g_phy.data.uuid
-    if not g_phy.data.uuid:
-        import uuid
-        graph_uuid = uuid.uuid4().hex[:10]
-        g_phy.data.uuid = graph_uuid
-
     g_phy.add_nodes_from(g_in, retain=['label', 'update', 'device_type', 'asn',
         'specified_int_names',
         'device_subtype', 'platform', 'host', 'syntax'])
