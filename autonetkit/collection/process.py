@@ -100,6 +100,19 @@ def reverse_map_routing(rev_map, data):
                 result.append((protocol, cd, iface.node))
     return result
 
+
+def reverse_map_address(rev_map, address, interfaces = False):
+    if address in rev_map['infra_interfaces']:
+        iface = rev_map['infra_interfaces'][address]
+        if interfaces:
+            return iface
+        else:
+            return iface.node
+    elif address in rev_map['loopbacks']:
+        node = rev_map['loopbacks'][address]
+        return node
+
+
 def extract_node_path_info(header, parsed_data, mapped_data, exclude_keys = None):
     if len(parsed_data) != len(mapped_data):
         log.warning("Parsed data different length to mapped data, not extracting node data")
