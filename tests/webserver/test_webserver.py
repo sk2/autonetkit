@@ -17,7 +17,6 @@ input_graph = graphml.load_graphml(input_file)
 import autonetkit.build_network as build_network
 anm = build_network.initialise(input_graph)
 anm = build_network.apply_design_rules(anm)
-anm['phy'].data.uuid = "my_uuid"
 
 
 
