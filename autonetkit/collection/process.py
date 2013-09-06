@@ -183,6 +183,16 @@ def substitute_ips(data, rev_map, interfaces = False):
         return str(node)
       return match # no match, return the raw IP
 
+    def replace_loopbacks_no_mask(match):
+      #TODO: refactor
+      match = match.group()
+      # strip off the /32
+      loopback_ip = match
+      if loopback_ip in rev_map['loopbacks']:
+        node = rev_map['loopbacks'][loopback_ip]
+        return str(node)
+      return match # no match, return the raw IP
+
     def replace_subnet(match):
       match = match.group()
 
@@ -194,5 +204,7 @@ def substitute_ips(data, rev_map, interfaces = False):
     # do loopbacks first
     data = re.sub(re_ip_loopback, replace_loopbacks, data)
     data = re.sub(re_ip_address, replace_ip, data)
+    # try for ip addresses in loopback
+    data = re.sub(re_ip_address, replace_loopbacks_no_mask, data)
     # and for subnets ie ip/netmask
     return re.sub(re_ip_subnet, replace_subnet, data)
