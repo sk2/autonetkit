@@ -141,6 +141,10 @@ def load_graphml(input_data):
             if key not in graph.node[node]:
                 graph.node[node][key] = val
 
+    # set address family
+    graph.graph["address_family"] = "v4"
+    graph.graph["enable_routing"] = True
+
     # map lat/lon from zoo to crude x/y approximation
     if graph.graph.get('Creator') == "Topology Zoo Toolset":
         all_lat = [graph.node[n].get('Latitude') for n in graph
