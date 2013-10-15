@@ -200,9 +200,9 @@ def jsonify_anm_with_graphics(anm, nidb = None):
     anm_json = {}
     test_anm_data = {}
     graphics_graph = anm["graphics"]._graph.copy()
+    phy_graph = anm["phy"]._graph  # to access ASNs
     for overlay_id in anm.overlays():
         OverlayGraph = anm[overlay_id]._graph.copy()
-
 
 #TODO: only update, don't over write if already set
         for n in OverlayGraph:
@@ -215,6 +215,10 @@ def jsonify_anm_with_graphics(anm, nidb = None):
                 'device_subtype': graphics_graph.node[n].get('device_subtype'),
                 'pop': graphics_graph.node[n].get('pop'),
                 })
+
+            if n in phy_graph:
+                # use ASN from physical graph
+                OverlayGraph.node[n]['asn'] = phy_graph.node[n]['asn']
 
             try:
                 del OverlayGraph.node[n]['id']
