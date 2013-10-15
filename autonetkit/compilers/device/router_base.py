@@ -1,17 +1,19 @@
 from autonetkit.compiler import sort_sessions
+from autonetkit.compilers.device.device_base import DeviceCompiler
+
 import autonetkit.plugins.naming as naming
 import autonetkit.log as log
 import netaddr
 from autonetkit.ank import sn_preflen_to_network
 
-class RouterCompiler(object):
+class RouterCompiler(DeviceCompiler):
     """Base router compiler"""
     lo_interface = "lo0"
     lo_interface_prefix = "lo"
 # and set per platform
 
     def ibgp_session_data(self, session, ip_version):
-        # Don't make staticmethod as may want to extend (e.g. in IOS compiler for vpnv4)
+        # Don't make staticmethod as may want to extend (eDeviceCompiler.g. in IOS compiler for vpnv4)
         node = session.src
         neigh = session.dst
 
@@ -66,8 +68,7 @@ class RouterCompiler(object):
 
     def __init__(self, nidb, anm):
         """Base Router compiler"""
-        self.nidb = nidb
-        self.anm = anm
+        super(RouterCompiler, self).__init__(nidb, anm)
 
     def compile(self, node):
         phy_node = self.anm['phy'].node(node)
@@ -173,6 +174,8 @@ class RouterCompiler(object):
         """
         g_ospf = self.anm['ospf']
         g_ipv4 = self.anm['ipv4']
+
+        node.ospf.ipv4_mpls_te = False # default, inherited enable if necessary
 
         node.ospf.loopback_area = g_ospf.node(node).area
 
@@ -316,6 +319,8 @@ class RouterCompiler(object):
 
     def isis(self, node):
         g_isis = self.anm['isis']
+
+        node.isis.ipv4_mpls_te = False # default, inherited enable if necessary
 
         for interface in node.physical_interfaces:
             if interface.exclude_igp:
