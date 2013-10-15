@@ -5,4 +5,5 @@ include autonetkit/www_vis/font/*.*
 recursive-include autonetkit/textfsm *
 include autonetkit/templates/*.mako
 recursive-include autonetkit/templates/quagga *
+recursive-include autonetkit/templates/linux *
 include autonetkit/config/configspec.cfg
