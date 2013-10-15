@@ -117,8 +117,6 @@ def check_server_asns(anm):
     """
     g_phy = anm['phy']
 
-    print g_phy.anm.overlay_nx_graphs['phy']
-
     for server in g_phy.nodes('is_server'):
         l3_neighbors = list(server['l3_conn'].neighbors())
         l3_neighbor_asns = set(n.asn for n in l3_neighbors)
