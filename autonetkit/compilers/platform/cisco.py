@@ -138,6 +138,20 @@ class CiscoCompiler(PlatformCompiler):
                 nidb_node.ip.use_ipv6 = phy_node.use_ipv6
                 phy_int = phy_node.interface(interface)
 
+                #TODO: clean up interface handling
+                numeric_int_ids = self.numeric_interface_ids()
+                for interface in nidb_node.physical_interfaces:
+                    phy_numeric_id = phy_node.interface(interface).numeric_id
+                    if phy_numeric_id is None:
+                        #TODO: remove numeric ID code
+                        interface.numeric_id = numeric_int_ids.next()
+                    else:
+                        interface.numeric_id = int(phy_numeric_id)
+
+                    phy_specified_id = phy_node.interface(interface).specified_id
+                    if phy_specified_id is not None:
+                        interface.id = phy_specified_id
+
                 #TODO: make this part of the base device compiler, which server/router inherits
                 if nidb_node.ip.use_ipv4:
                     ipv4_int = phy_int['ipv4']
