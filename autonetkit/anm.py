@@ -432,6 +432,16 @@ class OverlayNode(object):
                         log.warning(message)
                     return
 
+    @asn.setter
+    def asn(self, value):
+        # TODO: double check this logic
+        try:
+            self.anm.overlay_nx_graphs['phy'].node[self.node_id]['asn'] = value
+            print "set asn to", value, "check", self.asn
+        except KeyError:
+            # set ASN directly on the node, eg for collision domains
+            self._graph.node[self.node_id]['asn'] = value
+
     @property
     def id(self):
         """Returns node id"""
@@ -513,6 +523,14 @@ class OverlayNode(object):
     def __setattr__(self, key, val):
         """Sets node property
         This is useful for accesing attributes passed through from graphml"""
+        #TODO: look at mapping the object __dict__ straight to the graph.node[self.node_id]
+        #TODO: fix wrt using @x.setter won't work due to following:
+        # as per http://docs.python.org/2/reference/datamodel.html#customizing-attribute-access
+
+        #TODO: fix workaround for asn
+        if key == "asn":
+            object.__setattr__(self, "asn", val) # calls @asn.setter
+
         try:
             self._graph.node[self.node_id][key] = val
         except KeyError:
