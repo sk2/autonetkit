@@ -171,8 +171,15 @@ def build_ebgp(anm):
     log.debug("aggregated eBGP switches are %s" % ebgp_switches)
     exploded_edges = ank_utils.explode_nodes(g_ebgp, ebgp_switches,
             retain="edge_id")
+    same_asn_edges = []
     for edge in exploded_edges:
-        edge.multipoint = True
+        if edge.src.asn == edge.dst.asn:
+            same_asn_edges.append(edge)
+        else:
+            edge.multipoint = True
+    """TODO: remove up to here once compiler updated"""
+
+    g_ebgp.remove_edges_from(same_asn_edges)
 
 def build_bgp(anm):
     """Build iBGP end eBGP overlays"""
@@ -206,9 +213,16 @@ def build_bgp(anm):
     log.debug("aggregated eBGP switches are %s" % ebgp_switches)
     exploded_edges = ank_utils.explode_nodes(g_bgp, ebgp_switches,
             retain="edge_id")
+
+    same_asn_edges = []
     for edge in exploded_edges:
-        edge.multipoint = True
+        if edge.src.asn == edge.dst.asn:
+            same_asn_edges.append(edge)
+        else:
+            edge.multipoint = True
     """TODO: remove up to here once compiler updated"""
+
+    g_bgp.remove_edges_from(same_asn_edges)
 
 # now iBGP
     ank_utils.copy_attr_from(g_in, g_bgp, "ibgp_level")
