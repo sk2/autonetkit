@@ -10,8 +10,8 @@ boot-start-marker
 boot-end-marker
 !
 % if node.include_csr:
-ip routing
-license feature csr
+license accept end user agreement
+license boot level premium
 !
 !
 % endif
@@ -20,7 +20,9 @@ no aaa new-model
 !
 ip cef
 ipv6 unicast-routing
-ipv6 cef
+% if node.mpls_te:
+mpls traffic-eng tunnels
+%endif
 !
 !
 service timestamps debug datetime msec
@@ -136,12 +138,22 @@ interface ${interface.id}
   %endif
   % endif
   % if interface.physical:
+  % if not node.exclude_phy_int_auto_speed_duplex:
+  ## don't include auto duplex and speed on platforms eg CSR1000v
+  ## include by default
   duplex auto
   speed auto
+  % endif
   no shutdown
   %endif
   % if interface.use_mpls:
   mpls ip
+  %endif
+  % if interface.te_tunnels:
+  mpls traffic-eng tunnels
+  %endif
+  % if interface.rsvp_bandwidth_percent:
+  ip rsvp bandwidth percent ${interface.rsvp_bandwidth_percent}
   %endif
 !
 % endfor
@@ -150,6 +162,10 @@ interface ${interface.id}
 % if node.ospf:
 % if node.ospf.use_ipv4:
 router ospf ${node.ospf.process_id}
+  %if node.ospf.ipv4_mpls_te:
+  mpls traffic-eng router-id ${node.ospf.mpls_te_router_id}
+  mpls traffic-eng area ${node.ospf.loopback_area}
+  % endif
 # Loopback
   network ${node.loopback} 0.0.0.0 area ${node.ospf.loopback_area}
   log-adjacency-changes
@@ -169,6 +185,10 @@ router ospfv3 ${node.ospf.process_id}
 ## ISIS
 % if node.isis:
 router isis ${node.isis.process_id}
+  %if node.isis.ipv4_mpls_te:
+  mpls traffic-eng router-id ${node.isis.mpls_te_router_id}
+  mpls traffic-eng level-2
+  % endif
   net ${node.isis.net}
   metric-style wide
 % if node.isis.use_ipv6:
