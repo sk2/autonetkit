@@ -127,6 +127,8 @@ class CiscoCompiler(PlatformCompiler):
                 if phy_specified_id is not None:
                     interface.id = phy_specified_id
 
+        from autonetkit.compilers.device.ubuntu import UbuntuCompiler
+        ubuntu_compiler = UbuntuCompiler(self.nidb, self.anm)
         for phy_node in g_phy.nodes('is_server', host=self.host):
             #TODO: look at server syntax also, same as for routers
             nidb_node = self.nidb.node(phy_node)
@@ -155,6 +157,18 @@ class CiscoCompiler(PlatformCompiler):
                         interface.ipv6_subnet = ipv6_int.subnet
                         interface.ipv6_address = sn_preflen_to_network(ipv6_int.ip_address,
                                 interface.ipv6_subnet.prefixlen)
+
+                    # render route config
+            nidb_node = self.nidb.node(phy_node)
+            ubuntu_compiler.compile(nidb_node)
+
+            nidb_node.render.template = os.path.join("templates", "linux", "static_route.mako")
+            if to_memory:
+                nidb_node.render.to_memory = True
+            else:
+                nidb_node.render.dst_folder = dst_folder
+                nidb_node.render.dst_file = "%s.conf" % naming.network_hostname(
+                    phy_node)
 
 
         ios_compiler = IosClassicCompiler(self.nidb, self.anm)
