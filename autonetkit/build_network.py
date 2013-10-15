@@ -11,6 +11,8 @@ import networkx as nx
 import autonetkit.ank as ank_utils
 import itertools
 
+#TODO: revisit phy_neighbors for eg ASN and use l3_conn instead
+
 #TODO: remove retain edge_id once removed from compiler
 #TODO: note that build network now assumes input graph has interface mappings on nodes/edges
 
@@ -108,6 +110,30 @@ def initialise(input_graph):
     autonetkit.update_http(anm)
     return anm
 
+def check_server_asns(anm):
+    """Checks that servers have appropriate ASN allocated.
+    Warns and auto-corrects servers which are connected to routers of a difference AS.
+    #TODO: provide manual over-ride for this auto-correct.
+    """
+    g_phy = anm['phy']
+
+    print g_phy.anm.overlay_nx_graphs['phy']
+
+    for server in g_phy.nodes('is_server'):
+        l3_neighbors = list(server['l3_conn'].neighbors())
+        l3_neighbor_asns = set(n.asn for n in l3_neighbors)
+        if server.asn not in l3_neighbor_asns:
+            neighs_with_asn = ["%s: AS %s" % (n, n.asn)
+                for n in l3_neighbors] # tuples for warning message
+            log.warning("Server %s does not belong to same ASN as neighbors %s" % (server, neighs_with_asn))
+
+            if len(l3_neighbors) == 1:
+                # single ASN of neighbor -> auto correct
+                neigh_asn = l3_neighbor_asns.pop()
+                log.warning("Updating server %s AS from %s to %s" % (server, server.asn, neigh_asn))
+                server.asn = neigh_asn
+
+
 def apply_design_rules(anm):
     """Applies appropriate design rules to ANM"""
     g_in = anm['input']
@@ -118,6 +144,9 @@ def apply_design_rules(anm):
     import autonetkit
     autonetkit.update_http(anm)
     build_l3_connectivity(anm)
+
+    check_server_asns(anm)
+    autonetkit.update_http(anm)
 
     build_vrf(anm) # need to do before to add loopbacks before ip allocations
     from autonetkit.design.ip import build_ip, build_ipv4,build_ipv6
