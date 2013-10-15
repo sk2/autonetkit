@@ -48,7 +48,12 @@ class UbuntuCompiler(ServerCompiler):
 
         # IGP advertised infrastructure pool from same AS
         for infra_route in self.anm['ipv4'].data['infra_blocks'][phy_node.asn]:
-            print "infra", infra_route
+            node.static_routes_v4.append({
+                    "network": infra_route,
+                    "gw": gateway_ipv4,
+                    "interface": server_interface_id,
+                    "description": "Route to infra subnet in local AS %s via %s" % (phy_node.asn, gateway),
+                    })
 
         # eBGP advertised loopbacks in all (same + other) ASes
         for asn, asn_routes in self.anm['ipv4'].data['loopback_blocks'].items():
@@ -57,7 +62,7 @@ class UbuntuCompiler(ServerCompiler):
                     "network": asn_route,
                     "gw": gateway_ipv4,
                     "interface": server_interface_id,
-                    "description": "Route to loopback subnet in AS %s" % asn,
+                    "description": "Route to loopback subnet in AS %s via %s" % (asn, gateway),
                     })
 
 
