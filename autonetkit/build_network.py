@@ -178,6 +178,9 @@ def apply_design_rules(anm):
     autonetkit.design.bgp.build_bgp(anm)
     autonetkit.update_http(anm)
 
+    import autonetkit.design.mpls
+    autonetkit.design.mpls.mpls_te(anm)
+
 # post-processing
     if anm['phy'].data.enable_routing:
         mark_ebgp_vrf(anm)
