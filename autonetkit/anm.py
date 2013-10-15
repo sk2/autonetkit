@@ -437,7 +437,6 @@ class OverlayNode(object):
         # TODO: double check this logic
         try:
             self.anm.overlay_nx_graphs['phy'].node[self.node_id]['asn'] = value
-            print "set asn to", value, "check", self.asn
         except KeyError:
             # set ASN directly on the node, eg for collision domains
             self._graph.node[self.node_id]['asn'] = value
@@ -468,7 +467,6 @@ class OverlayNode(object):
                     " for neighbor_interfaces")
 
         return iter(edge.dst_int for edge in self.edges())
-
 
     @property
     def label(self):
