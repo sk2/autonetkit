@@ -160,7 +160,6 @@ def apply_design_rules(anm):
         log.info("IP addressing disabled, disabling routing protocol configuration")
         anm['phy'].data.enable_routing = False
 
-
     if address_family == "None":
         log.info("IP addressing disabled, skipping IPv4")
         anm.add_overlay("ipv4") # create empty so rest of code follows through
