@@ -73,6 +73,24 @@ class IosBaseCompiler(RouterCompiler):
         for interface in node.physical_interfaces:
             interface.use_cdp = node.use_cdp # use node value
 
+    def mpls_te(self, node):
+        g_mpls_te = self.anm['mpls_te']
+
+        if node not in g_mpls_te:
+            return # no mpls te configured
+
+        node.mpls.oam = True
+        node.mpls_te = True
+
+        if node.isis:
+            node.isis.ipv4_mpls_te = True
+            node.isis.mpls_te_router_id = self.lo_interface
+
+        if node.ospf:
+            node.ospf.ipv4_mpls_te = True
+            node.ospf.mpls_te_router_id = self.lo_interface
+
+
     def bgp(self, node):
         node.bgp.lo_interface = self.lo_interface
         super(IosBaseCompiler, self).bgp(node)
@@ -285,6 +303,9 @@ class IosClassicCompiler(IosBaseCompiler):
 
     def compile(self, node):
         super(IosClassicCompiler, self).compile(node)
+
+        self.mpls_te(node)
+
         phy_node = self.anm['phy'].node(node)
         if phy_node.device_subtype == "vios":
             # only copy across for certain reference platforms
@@ -297,6 +318,7 @@ class IosClassicCompiler(IosBaseCompiler):
             node.include_csr = True
             # Set secret password to "cisco"
             node.enable_secret = "tnhtc92DXBhelxjYk8LWJrPV36S2i4ntXrpb4RFmfqY"
+            node.exclude_phy_int_auto_speed_duplex = True
 
     def ospf(self, node):
         super(IosClassicCompiler, self).ospf(node)
@@ -310,6 +332,20 @@ class IosClassicCompiler(IosBaseCompiler):
                         'use_ipv6': node.ip.use_ipv6,
                         'multipoint': False,
                         } #TODO: add wrapper for this
+
+    def mpls_te(self, node):
+        super(IosClassicCompiler, self).mpls_te(node)
+
+        g_mpls_te = self.anm['mpls_te']
+        if node not in g_mpls_te:
+            return # no mpls te configured
+
+        mpls_te_node = g_mpls_te.node(node)
+
+        for interface in mpls_te_node.physical_interfaces:
+            nidb_interface = self.nidb.interface(interface)
+            nidb_interface.te_tunnels = True
+            nidb_interface.rsvp_bandwidth_percent = 100
 
     def bgp(self, node):
         super(IosClassicCompiler, self).bgp(node)
@@ -342,8 +378,36 @@ class IosClassicCompiler(IosBaseCompiler):
         node.bgp.vpnv4_neighbors = vpnv4_neighbors
 
 class IosXrCompiler(IosBaseCompiler):
+    def compile(self, node):
+        super(IosXrCompiler, self).compile(node)
+        self.mpls_te(node)
+
+
+    def mpls_te(self, node):
+        super(IosXrCompiler, self).mpls_te(node)
+
+        g_mpls_te = self.anm['mpls_te']
+        if node not in g_mpls_te:
+            return # no mpls te configured
+
+        rsvp_interfaces = []
+        mpls_te_interfaces = []
+        mpls_te_node = g_mpls_te.node(node)
+
+        for interface in mpls_te_node.physical_interfaces:
+            nidb_interface = self.nidb.interface(interface)
+            rsvp_interfaces.append({
+                'id': nidb_interface.id,
+                "bandwidth_percent": 100})
+
+            mpls_te_interfaces.append(nidb_interface.id)
+
+        node.rsvp.interfaces = rsvp_interfaces
+        node.mpls.te_interfaces   = mpls_te_interfaces
+
     def ospf(self, node):
         super(IosXrCompiler, self).ospf(node)
+
         g_ospf = self.anm['ospf']
         interfaces_by_area = defaultdict(list)
 
