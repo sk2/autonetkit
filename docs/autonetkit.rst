@@ -4,7 +4,7 @@ autonetkit Package
 :mod:`autonetkit` Package
 -------------------------
 
-.. automodule:: autonetkit
+.. automodule:: autonetkit.__init__
     :members:
     :undoc-members:
     :show-inheritance:
@@ -161,6 +161,7 @@ Subpackages
     autonetkit.collection
     autonetkit.compilers
     autonetkit.deploy
+    autonetkit.design
     autonetkit.load
     autonetkit.plugins
 
