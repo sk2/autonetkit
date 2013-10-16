@@ -1,6 +1,30 @@
 collection Package
 ==================
 
+:mod:`example` Module
+---------------------
+
+.. automodule:: autonetkit.collection.example
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`example2` Module
+----------------------
+
+.. automodule:: autonetkit.collection.example2
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`example3_modify` Module
+-----------------------------
+
+.. automodule:: autonetkit.collection.example3_modify
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :mod:`process` Module
 ---------------------
 
