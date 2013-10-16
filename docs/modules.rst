@@ -5,5 +5,3 @@ autonetkit
    :maxdepth: 4
 
    autonetkit
-   setup
-   test
