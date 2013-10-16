@@ -1196,9 +1196,14 @@ function redraw() {
     if (group_size < 3) {
         range_group_size = 3; // for colorbrewer
     }
-    var fill = d3.scale.quantize()
-    .domain([0, group_size])
-    .range(colorbrewer.RdYlBu[range_group_size]);
+    if (group_size > 10) {
+        var fill = d3.scale.category20b();
+    }
+    else {
+        var fill = d3.scale.quantize()
+        .domain([0, group_size])
+        .range(colorbrewer.RdYlBu[range_group_size]);
+    }
     var groupFill = function(d, i) { return fill(i); };
 
     //TODO: make group path change/exit with node data
