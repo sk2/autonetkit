@@ -311,6 +311,7 @@ class IosClassicCompiler(IosBaseCompiler):
             # only copy across for certain reference platforms
             node.use_onepk = phy_node.use_onepk
             node.no_service_config = True
+            node.ipv6_cef = True
 
         if phy_node.device_subtype == "CSR1000v":
             # only copy across for certain reference platforms
