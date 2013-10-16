@@ -20,6 +20,9 @@ no aaa new-model
 !
 ip cef
 ipv6 unicast-routing
+% if node.ipv6_cef:
+ipv6 cef
+%endif
 % if node.mpls_te:
 mpls traffic-eng tunnels
 %endif
