@@ -524,6 +524,8 @@ def build_l3_connectivity(anm):
                             retain="edge_id")
     for edge in exploded_edges:
         edge.multipoint = True
+        edge.src_int.multipoint = True
+        edge.dst_int.multipoint = True
 
 def build_conn(anm):
     """Build connectivity overlay"""
