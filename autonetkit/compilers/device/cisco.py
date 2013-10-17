@@ -73,6 +73,9 @@ class IosBaseCompiler(RouterCompiler):
         for interface in node.physical_interfaces:
             interface.use_cdp = node.use_cdp # use node value
 
+    def mpls(self, node):
+        pass
+
     def mpls_te(self, node):
         g_mpls_te = self.anm['mpls_te']
 
@@ -345,6 +348,10 @@ class IosClassicCompiler(IosBaseCompiler):
 
         for interface in mpls_te_node.physical_interfaces:
             nidb_interface = self.nidb.interface(interface)
+            if not interface.is_bound:
+                log.debug("Not enable MPLS and RSVP for "
+                    "interface %s on %s "% (nidb_interface.id, node))
+                continue
             nidb_interface.te_tunnels = True
             nidb_interface.rsvp_bandwidth_percent = 100
 
