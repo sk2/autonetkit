@@ -5,7 +5,7 @@ def  mpls_te(anm):
     g_in = anm['input']
     g_phy = anm['phy']
     g_l3_conn = anm['l3_conn']
-    # add regardless, so allows quick check of node in anm['ospf'] in compilers
+    # add regardless, so allows quick check of node in anm['mpls_te'] in compilers
     g_mpls_te = anm.add_overlay("mpls_te")
     if not any(True for n in g_in if n.is_router and n.mpls_te_enabled):
         log.debug("No nodes with mpls_te_enabled set")
