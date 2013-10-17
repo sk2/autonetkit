@@ -127,9 +127,13 @@ def check_server_asns(anm):
 
             if len(l3_neighbors) == 1:
                 # single ASN of neighbor -> auto correct
-                neigh_asn = l3_neighbor_asns.pop()
-                log.warning("Updating server %s AS from %s to %s" % (server, server.asn, neigh_asn))
-                server.asn = neigh_asn
+                if server['input'].default_asn:
+                    neigh_asn = l3_neighbor_asns.pop()
+                    log.warning("Updating server %s AS from %s to %s" % (server, server.asn, neigh_asn))
+                    server.asn = neigh_asn
+                else:
+                    log.info("Server %s ASN %s explictly set by user, not auto-correcting" %
+                        (server, server.asn))
 
 
 def apply_design_rules(anm):
