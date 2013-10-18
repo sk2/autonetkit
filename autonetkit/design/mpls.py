@@ -22,3 +22,16 @@ def  mpls_te(anm):
 
     edges_to_add = set(g_l3_conn.edges()) - set(multipoint_edges)
     g_mpls_te.add_edges_from(edges_to_add)
+
+
+def mpls_oam(anm):
+    g_in = anm['input']
+    # create placeholder graph (may have been created in other steps)
+    if anm.has_overlay("mpls_oam"):
+        g_mpls_oam = anm['mpls_oam']
+    else:
+        g_mpls_oam = anm.add_overlay("mpls_oam")
+
+    use_mpls_oam = g_in.data.use_mpls_oam
+    if use_mpls_oam:
+        g_mpls_oam.add_nodes_from(g_in.routers())
