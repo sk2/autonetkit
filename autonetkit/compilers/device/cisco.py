@@ -73,8 +73,13 @@ class IosBaseCompiler(RouterCompiler):
         for interface in node.physical_interfaces:
             interface.use_cdp = node.use_cdp # use node value
 
-    def mpls(self, node):
-        pass
+    def mpls_oam(self, node):
+        g_mpls_oam = self.anm['mpls_oam']
+        if node not in g_mpls_oam:
+            return # no mpls oam configured
+
+        # Node is present in mpls OAM
+        node.mpls.oam = True
 
     def mpls_te(self, node):
         g_mpls_te = self.anm['mpls_te']
@@ -82,7 +87,6 @@ class IosBaseCompiler(RouterCompiler):
         if node not in g_mpls_te:
             return # no mpls te configured
 
-        node.mpls.oam = True
         node.mpls_te = True
 
         if node.isis:
@@ -308,6 +312,7 @@ class IosClassicCompiler(IosBaseCompiler):
         super(IosClassicCompiler, self).compile(node)
 
         self.mpls_te(node)
+        self.mpls_oam(node)
 
         phy_node = self.anm['phy'].node(node)
         if phy_node.device_subtype == "vios":
@@ -389,6 +394,7 @@ class IosXrCompiler(IosBaseCompiler):
     def compile(self, node):
         super(IosXrCompiler, self).compile(node)
         self.mpls_te(node)
+        self.mpls_oam(node)
 
 
     def mpls_te(self, node):
