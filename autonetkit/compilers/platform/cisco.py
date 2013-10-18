@@ -176,13 +176,14 @@ class CiscoCompiler(PlatformCompiler):
             nidb_node = self.nidb.node(phy_node)
             ubuntu_compiler.compile(nidb_node)
 
-            nidb_node.render.template = os.path.join("templates", "linux", "static_route.mako")
-            if to_memory:
-                nidb_node.render.to_memory = True
-            else:
-                nidb_node.render.dst_folder = dst_folder
-                nidb_node.render.dst_file = "%s.conf" % naming.network_hostname(
-                    phy_node)
+            if not phy_node.dont_configure_static_routing:
+                nidb_node.render.template = os.path.join("templates", "linux", "static_route.mako")
+                if to_memory:
+                    nidb_node.render.to_memory = True
+                else:
+                    nidb_node.render.dst_folder = dst_folder
+                    nidb_node.render.dst_file = "%s.conf" % naming.network_hostname(
+                        phy_node)
 
 
         ios_compiler = IosClassicCompiler(self.nidb, self.anm)
