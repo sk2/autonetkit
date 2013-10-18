@@ -210,6 +210,7 @@ def apply_design_rules(anm):
 
     import autonetkit.design.mpls
     autonetkit.design.mpls.mpls_te(anm)
+    autonetkit.design.mpls.mpls_oam(anm)
 
 # post-processing
     if anm['phy'].data.enable_routing:
