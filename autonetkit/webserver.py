@@ -5,6 +5,7 @@ import os
 import json
 import logging
 import pkg_resources
+import autonetkit.config as config
 import socket
 www_dir = pkg_resources.resource_filename(__name__, "www_vis")
 
@@ -232,7 +233,7 @@ def main():
     usage = "ank_webserver"
     version = "%(prog)s using AutoNetkit " + str(ANK_VERSION)
     parser = argparse.ArgumentParser(description=usage, version=version)
-    parser.add_argument('--port', type=int, default = 8000, help="Port to run webserver on (default 8000)")
+    parser.add_argument('--port', type=int,  help="Port to run webserver on (default 8000)")
     parser.add_argument('--multi_user', action="store_true", default=False, help="Multi-User mode")
     parser.add_argument('--ank_vis', action="store_true", default=False, help="Force AutoNetkit visualisation system")
     arguments = parser.parse_args()
@@ -285,7 +286,12 @@ def main():
 
     io_loop = tornado.ioloop.IOLoop.instance()
 
-    port = arguments.port
+    port = config.settings['Http Post']['port']
+    if arguments.port:
+        port = arguments.port #explicitly set on command line
+
+    logging.info("Starting on port %s" % port)
+
     try:
         application.listen(port)
     except socket.error, e:
