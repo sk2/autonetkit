@@ -496,6 +496,7 @@ def build_phy(anm):
         ank_utils.copy_attr_from(g_in, g_phy, "use_onepk")
         ank_utils.copy_attr_from(g_in, g_phy, "label_full")
         ank_utils.copy_attr_from(g_in, g_phy, "indices")
+        ank_utils.copy_attr_from(g_in, g_phy, "dont_configure_static_routing")
 
     g_phy.allocate_interfaces()
 
