@@ -12,7 +12,11 @@ class UbuntuCompiler(ServerCompiler):
         node.static_routes_v4 = [] # initialise for case of no routes -> simplifies template logic
         node.static_routes_v6 = [] # initialise for case of no routes -> simplifies template logic
         if not self.anm['phy'].data.enable_routing:
-            log.debug("Routing disabled, not configuring static routes for Ubuntu server %s" % node)
+            log.info("Routing disabled, not configuring static routes for Ubuntu server %s" % node)
+            return
+
+        if self.anm['phy'].node(node).dont_configure_static_routing:
+            log.info("Static routing disabled for server %s" % node)
             return
 
         l3_conn_node = self.anm['l3_conn'].node(node)
