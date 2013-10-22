@@ -5,6 +5,5 @@
 # by ${ank_version}
 % endif
 % for route in node.static_routes_v4:
-# ${route.description}
-up route add -net ${route.network} gw ${route.gw} dev ${route.interface}
+route add -net ${route.network} gw ${route.gw} dev ${route.interface}
 %endfor
