@@ -10,7 +10,9 @@ class UbuntuCompiler(ServerCompiler):
 
     def static_routes(self, node):
         node.static_routes_v4 = [] # initialise for case of no routes -> simplifies template logic
+        node.host_routes_v4 = [] # initialise for case of no routes -> simplifies template logic
         node.static_routes_v6 = [] # initialise for case of no routes -> simplifies template logic
+        node.host_routes_v6 = [] # initialise for case of no routes -> simplifies template logic
         if not self.anm['phy'].data.enable_routing:
             log.info("Routing disabled, not configuring static routes for Ubuntu server %s" % node)
             return
@@ -52,21 +54,32 @@ class UbuntuCompiler(ServerCompiler):
 
         # IGP advertised infrastructure pool from same AS
         for infra_route in self.anm['ipv4'].data['infra_blocks'][phy_node.asn]:
-            node.static_routes_v4.append({
-                    "network": infra_route,
-                    "gw": gateway_ipv4,
-                    "interface": server_interface_id,
-                    "description": "Route to infra subnet in local AS %s via %s" % (phy_node.asn, gateway),
-                    })
+           #host_routes_v4
+           route_entry = {
+           "network": infra_route,
+           "prefix": infra_route.network,
+           "gw": gateway_ipv4,
+           "interface": server_interface_id,
+           "description": "Route to infra subnet in local AS %s via %s" % (phy_node.asn, gateway)
+           }
+           if infra_route.prefixlen == 32:
+                node.host_routes_v4.append(route_entry)
+           else:
+                node.static_routes_v4.append(route_entry)
 
         # eBGP advertised loopbacks in all (same + other) ASes
         for asn, asn_routes in self.anm['ipv4'].data['loopback_blocks'].items():
             for asn_route in asn_routes:
-                node.static_routes_v4.append({
-                    "network": asn_route,
-                    "gw": gateway_ipv4,
-                    "interface": server_interface_id,
-                    "description": "Route to loopback subnet in AS %s via %s" % (asn, gateway),
-                    })
+                route_entry = {
+                "network": asn_route,
+                "prefix": asn_route.network,
+                "gw": gateway_ipv4,
+                "interface": server_interface_id,
+                "description": "Route to loopback subnet in AS %s via %s" % (asn, gateway),
+                }
+                if asn_route.prefixlen == 32:
+                    node.host_routes_v4.append(route_entry)
+                else:
+                    node.static_routes_v4.append(route_entry)
 
 
