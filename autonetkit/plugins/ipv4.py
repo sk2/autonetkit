@@ -52,7 +52,7 @@ class TreeNode(object):
             return "%s: %s" % (self.group_attr, self.subnet)
         if self.subnet:
             return "%s" % self.subnet
-        return "TreeNode: %s" % self.node 
+        return "TreeNode: %s" % self.node
 
     def is_collision_domain(self):
         return (self.host and self.host.collision_domain)
@@ -168,7 +168,7 @@ class IpTree(object):
             subgraph = nx.DiGraph()
 
             if all(isinstance(item, autonetkit.anm.overlay_interface) for item in items):
-                # interface 
+                # interface
                 if all(item.is_loopback for item in items):
                     parent_id = self.next_node_id
                     prefixlen = 32 - subnet_size(len(items)) # group all loopbacks into single subnet
@@ -185,8 +185,8 @@ class IpTree(object):
                     subgraph.node[root_node]['group_attr'] = attr_value
                     continue # finished for loopbacks, continue only for collision domains
 
-            if all(item.is_l3device for item in items): 
-                # Note: only l3 devices are added for loopbacks: cds allocate to edges not devices (for now) - will be fixed when move to proper interface model 
+            if all(item.is_l3device for item in items):
+                # Note: only l3 devices are added for loopbacks: cds allocate to edges not devices (for now) - will be fixed when move to proper interface model
                 parent_id = self.next_node_id
                 prefixlen = 32 - subnet_size(len(items)) # group all loopbacks into single subnet
                 subgraph.add_node(parent_id, prefixlen = prefixlen, loopback_group = True)
@@ -303,7 +303,7 @@ class IpTree(object):
             children = sorted(node.children())
             prefixlen = node.prefixlen + 1
 
-            # workaround for clobbering attr subgraph root node with /16 if was a /28 
+            # workaround for clobbering attr subgraph root node with /16 if was a /28
             """
             child_prefixlen = {c.prefixlen for c in children}.pop()
             if (prefixlen) != child_prefixlen:
@@ -312,7 +312,7 @@ class IpTree(object):
 
             subnet = node.subnet.subnet(prefixlen)
 
-# handle case where children subnet 
+# handle case where children subnet
             if node.is_loopback_group() or node.is_collision_domain(): # special case of single AS -> root is loopback_group
                 #TODO: generalise this rather than repeated code with below
                 #node.subnet = subnet.next() # Note: don't break into smaller subnets if single-AS
@@ -321,7 +321,7 @@ class IpTree(object):
                 for sub_child in sub_children:
                     #TODO: tidy up this allocation to always record the subnet
                     if sub_child.is_interface() and sub_child.host.is_loopback:
-                        if sub_child.host.is_loopback_zero:   
+                        if sub_child.host.is_loopback_zero:
                             # loopback zero, just store the ip address
                             sub_child.ip_address = iterhosts.next()
                         else:
@@ -350,11 +350,11 @@ class IpTree(object):
                             if interface.is_physical:
                                 # physical interface
                                 sub_child.ip_address = iterhosts.next()
-                                sub_child.subnet = subnet 
+                                sub_child.subnet = subnet
                             elif interface.is_loopback and not interface.is_loopback_zero:
                                 # secondary loopback interface
                                 sub_child.ip_address = iterhosts.next()
-                                sub_child.subnet = subnet 
+                                sub_child.subnet = subnet
                         else:
                             sub_child.subnet = iterhosts.next()
 
@@ -369,7 +369,7 @@ class IpTree(object):
                         if sub_child.is_interface() and not sub_child.host.is_loopback_zero:
                            # secondary loopback
                            sub_child.ip_address = iterhosts.next()
-                           sub_child.subnet = child.subnet 
+                           sub_child.subnet = child.subnet
                         else:
                             sub_child.subnet = iterhosts.next()
                 else:
@@ -427,7 +427,7 @@ class IpTree(object):
             return
         return list_successors(self.root_node)
 
-    
+
     def assign(self):
 # assigns allocated addresses back to hosts
         # don't look at host nodes now - use loopback_groups
