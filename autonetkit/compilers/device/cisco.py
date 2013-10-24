@@ -97,16 +97,57 @@ class IosBaseCompiler(RouterCompiler):
             node.ospf.ipv4_mpls_te = True
             node.ospf.mpls_te_router_id = self.lo_interface
 
+    def nailed_up_routes(self, node):
+        log.debug("Configuring nailed up routes")
+        phy_node = self.anm['phy'].node(node)
+        node.bgp.ipv4_nailed_up_routes = []
+        node.bgp.ipv6_nailed_up_routes = []
+
+        if node.ip.use_ipv4:
+            for infra_route in self.anm['ipv4'].data['infra_blocks'][phy_node.asn]:
+                node.bgp.ipv4_nailed_up_routes.append(infra_route)
+
+        if node.ip.use_ipv6:
+            for infra_route in self.anm['ipv6'].data['infra_blocks'][phy_node.asn]:
+                node.bgp.ipv6_nailed_up_routes.append(infra_route)
 
     def bgp(self, node):
         node.bgp.lo_interface = self.lo_interface
         super(IosBaseCompiler, self).bgp(node)
+        phy_node = self.anm['phy'].node(node)
+        asn = phy_node.asn
+        g_ebgp_v4 = self.anm['ebgp_v4']
+        g_ebgp_v6 = self.anm['ebgp_v6']
 
-        # Only advertise loopbacks into eBGP
+        if len(list(g_ebgp_v4.node(node).edges())) > 0:
+            node.is_ebgp_v4 = True
+        else:
+            node.is_ebgp_v4 = False
+
+        if len(list(g_ebgp_v6.node(node).edges())) > 0:
+            node.is_ebgp_v6 = True
+        else:
+            node.is_ebgp_v6 = False
+
+        node.bgp.ipv4_advertise_subnets = []
+        node.bgp.ipv6_advertise_subnets = []
+
+         # Advertise loopbacks into BGP
         if node.ip.use_ipv4:
             node.bgp.ipv4_advertise_subnets = [node.loopback_zero.ipv4_cidr]
         if node.ip.use_ipv6:
             node.bgp.ipv6_advertise_subnets = [node.loopback_zero.ipv6_address]
+
+        # Advertise infrastructure into eBGP
+        if node.ip.use_ipv4 and node.is_ebgp_v4:
+            for infra_route in self.anm['ipv4'].data['infra_blocks'][asn]:
+                node.bgp.ipv4_advertise_subnets.append(infra_route)
+
+        if node.ip.use_ipv6 and node.is_ebgp_v6:
+            for infra_route in self.anm['ipv6'].data['infra_blocks'][asn]:
+                node.bgp.ipv6_advertise_subnets.append(infra_route)
+
+        self.nailed_up_routes(node)
 
         # vrf
         #TODO: this should be inside vrf section?
@@ -133,13 +174,11 @@ class IosBaseCompiler(RouterCompiler):
             # eBGP sessions for this VRF
             vrf_ebgp_neighbors = defaultdict(list)
 
-            g_ebgp_v4 = self.anm['ebgp_v4']
             for session in sort_sessions(g_ebgp_v4.edges(vrf_node)):
                 if session.exclude and session.vrf:
                     data = self.ebgp_session_data(session, ip_version = 4)
                     vrf_ebgp_neighbors[session.vrf].append(data)
 
-            g_ebgp_v6 = self.anm['ebgp_v6']
             for session in sort_sessions(g_ebgp_v6.edges(vrf_node)):
                 if session.exclude and session.vrf:
                     data = self.ebgp_session_data(session, ip_version = 6)
@@ -164,6 +203,8 @@ class IosBaseCompiler(RouterCompiler):
             if vpnv4_node.retain_route_target:
                 retain = True
             node.bgp.vpnv4 = {'retain_route_target': retain}
+
+
 
     def vrf_igp_interfaces(self, node):
         # marks physical interfaces to exclude from IGP
