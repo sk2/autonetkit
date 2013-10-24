@@ -234,9 +234,6 @@ mpls ldp router-id ${node.mpls.router_id}
 router bgp ${node.asn}
   bgp router-id ${node.router_id}
   no synchronization
-% for subnet in node.bgp.ipv4_advertise_subnets:
-  network ${subnet.network} mask ${subnet.netmask}
-% endfor
 ! ibgp
 ## iBGP Route Reflector Clients
 % for client in node.bgp.ibgp_rr_clients:
@@ -312,6 +309,33 @@ router bgp ${node.asn}
 !
 % endif
 % endfor
+!
+## ********
+% if node.bgp.use_ipv4:
+ !
+ address-family ipv4
+% for subnet in node.bgp.ipv4_advertise_subnets:
+  network ${subnet.network} mask ${subnet.netmask}
+% endfor
+%for peer in node.bgp.ipv4_peers:
+  % if peer.is_ebgp:
+  neighbor ${peer['dst_int_ip']} activate
+  %endif
+%endfor
+ exit-address-family
+% endif
+% if node.bgp.use_ipv6:
+ !
+ address-family ipv6
+% for subnet in node.bgp.ipv6_advertise_subnets:
+  network ${subnet}
+% endfor
+%for peer in node.bgp.ipv6_peers:
+%endfor
+ exit-address-family
+% endif
+## ********
+!
 ## VRFs
 % for vrf in node.bgp.vrfs:
 % if loop.first:

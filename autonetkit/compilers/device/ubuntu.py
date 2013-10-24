@@ -27,6 +27,7 @@ class UbuntuCompiler(ServerCompiler):
             if n.is_router]
         if not len(gateway_list):
             log.warning("Server %s is not directly connected to any routers" % node)
+            return
         else:
             gateway = gateway_list[0] # choose first (and only gateway)
             if len(gateway_list) > 1:
