@@ -404,6 +404,31 @@ class IosClassicCompiler(IosBaseCompiler):
     def bgp(self, node):
         super(IosClassicCompiler, self).bgp(node)
 
+        node.bgp.use_ipv4 = node.ip.use_ipv4
+        node.bgp.use_ipv6 = node.ip.use_ipv6
+
+        # Seperate by address family
+        node.bgp.ipv4_peers = []
+        node.bgp.ipv6_peers = []
+        #Note cast to dict - #TODO revisit this requirement
+        ipv4_peers = [ dict(r) for r in node.bgp.ibgp_neighbors if r.use_ipv4 ]
+        ipv4_peers += [ dict(r) for r in node.bgp.ibgp_rr_parents if r.use_ipv4 ]
+        ipv4_peers += [ dict(r) for r in node.bgp.ibgp_rr_clients if r.use_ipv4 ]
+        ipv4_ebgp_peers = [ dict(r) for r in node.bgp.ebgp_neighbors if r.use_ipv4 ]
+        for peer in ipv4_ebgp_peers:
+            peer['is_ebgp'] = True
+        ipv4_peers += ipv4_ebgp_peers
+        node.bgp.ipv4_peers = ipv4_peers
+
+        ipv6_peers = [ dict(r) for r in node.bgp.ibgp_neighbors if r.use_ipv6 ]
+        ipv6_peers += [ dict(r) for r in node.bgp.ibgp_rr_parents if r.use_ipv6 ]
+        ipv6_peers += [ dict(r) for r in node.bgp.ibgp_rr_clients if r.use_ipv6 ]
+        ipv6_ebgp_peers = [ dict(r) for r in node.bgp.ebgp_neighbors if r.use_ipv6 ]
+        for peer in ipv6_ebgp_peers:
+            peer['is_ebgp'] = True
+        ipv6_peers += ipv6_ebgp_peers
+        node.bgp.ipv6_pe6rs = ipv6_peers
+
         vpnv4_neighbors = []
         if node.bgp.vpnv4:
             for neigh in node.bgp.ibgp_neighbors:
