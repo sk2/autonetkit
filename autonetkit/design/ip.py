@@ -27,6 +27,7 @@ def manual_ipv4_infrastructure_allocation(anm):
     """Applies manual IPv4 allocation"""
     import netaddr
     g_ipv4 = anm['ipv4']
+    log.info("Using manual IPv4 infrastructure allocation")
 
     for node in g_ipv4.nodes("is_l3device"):
         for interface in node.physical_interfaces:
