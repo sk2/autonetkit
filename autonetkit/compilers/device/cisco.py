@@ -103,12 +103,14 @@ class IosBaseCompiler(RouterCompiler):
         node.bgp.ipv4_nailed_up_routes = []
         node.bgp.ipv6_nailed_up_routes = []
 
-        if node.ip.use_ipv4:
-            for infra_route in self.anm['ipv4'].data['infra_blocks'][phy_node.asn]:
+        if node.is_ebgp_v4 and node.ip.use_ipv4:
+            infra_blocks = self.anm['ipv4'].data['infra_blocks'].get(phy_node.asn) or []
+            for infra_route in infra_blocks:
                 node.bgp.ipv4_nailed_up_routes.append(infra_route)
 
-        if node.ip.use_ipv6:
-            for infra_route in self.anm['ipv6'].data['infra_blocks'][phy_node.asn]:
+        if node.is_ebgp_v6 and node.ip.use_ipv6:
+            infra_blocks = self.anm['ipv6'].data['infra_blocks'].get(phy_node.asn) or []
+            for infra_route in infra_blocks:
                 node.bgp.ipv6_nailed_up_routes.append(infra_route)
 
     def bgp(self, node):
@@ -119,12 +121,12 @@ class IosBaseCompiler(RouterCompiler):
         g_ebgp_v4 = self.anm['ebgp_v4']
         g_ebgp_v6 = self.anm['ebgp_v6']
 
-        if len(list(g_ebgp_v4.node(node).edges())) > 0:
+        if node in g_ebgp_v4 and len(list(g_ebgp_v4.node(node).edges())) > 0:
             node.is_ebgp_v4 = True
         else:
             node.is_ebgp_v4 = False
 
-        if len(list(g_ebgp_v6.node(node).edges())) > 0:
+        if node in g_ebgp_v6 and len(list(g_ebgp_v6.node(node).edges())) > 0:
             node.is_ebgp_v6 = True
         else:
             node.is_ebgp_v6 = False
@@ -140,12 +142,14 @@ class IosBaseCompiler(RouterCompiler):
 
         # Advertise infrastructure into eBGP
         if node.ip.use_ipv4 and node.is_ebgp_v4:
-            for infra_route in self.anm['ipv4'].data['infra_blocks'][asn]:
+            infra_blocks = self.anm['ipv4'].data['infra_blocks'].get(asn) or []
+            for infra_route in infra_blocks:
                 node.bgp.ipv4_advertise_subnets.append(infra_route)
 
         if node.ip.use_ipv6 and node.is_ebgp_v6:
-            for infra_route in self.anm['ipv6'].data['infra_blocks'][asn]:
-                node.bgp.ipv6_advertise_subnets.append(infra_route)
+            infra_blocks = self.anm['ipv6'].data['infra_blocks'].get(asn) or []
+            for infra_route in infra_blocks:
+                            node.bgp.ipv6_advertise_subnets.append(infra_route)
 
         self.nailed_up_routes(node)
 
@@ -408,26 +412,61 @@ class IosClassicCompiler(IosBaseCompiler):
         node.bgp.use_ipv6 = node.ip.use_ipv6
 
         # Seperate by address family
-        node.bgp.ipv4_peers = []
-        node.bgp.ipv6_peers = []
+        ipv4_peers = []
+        ipv6_peers = []
         #Note cast to dict - #TODO revisit this requirement
-        ipv4_peers = [ dict(r) for r in node.bgp.ibgp_neighbors if r.use_ipv4 ]
-        ipv4_peers += [ dict(r) for r in node.bgp.ibgp_rr_parents if r.use_ipv4 ]
-        ipv4_peers += [ dict(r) for r in node.bgp.ibgp_rr_clients if r.use_ipv4 ]
-        ipv4_ebgp_peers = [ dict(r) for r in node.bgp.ebgp_neighbors if r.use_ipv4 ]
-        for peer in ipv4_ebgp_peers:
-            peer['is_ebgp'] = True
-        ipv4_peers += ipv4_ebgp_peers
-        node.bgp.ipv4_peers = ipv4_peers
+        #TODO: revisit and tidy up the logic here: split iBGP and eBGP
+        #TODO: sort the peer list by peer IP
+        for peer in node.bgp.ibgp_neighbors:
+            peer = dict(peer) # for storage back into NIDB
+            peer['remote_ip'] = peer['loopback']
+            if peer['use_ipv4']:
+                if node.is_ebgp_v4:
+                    peer['next_hop_self'] = True
+                ipv4_peers.append(peer)
+            if peer['use_ipv6']:
+                if node.is_ebgp_v6:
+                    peer['next_hop_self'] = True
+                ipv6_peers.append(peer)
 
-        ipv6_peers = [ dict(r) for r in node.bgp.ibgp_neighbors if r.use_ipv6 ]
-        ipv6_peers += [ dict(r) for r in node.bgp.ibgp_rr_parents if r.use_ipv6 ]
-        ipv6_peers += [ dict(r) for r in node.bgp.ibgp_rr_clients if r.use_ipv6 ]
-        ipv6_ebgp_peers = [ dict(r) for r in node.bgp.ebgp_neighbors if r.use_ipv6 ]
-        for peer in ipv6_ebgp_peers:
+        for peer in node.bgp.ibgp_rr_parents:
+            peer = dict(peer) # for storage back into NIDB
+            peer['remote_ip'] = peer['loopback']
+            if peer['use_ipv4']:
+                if node.is_ebgp_v4:
+                    peer['next_hop_self'] = True
+                ipv4_peers.append(peer)
+            if peer['use_ipv6']:
+                if node.is_ebgp_v6:
+                    peer['next_hop_self'] = True
+                ipv6_peers.append(peer)
+
+        for peer in node.bgp.ibgp_rr_clients:
+            peer = dict(peer) # for storage back into NIDB
+            peer['rr_client'] = True
+            peer['remote_ip'] = peer['loopback']
+            if peer['use_ipv4']:
+                if node.is_ebgp_v4:
+                    peer['next_hop_self'] = True
+                ipv4_peers.append(peer)
+            if peer['use_ipv6']:
+                if node.is_ebgp_v6:
+                    peer['next_hop_self'] = True
+                ipv6_peers.append(peer)
+
+        for peer in node.bgp.ebgp_neighbors:
+            peer = dict(peer) # for storage back into NIDB
             peer['is_ebgp'] = True
-        ipv6_peers += ipv6_ebgp_peers
-        node.bgp.ipv6_pe6rs = ipv6_peers
+            peer['remote_ip'] = peer['dst_int_ip']
+            if peer['use_ipv4']:
+                peer['next_hop_self'] = True
+                ipv4_peers.append(peer)
+            if peer['use_ipv6']:
+                peer['next_hop_self'] = True
+                ipv6_peers.append(peer)
+
+        node.bgp.ipv4_peers = ipv4_peers
+        node.bgp.ipv6_peers = ipv6_peers
 
         vpnv4_neighbors = []
         if node.bgp.vpnv4:
