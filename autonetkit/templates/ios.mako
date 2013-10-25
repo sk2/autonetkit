@@ -244,10 +244,6 @@ router bgp ${node.asn}
   neighbor ${client.loopback} remote-as ${client.asn}
   neighbor ${client.loopback} description rr client ${client.neighbor}
   neighbor ${client.loopback} update-source ${node.bgp.lo_interface}
-  neighbor ${client.loopback} route-reflector-client
-  % if node.bgp.ebgp_neighbors:
-  neighbor ${client.loopback} next-hop-self
-  % endif
 % endfor
 ## iBGP Route Reflectors (Parents)
 % for parent in node.bgp.ibgp_rr_parents:
@@ -258,9 +254,6 @@ router bgp ${node.asn}
   neighbor ${parent.loopback} remote-as ${parent.asn}
   neighbor ${parent.loopback} description rr parent ${parent.neighbor}
   neighbor ${parent.loopback} update-source ${node.bgp.lo_interface}
-  % if node.bgp.ebgp_neighbors:
-  neighbor ${parent.loopback} next-hop-self
-  % endif
 % endfor
 ## iBGP peers
 % for neigh in node.bgp.ibgp_neighbors:
@@ -271,9 +264,6 @@ router bgp ${node.asn}
   neighbor ${neigh.loopback} remote-as ${neigh.asn}
   neighbor ${neigh.loopback} description iBGP peer ${neigh.neighbor}
   neighbor ${neigh.loopback} update-source ${node.bgp.lo_interface}
-  % if node.bgp.ebgp_neighbors:
-  neighbor ${neigh.loopback} next-hop-self
-  % endif
 % endfor
 ## vpnv4 peers
 % for neigh in node.bgp.vpnv4_neighbors:
@@ -303,8 +293,6 @@ router bgp ${node.asn}
   !
   neighbor ${neigh.dst_int_ip} remote-as ${neigh.asn}
   neighbor ${neigh.dst_int_ip} description eBGP to ${neigh.neighbor}
-  neighbor ${neigh.dst_int_ip} send-community
-  neighbor ${neigh.dst_int_ip} next-hop-self
 % if loop.last:
 !
 % endif
@@ -318,9 +306,17 @@ router bgp ${node.asn}
   network ${subnet.network} mask ${subnet.netmask}
 % endfor
 %for peer in node.bgp.ipv4_peers:
+  neighbor ${peer.remote_ip} activate
   % if peer.is_ebgp:
-  neighbor ${peer['dst_int_ip']} activate
+  neighbor ${peer.remote_ip} send-community
   %endif
+  % if peer.next_hop_self:
+  ## iBGP on an eBGP-speaker
+  neighbor ${peer.remote_ip} next-hop-self
+  % endif
+  % if peer.rr_client:
+  neighbor ${peer.remote_ip} route-reflector-client
+  % endif
 %endfor
  exit-address-family
 % endif
@@ -331,10 +327,17 @@ router bgp ${node.asn}
   network ${subnet}
 % endfor
 %for peer in node.bgp.ipv6_peers:
+  neighbor ${peer.remote_ip} activate
+  % if peer.is_ebgp:
+  neighbor ${peer.remote_ip} send-community
+  %endif
+  % if peer.next_hop_self:
+  ## iBGP on an eBGP-speaker
+  neighbor ${peer.remote_ip} next-hop-self
+  % endif
 %endfor
  exit-address-family
 % endif
-## ********
 !
 ## VRFs
 % for vrf in node.bgp.vrfs:
