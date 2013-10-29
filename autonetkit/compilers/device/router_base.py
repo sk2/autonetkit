@@ -342,6 +342,7 @@ class RouterCompiler(DeviceCompiler):
         g_isis = self.anm['isis']
         isis_node = self.anm['isis'].node(node)
         node.isis.net = isis_node.net
+        #TODO: generalise loopbacks to allow more than one per device
         node.isis.process_id = isis_node.process_id
         node.isis.lo_interface = self.lo_interface
 # set isis on loopback_zero
