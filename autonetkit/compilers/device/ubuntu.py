@@ -83,4 +83,3 @@ class UbuntuCompiler(ServerCompiler):
                 else:
                     node.static_routes_v4.append(route_entry)
 
-
