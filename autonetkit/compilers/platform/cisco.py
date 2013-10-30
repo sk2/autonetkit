@@ -136,41 +136,41 @@ class CiscoCompiler(PlatformCompiler):
                 interface.id = self.numeric_to_interface_label_linux(interface.numeric_id)
                 nidb_node.ip.use_ipv4 = phy_node.use_ipv4
                 nidb_node.ip.use_ipv6 = phy_node.use_ipv6
-                phy_int = phy_node.interface(interface)
 
                 #TODO: clean up interface handling
-                numeric_int_ids = self.numeric_interface_ids()
-                for interface in nidb_node.physical_interfaces:
-                    phy_numeric_id = phy_node.interface(interface).numeric_id
-                    if phy_numeric_id is None:
-                        #TODO: remove numeric ID code
-                        interface.numeric_id = numeric_int_ids.next()
-                    else:
-                        interface.numeric_id = int(phy_numeric_id)
+            numeric_int_ids = self.numeric_interface_ids()
+            for interface in nidb_node.physical_interfaces:
+                phy_int = phy_node.interface(interface)
+                phy_numeric_id = phy_node.interface(interface).numeric_id
+                if phy_numeric_id is None:
+                    #TODO: remove numeric ID code
+                    interface.numeric_id = numeric_int_ids.next()
+                else:
+                    interface.numeric_id = int(phy_numeric_id)
 
-                    phy_specified_id = phy_node.interface(interface).specified_id
-                    if phy_specified_id is not None:
-                        interface.id = phy_specified_id
+                phy_specified_id = phy_node.interface(interface).specified_id
+                if phy_specified_id is not None:
+                    interface.id = phy_specified_id
 
-                    #TODO: make this part of the base device compiler, which server/router inherits
-                    if nidb_node.ip.use_ipv4:
-                        ipv4_int = phy_int['ipv4']
-                        if ipv4_int.is_bound:
-                            # interface is connected
-                            interface.use_ipv4 = True
-                            interface.ipv4_address = ipv4_int.ip_address
-                            interface.ipv4_subnet = ipv4_int.subnet
-                            interface.ipv4_cidr = sn_preflen_to_network(interface.ipv4_address,
-                                    interface.ipv4_subnet.prefixlen)
-                    if nidb_node.ip.use_ipv6:
-                        ipv6_int = phy_int['ipv6']
-                        if ipv6_int.is_bound:
-                            # interface is connected
-                            interface.use_ipv6 = True
-    #TODO: for consistency, make ipv6_cidr
-                            interface.ipv6_subnet = ipv6_int.subnet
-                            interface.ipv6_address = sn_preflen_to_network(ipv6_int.ip_address,
-                                    interface.ipv6_subnet.prefixlen)
+                #TODO: make this part of the base device compiler, which server/router inherits
+                if nidb_node.ip.use_ipv4:
+                    ipv4_int = phy_int['ipv4']
+                    if ipv4_int.is_bound:
+                        # interface is connected
+                        interface.use_ipv4 = True
+                        interface.ipv4_address = ipv4_int.ip_address
+                        interface.ipv4_subnet = ipv4_int.subnet
+                        interface.ipv4_cidr = sn_preflen_to_network(interface.ipv4_address,
+                                interface.ipv4_subnet.prefixlen)
+                if nidb_node.ip.use_ipv6:
+                    ipv6_int = phy_int['ipv6']
+                    if ipv6_int.is_bound:
+                        # interface is connected
+                        interface.use_ipv6 = True
+#TODO: for consistency, make ipv6_cidr
+                        interface.ipv6_subnet = ipv6_int.subnet
+                        interface.ipv6_address = sn_preflen_to_network(ipv6_int.ip_address,
+                                interface.ipv6_subnet.prefixlen)
 
                     # render route config
             nidb_node = self.nidb.node(phy_node)
