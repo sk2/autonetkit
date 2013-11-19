@@ -37,7 +37,6 @@ def three_tier_ibgp_corner_cases(rtrs):
 
                     # connect to l3 routers in same l3 cluster
                     l3_routers = [r for r in l3d if r.ibgp_level == 3]
-                    print l3_routers
             else:
                 l1_rtrs = [r for r in l2d if r.ibgp_level == 1]
                 l3_rtrs = [r for r in l2d if r.ibgp_level == 3]
@@ -187,8 +186,6 @@ def build_ebgp(anm):
 
 
 def build_ibgp(anm):
-    import q
-    q("a")
     g_in = anm['input']
     g_phy = anm['phy']
     g_bgp = anm['bgp']
@@ -203,6 +200,8 @@ def build_ibgp(anm):
     2: HRR
     3: RR
     """
+
+    #TODO: add more detailed logging
 
     for n in g_bgp:
         # Tag with label to make logic clearer
@@ -231,7 +230,6 @@ def build_ibgp(anm):
 
         for rr_cluster, rr_cluster_rtrs in ank_utils.groupby("rr_cluster", asn_devices):
             rr_cluster_rtrs = list(rr_cluster_rtrs)
-            print "-", rr_cluster, list(rr_cluster_rtrs)
 
             rr_cluster_rrs = [n for n in rr_cluster_rtrs if n.is_rr]
             rr_cluster_hrrs = [n for n in rr_cluster_rtrs if n.is_hrr]
@@ -246,7 +244,6 @@ def build_ibgp(anm):
 
             # Connect HRRs to RRs in the same rr_cluster
             up_links = [(s, t) for s in rr_cluster_hrrs for t in rr_parents]
-            print "up", up_links
             g_bgp.add_edges_from(up_links, type='ibgp', direction='up')
             down_links = [(t, s) for (s, t) in up_links]
             g_bgp.add_edges_from(down_links, type='ibgp', direction='down')
@@ -254,7 +251,6 @@ def build_ibgp(anm):
 
             for hrr_cluster, hrr_cluster_rtrs in ank_utils.groupby("hrr_cluster", rr_cluster_rtrs):
                 hrr_cluster_rtrs = list(hrr_cluster_rtrs)
-                print "--", hrr_cluster, list(hrr_cluster_rtrs)
 
                 hrr_cluster_hrrs = [n for n in hrr_cluster_rtrs if n.is_hrr]
                 hrr_cluster_rrcs = [n for n in hrr_cluster_rtrs if n.is_rrc]
@@ -268,6 +264,7 @@ def build_ibgp(anm):
                     g_bgp.add_edges_from(down_links, type='ibgp', direction='down')
                 elif len(rr_cluster_rrs):
                     # No HRRs in this cluster, connect RRCs to RRs in the same RR cluster
+                    #TODO: warn here: might not be what the user wanted
                     up_links = [(s, t) for s in hrr_cluster_rrcs for t in rr_cluster_rrs]
                     g_bgp.add_edges_from(up_links, type='ibgp', direction='up')
                     down_links = [(t, s) for (s, t) in up_links]
