@@ -20,8 +20,8 @@ path.link {
 }
 
 #path_marker {
-  stroke: black;
-  fill: black;
+  stroke: red;
+  fill: red;
 }
 
 #path_unverified_marker {
