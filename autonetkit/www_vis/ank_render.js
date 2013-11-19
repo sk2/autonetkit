@@ -452,7 +452,7 @@ var x_offset = 10;
 var y_offset = 30;
 
 var node_x = function(d) {
-    return d.x + x_offset + icon_width/2;
+    return d.x + x_offset + icon_width/2 + 150;
 }
 
 var node_y = function(d) {
@@ -1202,7 +1202,7 @@ function redraw() {
     else {
         var fill = d3.scale.quantize()
         .domain([0, group_size])
-        .range(colorbrewer.RdYlBu[range_group_size]);
+        .range(colorbrewer.Spectral[range_group_size]);
     }
     var groupFill = function(d, i) { return fill(i); };
 
@@ -1217,7 +1217,7 @@ function redraw() {
         .style("stroke", groupFill)
         .style("stroke-width", hull_stroke_width)
         .style("stroke-linejoin", "round")
-        .style("opacity", 0.3)
+        .style("opacity", 0.4)
         .on("mouseover", function(d){
             group_info(d);
         })
@@ -1589,7 +1589,7 @@ function redraw() {
         .attr("text-anchor", "middle")
         .attr("font-family", "helvetica")
         .style("opacity", icon_opacity)
-        .attr("font-size", "small")
+        .attr("font-size", 16)
 
         //TODO: use a general accessor for x/y of nodes
         device_labels
@@ -1730,7 +1730,7 @@ function redraw_paths() {
         if ("verified" in d && d['verified'] == false) {
             return "red";
         }
-        return "black";
+        return "red";
     }
 
     var transition_time = function(d) {
@@ -1740,7 +1740,7 @@ function redraw_paths() {
     trace_path.enter().append("svg:path")
         .attr("d", function(d) { return svg_line(d['path'])})
         .attr("class", "trace_path")
-        .style("stroke-width", 5)
+        .style("stroke-width", 10)
         .style("stroke", "orange")
         .style("fill", "none")
         .attr("stroke-dasharray", function(d) {
