@@ -284,7 +284,13 @@ class IpTree(object):
         # now allocate the IPs
         global_prefix_len = global_root.prefixlen
         #TODO: try/catch if the block is too small for prefix
-        global_ip_block = self.root_ip_block.subnet(global_prefix_len).next()
+        try:
+            global_ip_block = self.root_ip_block.subnet(global_prefix_len).next()
+        except StopIteration:
+            log.error("Unable to subnet IP block: trying to create subnets of size %s from %s" %
+             (global_prefix_len, self.root_ip_block.prefixlen))
+            raise SystemExit #TODO: throw ANK specific exception here
+            return
         self.graph = global_graph
 
 # add children of collision domains
