@@ -34,6 +34,10 @@ def three_tier_ibgp_corner_cases(rtrs):
                     log.debug("Cluster (%s, %s) has no level 2 or 3 "
                         "iBGP routers. Connecting l1 routers (%s) in full-mesh"
                         % (l3_cluster, l2_cluster, l2d))
+
+                    # connect to l3 routers in same l3 cluster
+                    l3_routers = [r for r in l3d if r.ibgp_level == 3]
+                    print l3_routers
             else:
                 l1_rtrs = [r for r in l2d if r.ibgp_level == 1]
                 l3_rtrs = [r for r in l2d if r.ibgp_level == 3]
@@ -181,50 +185,11 @@ def build_ebgp(anm):
 
     g_ebgp.remove_edges_from(same_asn_edges)
 
-def build_bgp(anm):
-    """Build iBGP end eBGP overlays"""
-    # eBGP
+def build_ibgp(anm):
     g_in = anm['input']
     g_phy = anm['phy']
+    g_bgp = anm['bgp']
 
-    if not anm['phy'].data.enable_routing:
-        log.info("Routing disabled, not configuring BGP")
-        return
-
-    build_ebgp(anm)
-    build_ebgp_v4(anm)
-    build_ebgp_v6(anm)
-
-    """TODO: remove from here once compiler updated"""
-    g_bgp = anm.add_overlay("bgp", directed=True)
-    g_bgp.add_nodes_from(g_in.nodes("is_router"))
-    ebgp_edges = [edge for edge in g_in.edges() if not edge.attr_equal("asn")]
-    g_bgp.add_edges_from(ebgp_edges, bidirectional=True, type='ebgp')
-#TODO: why don't we include edge_id here
-
-    ebgp_switches = [n for n in g_in.nodes("is_switch")
-            if not ank_utils.neigh_equal(g_phy, n, "asn")]
-    g_bgp.add_nodes_from(ebgp_switches, retain=['asn'])
-    log.debug("eBGP switches are %s" % ebgp_switches)
-    g_bgp.add_edges_from((e for e in g_in.edges()
-            if e.src in ebgp_switches or e.dst in ebgp_switches), bidirectional=True, type='ebgp')
-    ank_utils.aggregate_nodes(g_bgp, ebgp_switches, retain="edge_id")
-    ebgp_switches = list(g_bgp.nodes("is_switch")) # need to recalculate as may have aggregated
-    log.debug("aggregated eBGP switches are %s" % ebgp_switches)
-    exploded_edges = ank_utils.explode_nodes(g_bgp, ebgp_switches,
-            retain="edge_id")
-
-    same_asn_edges = []
-    for edge in exploded_edges:
-        if edge.src.asn == edge.dst.asn:
-            same_asn_edges.append(edge)
-        else:
-            edge.multipoint = True
-    """TODO: remove up to here once compiler updated"""
-
-    g_bgp.remove_edges_from(same_asn_edges)
-
-# now iBGP
     ank_utils.copy_attr_from(g_in, g_bgp, "ibgp_level")
     ank_utils.copy_attr_from(g_in, g_bgp, "ibgp_l2_cluster")
     ank_utils.copy_attr_from(g_in, g_bgp, "ibgp_l3_cluster")
@@ -293,6 +258,53 @@ def build_bgp(anm):
     }
     for node in g_bgp:
         node.ibgp_role = ibgp_label_to_level[node.ibgp_level]
+
+
+def build_bgp(anm):
+    """Build iBGP end eBGP overlays"""
+    # eBGP
+    g_in = anm['input']
+    g_phy = anm['phy']
+
+    if not anm['phy'].data.enable_routing:
+        log.info("Routing disabled, not configuring BGP")
+        return
+
+    build_ebgp(anm)
+    build_ebgp_v4(anm)
+    build_ebgp_v6(anm)
+
+    """TODO: remove from here once compiler updated"""
+    g_bgp = anm.add_overlay("bgp", directed=True)
+    g_bgp.add_nodes_from(g_in.nodes("is_router"))
+    ebgp_edges = [edge for edge in g_in.edges() if not edge.attr_equal("asn")]
+    g_bgp.add_edges_from(ebgp_edges, bidirectional=True, type='ebgp')
+#TODO: why don't we include edge_id here
+
+    ebgp_switches = [n for n in g_in.nodes("is_switch")
+            if not ank_utils.neigh_equal(g_phy, n, "asn")]
+    g_bgp.add_nodes_from(ebgp_switches, retain=['asn'])
+    log.debug("eBGP switches are %s" % ebgp_switches)
+    g_bgp.add_edges_from((e for e in g_in.edges()
+            if e.src in ebgp_switches or e.dst in ebgp_switches), bidirectional=True, type='ebgp')
+    ank_utils.aggregate_nodes(g_bgp, ebgp_switches, retain="edge_id")
+    ebgp_switches = list(g_bgp.nodes("is_switch")) # need to recalculate as may have aggregated
+    log.debug("aggregated eBGP switches are %s" % ebgp_switches)
+    exploded_edges = ank_utils.explode_nodes(g_bgp, ebgp_switches,
+            retain="edge_id")
+
+    same_asn_edges = []
+    for edge in exploded_edges:
+        if edge.src.asn == edge.dst.asn:
+            same_asn_edges.append(edge)
+        else:
+            edge.multipoint = True
+    """TODO: remove up to here once compiler updated"""
+
+    g_bgp.remove_edges_from(same_asn_edges)
+
+
+    build_ibgp(anm)
 
     ebgp_nodes = [d for d in g_bgp if any(
         edge.type == 'ebgp' for edge in d.edges())]
