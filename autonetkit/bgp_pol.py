@@ -144,7 +144,7 @@ class pol_reject(pol_action_atom):
         pass # no parameter for reject route
 
     def __repr__(self):
-        return "reject" 
+        return "reject"
 
 def fn_then(strg, loc, toks):
     actions = toks[0]
@@ -191,7 +191,7 @@ match_pl = Group(Literal("prefix_list") + is_token + Word(alphas)).setParseActio
 # transit(...)
 
 match_clause = (match_tags | match_pl)
-match_clauses = Group(Suppress("(") + match_clause + ZeroOrMore(and_token + match_clause) 
+match_clauses = Group(Suppress("(") + match_clause + ZeroOrMore(and_token + match_clause)
         + Suppress(")")).setParseAction(fn_match)
 
 # actions
@@ -210,16 +210,16 @@ token_reject = Literal("reject").setParseAction(fn_reject)
 # setNextHop ip | host
 # setOriginAttribute ip | host
 
-action_clause = (token_set_lp | token_set_med | token_add_tag | token_remove_tag | token_reject ) 
+action_clause = (token_set_lp | token_set_med | token_add_tag | token_remove_tag | token_reject )
 then_actions =  action_clause + ZeroOrMore(and_token + action_clause)
-then_clause = Group(Suppress("then") + Suppress("(") + then_actions 
+then_clause = Group(Suppress("then") + Suppress("(") + then_actions
         + Suppress(")")).setParseAction(fn_then)
 standlone_then_clause = Group(then_actions).setParseAction(fn_standalone_then)
 
 bgp_pol = Forward() # if clause can be present inside an else
 
 else_actions = (action_clause + ZeroOrMore(and_token + action_clause)) | bgp_pol
-else_clause = Group(Suppress("else") + Suppress("(") + else_actions 
+else_clause = Group(Suppress("else") + Suppress("(") + else_actions
         + Suppress(")")).setParseAction(fn_else)
 
 bgp_pol << Group(Group(Suppress("if") + match_clauses + then_clause + Optional(else_clause)) | standlone_then_clause).setParseAction(fn_if)
