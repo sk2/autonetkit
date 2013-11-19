@@ -1,4 +1,5 @@
 import autonetkit.log as log
+import autonetkit.ank as ank_utils
 
 """TODO: map the log info/warning/debug to functions here
 # which then map to the appropriate log function, so that can handle either be verbose or not verbose to console with test information.
@@ -8,10 +9,28 @@ def validate(anm):
     tests_passed = True
     tests_passed = validate_ipv4(anm) and tests_passed
 
+    validate_ibgp(anm)
+
     if tests_passed:
         log.info("All validation tests passed.")
     else:
         log.warning("Some validation tests failed.")
+
+
+def validate_ibgp(anm):
+    import networkx as nx
+    #TODO: repeat for ibgp v6
+    g_ibgp_v4 = anm['ibgp_v4']
+
+    for asn, devices in ank_utils.groupby("asn", g_ibgp_v4):
+        asn_subgraph = g_ibgp_v4.subgraph(devices)
+        graph = asn_subgraph._graph
+        # get subgraph
+        if not nx.is_strongly_connected(graph):
+            log.warning("iBGP v4 topology for ASN%s is disconnected" % asn)
+        else:
+            log.debug("iBGP v4 topology for ASN%s is connected" % asn)
+
 
 def all_same(items):
     # based on http://stackoverflow.com/q/3787908
