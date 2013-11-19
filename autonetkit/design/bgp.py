@@ -119,7 +119,7 @@ def build_ibgp_v4(anm):
     g_ibgpv4 = anm.add_overlay("ibgp_v4", directed=True)
     ipv4_nodes = set(g_phy.nodes("is_router", "use_ipv4"))
     g_ibgpv4.add_nodes_from((n for n in g_bgp if n in ipv4_nodes),
-            retain = ["ibgp_level", "ibgp_l2_cluster", "ibgp_l3_cluster"] )
+            retain = ["ibgp_level", "hrr_cluster", "rr_cluster"] )
     g_ibgpv4.add_edges_from(g_bgp.edges(type="ibgp"), retain="direction")
 
 def build_ibgp_v6(anm):
@@ -131,7 +131,7 @@ def build_ibgp_v6(anm):
     g_ibgpv6 = anm.add_overlay("ibgp_v6", directed=True)
     ipv6_nodes = set(g_phy.nodes("is_router", "use_ipv6"))
     g_ibgpv6.add_nodes_from((n for n in g_bgp if n in ipv6_nodes),
-            retain = ["ibgp_level", "ibgp_l2_cluster", "ibgp_l3_cluster"] )
+            retain = ["ibgp_level", "hrr_cluster", "rr_cluster"] )
     g_ibgpv6.add_edges_from(g_bgp.edges(type="ibgp"), retain="direction")
 
 def build_ebgp_v4(anm):
@@ -185,7 +185,115 @@ def build_ebgp(anm):
 
     g_ebgp.remove_edges_from(same_asn_edges)
 
+
 def build_ibgp(anm):
+    import q
+    q("a")
+    g_in = anm['input']
+    g_phy = anm['phy']
+    g_bgp = anm['bgp']
+
+    ank_utils.copy_attr_from(g_in, g_bgp, "ibgp_level")
+    ank_utils.copy_attr_from(g_in, g_bgp, "ibgp_l2_cluster", "hrr_cluster")
+    ank_utils.copy_attr_from(g_in, g_bgp, "ibgp_l3_cluster", "rr_cluster")
+
+    """Levels:
+    0: no BGP
+    1: RRC
+    2: HRR
+    3: RR
+    """
+
+    for n in g_bgp:
+        # Tag with label to make logic clearer
+        if not n.ibgp_level:
+            # No level set -> treat as RRC
+            n.ibgp_level = 1
+
+        if n.ibgp_level == 0:
+            n.is_no_ibgp = True
+        elif n.ibgp_level == 1:
+            n.is_rrc = True
+        elif n.ibgp_level == 2:
+            n.is_hrr = True
+        elif n.ibgp_level == 3:
+            n.is_rr = True
+
+    bgp_nodes = [n for n in g_bgp if not n.ibgp_level == 0]
+
+    for asn, asn_devices in ank_utils.groupby("asn", bgp_nodes):
+        asn_devices = list(asn_devices)
+
+        asn_rrs = [n for n in asn_devices if n.is_rr]
+        over_links = [(s, t) for s in asn_rrs for t in asn_rrs if s != t]
+        g_bgp.add_edges_from(over_links, type='ibgp', direction='over')
+
+
+        for rr_cluster, rr_cluster_rtrs in ank_utils.groupby("rr_cluster", asn_devices):
+            rr_cluster_rtrs = list(rr_cluster_rtrs)
+            print "-", rr_cluster, list(rr_cluster_rtrs)
+
+            rr_cluster_rrs = [n for n in rr_cluster_rtrs if n.is_rr]
+            rr_cluster_hrrs = [n for n in rr_cluster_rtrs if n.is_hrr]
+
+            rr_parents = rr_cluster_rrs # Default is to parent HRRs to RRs in same rr_cluster
+            if len(rr_cluster_hrrs) and not len(rr_cluster_rrs):
+                if rr_cluster is None:
+                    # Special case: connect to global RRs
+                    rr_parents = asn_rrs
+                else:
+                    log.warning("RR Cluster %s in ASN%s has no RRs" % (rr_cluster, asn))
+
+            # Connect HRRs to RRs in the same rr_cluster
+            up_links = [(s, t) for s in rr_cluster_hrrs for t in rr_parents]
+            print "up", up_links
+            g_bgp.add_edges_from(up_links, type='ibgp', direction='up')
+            down_links = [(t, s) for (s, t) in up_links]
+            g_bgp.add_edges_from(down_links, type='ibgp', direction='down')
+
+
+            for hrr_cluster, hrr_cluster_rtrs in ank_utils.groupby("hrr_cluster", rr_cluster_rtrs):
+                hrr_cluster_rtrs = list(hrr_cluster_rtrs)
+                print "--", hrr_cluster, list(hrr_cluster_rtrs)
+
+                hrr_cluster_hrrs = [n for n in hrr_cluster_rtrs if n.is_hrr]
+                hrr_cluster_rrcs = [n for n in hrr_cluster_rtrs if n.is_rrc]
+
+                # Connect RRCs
+                if len(hrr_cluster_hrrs):
+                    # hrr_cluster_hrrs in this hrr_cluster -> connect RRCs to these
+                    up_links = [(s, t) for s in hrr_cluster_rrcs for t in hrr_cluster_hrrs]
+                    g_bgp.add_edges_from(up_links, type='ibgp', direction='up')
+                    down_links = [(t, s) for (s, t) in up_links]
+                    g_bgp.add_edges_from(down_links, type='ibgp', direction='down')
+                elif len(rr_cluster_rrs):
+                    # No HRRs in this cluster, connect RRCs to RRs in the same RR cluster
+                    up_links = [(s, t) for s in hrr_cluster_rrcs for t in rr_cluster_rrs]
+                    g_bgp.add_edges_from(up_links, type='ibgp', direction='up')
+                    down_links = [(t, s) for (s, t) in up_links]
+                    g_bgp.add_edges_from(down_links, type='ibgp', direction='down')
+                else:
+                    # Full-mesh
+                    over_links = [(s, t) for s in hrr_cluster_rrcs for t in hrr_cluster_rrcs]
+                    g_bgp.add_edges_from(over_links, type='ibgp', direction='over')
+                    if (rr_cluster is None) and (hrr_cluster is None):
+                        # Connect to RRs at ASN level
+                        log.info("RRCs %s in global group, connecting to global RRs" % hrr_cluster_rrcs)
+                        up_links = [(s, t) for s in hrr_cluster_rrcs for t in asn_rrs]
+                        g_bgp.add_edges_from(up_links, type='ibgp', direction='up')
+                        down_links = [(t, s) for (s, t) in up_links]
+                        g_bgp.add_edges_from(down_links, type='ibgp', direction='down')
+
+                    #TODO: Special case: if no hrr or rr cluster set, then connect to global RRs
+
+
+
+
+
+
+
+
+def build_ibgp_legacy(anm):
     g_in = anm['input']
     g_phy = anm['phy']
     g_bgp = anm['bgp']
