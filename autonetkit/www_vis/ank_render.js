@@ -932,7 +932,7 @@ var node_group_id = function(d) {
         return ([d['asn'], d[attr]]);
     }
     else if (overlay_id == "bgp" || overlay_id == "ibgp_v4" || overlay_id == "ibgp_v6") {
-        return (["ASN " + d['asn'], d['ibgp_l3_cluster'], d['ibgp_l2_cluster']]);
+        return (["ASN " + d['asn'], d['rr_cluster'], d['hrr_cluster']]);
     }
 
     return d[group_attr];
