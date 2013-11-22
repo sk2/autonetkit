@@ -244,9 +244,9 @@ def build_ibgp(anm):
 
             # Connect HRRs to RRs in the same rr_cluster
             up_links = [(s, t) for s in rr_cluster_hrrs for t in rr_parents]
-            g_bgp.add_edges_from(up_links, type='ibgp', direction='up')
+            g_bgp.add_edges_from(up_links, type='ibgp', direction='over')
             down_links = [(t, s) for (s, t) in up_links]
-            g_bgp.add_edges_from(down_links, type='ibgp', direction='down')
+            g_bgp.add_edges_from(down_links, type='ibgp', direction='over')
 
 
             for hrr_cluster, hrr_cluster_rtrs in ank_utils.groupby("hrr_cluster", rr_cluster_rtrs):
