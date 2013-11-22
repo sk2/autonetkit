@@ -207,8 +207,8 @@ def build_ibgp(anm):
         # Tag with label to make logic clearer
         if not n.ibgp_level:
             # No level set -> treat as RRC
-            if (rr_cluster is None) and (hrr_cluster is None):
-                pass # Don't allocate at the base
+            if (n.rr_cluster is None) and (n.hrr_cluster is None):
+                n.top_level_peer = True
             else:
                 n.ibgp_level = 1
 
@@ -230,6 +230,17 @@ def build_ibgp(anm):
 
         asn_rrs = [n for n in asn_devices if n.is_rr]
         over_links = [(s, t) for s in asn_rrs for t in asn_rrs if s != t]
+        g_bgp.add_edges_from(over_links, type='ibgp', direction='over')
+
+        top_level_peers = [n for n in asn_devices if n.top_level_peer]
+        # Full mesh top level peers
+        over_links = [(s, t) for s in top_level_peers for t in top_level_peers if s != t]
+        g_bgp.add_edges_from(over_links, type='ibgp', direction='over')
+        # Mesh with ASN rrs
+        over_links = [(s, t) for s in top_level_peers for t in asn_rrs if s != t]
+        g_bgp.add_edges_from(over_links, type='ibgp', direction='over')
+        # and other direction
+        over_links = [(s, t) for s in asn_rrs for t in top_level_peers if s != t]
         g_bgp.add_edges_from(over_links, type='ibgp', direction='over')
 
         for rr_cluster, rr_cluster_rtrs in ank_utils.groupby("rr_cluster", asn_devices):
@@ -275,7 +286,7 @@ def build_ibgp(anm):
                     g_bgp.add_edges_from(down_links, type='ibgp', direction='down')
                 else:
                     # Full-mesh
-                    over_links = [(s, t) for s in hrr_cluster_rrcs for t in hrr_cluster_rrcs]
+                    over_links = [(s, t) for s in hrr_cluster_rrcs for t in hrr_cluster_rrcs if s!=t]
                     g_bgp.add_edges_from(over_links, type='ibgp', direction='over')
                     if (rr_cluster is None) and (hrr_cluster is None):
                         # Connect to RRs at ASN level
