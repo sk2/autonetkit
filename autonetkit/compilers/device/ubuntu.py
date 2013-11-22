@@ -7,6 +7,33 @@ class UbuntuCompiler(ServerCompiler):
         super(UbuntuCompiler, self).compile(node)
         # up route add -net ${route.network} gw ${router.gw} dev ${route.interface}
         self.static_routes(node)
+        self.ssh_details(node)
+        self.cloud_init(node)
+
+    def cloud_init(self, node):
+        import yaml
+        #creates dict for cloud-init
+        #TODO: check this serializes/unserializes using JSON
+        data = {
+        'groups': ['foo', 'bar'],
+        }
+        data['users'] = ['default']
+        data['users'].append(
+            {
+            'name': str(node.server_username),
+            'ssh-authorized-keys': [node.server_ssh_key]
+            }
+            )
+        data_yaml = yaml.dump(data)
+
+        with open("%s.yaml" % node, "w") as fh:
+            fh.write(data_yaml)
+
+    def ssh_details(self, node):
+        # copy fromy phy node
+        phy_node = self.anm['phy'].node(node)
+        node.server_username = phy_node.server_username or None
+        node.server_ssh_key = phy_node.server_ssh_key or None
 
     def static_routes(self, node):
         node.static_routes_v4 = [] # initialise for case of no routes -> simplifies template logic
