@@ -207,7 +207,12 @@ def build_ibgp(anm):
         # Tag with label to make logic clearer
         if not n.ibgp_level:
             # No level set -> treat as RRC
-            n.ibgp_level = 1
+            if (rr_cluster is None) and (hrr_cluster is None):
+                pass # Don't allocate at the base
+            else:
+                n.ibgp_level = 1
+
+            #TODO: if top-level, then don't mark as RRC
 
         if n.ibgp_level == 0:
             n.is_no_ibgp = True
@@ -226,7 +231,6 @@ def build_ibgp(anm):
         asn_rrs = [n for n in asn_devices if n.is_rr]
         over_links = [(s, t) for s in asn_rrs for t in asn_rrs if s != t]
         g_bgp.add_edges_from(over_links, type='ibgp', direction='over')
-
 
         for rr_cluster, rr_cluster_rtrs in ank_utils.groupby("rr_cluster", asn_devices):
             rr_cluster_rtrs = list(rr_cluster_rtrs)
@@ -282,13 +286,6 @@ def build_ibgp(anm):
                         g_bgp.add_edges_from(down_links, type='ibgp', direction='down')
 
                     #TODO: Special case: if no hrr or rr cluster set, then connect to global RRs
-
-
-
-
-
-
-
 
 def build_ibgp_legacy(anm):
     g_in = anm['input']
