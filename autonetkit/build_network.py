@@ -104,6 +104,7 @@ def initialise(input_graph):
         'label', 'device_subtype', 'pop', 'asn'])
 
     if g_in.data.Creator == "Maestro":
+        #TODO: move this to other module
         # Multiple ASNs set, use label format device.asn
         anm.set_node_label(".", ['label_full'])
 
@@ -497,6 +498,8 @@ def build_phy(anm):
         ank_utils.copy_attr_from(g_in, g_phy, "label_full")
         ank_utils.copy_attr_from(g_in, g_phy, "indices")
         ank_utils.copy_attr_from(g_in, g_phy, "dont_configure_static_routing")
+        ank_utils.copy_attr_from(g_in, g_phy, "server_username")
+        ank_utils.copy_attr_from(g_in, g_phy, "server_ssh_key")
 
     g_phy.allocate_interfaces()
 
