@@ -7,7 +7,6 @@ import logging
 import pkg_resources
 import autonetkit.config as config
 import socket
-www_dir = pkg_resources.resource_filename(__name__, "www_vis")
 
 class MyWebHandler(tornado.web.RequestHandler):
 
@@ -38,7 +37,8 @@ class MyWebHandler(tornado.web.RequestHandler):
 
             if False: # use to save the default.json
                 import gzip
-                with gzip.open(os.path.join(www_dir, "default.json.gz"), "w") as fh:
+                vis_content = pkg_resources.resource_filename("autonetkit_vis", "web_content")
+                with gzip.open(os.path.join(vis_content, "default.json.gz"), "w") as fh:
                     json.dump(body_parsed, fh)
 
             self.ank_accessor.store_overlay(uuid, body_parsed)
@@ -139,7 +139,8 @@ class AnkAccessor():
             import autonetkit_cisco_webui
             default_file = pkg_resources.resource_filename("autonetkit_cisco_webui", "cisco.json.gz")
         except ImportError:
-            default_file = os.path.join(www_dir, "default.json.gz")
+            vis_content = pkg_resources.resource_filename("autonetkit_vis", "web_content")
+            default_file = os.path.join(vis_content, "default.json.gz")
 
         try:
             import gzip
@@ -240,8 +241,15 @@ def main():
 
     ank_accessor = AnkAccessor()
 # check if most recent outdates current most recent
+    content_path = None
 
-    content_path = www_dir # default content directory
+    try:
+        import autonetkit_vis
+    except ImportError:
+        pass  # #TODO: log no vis
+    else:
+        # use web content from autonetkit_cisco module
+        content_path = pkg_resources.resource_filename("autonetkit_vis", "web_content")
 
     #arguments.ank_vis = False # manually force for now
 
@@ -253,6 +261,10 @@ def main():
         else:
             # use web content from autonetkit_cisco module
             content_path = pkg_resources.resource_filename("autonetkit_cisco_webui", "web_content")
+
+    if not content_path:
+        print "No visualisation pages found: did you mean to install autonetkit_vis? Exiting..."
+        raise SystemExit
 
     settings = {
             "static_path": content_path,
