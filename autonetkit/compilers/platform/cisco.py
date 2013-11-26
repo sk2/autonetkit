@@ -98,6 +98,8 @@ class CiscoCompiler(PlatformCompiler):
 # TODO: merge common router code, so end up with three loops: routers, ios
 # routers, ios_xr routers
 
+    #TODO: Split out each device compiler into own function
+
         # store autonetkit_cisco version
         from pkg_resources import get_distribution
         ank_cisco_version = get_distribution("autonetkit_cisco").version
@@ -127,7 +129,9 @@ class CiscoCompiler(PlatformCompiler):
                 if phy_specified_id is not None:
                     interface.id = phy_specified_id
 
-        from autonetkit.compilers.device.ubuntu import UbuntuCompiler
+        #from autonetkit.compilers.device.ubuntu import UbuntuCompiler
+        from autonetkit_cisco.compilers.device.ubuntu import UbuntuCompiler
+
         ubuntu_compiler = UbuntuCompiler(self.nidb, self.anm)
         for phy_node in g_phy.nodes('is_server', host=self.host):
             #TODO: look at server syntax also, same as for routers
@@ -216,7 +220,10 @@ class CiscoCompiler(PlatformCompiler):
                 numeric_to_interface_label = self.numeric_to_interface_label_ios
 
             if use_mgmt_interfaces:
-                mgmt_int_id = int_ids.next()  # 0/0 is used for management ethernet
+                if phy_node.device_subtype == "vios":
+                    mgmt_int_id = "GigabitEthernet0/0"
+                if phy_node.device_subtype == "CSR1000v":
+                    mgmt_int_id = "GigabitEthernet0"
 
             for interface in nidb_node.physical_interfaces:
                 #TODO: use this code block once for all routers

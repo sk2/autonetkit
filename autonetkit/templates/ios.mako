@@ -169,7 +169,7 @@ router ospf ${node.ospf.process_id}
   mpls traffic-eng router-id ${node.ospf.mpls_te_router_id}
   mpls traffic-eng area ${node.ospf.loopback_area}
   % endif
-# Loopback
+## Loopback
   network ${node.loopback} 0.0.0.0 area ${node.ospf.loopback_area}
   log-adjacency-changes
   passive-interface ${node.ospf.lo_interface}
