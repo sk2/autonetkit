@@ -137,7 +137,12 @@ class CiscoCompiler(PlatformCompiler):
             #TODO: look at server syntax also, same as for routers
             nidb_node = self.nidb.node(phy_node)
             for interface in nidb_node.physical_interfaces:
-                interface.id = self.numeric_to_interface_label_linux(interface.numeric_id)
+                phy_specified_id = phy_node.interface(interface).specified_id
+                if phy_specified_id is not None:
+                    interface.id = phy_specified_id
+
+                #interface.id = self.numeric_to_interface_label_linux(interface.numeric_id)
+                #print "numeric", interface.numeric_id, interface.id
                 nidb_node.ip.use_ipv4 = phy_node.use_ipv4
                 nidb_node.ip.use_ipv6 = phy_node.use_ipv6
 
@@ -175,6 +180,11 @@ class CiscoCompiler(PlatformCompiler):
                         interface.ipv6_subnet = ipv6_int.subnet
                         interface.ipv6_address = sn_preflen_to_network(ipv6_int.ip_address,
                                 interface.ipv6_subnet.prefixlen)
+
+            if use_mgmt_interfaces: # not these are physical interfaces; configure after previous config steps
+                mgmt_int = nidb_node.add_interface(management = True)
+                mgmt_int_id = "GigabitEthernet0/0"
+                mgmt_int.id = mgmt_int_id
 
                     # render route config
             nidb_node = self.nidb.node(phy_node)
@@ -221,6 +231,8 @@ class CiscoCompiler(PlatformCompiler):
 
             if use_mgmt_interfaces:
                 if phy_node.device_subtype == "vios":
+                    #TODO: make these configured in the internal config file
+                    # for platform/device_subtype keying
                     mgmt_int_id = "GigabitEthernet0/0"
                 if phy_node.device_subtype == "CSR1000v":
                     mgmt_int_id = "GigabitEthernet0"

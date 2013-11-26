@@ -83,12 +83,23 @@ class UbuntuCompiler(ServerCompiler):
                 else:
                     node.static_routes_v4.append(route_entry)
 
+        #TODO: combine the above logic into single step rather than creating dict then formatting with it
+        cloud_init_static_routes = []
+        for entry in node.static_routes_v4:
+            formatted =("route add -net %s gw %s dev %s" % (entry.network, entry.gw, entry.interface))
+            cloud_init_static_routes.append(formatted)
+        for entry in node.static_routes_v4:
+            formatted =("route add -host %s gw %s dev %s" % (entry.prefix, entry.gw, entry.interface))
+            cloud_init_static_routes.append(formatted)
+
+        node.cloud_init.static_routes = cloud_init_static_routes
 
         # Render inline for packaging into yaml
-        import autonetkit.render
-        import os
-        lookup = autonetkit.render.initialise_lookup()
-        render_template = os.path.join("templates", "linux", "static_route.mako")
-        render_output = autonetkit.render.render_inline(node, render_template)
-        node.cloud_init.static_routes = render_output
+        #TODO: no longer used, but keep as reference for later templates that require this format
+        #import autonetkit.render
+        #import os
+        #lookup = autonetkit.render.initialise_lookup()
+        #render_template = os.path.join("templates", "linux", "static_route.mako")
+        #render_output = autonetkit.render.render_inline(node, render_template)
+        #node.cloud_init.static_routes = render_output
 

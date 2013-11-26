@@ -252,7 +252,7 @@ class overlay_interface(object):
         return data
 
     def get(self, key):
-        """For consistency, node.get(key) is neater 
+        """For consistency, node.get(key) is neater
         than getattr(interface, key)"""
         return getattr(self, key)
 
@@ -282,7 +282,7 @@ class overlay_edge_accessor(object):
     """API to access overlay edges in NIDB"""
 #TODO: fix consistency between node_id (id) and edge (overlay edge)
     def __init__(self, nidb, edge):
-#Set using this method to bypass __setattr__ 
+#Set using this method to bypass __setattr__
         object.__setattr__(self, 'nidb', nidb)
         object.__setattr__(self, 'edge', edge)
 
@@ -302,7 +302,7 @@ class overlay_edge_accessor(object):
 class overlay_edge(object):
     """API to access edge in nidb"""
     def __init__(self, nidb, src_id, dst_id):
-#Set using this method to bypass __setattr__ 
+#Set using this method to bypass __setattr__
         object.__setattr__(self, 'nidb', nidb)
         object.__setattr__(self, 'src_id', src_id)
         object.__setattr__(self, 'dst_id', dst_id)
@@ -367,7 +367,7 @@ class overlay_edge(object):
 class overlay_node_accessor(object):
 #TODO: do we even need this?
     def __init__(self, nidb, node_id):
-#Set using this method to bypass __setattr__ 
+#Set using this method to bypass __setattr__
         object.__setattr__(self, 'nidb', nidb)
         object.__setattr__(self, 'node_id', node_id)
 
@@ -381,7 +381,7 @@ class overlay_node_accessor(object):
 
 class nidb_node_subcategory(object):
     def __init__(self, nidb, node_id, category_id, subcategory_id):
-#Set using this method to bypass __setattr__ 
+#Set using this method to bypass __setattr__
         object.__setattr__(self, 'nidb', nidb)
         object.__setattr__(self, 'node_id', node_id)
         object.__setattr__(self, 'category_id', category_id)
@@ -389,7 +389,7 @@ class nidb_node_subcategory(object):
 
     @property
     def _data(self):
-        return 
+        return
 
     def __repr__(self):
         return self.nidb._graph.node[self.node_id][self.category_id][self.subcategory_id]
@@ -397,7 +397,7 @@ class nidb_node_subcategory(object):
 class nidb_node_category(object):
     #TODO: make this custom dict like above?
     def __init__(self, nidb, node_id, category_id):
-#Set using this method to bypass __setattr__ 
+#Set using this method to bypass __setattr__
         object.__setattr__(self, 'nidb', nidb)
         object.__setattr__(self, 'node_id', node_id)
         object.__setattr__(self, 'category_id', category_id)
@@ -485,7 +485,7 @@ class nidb_node(object):
     """API to access overlay graph node in network"""
 
     def __init__(self, nidb, node_id):
-#Set using this method to bypass __setattr__ 
+#Set using this method to bypass __setattr__
         object.__setattr__(self, 'nidb', nidb)
         object.__setattr__(self, 'node_id', node_id)
 
@@ -524,7 +524,7 @@ class nidb_node(object):
             return self._graph.node[self.node_id]["_interfaces"]
         except KeyError:
             log.debug("No interfaces initialised for %s" % self)
-            return 
+            return
 
     @property
     def _next_int_id(self):
@@ -583,7 +583,7 @@ class nidb_node(object):
                     interface, key) == val for key, val in kwargs.items())
             )
 
-        all_interfaces = iter(overlay_interface(self.nidb, 
+        all_interfaces = iter(overlay_interface(self.nidb,
             self.node_id, interface_id)
             for interface_id in self._interface_ids)
         retval = (i for i in all_interfaces if filter_func(i))
@@ -690,7 +690,7 @@ class nidb_node(object):
             pass # not a dict
 
         try:
-            data.keys() 
+            data.keys()
             return nidb_node_category(self.nidb, self.node_id, key)
         except TypeError:
             pass # Not set yet
@@ -718,7 +718,7 @@ class nidb_graph_data(object):
     """API to access overlay graph data in network"""
 
     def __init__(self, nidb):
-#Set using this method to bypass __setattr__ 
+#Set using this method to bypass __setattr__
         object.__setattr__(self, 'nidb', nidb)
 
     def __repr__(self):
@@ -739,7 +739,7 @@ class lab_topology(object):
     """API to access lab topology in network"""
 
     def __init__(self, nidb, topology_id):
-#Set using this method to bypass __setattr__ 
+#Set using this method to bypass __setattr__
         object.__setattr__(self, 'nidb', nidb)
         object.__setattr__(self, 'topology_id', topology_id)
 
@@ -984,7 +984,7 @@ class NIDB_base(object):
 
         for node in nodes_to_add:
             #TODO: add an interface_retain for attributes also
-            int_dict = {i.interface_id: {'type': i.type, 
+            int_dict = {i.interface_id: {'type': i.type,
                 'description': i.description,
                 'layer': i.overlay_id} for i in node.interfaces()}
             int_dict = {i.interface_id: {'type': i.type,
@@ -1031,7 +1031,7 @@ class NIDB_base(object):
 class lab_topology_accessor(object):
     """API to access overlay graphs in ANM"""
     def __init__(self, nidb):
-#Set using this method to bypass __setattr__ 
+#Set using this method to bypass __setattr__
         object.__setattr__(self, 'nidb', nidb)
 
     @property
