@@ -373,6 +373,7 @@ class IosClassicCompiler(IosBaseCompiler):
             # Set secret password to "cisco"
             node.enable_secret = "tnhtc92DXBhelxjYk8LWJrPV36S2i4ntXrpb4RFmfqY"
             node.exclude_phy_int_auto_speed_duplex = True
+            node.no_service_config = True
 
     def ospf(self, node):
         super(IosClassicCompiler, self).ospf(node)
