@@ -24,20 +24,89 @@ template_cache_dir = "cache"
 
 #TODO: Also try for Cisco build here
 
-lookup = TemplateLookup(directories=[resource_path("")],
-                        #module_directory= template_cache_dir,
-                        cache_type='memory',
-                        cache_enabled=True,
-                       )
+def initialise_lookup():
+    lookup = TemplateLookup(directories=[resource_path("")],
+                            #module_directory= template_cache_dir,
+                            cache_type='memory',
+                            cache_enabled=True,
+                           )
 
-try:
-    import autonetkit_cisco # test if can import, if not present will fail and not add to template path
-    cisco_templates = pkg_resources.resource_filename("autonetkit_cisco", "")
-    lookup.directories.append(cisco_templates)
-except ImportError:
-    pass # Cisco ANK not present
+    try:
+        import autonetkit_cisco # test if can import, if not present will fail and not add to template path
+        cisco_templates = pkg_resources.resource_filename("autonetkit_cisco", "")
+        lookup.directories.append(cisco_templates)
+    except ImportError:
+        pass # Cisco ANK not present
+
+    return lookup
+
+#TODO: make lookup initialised once rather than global for module import
+lookup = initialise_lookup()
 
 #TODO: make a render class, that caches traversed folders for speed
+
+def render_inline(node, render_template_file, to_memory = True,
+    render_dst_file = None):
+    """Generic rendering of a node attribute rather than the standard location.
+    Needs to be called by render_node.
+    Doesn't support base folders - only single attributes.
+    Note: supports rendering to memory (ie back to nidb rather than file)
+    """
+
+    log.debug("Rendering template %s for %s" % (render_template_file, node))
+    render_template_file
+
+    try:
+        ank_version = ("autonetkit_%s" %
+            pkg_resources.get_distribution("autonetkit").version)
+         #TODO: pick up name automatically
+    except pkg_resources.DistributionNotFound:
+        ank_version = "autonetkit_dev"
+
+    date = time.strftime("%Y-%m-%d %H:%M", time.localtime())
+
+    if render_template_file:
+        try:
+            render_template = lookup.get_template(render_template_file)
+        except SyntaxException, error:
+            log.warning( "Unable to render %s: "
+                "Syntax error in template: %s" % (node, error))
+            return
+
+        if node.render.dst_file:
+            dst_file = os.path.join(render_output_dir, node.render.dst_file)
+            with open( dst_file, 'wb') as dst_fh:
+                try:
+                    dst_fh.write(render_template.render(
+                        node = node,
+                        ank_version = ank_version,
+                        date = date,
+                        ))
+                except KeyError, error:
+                    log.warning( "Unable to render %s:"
+                        " %s not set" % (node, error))
+                except AttributeError, error:
+                    log.warning( "Unable to render %s: %s " % (node, error))
+                    from mako import exceptions
+                    log.warning(exceptions.text_error_template().render())
+                except NameError, error:
+                    log.warning( "Unable to render %s: %s. "
+                        "Check all variables used are defined" % (node, error))
+                except TypeError, error:
+                    log.warning( "Unable to render %s: %s." % (node, error))
+                    from mako import exceptions
+                    log.warning(exceptions.text_error_template().render())
+
+
+        if to_memory:
+# Render directly to NIDB
+            render_output = render_template.render(
+                        node = node,
+                        ank_version = ank_version,
+                        date = date,
+                        )
+
+            return render_output
 
 #TODO: Add support for both src template and src folder (eg for quagga, servers)
 def render_node(node, folder_cache):
@@ -117,6 +186,7 @@ def render_node(node, folder_cache):
                         date = date,
                         )
     if render_base:
+        #TODO: remove the folder cache for simplicity: doesn't sufficiently improve speed to warrant complexity
         if render_base in folder_cache:
             src_folder = folder_cache[render_base]['folder']
             fs_mako_templates = folder_cache[render_base]['templates']
