@@ -1,9 +1,5 @@
 ! IOS Config generated on ${date}
-% if node.ank_cisco_version:
-! by ${ank_version} and autonetkit_cisco ${node.ank_cisco_version}
-% else:
-! by ${ank_version}
-% endif
+! by ${version_banner}
 !
 hostname ${node}
 boot-start-marker
@@ -18,7 +14,9 @@ license boot level premium
 no aaa new-model
 !
 !
+% if node.ipv4_cef:
 ip cef
+%endif
 ipv6 unicast-routing
 % if node.ipv6_cef:
 ipv6 cef
