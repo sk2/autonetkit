@@ -8,7 +8,6 @@ setup (
      description = 'Automatic configuration generation for emulated networks',
      long_description = 'Automatic configuration generation for emulated networks',
 
-     # simple to run
      entry_points = {
          'console_scripts': [
              'autonetkit = autonetkit.console_script:console_entry',
