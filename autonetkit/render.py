@@ -43,6 +43,26 @@ def initialise_lookup():
 #TODO: make lookup initialised once rather than global for module import
 lookup = initialise_lookup()
 
+def format_version_banner():
+    version_banner = "autonetkit_dev"
+    try:
+        import autonetkit_cisco # test if can import, if not present will fail and not add to template path
+    except ImportError:
+        pass
+    else:
+        import autonetkit_cisco.version
+        version_banner = autonetkit_cisco.version.banner()
+        return version_banner
+
+    try:
+        version_banner = ("autonetkit_%s" %
+            pkg_resources.get_distribution("autonetkit").version)
+         #TODO: pick up name automatically
+    except pkg_resources.DistributionNotFound:
+        version_banner = "autonetkit_dev"
+
+    return version_banner
+
 #TODO: make a render class, that caches traversed folders for speed
 
 def render_inline(node, render_template_file, to_memory = True,
@@ -54,14 +74,9 @@ def render_inline(node, render_template_file, to_memory = True,
     """
 
     log.debug("Rendering template %s for %s" % (render_template_file, node))
-    render_template_file
+    render_template_file #TODO: remove this?
 
-    try:
-        ank_version = ("autonetkit_%s" %
-            pkg_resources.get_distribution("autonetkit").version)
-         #TODO: pick up name automatically
-    except pkg_resources.DistributionNotFound:
-        ank_version = "autonetkit_dev"
+    version_banner= format_version_banner()
 
     date = time.strftime("%Y-%m-%d %H:%M", time.localtime())
 
@@ -79,7 +94,7 @@ def render_inline(node, render_template_file, to_memory = True,
                 try:
                     dst_fh.write(render_template.render(
                         node = node,
-                        ank_version = ank_version,
+                        version_banner = version_banner,
                         date = date,
                         ))
                 except KeyError, error:
@@ -102,7 +117,7 @@ def render_inline(node, render_template_file, to_memory = True,
 # Render directly to NIDB
             render_output = render_template.render(
                         node = node,
-                        ank_version = ank_version,
+                        version_banner = version_banner,
                         date = date,
                         )
 
@@ -122,12 +137,7 @@ def render_node(node, folder_cache):
         #TODO: make sure allows case of just custom render
         return
 
-    try:
-        ank_version = ("autonetkit_%s" %
-            pkg_resources.get_distribution("autonetkit").version)
-         #TODO: pick up name automatically
-    except pkg_resources.DistributionNotFound:
-        ank_version = "autonetkit_dev"
+    version_banner= format_version_banner()
 
     date = time.strftime("%Y-%m-%d %H:%M", time.localtime())
     if render_custom:
@@ -159,7 +169,7 @@ def render_node(node, folder_cache):
                 try:
                     dst_fh.write(render_template.render(
                         node = node,
-                        ank_version = ank_version,
+                        version_banner = version_banner,
                         date = date,
                         ))
                 except KeyError, error:
@@ -182,7 +192,7 @@ def render_node(node, folder_cache):
 # Render directly to NIDB
             node.render.render_output = render_template.render(
                         node = node,
-                        ank_version = ank_version,
+                        version_banner = version_banner,
                         date = date,
                         )
     if render_base:
@@ -210,7 +220,7 @@ def render_node(node, folder_cache):
                 with open( dst_file, 'wb') as dst_fh:
                     dst_fh.write(mytemplate.render(
                         node = node,
-                        ank_version = ank_version,
+                        version_banner = version_banner,
                         date = date,
                         ))
             return
@@ -277,10 +287,8 @@ def render_topologies(nidb):
         render_topology(topology)
 
 def render_topology(topology):
-    try:
-        ank_version = "autonetkit_%s" % pkg_resources.get_distribution("autonetkit").version #TODO: pick up name automatically
-    except pkg_resources.DistributionNotFound:
-        ank_version = "autonetkit_dev"
+    version_banner= format_version_banner()
+
     date = time.strftime("%Y-%m-%d %H:%M", time.localtime())
     try:
         render_output_dir = topology.render_dst_folder
@@ -321,7 +329,7 @@ def render_topology(topology):
         try:
             dst_fh.write(render_template.render(
                 topology = topology,
-                ank_version = ank_version,
+                version_banner = version_banner,
                 date = date,
                 ))
         except KeyError, error:
