@@ -134,8 +134,9 @@ class CiscoCompiler(PlatformCompiler):
 
         ubuntu_compiler = UbuntuCompiler(self.nidb, self.anm)
         for phy_node in g_phy.nodes('is_server', host=self.host):
-            #TODO: look at server syntax also, same as for routers
             nidb_node = self.nidb.node(phy_node)
+
+            #TODO: look at server syntax also, same as for routers
             for interface in nidb_node.physical_interfaces:
                 phy_specified_id = phy_node.interface(interface).specified_id
                 if phy_specified_id is not None:
