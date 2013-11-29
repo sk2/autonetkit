@@ -21,13 +21,13 @@ def unwrap_graph(overlay_graph):
     return overlay_graph._graph
 
 
-def alphabetical_sort( l ): 
+def alphabetical_sort( l ):
     """From http://stackoverflow.com/questions/2669059/how-to-sort-alpha-numeric-set-in-python"""
 #TODO: fix as currently only handles strings - not objects with repr?
-    import re 
-    """ Sort the given iterable in the way that humans expect.""" 
-    convert = lambda text: int(text) if text.isdigit() else text 
-    alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ] 
+    import re
+    """ Sort the given iterable in the way that humans expect."""
+    convert = lambda text: int(text) if text.isdigit() else text
+    alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]
     return sorted(l, key = alphanum_key)
 
 def wrap_nodes(overlay_graph, nodes):
