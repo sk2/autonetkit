@@ -184,7 +184,7 @@ class CiscoCompiler(PlatformCompiler):
 
             if use_mgmt_interfaces: # not these are physical interfaces; configure after previous config steps
                 mgmt_int = nidb_node.add_interface(management = True)
-                mgmt_int_id = "GigabitEthernet0/0"
+                mgmt_int_id = "eth0"
                 mgmt_int.id = mgmt_int_id
 
                     # render route config
