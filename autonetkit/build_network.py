@@ -108,7 +108,6 @@ def initialise(input_graph):
         # Multiple ASNs set, use label format device.asn
         anm.set_node_label(".", ['label_full'])
 
-    autonetkit.update_http(anm)
     return anm
 
 def check_server_asns(anm):
@@ -145,11 +144,11 @@ def apply_design_rules(anm):
     g_phy = anm['phy']
 
     import autonetkit
-    autonetkit.update_http(anm)
+    #autonetkit.update_http(anm)
     build_l3_connectivity(anm)
 
     check_server_asns(anm)
-    autonetkit.update_http(anm)
+    #autonetkit.update_http(anm)
 
     build_vrf(anm) # need to do before to add loopbacks before ip allocations
     from autonetkit.design.ip import build_ip, build_ipv4,build_ipv6
@@ -207,7 +206,7 @@ def apply_design_rules(anm):
 
     import autonetkit.design.bgp
     autonetkit.design.bgp.build_bgp(anm)
-    autonetkit.update_http(anm)
+    #autonetkit.update_http(anm)
 
     import autonetkit.design.mpls
     autonetkit.design.mpls.mpls_te(anm)
@@ -233,6 +232,7 @@ def build(input_graph):
     """Main function to build network overlay topologies"""
     anm = initialise(input_graph)
     anm = apply_design_rules(anm)
+    #autonetkit.update_http(anm)
     return anm
 
 def vrf_pre_process(anm):
@@ -270,6 +270,7 @@ def allocate_vrf_roles(g_vrf):
 
 def add_vrf_loopbacks(g_vrf):
     """Adds loopbacks for VRFs, and stores VRFs connected to PE router"""
+    #autonetkit.update_http(anm)
     for node in g_vrf.nodes(vrf_role="PE"):
         node_vrf_names = {n.vrf for n in node.neighbors(vrf_role="CE")}
         node.node_vrf_names = node_vrf_names
@@ -464,8 +465,6 @@ def build_vrf(anm):
     for edge in g_vrf.edges():
         for interface in edge.interfaces():
             interface.vrf_name = edge.vrf
-
-
 
 def build_phy(anm):
     """Build physical overlay"""
