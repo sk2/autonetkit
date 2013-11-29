@@ -196,6 +196,13 @@ class overlay_interface(object):
                 and e._interfaces[self.node_id] == self.interface_id]
         return valid_edges
 
+    def neighbors(self):
+        """Returns interfaces on nodes that are linked to this interface
+        Can get nodes using [i.node for i in interface.neighbors()]
+        """
+        edges = self.edges()
+        return [e.dst_int for e in edges]
+
 @functools.total_ordering
 class OverlayNode(object):
     """OverlayNode"""
