@@ -179,6 +179,11 @@ class overlay_interface(object):
     def __eq__(self, other):
         return self.__key() == other.__key()
 
+    @property
+    def is_bound(self):
+        """Returns if this interface is bound to an edge on this layer"""
+        return len(self.edges()) > 0
+
     def __repr__(self):
         description = self.description or self.interface_id
         return "(%s, %s)" % (self.node_id, description)
