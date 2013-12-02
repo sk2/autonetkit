@@ -128,12 +128,13 @@ class MyWebSocketHandler(websocket.WebSocketHandler):
 
 class AnkAccessor():
     """ Used to store published topologies"""
-    def __init__(self, maxlen = 25):
+    def __init__(self, maxlen = 25, simplified_overlays = False):
         from collections import deque
         self.anm_index = {}
         self.uuid_list = deque(maxlen = maxlen)  # use for circular buffer
         self.anm = {}
         self.ip_allocation = {}
+        self.simplified_overlays = simplified_overlays
 # try loading from vis directory
         try:
             import autonetkit_cisco_webui
@@ -152,13 +153,51 @@ class AnkAccessor():
             print e
             pass # use default blank anm
 
-    def store_overlay(self, uuid, overlay):
-        print "Storing overlay with uuid %s" % uuid
+    def store_overlay(self, uuid, overlay_input):
+        print "Storing overlay_input with uuid %s" % uuid
 
-        # Check if new uuid or updating previous uuid
-        if uuid in self.anm_index:
-            self.anm_index[uuid] = overlay
-            return
+        if self.simplified_overlays:
+            print "JERE"
+            overlays_tidied = {}
+
+            overlay_keys = [index for index, data in overlay_input.items() if len(data.get("nodes"))]
+
+            keys_to_exclude = {"input", "input_directed",
+            "bgp", "ibgp", "ebgp",
+            "graphics", "ip", "nidb"}
+            overlay_keys = [k for k in overlay_keys if k not in keys_to_exclude]
+
+            labels = {
+            "l3_conn": "L3 Connectivity",
+            "ibgp_v6": "iBGP v6",
+            "ibgp_v4": "iBGP v4",
+            "ibgp_vpn_v4": "iBGP VPN v4",
+            "ebgp_v6": "eBGP v6",
+            "mpls_te": "MPLS TE",
+            "mpls_ldp": "MPLS LDP",
+            "ebgp_v4": "eBGP v4",
+            "mpls_oam": "MPLS OAM",
+            "ipv4": "IP v4",
+            "ipv6": "IP v6",
+            "segment_routing": "Segment Routing",
+            "pce": "PCE",
+            "bgp_ls": "BGP LS",
+            "phy": "Physical",
+            "vrf": "VRF",
+            "isis": "IS-IS",
+            "bgp": "BGP",
+            "eigrp": "EIGRP",
+            "ebgp": "eBGP",
+            "ospf": "OSPF",
+            }
+
+            # Check if new uuid or updating previous uuid
+            for key in overlay_keys:
+                store_key = labels.get(key) or key # use from labels if present
+                overlays_tidied[store_key] = overlay_input[key]
+
+        else:
+            overlays_tidied = overlay_input
 
         # New uuid
         if len(self.uuid_list) == self.uuid_list.maxlen:
@@ -169,7 +208,7 @@ class AnkAccessor():
             del self.anm_index[oldest_uuid]
 
         self.uuid_list.append(uuid)
-        self.anm_index[uuid] = overlay
+        self.anm_index[uuid] = overlays_tidied
 
     def get_overlay(self, uuid, overlay_id):
         logging.debug("Getting overlay %s with uuid %s" % (overlay_id, uuid))
@@ -182,6 +221,9 @@ class AnkAccessor():
             try:
                 if overlay_id == "*":
                     return anm
+                elif self.simplified_overlays and overlay_id == "phy":
+                    print "Returning physical for phy"
+                    return anm["Physical"]
                 else:
                     return anm[overlay_id]
             except KeyError:
@@ -198,7 +240,7 @@ class AnkAccessor():
         if not len(anm):
             return [""]
 
-        return sorted(anm.keys())
+        return sorted(anm.keys(), key = lambda x: str(x[0]).lower())
 
     def __getitem__(self, key):
         try:
@@ -239,7 +281,6 @@ def main():
     parser.add_argument('--ank_vis', action="store_true", default=False, help="Force AutoNetkit visualisation system")
     arguments = parser.parse_args()
 
-    ank_accessor = AnkAccessor()
 # check if most recent outdates current most recent
     content_path = None
 
@@ -253,9 +294,11 @@ def main():
 
     #arguments.ank_vis = False # manually force for now
 
+    simplified_overlays = False
     if not arguments.ank_vis:
         try:
             import autonetkit_cisco_webui
+            simplified_overlays = True
         except ImportError:
             pass  # use AutoNetkit internal web content
         else:
@@ -278,6 +321,8 @@ def main():
 
     if singleuser_mode:
         print "Running webserver in single-user mode"
+
+    ank_accessor = AnkAccessor(simplified_overlays = simplified_overlays)
 
     application = tornado.web.Application([
         (r'/ws', MyWebSocketHandler, {"ank_accessor": ank_accessor,
