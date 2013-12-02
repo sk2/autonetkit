@@ -1344,7 +1344,7 @@ class AbstractNetworkModel(object):
         g_graphics = self['graphics']
         g_in = self.add_overlay("input", graph=graph, directed=False)
         g_graphics.add_nodes_from(g_in, retain=['x', 'y', 'device_type',
-                                                'device_subtype', 'pop',
+                                                'device_subtype', 'pop', 'label',
                                                 'asn'])
         return g_in
 
