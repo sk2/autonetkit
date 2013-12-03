@@ -10,3 +10,4 @@ More information on AutoNetkit:
 *  [PyCon Australia 2013 Presentation on Autonetkit](http://t.co/H4NWROoAJK) [(Slides)](http://t.co/x0NXLMATEq)
 *  [AutoNetkit](http://www.autonetkit.org)
 *  [API Documentation](https://autonetkit.readthedocs.org/)
+*  [CoNext 2013 Conference Paper](http://conferences.sigcomm.org/co-next/2013/program/p235.pdf)
