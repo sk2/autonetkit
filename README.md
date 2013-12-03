@@ -11,3 +11,5 @@ More information on AutoNetkit:
 *  [AutoNetkit](http://www.autonetkit.org)
 *  [API Documentation](https://autonetkit.readthedocs.org/)
 *  [CoNext 2013 Conference Paper](http://conferences.sigcomm.org/co-next/2013/program/p235.pdf)
+*  [Twitter](https://twitter.com/autonetkit)
+*  [Mailing list](https://groups.google.com/group/autonetkit)
