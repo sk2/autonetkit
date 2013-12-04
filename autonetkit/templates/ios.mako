@@ -368,11 +368,11 @@ router bgp ${node.asn}
 %endfor
 !
 % for route in node.bgp.ipv4_nailed_up_routes:
-ip route ${route.network} ${route.netmask} Null0
+ip route ${route.network} ${route.netmask} Null0 254
 % endfor
 !
 % for route in node.bgp.ipv6_nailed_up_routes:
-ipv6 route ${route} Null0
+ipv6 route ${route} Null0 254
 % endfor
 !
 end
