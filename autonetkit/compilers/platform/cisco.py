@@ -236,7 +236,7 @@ class CiscoCompiler(PlatformCompiler):
                     # for platform/device_subtype keying
                     mgmt_int_id = "GigabitEthernet0/0"
                 if phy_node.device_subtype == "CSR1000v":
-                    mgmt_int_id = "GigabitEthernet0"
+                    mgmt_int_id = "GigabitEthernet1"
 
             for interface in nidb_node.physical_interfaces:
                 #TODO: use this code block once for all routers
