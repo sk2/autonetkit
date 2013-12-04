@@ -191,6 +191,8 @@ class AnkAccessor():
             "ospf": "OSPF",
             }
 
+            labels = {}
+
             # Check if new uuid or updating previous uuid
             for key in overlay_keys:
                 store_key = labels.get(key) or key # use from labels if present
