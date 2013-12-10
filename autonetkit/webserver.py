@@ -223,9 +223,9 @@ class AnkAccessor():
             try:
                 if overlay_id == "*":
                     return anm
-                elif self.simplified_overlays and overlay_id == "phy":
-                    print "Returning physical for phy"
-                    return anm["Physical"]
+                #elif self.simplified_overlays and overlay_id == "phy":
+                    #print "Returning physical for phy"
+                    #return anm["Physical"]
                 else:
                     return anm[overlay_id]
             except KeyError:
