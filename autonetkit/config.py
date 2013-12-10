@@ -1,13 +1,14 @@
 import pkg_resources
 import ConfigParser
 from configobj import ConfigObj, flatten_errors
+import os
 
 import validate
 validator = validate.Validator()
 
 import os.path
 #TODO: check this works on Windows
-ank_user_dir = os.path.join(os.path.expanduser("~"),  ".autonetkit")
+ank_user_dir = os.path.join(os.environ['HOME'],  ".autonetkit")
 
 def load_config():
     settings = ConfigParser.RawConfigParser()
@@ -18,6 +19,12 @@ def load_config():
     settings.merge(ConfigObj(user_config_file))
 # ANK settings in current directory
     settings.merge(ConfigObj("autonetkit.cfg"))
+# ANK settings specified by environment variable
+    try:
+        ankcfg = os.environ['AUTONETKIT_CFG']
+        settings.merge(ConfigObj(ankcfg))
+    except KeyError:
+        pass
 
     results = settings.validate(validator)
     if results != True:
