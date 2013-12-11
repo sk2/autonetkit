@@ -290,7 +290,7 @@ def build_ibgp(anm):
                     g_bgp.add_edges_from(over_links, type='ibgp', direction='over')
                     if (rr_cluster is None) and (hrr_cluster is None):
                         # Connect to RRs at ASN level
-                        log.info("RRCs %s in global group, connecting to global RRs" % hrr_cluster_rrcs)
+                        log.debug("RRCs %s in global group, connecting to global RRs" % hrr_cluster_rrcs)
                         up_links = [(s, t) for s in hrr_cluster_rrcs for t in asn_rrs]
                         g_bgp.add_edges_from(up_links, type='ibgp', direction='up')
                         down_links = [(t, s) for (s, t) in up_links]
