@@ -1,8 +1,8 @@
 LAB_DESCRIPTION="${topology.description}"
-LAB_VERSION="${ank_version}"
-LAB_AUTHOR="${topology.author}"  
+LAB_VERSION="${version_banner}"
+LAB_AUTHOR="${topology.author}"
 LAB_EMAIL="${topology.email}"
-LAB_WEB="${topology.web}"    
+LAB_WEB="${topology.web}"
 
 machines="${topology.machines}"
 
