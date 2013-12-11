@@ -194,7 +194,7 @@ class overlay_interface(object):
         valid_edges = [e for e in self.node.edges()
                 if self.node_id in e._interfaces
                 and e._interfaces[self.node_id] == self.interface_id]
-        return valid_edges
+        return list(valid_edges)
 
     def neighbors(self):
         """Returns interfaces on nodes that are linked to this interface
@@ -497,7 +497,8 @@ class OverlayNode(object):
 
     def edges(self, *args, **kwargs):
         """Edges to/from this node"""
-        return self._overlay.edges(self, *args, **kwargs)
+        return list(self._overlay.edges(self, *args, **kwargs))
+
 
     def __str__(self):
         return str(self.__repr__())
@@ -864,7 +865,7 @@ class OverlayBase(object):
         result = self.__iter__()
         if len(args) or len(kwargs):
             result = self.filter(result, *args, **kwargs)
-        return result
+        return list(result)
 
     def routers(self, *args, **kwargs):
         """Shortcut for nodes(), sets device_type to be router"""
@@ -950,7 +951,7 @@ class OverlayBase(object):
         else:
             result = (OverlayEdge(self._anm, self._overlay_id, src, dst)
                       for (src, dst) in valid_edges)
-        return result
+        return list(result)
 
 class OverlaySubgraph(OverlayBase):
     """OverlaySubgraph"""
