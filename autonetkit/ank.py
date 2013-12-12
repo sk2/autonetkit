@@ -86,8 +86,11 @@ def copy_edge_attr_from(overlay_src, overlay_dst, src_attr, dst_attr = None, typ
                 val = float(val)
             elif type is int:
                 val = int(val)
-            if (src, dst) in graph_dst:
+            if graph_dst.has_edge(src, dst):
                 graph_dst[src][dst][dst_attr] = val
+            else:
+                log.debug("Unable to copy edge attribute %s for (%s, %s) not in target graph %s" % (src_attr, src, dst, overlay_dst))
+
 
 def stringify_netaddr(graph):
     import netaddr
