@@ -51,7 +51,10 @@ def manual_ipv4_infrastructure_allocation(anm):
         try:
             assert(len(set(cd_subnets)) == 1)
         except AssertionError:
-            log.warning("Non matching subnets from collision domain %s" % coll_dom)
+            mismatch_subnets = "; ".join("%s: %s/%s" % (i, i.subnet.network, i.prefixlen)
+            for i in connected_interfaces)
+            log.warning("Non matching subnets from collision domain %s: %s"
+                % (coll_dom, mismatch_subnets))
         else:
             coll_dom.subnet = cd_subnets[0] # take first entry
 
