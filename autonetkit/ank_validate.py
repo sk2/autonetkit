@@ -20,6 +20,10 @@ def validate(anm):
 def validate_ibgp(anm):
     import networkx as nx
     #TODO: repeat for ibgp v6
+    #TODO: test if overlay is present, if not then warn
+    if not anm.has_overlay("ibgp_v4"):
+        return # no ibgp v4  - eg if ip addressing disabled
+
     g_ibgp_v4 = anm['ibgp_v4']
 
     for asn, devices in ank_utils.groupby("asn", g_ibgp_v4):
