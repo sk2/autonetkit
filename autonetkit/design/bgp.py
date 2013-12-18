@@ -205,7 +205,7 @@ def build_ibgp(anm):
 
     for n in g_bgp:
         # Tag with label to make logic clearer
-        if not n.ibgp_level:
+        if n.ibgp_level is None:
             # No level set -> treat as RRC
             if (n.rr_cluster is None) and (n.hrr_cluster is None):
                 n.top_level_peer = True
