@@ -4,7 +4,7 @@ import sys
 
 setup (
      name = "autonetkit",
-     version = "0.7.10",
+     version = "0.7.11",
      description = 'Automatic configuration generation for emulated networks',
      long_description = 'Automatic configuration generation for emulated networks',
 
@@ -29,7 +29,7 @@ setup (
      download_url = ("http://pypi.python.org/pypi/autonetkit"),
 
      install_requires = [
-         'netaddr==0.7.10',
+         'netaddr==0.7.11',
          'mako==0.8',
          'networkx==1.7',
          'configobj==4.7.1',
