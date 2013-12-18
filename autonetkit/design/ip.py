@@ -8,7 +8,7 @@ def build_ipv6(anm):
     g_ipv6 = anm.add_overlay("ipv6")
     g_ip = anm['ip']
     g_ipv6.add_nodes_from(
-        g_ip, retain="collision_domain")  # retain if collision domain or not
+        g_ip, retain=["label", "collision_domain"])  # retain if collision domain or not
     g_ipv6.add_edges_from(g_ip.edges())
 
     ipv6.allocate_ips(g_ipv6)
@@ -184,7 +184,7 @@ def build_ipv4(anm, infrastructure=True):
     g_ip = anm['ip']
     g_in = anm['input']
     g_ipv4.add_nodes_from(
-        g_ip, retain="collision_domain")  # retain if collision domain or not
+            g_ip, retain=["label", "collision_domain"])  # retain if collision domain or not
     # Copy ASN attribute chosen for collision domains (used in alloc algorithm)
     ank_utils.copy_attr_from(g_ip, g_ipv4, "asn",
         nbunch = g_ipv4.nodes("collision_domain"))
