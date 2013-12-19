@@ -230,9 +230,14 @@ def apply_design_rules(anm):
 
 def build(input_graph):
     """Main function to build network overlay topologies"""
-    anm = initialise(input_graph)
-    anm = apply_design_rules(anm)
-    #autonetkit.update_http(anm)
+    try:
+        anm = initialise(input_graph)
+        anm = apply_design_rules(anm)
+    except Exception, e:
+        # Send the visualisation to help debugging
+            import autonetkit
+            autonetkit.update_http(anm)
+            raise e
     return anm
 
 def vrf_pre_process(anm):
