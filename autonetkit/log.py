@@ -39,4 +39,3 @@ error = logger.error
 info = logger.info
 warning = logger.warning
 exception = logger.exception
-
