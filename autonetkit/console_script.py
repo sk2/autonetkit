@@ -14,6 +14,7 @@ import autonetkit.log as log
 import autonetkit.ank_messaging as ank_messaging
 import autonetkit.config as config
 import autonetkit.ank_json as ank_json
+import sys
 
 # TODO: make if measure set, then not compile - or warn if both set, as
 # don't want to regen topology when measuring
@@ -210,6 +211,8 @@ def main(options):
     except Exception, err:
         log.error("Error generating network configurations: %s. More information may be available in the debug log." % err)
         log.debug("Error generating network configurations", exc_info = True)
+        import sys
+        sys.exit("Unable to build configurations.")
 
 
 # TODO: work out why build_options is being clobbered for monitor mode
