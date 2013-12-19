@@ -59,7 +59,7 @@ cdp run
 username cisco privilege 15 password 0 cisco
 !
 onep
- transport socket
+ transport type tls disable-remotecert-validation
  start
 !
 %endif
