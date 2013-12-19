@@ -48,15 +48,6 @@ class MyWebHandler(tornado.web.RequestHandler):
                 #print("Updating listener %s for uuid %s" % (listener.request.remote_ip, uuid))
                 listener.update_overlay()
 
-        elif data_type == "starting_host":
-            for listener in uuid_socket_listeners:
-                #TODO: use a json format of {'type': type, 'data': data} in client-side script
-                listener.write_message({'starting': data})
-
-        elif data_type == "lab started":
-            for listener in uuid_socket_listeners:
-                listener.write_message({'lab started': data})
-
         elif data_type == "highlight":
             body_parsed = json.loads(data)
             for listener in uuid_socket_listeners:
@@ -157,7 +148,6 @@ class AnkAccessor():
         print "Storing overlay_input with uuid %s" % uuid
 
         if self.simplified_overlays:
-            print "JERE"
             overlays_tidied = {}
 
             overlay_keys = [index for index, data in overlay_input.items() if len(data.get("nodes"))]
@@ -191,6 +181,7 @@ class AnkAccessor():
             "ospf": "OSPF",
             }
 
+            #DIsable until all web engines are verified to support format (eg ank_cisco_webui)
             labels = {}
 
             # Check if new uuid or updating previous uuid
