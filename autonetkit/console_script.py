@@ -205,7 +205,11 @@ def main(options):
         log.info("No input file specified. Exiting")
         raise SystemExit
 
-    manage_network(input_string, timestamp, build_options=build_options, grid = options.grid)
+    try:
+        manage_network(input_string, timestamp, build_options=build_options, grid = options.grid)
+    except Exception, err:
+        log.error("Error generating network configurations: %s. More information may be available in the debug log." % err)
+        log.debug("Error generating network configurations", exc_info = True)
 
 
 # TODO: work out why build_options is being clobbered for monitor mode
