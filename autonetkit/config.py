@@ -7,8 +7,8 @@ import validate
 validator = validate.Validator()
 
 import os.path
-#TODO: check this works on Windows
-ank_user_dir = os.path.join(os.environ['HOME'],  ".autonetkit")
+# from http://stackoverflow.com/questions/4028904
+ank_user_dir = os.path.join(os.path.expanduser("~"),  ".autonetkit")
 
 def load_config():
     settings = ConfigParser.RawConfigParser()
