@@ -71,7 +71,7 @@ def allocate_ips(G_ip):
             subnet = ptp_subnet.next()
             hosts = subnet.iter_hosts()
             hosts.next() # drop .0 as a host address (valid but can be confusing)
-            cd.subnet = subnet 
+            cd.subnet = subnet
             for edge in sorted(cd.edges(), key = lambda x: x.dst.label):
                 edge.ip = hosts.next()
 
@@ -81,7 +81,7 @@ def allocate_ips(G_ip):
             subnet = subnets.next()
             hosts = subnet.iter_hosts()
             hosts.next() # drop .0 as a host address (valid but can be confusing)
-            cd.subnet = subnet 
+            cd.subnet = subnet
             for edge in sorted(cd.edges(), key = lambda x: x.dst.label):
                 edge.ip = hosts.next()
 
@@ -147,7 +147,7 @@ def allocate_ips(G_ip):
 
     total_tree = {
             'name': "IPv6",
-            'children': 
+            'children':
             [loopback_tree, infra_tree],
             #[infra_tree],
             }
