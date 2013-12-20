@@ -57,10 +57,11 @@ cdp run
 % if node.use_onepk:
 !
 username cisco privilege 15 password 0 cisco
-!
-onep
+ !
+ onep
  transport type tls disable-remotecert-validation
- start
+  start
+ service set vty
 !
 %endif
 ## VRF
