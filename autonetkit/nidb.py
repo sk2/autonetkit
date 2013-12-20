@@ -186,7 +186,7 @@ class overlay_interface(object):
 
     def __repr__(self):
         description = self.description or self.interface_id
-        return "(%s, %s)" % (self.node_id, description)
+        return "(%s, %s)" % (self.node, description)
 
     def __nonzero__(self):
         """Allows for checking if node exists
@@ -203,7 +203,7 @@ class overlay_interface(object):
 
     @property
     def _node(self):
-        """Return graph the node belongs to"""
+        """Return node the node belongs to"""
         return self._graph.node[self.node_id]
 
     @property
