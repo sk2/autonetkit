@@ -31,7 +31,7 @@ def elem_diff(elem_a, elem_b):
         #TODO: fix this
         string_types = (str, unicode)
         if type(elem_a) in string_types and type(elem_b) in string_types:
-            pass 
+            pass
         else:
             return "different types"
 
