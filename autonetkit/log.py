@@ -1,8 +1,6 @@
 import logging
 import autonetkit.config as config
 
-
-
 class ConsoleLogger(logging.Logger):
     #TODO: set color based on terminal type
     def __init__(self, name):
