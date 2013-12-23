@@ -88,7 +88,7 @@ class UbuntuCompiler(ServerCompiler):
         for entry in node.static_routes_v4:
             formatted =("route add -net %s gw %s dev %s" % (entry.network, entry.gw, entry.interface))
             cloud_init_static_routes.append(formatted)
-        for entry in node.static_routes_v4:
+        for entry in node.host_routes_v4:
             formatted =("route add -host %s gw %s dev %s" % (entry.prefix, entry.gw, entry.interface))
             cloud_init_static_routes.append(formatted)
 
