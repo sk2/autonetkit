@@ -503,7 +503,6 @@ class IosXrCompiler(IosBaseCompiler):
         self.mpls_te(node)
         self.mpls_oam(node)
 
-
     def mpls_te(self, node):
         super(IosXrCompiler, self).mpls_te(node)
 
