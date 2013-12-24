@@ -25,3 +25,5 @@ arg_string = "-f %s --diff --render" % input_file
 args = console_script.parse_options(arg_string)
 
 console_script.main(args)
+
+#TODO: test output works
