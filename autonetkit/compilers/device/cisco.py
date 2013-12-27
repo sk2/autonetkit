@@ -363,6 +363,7 @@ class IosClassicCompiler(IosBaseCompiler):
         if phy_node.device_subtype == "vios":
             # only copy across for certain reference platforms
             node.use_onepk = phy_node.use_onepk
+            node.transport_input_ssh_telnet = True
             node.no_service_config = True
             node.ipv4_cef = True
             node.ipv6_cef = True
