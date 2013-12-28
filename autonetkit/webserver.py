@@ -1,12 +1,14 @@
 # based on http://reminiscential.wordpress.com/2012/04/07/realtime-notification-delivery-using-rabbitmq-tornado-and-websocket/
-import tornado
-import tornado.websocket as websocket
-import os
 import json
 import logging
-import pkg_resources
-import autonetkit.config as config
+import os
 import socket
+
+import autonetkit.config as config
+import pkg_resources
+import tornado
+import tornado.websocket as websocket
+
 
 class MyWebHandler(tornado.web.RequestHandler):
 

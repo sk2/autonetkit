@@ -1,12 +1,14 @@
 import json
-import networkx as nx
-from networkx.readwrite import json_graph
-import netaddr
 import string
+
 import autonetkit.anm
 import autonetkit.log as log
 import autonetkit.plugins
 import autonetkit.plugins.ipv4
+import netaddr
+import networkx as nx
+from networkx.readwrite import json_graph
+
 
 class NidbEncoder(json.JSONEncoder):
     #TODO: would be better to build this as a graph and then use normal JSON serialization

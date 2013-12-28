@@ -1,11 +1,12 @@
-import networkx as nx
+import functools
 import itertools
 import pprint
-import time
-from autonetkit.ank_utils import unwrap_edges, unwrap_nodes
-import autonetkit.log as log
-import functools
 import string
+import time
+
+import autonetkit.log as log
+import networkx as nx
+from autonetkit.ank_utils import unwrap_edges, unwrap_nodes
 
 try:
     import cPickle as pickle

@@ -1,15 +1,17 @@
 """Module to build overlay graphs for network design"""
-import autonetkit
-import autonetkit.anm
-import autonetkit.ank_messaging as ank_messaging
-import autonetkit.config
-SETTINGS = autonetkit.config.settings
-import autonetkit.log as log
-import autonetkit.load.graphml as graphml
-import autonetkit.exception
-import networkx as nx
-import autonetkit.ank as ank_utils
 import itertools
+
+import autonetkit
+import autonetkit.ank as ank_utils
+import autonetkit.ank_messaging as ank_messaging
+import autonetkit.anm
+import autonetkit.config
+import autonetkit.exception
+import autonetkit.load.graphml as graphml
+import autonetkit.log as log
+import networkx as nx
+
+SETTINGS = autonetkit.config.settings
 
 #TODO: revisit phy_neighbors for eg ASN and use l3_conn instead
 
@@ -548,6 +550,3 @@ def build_conn(anm):
     g_conn.add_edges_from(g_in.edges(type="physical"))
 
     return
-
-
-
