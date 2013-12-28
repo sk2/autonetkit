@@ -1,20 +1,21 @@
 """Console script entry point for AutoNetkit"""
 
-from autonetkit.nidb import NIDB
-import autonetkit.render as render
+import os
 import random
-from autonetkit import update_http
+import sys
+import time
 import traceback
 from datetime import datetime
-import os
-import time
-import autonetkit.compiler as compiler
-import pkg_resources
-import autonetkit.log as log
-import autonetkit.ank_messaging as ank_messaging
-import autonetkit.config as config
+
 import autonetkit.ank_json as ank_json
-import sys
+import autonetkit.ank_messaging as ank_messaging
+import autonetkit.compiler as compiler
+import autonetkit.config as config
+import autonetkit.log as log
+import autonetkit.render as render
+import pkg_resources
+from autonetkit import update_http
+from autonetkit.nidb import NIDB
 
 # TODO: make if measure set, then not compile - or warn if both set, as
 # don't want to regen topology when measuring

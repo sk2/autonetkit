@@ -1,7 +1,8 @@
+import socket
+
+import autonetkit.ank_json
 import autonetkit.config as config
 import autonetkit.log as log
-import socket
-import autonetkit.ank_json
 
 use_http_post = config.settings['Http Post']['active']
 if use_http_post:

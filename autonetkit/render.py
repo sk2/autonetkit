@@ -1,14 +1,15 @@
-import mako
-from mako.lookup import TemplateLookup
-from mako.exceptions import SyntaxException
-import os
-import threading
-import Queue
-import time
-import shutil
 import fnmatch
-import pkg_resources
+import os
+import Queue
+import shutil
+import threading
+import time
+
 import autonetkit.log as log
+import mako
+import pkg_resources
+from mako.exceptions import SyntaxException
+from mako.lookup import TemplateLookup
 
 #TODO: clean up cache enable/disable
 
@@ -342,5 +343,3 @@ def render_topology(topology):
             log.warning( "Unable to render topology: %s." % (error))
             from mako import exceptions
             log.warning(exceptions.text_error_template().render())
-
-
