@@ -1,6 +1,9 @@
 from pyparsing import Suppress,Word,ZeroOrMore,alphas,nums,delimitedList, Literal, Group, Optional, Forward
 import json
 
+#TODO: reduce the number of boilerplate processing and functions using setResultsName and grouping together using OneOrMore or ZeroOrMore
+# and then working on these dicts
+
 #TODO: see if can just use t for the functions rather than strc, loc, toks
 #TODO: generate all of the "boilerplate" classes and match functions from YAML or other description
 #TODO: consider the switch to lambda x: with __init__ rather than a function and a class
