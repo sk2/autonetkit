@@ -95,9 +95,7 @@ try:
 except ImportError:
   pass # not installed
 else:
-  CONNECTORS['ios_classic'] = autonetkit_cisco.measure_connectors.ios_classic_connector
   CONNECTORS['ios_classic_ns'] = autonetkit_cisco.measure_connectors.ios_classic_ns_connector
-  CONNECTORS['ios_xr'] = autonetkit_cisco.measure_connectors.ios_xr_connector
   CONNECTORS['ios_xr_ns'] = autonetkit_cisco.measure_connectors.ios_xr_ns_connector
   CONNECTORS['titanium_ns_connector'] = autonetkit_cisco.measure_connectors.titanium_ns_connector
 
