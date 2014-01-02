@@ -200,9 +200,13 @@ class AnkAccessor():
             oldest_uuid = self.uuid_list.popleft()
             logging.debug("Removing uuid %s" % oldest_uuid)
 
-            del self.anm_index[oldest_uuid]
+            try:
+                del self.anm_index[oldest_uuid]
+            except KeyError:
+                print "Unable to remove uuid %s" % oldest_uuid
 
         self.uuid_list.append(uuid)
+        print  "Storing overlay %s" % uuid
         self.anm_index[uuid] = overlays_tidied
 
     def get_overlay(self, uuid, overlay_id):
@@ -306,7 +310,7 @@ def main():
 
     settings = {
             "static_path": content_path,
-            'debug': False,
+            'debug': True,
             "static_url_prefix": "unused", # otherwise content with folder /static won't get mapped
             }
 
