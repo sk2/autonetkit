@@ -235,6 +235,7 @@ def build(input_graph):
     try:
         anm = initialise(input_graph)
         anm = apply_design_rules(anm)
+        #print {str(node): {'x': node.x, 'y': node.y} for node in anm['input']}
     except Exception, e:
         # Send the visualisation to help debugging
             import autonetkit
