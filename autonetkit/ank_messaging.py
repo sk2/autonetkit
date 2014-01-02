@@ -16,7 +16,7 @@ def format_http_url(host = None, port = None, route = "publish"):
 
 default_http_url = format_http_url()
 
-def update_http(anm = None, nidb = None, http_url = None):
+def update_http(anm = None, nidb = None, http_url = None, uuid=None):
     if http_url is None:
         http_url = default_http_url
 
@@ -28,7 +28,8 @@ def update_http(anm = None, nidb = None, http_url = None):
         import json
         body = json.dumps({}) # blank to test visualisation server running
 
-    uuid = get_uuid(anm)
+    if uuid is None:
+        uuid = get_uuid(anm)
 
     params = urllib.urlencode({
         'body': body,
