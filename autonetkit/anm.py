@@ -1077,6 +1077,7 @@ class OverlayGraph(OverlayBase):
                 for edge in self.edges()) ):
                 input_interfaces_allocated = True
             else:
+                log.info("Input interfaces not allocated")
                 input_interfaces_allocated = False
 
 
@@ -1199,7 +1200,18 @@ class OverlayGraph(OverlayBase):
             else:
                 ebunch = [(e.src.node_id, e.dst.node_id, {}) for e in ebunch]
         except AttributeError:
-            ebunch = [(src.node_id, dst.node_id, {"_interfaces": {}}) for src, dst in ebunch]
+            ebunch_out = []
+            for src, dst in ebunch:
+                #TODO: check this works across nodes, etc
+                if isinstance(src, overlay_interface) and isinstance(dst, overlay_interface):
+                    _interfaces = {src.node_id: src.interface_id, dst.node_id: dst.interface_id}
+                    ebunch_out.append((src.node_id, dst.node_id, {"_interfaces": _interfaces}))
+                else:
+                    # for nodes - test this occurs still of node-node link (can occur for bgp sessions?)
+                    ebunch_out.append((src.node_id, dst.node_id, {"_interfaces": {}}))
+
+            ebunch = ebunch_out
+
 
         ebunch = [(src, dst, data) for (src, dst, data)
                   in ebunch if src in self._graph and dst in self._graph]
@@ -1207,6 +1219,7 @@ class OverlayGraph(OverlayBase):
             ebunch += [(dst, src, data) for (
                 src, dst, data) in ebunch if src in self._graph
                 and dst in self._graph]
+
 
         self._graph.add_edges_from(ebunch, **kwargs)
 
