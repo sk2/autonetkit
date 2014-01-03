@@ -209,11 +209,11 @@ class AnkAccessor():
         self.anm_index[uuid] = overlays_tidied
 
     def get_overlay(self, uuid, overlay_id):
-        logging.info("Getting overlay %s with uuid %s" % (overlay_id, uuid))
+        logging.info("Getting overlay %s with UUID %s" % (overlay_id, uuid))
         try:
             anm = self.anm_index[uuid]
         except KeyError:
-            logging.warning("Unable to find topology with uuid %s" % uuid)
+            logging.warning("Unable to find topology with UUID %s" % uuid)
             return ""
         else:
             try:
@@ -232,7 +232,7 @@ class AnkAccessor():
         try:
             anm = self.anm_index[uuid]
         except KeyError:
-            logging.warning("Unable to find topology with uuid %s" % uuid)
+            logging.warning("Unable to find topology with UUID %s" % uuid)
             return [""]
 
         if not len(anm):
@@ -347,7 +347,9 @@ def main():
     if arguments.port:
         port = arguments.port #explicitly set on command line
 
-    logging.info("Starting on port %s" % port)
+    import time
+    timestamp = time.strftime("%Y %m %d_%H:%M:%S", time.localtime())
+    logging.info("Starting on port %s at %s" % (port, timestamp))
 
     try:
         application.listen(port)
