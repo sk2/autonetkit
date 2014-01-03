@@ -30,7 +30,6 @@ class MyWebHandler(tornado.web.RequestHandler):
         # get listeners for this uuid
         uuid_socket_listeners = self.application.socket_listeners[uuid]
 
-        #print "Received data of type %s" % data_type
 
         if data_type == "anm":
             body_parsed = json.loads(data)
@@ -44,10 +43,8 @@ class MyWebHandler(tornado.web.RequestHandler):
                     json.dump(body_parsed, fh)
 
             self.ank_accessor.store_overlay(uuid, body_parsed)
-            #print "Updating listeners for uuid", uuid
-            print "Updating listeners"
+            logging.info("Updating listeners")
             for listener in uuid_socket_listeners:
-                #print("Updating listener %s for uuid %s" % (listener.request.remote_ip, uuid))
                 listener.update_overlay()
 
         elif data_type == "highlight":
@@ -55,7 +52,6 @@ class MyWebHandler(tornado.web.RequestHandler):
             for listener in uuid_socket_listeners:
                 listener.write_message({'highlight': body_parsed})
         else:
-            #print "Received unknown data type %s" % data_type
             pass
 
 class MyWebSocketHandler(websocket.WebSocketHandler):
@@ -83,13 +79,12 @@ class MyWebSocketHandler(websocket.WebSocketHandler):
 
         self.uuid_socket_listeners = self.application.socket_listeners[uuid]
 
-        #print "Client connected from %s, with uuid %s" % (self.request.remote_ip, uuid)
-        print "Client connected from %s" % self.request.remote_ip
+        logging.info("Client connected from %s" % self.request.remote_ip)
         self.uuid_socket_listeners.add(self)
 
     def on_close(self):
         self.uuid_socket_listeners.remove(self)
-        #print "Client disconnected from %s" % self.request.remote_ip
+        logging.info("Client disconnected from %s" % self.request.remote_ip)
         try:
             self.application.pc.remove_event_listener(self)
         except AttributeError:
@@ -100,8 +95,7 @@ class MyWebSocketHandler(websocket.WebSocketHandler):
             pass # no echo_server
 
     def on_message(self, message):
-        #print "Received message %s from client with uuid %s" % (message, self.uuid)
-        print "Received message %s from websocket client" % message
+        logging.info("Received message %s from websocket client" % message)
         if "overlay_id" in message:
             _, overlay_id = message.split("=") #TODO: form JSON on client side, use loads here
             self.overlay_id = overlay_id
@@ -110,7 +104,6 @@ class MyWebSocketHandler(websocket.WebSocketHandler):
             body = json.dumps({'overlay_list': self.ank_accessor.overlay_list(self.uuid)})
             self.write_message(body)
         elif "ip_allocations" in message:
-            #print "IP Allocations currently unsupported"
             pass
 
     def update_overlay(self):
@@ -143,11 +136,11 @@ class AnkAccessor():
             #data = json.loads(loaded)
             self.anm_index['singleuser'] = data
         except IOError, e:
-            print e
+            logging.warning(e)
             pass # use default blank anm
 
     def store_overlay(self, uuid, overlay_input):
-        print "Storing overlay_input with uuid %s" % uuid
+        logging.info("Storing overlay_input with UUID %s" % uuid)
 
         if self.simplified_overlays:
             overlays_tidied = {}
@@ -198,23 +191,29 @@ class AnkAccessor():
         if len(self.uuid_list) == self.uuid_list.maxlen:
             # list is full
             oldest_uuid = self.uuid_list.popleft()
-            logging.debug("Removing uuid %s" % oldest_uuid)
+            logging.info("UUID list full, removing UUID %s" % oldest_uuid)
 
             try:
                 del self.anm_index[oldest_uuid]
             except KeyError:
-                print "Unable to remove uuid %s" % oldest_uuid
+                logging.warning("Unable to remove UUID %s" % oldest_uuid)
+
+        # If uuid already present, then remove from the queue, and then add to the end
+        # This avoids erroneously removing recently updated (i.e. non-stale uuids)
+        if uuid in self.uuid_list:
+            logging.info("Removing UUID %s to add to end of queue" % uuid)
+            self.uuid_list.remove(uuid)
 
         self.uuid_list.append(uuid)
-        print  "Storing overlay %s" % uuid
+        logging.info("Stored overlay with UUID %s" % uuid)
         self.anm_index[uuid] = overlays_tidied
 
     def get_overlay(self, uuid, overlay_id):
-        logging.debug("Getting overlay %s with uuid %s" % (overlay_id, uuid))
+        logging.info("Getting overlay %s with uuid %s" % (overlay_id, uuid))
         try:
             anm = self.anm_index[uuid]
         except KeyError:
-            print "Unable to find topology with uuid %s" % uuid
+            logging.warning("Unable to find topology with uuid %s" % uuid)
             return ""
         else:
             try:
@@ -226,14 +225,14 @@ class AnkAccessor():
                 else:
                     return anm[overlay_id]
             except KeyError:
-                print "Unable to find overlay %s in topoplogy with uuid %s" % (overlay_id, uuid)
+                logging.warning("Unable to find overlay %s in topoplogy with UUID %s" % (overlay_id, uuid))
 
     def overlay_list(self, uuid):
-        logging.debug("Trying for anm list with uuid %s" % uuid)
+        logging.info("Trying for anm list with UUID %s" % uuid)
         try:
             anm = self.anm_index[uuid]
         except KeyError:
-            print "Unable to find topology with uuid %s" % uuid
+            logging.warning("Unable to find topology with uuid %s" % uuid)
             return [""]
 
         if not len(anm):
@@ -286,7 +285,7 @@ def main():
     try:
         import autonetkit_vis
     except ImportError:
-        pass  # #TODO: log no vis
+        pass  # #TODO: logging no vis
     else:
         # use web content from autonetkit_cisco module
         content_path = pkg_resources.resource_filename("autonetkit_vis", "web_content")
@@ -305,12 +304,12 @@ def main():
             content_path = pkg_resources.resource_filename("autonetkit_cisco_webui", "web_content")
 
     if not content_path:
-        print "No visualisation pages found: did you mean to install autonetkit_vis? Exiting..."
+        logging.warning("No visualisation pages found: did you mean to install autonetkit_vis? Exiting...")
         raise SystemExit
 
     settings = {
             "static_path": content_path,
-            'debug': True,
+            'debug': False,
             "static_url_prefix": "unused", # otherwise content with folder /static won't get mapped
             }
 
@@ -319,7 +318,7 @@ def main():
         singleuser_mode = False
 
     if singleuser_mode:
-        print "Running webserver in single-user mode"
+        logging.info("Running webserver in single-user mode")
 
     ank_accessor = AnkAccessor(simplified_overlays = simplified_overlays)
 
@@ -335,6 +334,8 @@ def main():
         (r'/index.html', IndexHandler, {"path":settings['static_path']}),
         ("/(.*)", tornado.web.StaticFileHandler, {"path":settings['static_path']} )
         ], **settings)
+
+    logging.getLogger().setLevel(logging.INFO)
 
 
     from collections import defaultdict
