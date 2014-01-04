@@ -1,5 +1,6 @@
-import autonetkit.log as log
 import autonetkit.ank as ank_utils
+import autonetkit.log as log
+
 
 def three_tier_ibgp_corner_cases(rtrs):
     """Calculate edges for iBGP l3 clusters that don't contain a HRR.
