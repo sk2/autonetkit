@@ -1,5 +1,6 @@
 import glob
 import os
+
 import nidb
 
 #TODO: make this generalise to two graphs, rather than NIDB specifically
@@ -148,4 +149,3 @@ def compare(graph_a, graph_b):
 
 
     return diff
-

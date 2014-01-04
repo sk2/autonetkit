@@ -1,5 +1,8 @@
-from autonetkit.compilers.device.device_base import DeviceCompiler
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 import autonetkit.log as log
+from autonetkit.compilers.device.device_base import DeviceCompiler
+
 
 class ServerCompiler(DeviceCompiler):
 

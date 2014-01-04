@@ -1,11 +1,12 @@
-import networkx as nx
-import pprint
 import collections
-import time
-import autonetkit.log as log
-import ank_json
 import functools
+import pprint
 import string
+import time
+
+import ank_json
+import autonetkit.log as log
+import networkx as nx
 
 try:
     import cPickle as pickle
