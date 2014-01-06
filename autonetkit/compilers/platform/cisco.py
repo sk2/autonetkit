@@ -217,7 +217,7 @@ class CiscoCompiler(PlatformCompiler):
             #TODO: write function that assigns interface number excluding those already taken
 
             # Assign interfaces
-            if phy_node.device_subtype == "vios":
+            if phy_node.device_subtype == "IOSv":
                 int_ids = self.interface_ids_ios()
                 numeric_to_interface_label = self.numeric_to_interface_label_ios
             elif phy_node.device_subtype == "CSR1000v":
@@ -231,7 +231,7 @@ class CiscoCompiler(PlatformCompiler):
                 numeric_to_interface_label = self.numeric_to_interface_label_ios
 
             if use_mgmt_interfaces:
-                if phy_node.device_subtype == "vios":
+                if phy_node.device_subtype == "IOSv":
                     #TODO: make these configured in the internal config file
                     # for platform/device_subtype keying
                     mgmt_int_id = "GigabitEthernet0/0"

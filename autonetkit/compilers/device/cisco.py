@@ -354,27 +354,27 @@ class IosBaseCompiler(RouterCompiler):
 
             src_type = node.device_subtype
             dst_type = dst['phy'].device_subtype
-            if src_type == 'xrvr':
-                if dst_type == 'vios':
+            if src_type == 'XRv':
+                if dst_type == 'IOSv':
                     interface.isis.hello_padding_disable = True
                 elif dst_type == 'CSR1000v':
                     interface.isis.hello_padding_disable = True
-                elif dst_type == 'titanium':
+                elif dst_type == 'NX-OSv':
                     interface.isis.hello_padding_disable = True
 
-            if src_type == 'vios':
-                if dst_type == 'xrvr':
+            if src_type == 'IOSv':
+                if dst_type == 'XRv':
                     interface.isis.mtu = 1430
 
             if src_type == 'CSR1000v':
-                if dst_type == 'xrvr':
+                if dst_type == 'XRv':
                     interface.isis.mtu = 1430
 
-            if src_type == 'titanium':
-                if dst_type == 'xrvr':
+            if src_type == 'NX-OSv':
+                if dst_type == 'XRv':
                     interface.mtu = 1430  # for all of interface
                     interface.isis.hello_padding_disable = True
-                elif dst_type == 'vios':
+                elif dst_type == 'IOSv':
                     interface.isis.hello_padding_disable = True
                 elif dst_type == 'CSR1000v':
                     interface.isis.hello_padding_disable = True
@@ -393,7 +393,7 @@ class IosClassicCompiler(IosBaseCompiler):
         self.mpls_oam(node)
 
         phy_node = self.anm['phy'].node(node)
-        if phy_node.device_subtype == 'vios':
+        if phy_node.device_subtype == 'IOSv':
 
             # only copy across for certain reference platforms
 
