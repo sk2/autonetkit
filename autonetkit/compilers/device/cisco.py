@@ -354,7 +354,7 @@ class IosBaseCompiler(RouterCompiler):
 
             src_type = node.device_subtype
             dst_type = dst['phy'].device_subtype
-            if src_type == 'XRv':
+            if src_type == 'IOS XRv':
                 if dst_type == 'IOSv':
                     interface.isis.hello_padding_disable = True
                 elif dst_type == 'CSR1000v':
@@ -363,15 +363,15 @@ class IosBaseCompiler(RouterCompiler):
                     interface.isis.hello_padding_disable = True
 
             if src_type == 'IOSv':
-                if dst_type == 'XRv':
+                if dst_type == 'IOS XRv':
                     interface.isis.mtu = 1430
 
             if src_type == 'CSR1000v':
-                if dst_type == 'XRv':
+                if dst_type == 'IOS XRv':
                     interface.isis.mtu = 1430
 
             if src_type == 'NX-OSv':
-                if dst_type == 'XRv':
+                if dst_type == 'IOS XRv':
                     interface.mtu = 1430  # for all of interface
                     interface.isis.hello_padding_disable = True
                 elif dst_type == 'IOSv':
