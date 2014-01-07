@@ -60,6 +60,11 @@ def manual_ipv4_infrastructure_allocation(anm):
         cd_subnets = [IPNetwork('%s/%s' % (i.subnet.network,
                       i.prefixlen)) for i in connected_interfaces]
 
+
+        if len(cd_subnets) == 0:
+            log.warning("Collision domain %s is not connected to any nodes" % coll_dom)
+            continue
+
         try:
             assert len(set(cd_subnets)) == 1
         except AssertionError:
@@ -84,7 +89,8 @@ def manual_ipv4_infrastructure_allocation(anm):
     infra_blocks = {}
     for (asn, devices) in g_ipv4.groupby('asn').items():
         collision_domains = [d for d in devices if d.collision_domain]
-        subnets = [cd.subnet for cd in collision_domains]
+        subnets = [cd.subnet for cd in collision_domains
+        if cd.subnet is not None] # only if subnet is set
         infra_blocks[asn] = netaddr.cidr_merge(subnets)
 
     g_ipv4.data.infra_blocks = infra_blocks
