@@ -240,7 +240,7 @@ def build(input_graph):
         # Send the visualisation to help debugging
             import autonetkit
             autonetkit.update_http(anm)
-            raise e
+            raise
     return anm
 
 def vrf_pre_process(anm):
