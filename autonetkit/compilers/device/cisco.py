@@ -338,9 +338,15 @@ class IosBaseCompiler(RouterCompiler):
         for interface in node.physical_interfaces:
             isis_int = self.anm['isis'].interface(interface)
             edges = isis_int.edges()
-            if len(edges) != 1:
-                log.warning('Extended IOS config support not valid for multipoint ISIS connections'
-                            )
+            if not isis_int.is_bound:
+                # Could occur for VRFs
+                log.debug("No ISIS connections for interface %s" % interface)
+                continue
+
+            #TODO: change this to be is_bound and is_multipoint
+            if isis_int.multipoint:
+                log.warning('Extended IOS config support not valid for multipoint ISIS connections on %s'
+                    % interface)
                 continue
 
                 # TODO multipoint handling?
