@@ -31,16 +31,14 @@ def build_ospf(anm):
     g_ospf.add_nodes_from(g_in.nodes("is_router", igp = "ospf"), retain=['asn'])
     g_ospf.add_nodes_from(g_in.nodes("is_server", igp = "ospf"), retain=['asn'])
     g_ospf.add_nodes_from(g_in.nodes("is_switch"), retain=['asn'])
-    g_ospf.add_edges_from(g_in.edges(), retain=['edge_id'])
+    g_ospf.add_edges_from(g_in.edges())
 
     ank_utils.copy_attr_from(g_in, g_ospf, "ospf_area", dst_attr="area")
     ank_utils.copy_edge_attr_from(g_in, g_ospf, "ospf_cost",
         dst_attr="cost",  type=float)
 
-    ank_utils.aggregate_nodes(g_ospf, g_ospf.nodes("is_switch"),
-                              retain="edge_id")
-    exploded_edges = ank_utils.explode_nodes(g_ospf, g_ospf.nodes("is_switch"),
-                            retain="edge_id")
+    ank_utils.aggregate_nodes(g_ospf, g_ospf.nodes("is_switch"))
+    exploded_edges = ank_utils.explode_nodes(g_ospf, g_ospf.nodes("is_switch"))
     for edge in exploded_edges:
         edge.multipoint = True
 
@@ -178,13 +176,11 @@ def build_eigrp(anm):
     g_eigrp.add_nodes_from(g_in.nodes("is_server",
         igp = "eigrp"), retain=['asn'])
     g_eigrp.add_nodes_from(g_in.nodes("is_switch"), retain=['asn'])
-    g_eigrp.add_edges_from(g_in.edges(), retain=['edge_id'])
+    g_eigrp.add_edges_from(g_in.edges())
 # Merge and explode switches
-    ank_utils.aggregate_nodes(g_eigrp, g_eigrp.nodes("is_switch"),
-                              retain="edge_id")
+    ank_utils.aggregate_nodes(g_eigrp, g_eigrp.nodes("is_switch"))
     exploded_edges = ank_utils.explode_nodes(g_eigrp,
-        g_eigrp.nodes("is_switch"),
-                            retain="edge_id")
+        g_eigrp.nodes("is_switch"))
     for edge in exploded_edges:
         edge.multipoint = True
 
@@ -221,12 +217,10 @@ def build_isis(anm):
     g_isis.add_nodes_from(g_in.nodes("is_router", igp = "isis"), retain=['asn'])
     g_isis.add_nodes_from(g_in.nodes("is_server", igp = "isis"), retain=['asn'])
     g_isis.add_nodes_from(g_in.nodes("is_switch"), retain=['asn'])
-    g_isis.add_edges_from(g_in.edges(), retain=['edge_id'])
+    g_isis.add_edges_from(g_in.edges())
 # Merge and explode switches
-    ank_utils.aggregate_nodes(g_isis, g_isis.nodes("is_switch"),
-                              retain="edge_id")
-    exploded_edges = ank_utils.explode_nodes(g_isis, g_isis.nodes("is_switch"),
-                            retain="edge_id")
+    ank_utils.aggregate_nodes(g_isis, g_isis.nodes("is_switch"))
+    exploded_edges = ank_utils.explode_nodes(g_isis, g_isis.nodes("is_switch"))
     for edge in exploded_edges:
         edge.multipoint = True
 

@@ -15,7 +15,6 @@ SETTINGS = autonetkit.config.settings
 
 #TODO: revisit phy_neighbors for eg ASN and use l3_conn instead
 
-#TODO: remove retain edge_id once removed from compiler
 #TODO: note that build network now assumes input graph has interface mappings on nodes/edges
 
 __all__ = ['build']
@@ -63,7 +62,6 @@ def grid_2d(dim):
     for index, (src, dst) in enumerate(graph.edges()):
         graph[src][dst]['type'] = "physical"
         # add global index for sorting
-        graph[src][dst]['edge_id'] = "%s_%s_%s" % (index, src, dst)
 
     SETTINGS['General']['deploy'] = True
     SETTINGS['Deploy Hosts']['internal'] = {
@@ -436,7 +434,7 @@ def build_vrf(anm):
     vrf_add_edges = (e for e in g_l3conn.edges()
            if is_pe_ce_edge(e))
     #TODO: should mark as being towards PE or CE
-    g_vrf.add_edges_from(vrf_add_edges, retain=['edge_id'])
+    g_vrf.add_edges_from(vrf_add_edges)
 
     def is_pe_p_edge(edge):
         src_vrf_role = g_vrf.node(edge.src).vrf_role
@@ -444,7 +442,7 @@ def build_vrf(anm):
         return (src_vrf_role, dst_vrf_role) in (("PE", "P"), ("P", "PE"))
     vrf_add_edges = (e for e in g_l3conn.edges()
             if is_pe_p_edge(e))
-    g_vrf.add_edges_from(vrf_add_edges, retain=['edge_id'])
+    g_vrf.add_edges_from(vrf_add_edges)
 
     build_mpls_ldp(anm)
     # add PE to P edges
@@ -518,12 +516,6 @@ def build_phy(anm):
             if specified_id:
                 interface.specified_id = specified_id # map across
 
-    for node in g_phy.nodes("specified_int_names"):
-        for interface in node:
-            edge = interface.edges()[0]
-            directed_edge = anm['input_directed'].edge(edge)
-            interface.name = directed_edge.name
-
 def build_l3_connectivity(anm):
     """ creates l3_connectivity graph, which is switch nodes aggregated and exploded"""
     #TODO: use this as base for ospf, ebgp, ip, etc rather than exploding in each
@@ -533,13 +525,11 @@ def build_l3_connectivity(anm):
         'specified_int_names',
         'device_subtype', 'platform', 'host', 'syntax'])
     g_l3conn.add_nodes_from(g_in.nodes("is_switch"), retain=['asn'])
-#TODO: check if edge_id needs to be still retained
-    g_l3conn.add_edges_from(g_in.edges(), retain=['edge_id'])
+    g_l3conn.add_edges_from(g_in.edges())
 
-    ank_utils.aggregate_nodes(g_l3conn, g_l3conn.nodes("is_switch"),
-                              retain="edge_id")
+    ank_utils.aggregate_nodes(g_l3conn, g_l3conn.nodes("is_switch"))
     exploded_edges = ank_utils.explode_nodes(g_l3conn,
-        g_l3conn.nodes("is_switch"), retain="edge_id")
+        g_l3conn.nodes("is_switch"))
     for edge in exploded_edges:
         edge.multipoint = True
         edge.src_int.multipoint = True

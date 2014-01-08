@@ -955,7 +955,7 @@ class OverlayBase(object):
                                  interface.interface_id)
 
     def edge(self, edge_to_find, dst_to_find=None):
-        '''returns edge in this graph with same src and same edge_id'''
+        '''returns edge in this graph with same src and dst'''
 
         if isinstance(edge_to_find, OverlayEdge):
             src_id = edge_to_find.src
@@ -988,25 +988,21 @@ class OverlayBase(object):
                 src_id = edge_to_find.node_id
                 search_id = dst_to_find.node_id
             else:
-                src_id = edge_to_find.src_id
-                search_id = edge_to_find.edge_id
+                log.warning("Searching by edge_id has been deprecated")
         except AttributeError:
             src_id = None
             search_id = edge_to_find
 
         for (src, dst) in self._graph.edges_iter(src_id):
             try:
-                if self._graph[src][dst]['edge_id'] == search_id:
-                    return OverlayEdge(self._anm, self._overlay_id,
-                            src, dst)
-                elif (src, dst) == (src_id, search_id):
+                if (src, dst) == (src_id, search_id):
 
                     # searching by nodes
 
                     return OverlayEdge(self._anm, self._overlay_id,
                             src, dst)
             except KeyError:
-                pass  # no edge_id for this edge
+                pass  #
 
     def __getitem__(self, key):
         """"""
@@ -1387,15 +1383,7 @@ class OverlayGraph(OverlayBase):
 
         # self._init_interfaces(nbunch)
 
-        def numeric_id(edge):
-            try:
-                return int(edge.edge_id.split('_')[0])
-            except ValueError:
-                return edge  # can't cast to int
-            except AttributeError:
-                return edge  # can't split, eg if not set
-
-        ebunch = sorted(self.edges(), key=numeric_id)
+        ebunch = sorted(self.edges())
 
         for edge in ebunch:
             src = edge.src
@@ -1481,7 +1469,6 @@ class OverlayGraph(OverlayBase):
         except AttributeError:
             pass  # already a list
 
-        retain.append('edge_id')
         retain.append('_interfaces')
         try:
             if len(retain):

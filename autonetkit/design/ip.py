@@ -126,8 +126,7 @@ def build_ip(anm):
     g_ip.add_nodes_from(g_in)
     g_ip.add_edges_from(g_in.edges(type='physical'))
 
-    ank_utils.aggregate_nodes(g_ip, g_ip.nodes('is_switch'),
-                              retain='edge_id')
+    ank_utils.aggregate_nodes(g_ip, g_ip.nodes('is_switch'))
 
     edges_to_split = [edge for edge in g_ip.edges()
                       if edge.attr_both('is_l3device')]
@@ -135,7 +134,7 @@ def build_ip(anm):
         edge.split = True  # mark as split for use in building nidb
 
     split_created_nodes = list(ank_utils.split(g_ip, edges_to_split,
-                               retain=['edge_id', 'split'],
+                               retain=['split'],
                                id_prepend='cd'))
     for node in split_created_nodes:
         node['graphics'].x = ank_utils.neigh_average(g_ip, node, 'x',
