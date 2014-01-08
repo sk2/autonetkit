@@ -169,12 +169,11 @@ def build_ebgp(anm):
     g_ebgp.add_edges_from((e for e in g_in.edges()
             if e.src in ebgp_switches or e.dst in ebgp_switches),
     bidirectional=True, type='ebgp')
-    ank_utils.aggregate_nodes(g_ebgp, ebgp_switches, retain="edge_id")
+    ank_utils.aggregate_nodes(g_ebgp, ebgp_switches)
     # need to recalculate as may have aggregated
     ebgp_switches = list(g_ebgp.nodes("is_switch"))
     log.debug("aggregated eBGP switches are %s" % ebgp_switches)
-    exploded_edges = ank_utils.explode_nodes(g_ebgp, ebgp_switches,
-            retain="edge_id")
+    exploded_edges = ank_utils.explode_nodes(g_ebgp, ebgp_switches)
     same_asn_edges = []
     for edge in exploded_edges:
         if edge.src.asn == edge.dst.asn:
@@ -393,7 +392,6 @@ def build_bgp(anm):
     g_bgp.add_nodes_from(g_in.nodes("is_router"))
     ebgp_edges = [edge for edge in g_in.edges() if not edge.attr_equal("asn")]
     g_bgp.add_edges_from(ebgp_edges, bidirectional=True, type='ebgp')
-#TODO: why don't we include edge_id here
 
     ebgp_switches = [n for n in g_in.nodes("is_switch")
             if not ank_utils.neigh_equal(g_phy, n, "asn")]
@@ -401,11 +399,10 @@ def build_bgp(anm):
     log.debug("eBGP switches are %s" % ebgp_switches)
     g_bgp.add_edges_from((e for e in g_in.edges()
             if e.src in ebgp_switches or e.dst in ebgp_switches), bidirectional=True, type='ebgp')
-    ank_utils.aggregate_nodes(g_bgp, ebgp_switches, retain="edge_id")
+    ank_utils.aggregate_nodes(g_bgp, ebgp_switches)
     ebgp_switches = list(g_bgp.nodes("is_switch")) # need to recalculate as may have aggregated
     log.debug("aggregated eBGP switches are %s" % ebgp_switches)
-    exploded_edges = ank_utils.explode_nodes(g_bgp, ebgp_switches,
-            retain="edge_id")
+    exploded_edges = ank_utils.explode_nodes(g_bgp, ebgp_switches)
 
     same_asn_edges = []
     for edge in exploded_edges:

@@ -11,9 +11,9 @@ def expand(G_in):
     """
     graph_unwrapped = ank_utils.unwrap_graph(G_in)
     G = graph_unwrapped.copy()
-    
+
     ank.set_node_default(G_in, G_in)
-    
+
     template_names = set(node.pop_template for node in G_in)
     template_names.discard("None")
     template_names.discard(None)
@@ -42,7 +42,7 @@ def expand(G_in):
 
     for s, t in G_out.edges():
         G_out[s][t]['type'] = 'physical' # ensure copied across
-    
+
     # Update properties based on co-ordinates
     for node in G_out:
         u, v = node
@@ -63,9 +63,6 @@ def expand(G_in):
         G_out.node[node] = u_properties
 
     nx.relabel_nodes(G_out, dict( ((u, v), "%s_%s" % (v, u)) for (u, v) in G_out), copy = False)
-#TODO: set edge_ids
-    for s, t in G_out.edges():
-        G_out[s][t]['edge_id'] = "%s_%s" % (s, t)
 
     G_in._replace_graph(G_out)
 
