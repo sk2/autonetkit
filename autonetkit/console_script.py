@@ -387,66 +387,6 @@ def deploy_network(anm, nidb, input_graph_string=None):
                     cisco_deploy.package(config_path, "nklab")
 
 
-def collect_sh_ip_route(anm, nidb, start_node=None):
-    if not start_node:
-        start_node = random.choice([n for n in nidb.nodes("is_router")])
-
-    # TODO: move this to another module, eg measure
-    import autonetkit.measure as measure
-    import autonetkit.verify as verify
-    import autonetkit
-    command = 'vtysh -c "show ip route"'
-    # TODO: make auto take tap ip if netkit platform node
-    # TODO: auto make put into list if isinstance(remote_hosts, nidb_node)
-    remote_hosts = [start_node.tap.ip]
-    result = measure.send(nidb, command, remote_hosts)
-
-    processed = []
-    for line in result:
-        processed.append([anm['ipv4'].node(n) for n in line])
-
-    # TODO: move this into verify module
-    verification_results = verify.igp_routes(anm, processed)
-    processed_with_results = []
-    for line in processed:
-        prefix = str(line[-1].subnet)
-        try:
-            result = verification_results[prefix]
-        except KeyError:
-            result = False  # couldn't find prefix
-        processed_with_results.append({
-            'path': line,
-            'verified': result,
-        })
-
-    autonetkit.update_http(anm, nidb)
-    ank_messaging.highlight([], [], processed_with_results)
-
-
-def measure_network(anm, nidb):
-    import autonetkit.measure as measure
-
-    log.info("Measuring network")
-    if 1:
-        remote_hosts = [node.tap.ip for node in nidb.nodes("is_router")]
-        dest_node = random.choice([n for n in nidb.nodes("is_l3device")])
-        log.info("Tracing to randomly selected node: %s" % dest_node)
-        # choose random interface on this node
-        dest_ip = dest_node.interfaces[0].ipv4_address
-        command = "traceroute -n -a -U -w 0.5 %s" % dest_ip
-        measure.send(nidb, command, remote_hosts, threads=10)
-    # abort after 10 fails, proceed on any success, 0.1 second timeout (quite
-    # aggressive)
-    if 0:
-        collect_sh_ip_route(anm, nidb)
-
-    if 0:
-        #measure.send(nidb, command, remote_hosts, threads = 5)
-        remote_hosts = [node.tap.ip for node in nidb.nodes(
-            "is_router") if node.bgp.ebgp_neighbors]
-        command = "cat /var/log/zebra/bgpd.log"
-
-
 def console_entry():
     """If come from console entry point"""
     args = parse_options()
