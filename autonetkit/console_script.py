@@ -2,14 +2,13 @@
 
 import os
 import random
-import sys
 import time
+import sys
 import traceback
 from datetime import datetime
 
 import autonetkit.ank_json as ank_json
 import autonetkit.ank_messaging as ank_messaging
-import autonetkit.compiler as compiler
 import autonetkit.config as config
 import autonetkit.log as log
 import autonetkit.render as render
@@ -25,6 +24,7 @@ try:
 except pkg_resources.DistributionNotFound:
     ANK_VERSION = "dev"
 
+
 def file_monitor(filename):
     """Generator based function to check if a file has changed"""
     last_timestamp = os.stat(filename).st_mtime
@@ -36,7 +36,8 @@ def file_monitor(filename):
             yield True
         yield False
 
-def manage_network(input_graph_string, timestamp, build_options, reload_build=False, grid = None):
+
+def manage_network(input_graph_string, timestamp, build_options, reload_build=False, grid=None):
     """Build, compile, render network as appropriate"""
     # import build_network_simple as build_network
     import autonetkit.build_network as build_network
@@ -89,7 +90,8 @@ def manage_network(input_graph_string, timestamp, build_options, reload_build=Fa
         import json
         data = json.dumps(nidb_diff, cls=ank_json.AnkEncoder, indent=4)
         log.info("Wrote diff to diff.json")
-        with open("diff.json", "w") as fh:  # TODO: make file specified in config
+        # TODO: make file specified in config
+        with open("diff.json", "w") as fh:
             fh.write(data)
 
     if build_options['deploy']:
@@ -100,7 +102,8 @@ def manage_network(input_graph_string, timestamp, build_options, reload_build=Fa
 
     log.info("Finished")
 
-def parse_options(argument_string = None):
+
+def parse_options(argument_string=None):
     """Parse user-provided options"""
     import argparse
     usage = "autonetkit -f input.graphml"
@@ -126,18 +129,23 @@ def parse_options(argument_string = None):
                         default=False, help="Compile")
     parser.add_argument(
         '--build', action="store_true", default=False, help="Build")
-    parser.add_argument('--render', action="store_true", default=False, help="Compile")
-    parser.add_argument('--validate', action="store_true", default=False, help="Validate")
+    parser.add_argument(
+        '--render', action="store_true", default=False, help="Compile")
+    parser.add_argument(
+        '--validate', action="store_true", default=False, help="Validate")
     parser.add_argument('--deploy', action="store_true",
                         default=False, help="Deploy")
     parser.add_argument('--archive', action="store_true", default=False,
                         help="Archive ANM, NIDB, and IP allocations")
     parser.add_argument('--measure', action="store_true",
                         default=False, help="Measure")
-    parser.add_argument('--webserver', action="store_true", default=False, help="Webserver")
+    parser.add_argument(
+        '--webserver', action="store_true", default=False, help="Webserver")
     parser.add_argument('--grid', type=int, help="Grid Size (n * n)")
-    parser.add_argument('--target', choices=['netkit', 'cisco'], default = None)
-    parser.add_argument('--vis_uuid', default=None, help="UUID for multi-user visualisation")
+    parser.add_argument(
+        '--target', choices=['netkit', 'cisco'], default=None)
+    parser.add_argument(
+        '--vis_uuid', default=None, help="UUID for multi-user visualisation")
     if argument_string:
         arguments = parser.parse_args(argument_string.split())
     else:
@@ -145,11 +153,23 @@ def parse_options(argument_string = None):
         arguments = parser.parse_args()
     return arguments
 
+
 def main(options):
     settings = config.settings
 
     if options.vis_uuid:
         config.settings['Http Post']['uuid'] = options.vis_uuid
+
+    try:
+        # test if can import, if not present will fail and not add to template
+        # path
+        import autonetkit_cisco
+    except ImportError:
+        pass
+    else:
+        import autonetkit_cisco.version
+        version_banner = autonetkit_cisco.version.banner()
+        log.info("%s" % version_banner)
 
     log.info("AutoNetkit %s" % ANK_VERSION)
 
@@ -162,7 +182,7 @@ def main(options):
         settings['Compiler']['Cisco']['to memory'] = 1
         settings['General']['deploy'] = 1
         settings['Deploy Hosts']['internal'] = {'cisco':
-                {'deploy': 1}}
+                                                {'deploy': 1}}
 
     if options.debug or settings['General']['debug']:
         # TODO: fix this
@@ -208,13 +228,14 @@ def main(options):
         raise SystemExit
 
     try:
-        manage_network(input_string, timestamp, build_options=build_options, grid = options.grid)
+        manage_network(input_string, timestamp,
+                       build_options=build_options, grid=options.grid)
     except Exception, err:
-        log.error("Error generating network configurations: %s. More information may be available in the debug log." % err)
-        log.debug("Error generating network configurations", exc_info = True)
+        log.error(
+            "Error generating network configurations: %s. More information may be available in the debug log." % err)
+        log.debug("Error generating network configurations", exc_info=True)
         import sys
         sys.exit("Unable to build configurations.")
-
 
 # TODO: work out why build_options is being clobbered for monitor mode
     build_options['monitor'] = options.monitor or settings['General'][
@@ -231,7 +252,7 @@ def main(options):
                 reload_build = False
                 if input_filemonitor.next():
                     rebuild = True
-                #if build_filemonitor.next():
+                # if build_filemonitor.next():
                     #reload_build = True
                     #rebuild = True
 
@@ -244,11 +265,12 @@ def main(options):
                                        timestamp, build_options, reload_build)
                         log.info("Monitoring for updates...")
                     except Exception, e:
-                        log.warning("Unable to build network %s" %e)
+                        log.warning("Unable to build network %s" % e)
                         traceback.print_exc()
 
         except KeyboardInterrupt:
             log.info("Exiting")
+
 
 def create_nidb(anm):
     nidb = NIDB()
@@ -271,13 +293,15 @@ def create_nidb(anm):
 
 # add edges to switches
     edges_to_add = [edge for edge in g_phy.edges()
-            if edge.src.is_switch or edge.dst.is_switch]
-    edges_to_add += [edge for edge in g_ip.edges() if edge.split] # cd edges from split
+                    if edge.src.is_switch or edge.dst.is_switch]
+    # cd edges from split
+    edges_to_add += [edge for edge in g_ip.edges() if edge.split]
     nidb.add_edges_from(edges_to_add, retain='edge_id')
 
     nidb.copy_graphics(g_graphics)
 
     return nidb
+
 
 def compile_network(anm):
     nidb = create_nidb(anm)
@@ -297,7 +321,8 @@ def compile_network(anm):
             platform_compiler = pl_dynagen.DynagenCompiler(nidb, anm, host)
         elif platform == "junosphere":
             import autonetkit.compilers.platform.junosphere as pl_junosphere
-            platform_compiler = pl_junosphere.JunosphereCompiler(nidb, anm, host)
+            platform_compiler = pl_junosphere.JunosphereCompiler(
+                nidb, anm, host)
 
         if any(g_phy.nodes(host=host, platform=platform)):
             log.info("Compile for %s on %s" % (platform, host))
@@ -308,7 +333,7 @@ def compile_network(anm):
     return nidb
 
 
-def deploy_network(anm, nidb, input_graph_string = None):
+def deploy_network(anm, nidb, input_graph_string=None):
 
     log.info("Deploying Network")
 
@@ -317,7 +342,7 @@ def deploy_network(anm, nidb, input_graph_string = None):
         for platform, platform_data in host_data.items():
             if not any(nidb.nodes(host=hostname, platform=platform)):
                 log.debug("No hosts for (host, platform) (%s, %s), skipping deployment"
-                        % (hostname, platform))
+                          % (hostname, platform))
                 continue
 
             if not platform_data['deploy']:
@@ -334,15 +359,15 @@ def deploy_network(anm, nidb, input_graph_string = None):
                 if platform == "cisco":
                     create_new_xml = False
                     if not input_graph_string:
-                        create_new_xml = True # no input, eg if came from grid
+                        create_new_xml = True  # no input, eg if came from grid
                     elif anm['input'].data['file_type'] == "graphml":
-                        create_new_xml = True # input from graphml, create XML
+                        create_new_xml = True  # input from graphml, create XML
 
                     if create_new_xml:
                         cisco_deploy.create_xml(anm, nidb, input_graph_string)
                     else:
                         cisco_deploy.package(nidb, config_path,
-                         input_graph_string)
+                                             input_graph_string)
                 continue
 
             username = platform_data['username']
@@ -355,23 +380,24 @@ def deploy_network(anm, nidb, input_graph_string = None):
                 netkit_deploy.transfer(
                     host, username, tar_file, tar_file, key_file)
                 netkit_deploy.extract(host, username, tar_file,
-                  config_path, timeout=60, key_filename=key_file,
-                  parallel_count = 10)
+                                      config_path, timeout=60, key_filename=key_file,
+                                      parallel_count=10)
                 if platform == "cisco":
-                    #TODO: check why using nklab here
+                    # TODO: check why using nklab here
                     cisco_deploy.package(config_path, "nklab")
 
-def collect_sh_ip_route(anm, nidb, start_node = None):
+
+def collect_sh_ip_route(anm, nidb, start_node=None):
     if not start_node:
         start_node = random.choice([n for n in nidb.nodes("is_router")])
 
-    #TODO: move this to another module, eg measure
+    # TODO: move this to another module, eg measure
     import autonetkit.measure as measure
     import autonetkit.verify as verify
     import autonetkit
     command = 'vtysh -c "show ip route"'
-    #TODO: make auto take tap ip if netkit platform node
-    #TODO: auto make put into list if isinstance(remote_hosts, nidb_node)
+    # TODO: make auto take tap ip if netkit platform node
+    # TODO: auto make put into list if isinstance(remote_hosts, nidb_node)
     remote_hosts = [start_node.tap.ip]
     result = measure.send(nidb, command, remote_hosts)
 
@@ -379,7 +405,7 @@ def collect_sh_ip_route(anm, nidb, start_node = None):
     for line in result:
         processed.append([anm['ipv4'].node(n) for n in line])
 
-    #TODO: move this into verify module
+    # TODO: move this into verify module
     verification_results = verify.igp_routes(anm, processed)
     processed_with_results = []
     for line in processed:
@@ -387,11 +413,11 @@ def collect_sh_ip_route(anm, nidb, start_node = None):
         try:
             result = verification_results[prefix]
         except KeyError:
-            result = False # couldn't find prefix
+            result = False  # couldn't find prefix
         processed_with_results.append({
             'path': line,
             'verified': result,
-            })
+        })
 
     autonetkit.update_http(anm, nidb)
     ank_messaging.highlight([], [], processed_with_results)
@@ -405,10 +431,12 @@ def measure_network(anm, nidb):
         remote_hosts = [node.tap.ip for node in nidb.nodes("is_router")]
         dest_node = random.choice([n for n in nidb.nodes("is_l3device")])
         log.info("Tracing to randomly selected node: %s" % dest_node)
-        dest_ip = dest_node.interfaces[0].ipv4_address  # choose random interface on this node
+        # choose random interface on this node
+        dest_ip = dest_node.interfaces[0].ipv4_address
         command = "traceroute -n -a -U -w 0.5 %s" % dest_ip
-        measure.send(nidb, command, remote_hosts, threads = 10)
-    # abort after 10 fails, proceed on any success, 0.1 second timeout (quite aggressive)
+        measure.send(nidb, command, remote_hosts, threads=10)
+    # abort after 10 fails, proceed on any success, 0.1 second timeout (quite
+    # aggressive)
     if 0:
         collect_sh_ip_route(anm, nidb)
 
@@ -417,6 +445,7 @@ def measure_network(anm, nidb):
         remote_hosts = [node.tap.ip for node in nidb.nodes(
             "is_router") if node.bgp.ebgp_neighbors]
         command = "cat /var/log/zebra/bgpd.log"
+
 
 def console_entry():
     """If come from console entry point"""

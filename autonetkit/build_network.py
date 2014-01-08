@@ -45,7 +45,6 @@ def load(input_graph_string):
 
 def grid_2d(dim):
     """Creates a 2d grid of dimension dim"""
-    import networkx as nx
     graph = nx.grid_2d_graph(dim, dim)
 
     for node in graph:
@@ -59,10 +58,12 @@ def grid_2d(dim):
         graph.node[node]['ibgp_level'] = 0
 
     mapping = {node: "%s_%s" % (node[0], node[1]) for node in graph}
-    nx.relabel_nodes(graph, mapping, copy=False) # Networkx wipes data if remap with same labels
+    # Networkx wipes data if remap with same labels
+    nx.relabel_nodes(graph, mapping, copy=False)
     for index, (src, dst) in enumerate(graph.edges()):
         graph[src][dst]['type'] = "physical"
-        graph[src][dst]['edge_id'] = "%s_%s_%s" % (index, src, dst) # add global index for sorting
+        # add global index for sorting
+        graph[src][dst]['edge_id'] = "%s_%s_%s" % (index, src, dst)
 
     SETTINGS['General']['deploy'] = True
     SETTINGS['Deploy Hosts']['internal'] = {
@@ -147,7 +148,6 @@ def apply_design_rules(anm):
     build_phy(anm)
     g_phy = anm['phy']
 
-    import autonetkit
     #autonetkit.update_http(anm)
     build_l3_connectivity(anm)
 
@@ -155,7 +155,7 @@ def apply_design_rules(anm):
     #autonetkit.update_http(anm)
 
     build_vrf(anm) # need to do before to add loopbacks before ip allocations
-    from autonetkit.design.ip import build_ip, build_ipv4,build_ipv6
+    from autonetkit.design.ip import build_ip, build_ipv4, build_ipv6
     build_ip(anm) # ip infrastructure topology
 
 #TODO: set defaults at the start, rather than inline, ie set g_in.data.address_family then use later
@@ -203,18 +203,18 @@ def apply_design_rules(anm):
     else:
         cisco_build_network.pre_design(anm)
 
-    import autonetkit.design.igp
-    autonetkit.design.igp.build_ospf(anm)
-    autonetkit.design.igp.build_eigrp(anm)
-    autonetkit.design.igp.build_isis(anm)
+    from autonetkit.design.igp import build_ospf, build_eigrp, build_isis
+    build_ospf(anm)
+    build_eigrp(anm)
+    build_isis(anm)
 
-    import autonetkit.design.bgp
-    autonetkit.design.bgp.build_bgp(anm)
+    from autonetkit.design.bgp import build_bgp
+    build_bgp(anm)
     #autonetkit.update_http(anm)
 
-    import autonetkit.design.mpls
-    autonetkit.design.mpls.mpls_te(anm)
-    autonetkit.design.mpls.mpls_oam(anm)
+    from autonetkit.design.mpls import mpls_te, mpls_oam
+    mpls_te(anm)
+    mpls_oam(anm)
 
 # post-processing
     if anm['phy'].data.enable_routing:
@@ -240,9 +240,9 @@ def build(input_graph):
         #print {str(node): {'x': node.x, 'y': node.y} for node in anm['input']}
     except Exception, e:
         # Send the visualisation to help debugging
-            import autonetkit
-            autonetkit.update_http(anm)
-            raise
+        import autonetkit
+        autonetkit.update_http(anm)
+        raise
     return anm
 
 def vrf_pre_process(anm):
@@ -303,7 +303,7 @@ def build_ibgp_vpn_v4(anm):
     g_bgp = anm['bgp']
     g_ibgp_v4 = anm['ibgp_v4']
     g_vrf = anm['vrf']
-    g_ibgp_vpn_v4= anm.add_overlay("ibgp_vpn_v4", directed=True)
+    g_ibgp_vpn_v4 = anm.add_overlay("ibgp_vpn_v4", directed=True)
 
     ibgp_v4_nodes = list(g_ibgp_v4.nodes())
     pe_nodes = set(g_vrf.nodes(vrf_role = "PE"))
@@ -538,8 +538,8 @@ def build_l3_connectivity(anm):
 
     ank_utils.aggregate_nodes(g_l3conn, g_l3conn.nodes("is_switch"),
                               retain="edge_id")
-    exploded_edges = ank_utils.explode_nodes(g_l3conn, g_l3conn.nodes("is_switch"),
-                            retain="edge_id")
+    exploded_edges = ank_utils.explode_nodes(g_l3conn,
+        g_l3conn.nodes("is_switch"), retain="edge_id")
     for edge in exploded_edges:
         edge.multipoint = True
         edge.src_int.multipoint = True
