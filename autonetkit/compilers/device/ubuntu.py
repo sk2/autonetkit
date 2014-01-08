@@ -63,23 +63,23 @@ class UbuntuCompiler(ServerCompiler):
 
         # IGP advertised infrastructure pool from same AS
 
-        for infra_route in self.anm['ipv4'].data['infra_blocks'
-                ][phy_node.asn]:
+        for (asn, asn_routes)  in self.anm['ipv4'].data['infra_blocks'].items():
 
            # host_routes_v4
 
-            route_entry = {
+            for infra_route in asn_routes:
+                route_entry = {
                 'network': infra_route,
                 'prefix': infra_route.network,
                 'gw': gateway_ipv4,
                 'interface': server_interface_id,
-                'description': 'Route to infra subnet in local AS %s via %s' \
-                    % (phy_node.asn, gateway),
+                'description': 'Route to infra subnet in AS %s via %s' \
+                % (asn, gateway),
                 }
-            if infra_route.prefixlen == 32:
-                node.host_routes_v4.append(route_entry)
-            else:
-                node.static_routes_v4.append(route_entry)
+                if infra_route.prefixlen == 32:
+                    node.host_routes_v4.append(route_entry)
+                else:
+                    node.static_routes_v4.append(route_entry)
 
         # eBGP advertised loopbacks in all (same + other) ASes
 
