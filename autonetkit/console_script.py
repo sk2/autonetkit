@@ -296,7 +296,7 @@ def create_nidb(anm):
                     if edge.src.is_switch or edge.dst.is_switch]
     # cd edges from split
     edges_to_add += [edge for edge in g_ip.edges() if edge.split]
-    nidb.add_edges_from(edges_to_add, retain='edge_id')
+    nidb.add_edges_from(edges_to_add)
 
     nidb.copy_graphics(g_graphics)
 

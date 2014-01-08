@@ -929,17 +929,15 @@ class NIDB_base(object):
             return None
 
     def edge(self, edge_to_find):
-        """returns edge in this graph with same src and same edge_id"""
-        src_id = edge_to_find.src_id
-        search_id = edge_to_find.edge_id
-#TODO: if no edge_id then search for src, dst pair
-
-        for src, dst in self._graph.edges_iter(src_id):
-            try:
-                if self._graph[src][dst]['edge_id'] == search_id:
-                    return overlay_edge(self, src, dst)
-            except KeyError:
-                pass # no edge_id for this edge
+        """returns edge in this graph with same src and dst"""
+        #TODO: check if this even needed - will be if searching nidb specifically
+        # but that's so rare (that's a design stage if anywhere)
+        src_id = edge_to_find.src
+        dst_id = edge_to_find.dst
+        for (src, dst) in self._graph.edges_iter(src_id):
+            if dst == dst_id:
+                return OverlayEdge(self._anm, self._overlay_id,
+                    src, dst)
 
     @property
     def data(self):
