@@ -238,12 +238,6 @@ def load_graphml(input_data):
             if key not in graph[src][dst]:
                 graph[src][dst][key] = val
 
-    # allocate edge_ids
-
-    for (src, dst) in graph.edges():
-        graph[src][dst]['edge_id'] = '%s_%s' % (graph.node[src]['label'
-                ], graph.node[dst]['label'])
-
 # apply defaults
 # relabel nodes
 # other handling... split this into seperate module!
