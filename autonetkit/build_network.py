@@ -78,7 +78,6 @@ def initialise(input_graph):
 
     input_undirected = nx.Graph(input_graph)
     g_in = anm.add_overlay("input", graph=input_undirected)
-    anm.add_overlay("input_directed", graph=input_graph, directed=True)
 
 # set defaults
     if not g_in.data.specified_int_names:
