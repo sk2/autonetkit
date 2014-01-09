@@ -292,7 +292,6 @@ class OverlayNode(object):
 
         return ()
 
-
     def __eq__(self, other):
         """"""
 
@@ -1215,6 +1214,7 @@ class OverlayGraph(OverlayBase):
         **kwargs
         ):
         """Update won't append data (which could clobber) if node exists"""
+        nbunch = list(nbunch) # listify in case consumed in try/except
 
         if not retain:
             retain = []
@@ -1240,9 +1240,17 @@ class OverlayGraph(OverlayBase):
                 add_nodes.append((node.node_id, data))
             nbunch = add_nodes
         else:
-            nbunch = (n.node_id for n in nbunch)  # only store the id in overlay
+            try:
+                nbunch = [n.node_id for n in nbunch]  # only store the id in overlay
+            except AttributeError:
+                pass # use nbunch directly as the node IDs
 
         self._graph.add_nodes_from(nbunch, **kwargs)
+        for node in self._graph.nodes():
+            node_data = self._graph.node[node]
+            if "label" not in node_data:
+                node_data["label"] = str(node) # use node id
+
         self._init_interfaces(node_ids)
 
     def add_node(
@@ -1275,14 +1283,28 @@ class OverlayGraph(OverlayBase):
 
     def _init_interfaces(self, nbunch=None):
         """Initialises interfaces"""
+        #TODO: this needs a major refactor!
 
-        if not nbunch:
+        #store the original bunch to check if going input->phy
+        if nbunch is not None:
+            nbunch = list(nbunch) # listify generators
+
+        original_nbunch = {}
+
+        if nbunch is None:
             nbunch = [n for n in self._graph.nodes()]
 
         try:
+            previous = list(nbunch)
             nbunch = list(unwrap_nodes(nbunch))
         except AttributeError:
             pass  # don't need to unwrap
+        else:
+            # record a dict of the new nbunch to the original
+            for index, element in enumerate(nbunch):
+                previous_element = previous[index]
+                if previous_element is not None:
+                    original_nbunch[element] = previous[index]
 
         phy_graph = self._anm.overlay_nx_graphs['phy']
 
@@ -1298,12 +1320,30 @@ class OverlayGraph(OverlayBase):
                             phy_interfaces)
                 self._graph.node[node]['_interfaces'] = data
             except KeyError:
+                #TODO: split this off into seperate function
+                # test if adding from input graph
+                # Note: this has to be done on a node-by-node basis
+                # as ANK allows adding nodes from multiple graphs at once
+                # TODO: warn if adding from multiple overlays at onc
+                if self._overlay_id == "phy" and len(original_nbunch):
+                        # see if adding from input->phy,
+                        # overlay nodes were provided as input
+                        original_node = original_nbunch[node]
+                        if original_node.overlay_id == "input":
+                            # are doing input->phy
+                            # copy the
+                            original_interfaces = original_node.get("_interfaces")
+                            if original_interfaces is not None:
+                                # Initialise with the keys
+                                int_data = {k: {"description": v.get("description"), "type": v.get("type")}
+                                for k, v in original_interfaces.items()}
+                                self._graph.node[node]['_interfaces'] = int_data
 
-# no counterpart in physical graph, initialise
-
-                log.debug('Initialise interfaces for %s in %s' % (node,
-                          self._overlay_id))
-                self._graph.node[node]['_interfaces'] = \
+                else:
+                    # no counterpart in physical graph, initialise
+                    log.debug('Initialise interfaces for %s in %s' % (node,
+                      self._overlay_id))
+                    self._graph.node[node]['_interfaces'] = \
                     {0: {'description': 'loopback', 'type': 'loopback'}}
 
     def allocate_interfaces(self):
@@ -1351,8 +1391,6 @@ class OverlayGraph(OverlayBase):
                     return
 
         self._init_interfaces()
-
-        # self._init_interfaces(nbunch)
 
         ebunch = sorted(self.edges())
 
@@ -1465,11 +1503,15 @@ class OverlayGraph(OverlayBase):
                     ebunch_out.append((src.node_id, dst.node_id,
                             {'_interfaces': _interfaces}))
                 else:
-
-                    # for nodes - test this occurs still of node-node link (can occur for bgp sessions?)
-
-                    ebunch_out.append((src.node_id, dst.node_id,
-                            {'_interfaces': {}}))
+                    try:
+                        src_id = src.node_id
+                    except AttributeError:
+                        src_id = src # use directly
+                    try:
+                        dst_id = dst.node_id
+                    except AttributeError:
+                        dst_id = dst # use directly
+                    ebunch_out.append((src_id, dst_id, {'_interfaces': {}}))
 
             ebunch = ebunch_out
 
