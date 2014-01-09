@@ -19,8 +19,6 @@ SETTINGS = autonetkit.config.settings
 
 __all__ = ['build']
 
-MESSAGING = ank_messaging.AnkMessaging()
-
 def load(input_graph_string):
     try:
         input_graph = graphml.load_graphml(input_graph_string)
