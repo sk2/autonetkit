@@ -292,20 +292,6 @@ class OverlayNode(object):
 
         return ()
 
-    def __getstate__(self):
-        '''For pickling'''
-
-        return (self.anm, self.overlay_id, self.node_id)
-
-    def __setstate__(self, state):
-        """"""
-
-        # Make self.history = state and last_change and value undefined
-
-        (anm, overlay_id, node_id) = state
-        object.__setattr__(self, 'anm', anm)
-        object.__setattr__(self, 'overlay_id', overlay_id)
-        object.__setattr__(self, 'node_id', node_id)
 
     def __eq__(self, other):
         """"""
@@ -746,26 +732,11 @@ class OverlayEdge(object):
         overlay = OverlayGraph(self.anm, key)
         return overlay.edge(self)
 
-    def __getstate__(self):
-        '''For pickling'''
-
-        return (self.anm, self.overlay_id, self.src_id, self.dst_id)
-
     def __lt__(self, other):
         """"""
 
         return (self.src.node_id, self.dst.node_id) \
             < (other.src.node_id, other.dst.node_id)
-
-    def __setstate__(self, state):
-        '''For pickling'''
-
-        self._overlays = state
-        (anm, overlay_id, src_id, dst_id) = state
-        object.__setattr__(self, 'anm', anm)
-        object.__setattr__(self, 'overlay_id', overlay_id)
-        object.__setattr__(self, 'src_id', src_id)
-        object.__setattr__(self, 'dst_id', dst_id)
 
     @property
     def src(self):
@@ -1564,11 +1535,6 @@ class AbstractNetworkModel(object):
 
         return ()
 
-    def __getstate__(self):
-        '''For pickling'''
-
-        return (self._overlays, self.label_seperator, self.label_attrs)
-
     @property
     def overlay_nx_graphs(self):
         """"""
@@ -1579,15 +1545,6 @@ class AbstractNetworkModel(object):
         """"""
 
         return overlay_id in self._overlays
-
-    def __setstate__(self, state):
-        '''For pickling'''
-
-        (overlays, label_seperator, label_attrs) = state
-        self._overlays = overlays
-        self.label_seperator = label_seperator
-        self.label_attrs = label_attrs
-        self._build_node_label()
 
     def dump(self):
         import autonetkit.ank_json as ank_json
