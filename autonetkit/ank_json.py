@@ -102,6 +102,7 @@ def string_to_netaddr(val):
     return retval
 
 def restore_anm_nidb_from_json(data):
+    # This can be used to extract from the json used to send to webserver
 
     d = ank_json_custom_loads(data)
     anm = autonetkit.anm.AbstractNetworkModel()
