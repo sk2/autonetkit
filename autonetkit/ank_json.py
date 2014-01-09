@@ -206,11 +206,16 @@ def jsonify_anm_with_graphics(anm, nidb = None):
     for overlay_id in anm.overlays():
         OverlayGraph = anm[overlay_id]._graph.copy()
 
+    #TODO: don't regen x,y for each overlay - persist (possibly across all layers?)
+    # for speed/clarity, get the graphics data to a dict and then set x,y if not set
+    # then read from this
+
 #TODO: only update, don't over write if already set
         for n in OverlayGraph:
-            OverlayGraph.node[n].update( {
-                'x': graphics_graph.node[n]['x'],
-                'y': graphics_graph.node[n]['y'],
+            if n in graphics_graph:
+                OverlayGraph.node[n].update( {
+                'x': graphics_graph.node[n].get('x'),
+                'y': graphics_graph.node[n].get('y'),
                 'asn': graphics_graph.node[n]['asn'],
                 'label': graphics_graph.node[n]['label'],
                 'device_type': graphics_graph.node[n]['device_type'],
@@ -218,9 +223,24 @@ def jsonify_anm_with_graphics(anm, nidb = None):
                 'pop': graphics_graph.node[n].get('pop'),
                 })
 
+                #TODO: if no label set, then use node if
+            else:
+                import random
+                log.debug("Converting to graphics JSON format: node %s not in graphics overlay" % n)
+                #TODO: see if can key off node hash - so doesn't move nodes around
+                if OverlayGraph.node[n].get("x") is None:
+                    OverlayGraph.node[n]['x'] = random.randint(0,800)
+                if OverlayGraph.node[n].get("y") is None:
+                    OverlayGraph.node[n]['y'] =random.randint(0,800)
+                if OverlayGraph.node[n].get("label") is None:
+                    OverlayGraph.node[n]['label'] = n # set to node ID
+                if OverlayGraph.node[n].get("device_type") is None:
+                    OverlayGraph.node[n]['device_type'] = None # set to node ID
+
+
             if n in phy_graph:
                 # use ASN from physical graph
-                OverlayGraph.node[n]['asn'] = phy_graph.node[n]['asn']
+                OverlayGraph.node[n]['asn'] = phy_graph.node[n].get("asn")
 
             try:
                 del OverlayGraph.node[n]['id']
@@ -258,9 +278,11 @@ def jsonify_anm_with_graphics(anm, nidb = None):
             y_min = min(y)
         except ValueError:
             y_min = 0
+
+        border_offset = 20 # so don't plot right at edge
         for n in OverlayGraph:
-            OverlayGraph.node[n]['x'] += - x_min
-            OverlayGraph.node[n]['y'] += - y_min
+            OverlayGraph.node[n]['x'] += - x_min + border_offset
+            OverlayGraph.node[n]['y'] += - y_min + border_offset
 
         anm_json[overlay_id] = ank_json_dumps(OverlayGraph)
         test_anm_data[overlay_id] = OverlayGraph
