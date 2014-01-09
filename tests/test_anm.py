@@ -1,4 +1,7 @@
 import autonetkit
+import autonetkit.log as log
+
+log.info("Testing ANM")
 
 anm = autonetkit.ANM()
 
