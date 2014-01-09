@@ -8,6 +8,7 @@ router_ids = ["r1", "r2", "r3", "r4", "r5"]
 g_in.add_nodes_from(router_ids)
 
 g_in.update(device_type = "router")
+g_in.update(asn = 1)
 
 positions = {'r3': (107, 250), 'r5': (380, 290), 'r1': (22, 50), 'r2': (377, 9), 'r4': (571, 229)}
 for node in g_in:
@@ -22,7 +23,7 @@ input_interface_edges = [(g_in.node(src).interface(1), g_in.node(dst).interface(
 g_in.add_edges_from(input_interface_edges)
 
 g_phy = anm['phy']
-g_phy.add_nodes_from(g_in, retain=["device_type", "x", "y"])
+g_phy.add_nodes_from(g_in, retain=["device_type", "x", "y", "asn"])
 g_phy.add_edges_from(g_in.edges())
 
 g_test = anm.add_overlay("test")
@@ -98,5 +99,21 @@ test_overlay_interface['phy']
 # test overlays
 
 # test ANM
+test_node = g_phy.node("r1")
+assert(test_node.asn == 1)
+assert(test_node.device_type == "router")
+#TODO: also need to test for servers
+assert(test_node.is_l3device)
+assert(test_node.is_router)
+assert(not test_node.is_switch)
+assert(not test_node.is_server)
+assert(str(list(test_node.neighbors())) == "[r2, r3]")
+assert(str(list(test_node.neighbor_interfaces())) == "[(r2, eth0), (r3, eth0)]")
+# Test getting from another overlay
+assert(test_node['input'].asn == 1)
+
+assert(str(sorted(g_phy.nodes())) == "[r1, r2, r3, r4, r5]")
+
+assert(test_node.label == "r1")
 
 autonetkit.update_http(anm)
