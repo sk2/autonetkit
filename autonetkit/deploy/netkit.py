@@ -107,7 +107,6 @@ def extract(
 
     def lab_started(protocol, index, data):
         log.info('Lab started on %s' % host)
-        messaging.publish_data(host, 'lab started')
 
     def make_not_found(protocol, index, data):
         log.warning('Make not installed on remote host %s. Please install make and retry.'
