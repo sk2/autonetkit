@@ -160,11 +160,6 @@ def allocate_ips(G_ip):
 
             # [infra_tree],
 
-    jsontree = json.dumps(total_tree,
-                          cls=autonetkit.ank_json.AnkEncoder, indent=4)
-    autonetkit.ank_messaging.publish_data(jsontree, 'ip_allocations')
-
-
 # TODO: need to update with loopbacks if wish to advertise also - or subdivide blocks?
 
     # ip_tree.save()
