@@ -95,9 +95,11 @@ try:
 except ImportError:
   pass # not installed
 else:
-  CONNECTORS['ios_classic_ns'] = autonetkit_cisco.measure_connectors.ios_classic_ns_connector
-  CONNECTORS['ios_xr_ns'] = autonetkit_cisco.measure_connectors.ios_xr_ns_connector
-  CONNECTORS['titanium_ns_connector'] = autonetkit_cisco.measure_connectors.titanium_ns_connector
+  CONNECTORS['iosv_ns'] = autonetkit_cisco.measure_connectors.iosv_ns_connector
+  CONNECTORS['csr1000v_ns'] = autonetkit_cisco.measure_connectors.iosv_ns_connector
+  CONNECTORS['ios_xrv_ns'] = autonetkit_cisco.measure_connectors.ios_xrv_ns_connector
+  CONNECTORS['nx_osv_ns'] = autonetkit_cisco.measure_connectors.nx_osv_ns_connector
+  CONNECTORS['ubuntu_ns'] = autonetkit_cisco.measure_connectors.linux_ns_connector
 
 def do_connect(**kwargs):
   #TODO: use a function map
