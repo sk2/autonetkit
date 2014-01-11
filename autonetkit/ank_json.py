@@ -12,12 +12,15 @@ from networkx.readwrite import json_graph
 
 class NidbEncoder(json.JSONEncoder):
     #TODO: would be better to build this as a graph and then use normal JSON serialization
-    """Recursive handling and formatting for BGP Policy export in JSON format"""
+    """Recursive handling and formatting for NIDB in JSON format"""
     def default(self, obj):
 
         if isinstance(obj, netaddr.IPAddress):
             return str(obj)
         if isinstance(obj, netaddr.IPNetwork):
+            return str(obj)
+
+        if isinstance(obj, autonetkit.nidb.config_stanza):
             return str(obj)
 
         if isinstance(obj, autonetkit.nidb.NIDB):
@@ -36,7 +39,6 @@ class NidbEncoder(json.JSONEncoder):
             return [{'name': obj.id,
                 'children': list(obj.dict())}]
         #return stfr(obj)
-
         if isinstance(obj, dict):
             return str(obj) #TODO: need to handle as list of children
             #return [{"name": k, "value": v} for k, v in obj.items
@@ -67,6 +69,8 @@ class AnkEncoder(json.JSONEncoder):
         if isinstance(obj, autonetkit.anm.OverlayEdge):
             #TODO: add documentation about serializing anm nodes
             log.warning("%s is anm overlay_edge. Use attribute rather than object in compiler." % obj)
+            return str(obj)
+        if isinstance(obj, autonetkit.nidb.config_stanza):
             return str(obj)
         if isinstance(obj, autonetkit.nidb.nidb_node_category):
             #TODO: add documentation about serializing anm nodes

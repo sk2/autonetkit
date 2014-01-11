@@ -13,6 +13,40 @@ try:
 except ImportError:
     import pickle
 
+from collections import OrderedDict
+
+# based on http://docs.python.org/2.7/library/collections#collections.OrderedDict
+# and http://stackoverflow.com/q/455059
+class config_stanza(object):
+    def __init__(self, **kwargs):
+        object.__setattr__(self, '_odict', OrderedDict(kwargs))
+
+    def __repr__(self):
+        return str(self._odict.items())
+
+    def add_stanza(self, name, **kwargs):
+        """Adds a sub-stanza to this stanza"""
+        stanza = config_stanza(**kwargs)
+        self[name] = stanza
+        return stanza
+
+    def __setitem__(self, key, value):
+        self._odict[key] = value
+
+    def __setattr__(self, key, value):
+        self._odict[key] = value
+
+    def __getattr__(self, key):
+        #TODO: decide how to return misses
+        return self._odict[key]
+
+    # TODO: add __iter__, __keys etc
+
+    #self.__dict__['_odict'][key] = value
+
+    #TODO: add a sort function that sorts the OrderedDict
+
+
 class interface_data_dict(collections.MutableMapping):
     """A dictionary which allows access as dict.key as well as dict['key']
     Based on http://stackoverflow.com/questions/3387691
@@ -511,6 +545,14 @@ class nidb_node(object):
     def __getstate__(self):
         return (self.nidb, self.node_id)
 
+    #TODO: add a dump method - needed with str()?
+
+    def add_stanza(self, name, **kwargs):
+        #TODO: decide if want shortcut for *args to set to True
+        stanza = config_stanza(**kwargs)
+        self.__setattr__(name, stanza)
+        return stanza
+
     def __hash__(self):
         return hash(self.node_id)
 
@@ -701,6 +743,10 @@ class nidb_node(object):
             pass # Not set yet
         except AttributeError:
             pass # not a dict
+
+        #TODO: remove once deprecated nidb_node_category
+        if isinstance(data, config_stanza):
+            return data
 
         try:
             data.keys()
