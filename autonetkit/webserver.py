@@ -17,6 +17,7 @@ class MyWebHandler(tornado.web.RequestHandler):
         self.singleuser_mode = singleuser_mode
 
     def get(self):
+        #TODO: make thie echo the ank version, and suggest how to post topologies
         self.write("Hello, world")
 
     def post(self):
@@ -259,6 +260,27 @@ class IndexHandler(tornado.web.RequestHandler):
     def get(self):
         # if not set, use default uuid of "singleuser"
         uuid = self.get_argument("uuid", "singleuser")
+        # Note agent detection is usually *not* the solution to the problem, see:
+        # https://developer.mozilla.org/en-US/docs/Browser_detection_using_the_user_agent
+        user_agent = self.request.headers.get("User-Agent")
+        formatted_url = "http://%s/?uuid=%s" % (self.request.host, uuid)
+        logging.info(user_agent)
+        supported_browsers = ", ".join(["Google Chrome", "Mozilla Firefox"])
+        unsupported_browsers = ["MSIE 5.0", "MSIE 6.0", "MSIE 7.0",
+        #"Chrome", # testing
+        "MSIE 8.0", "MSIE 9.0", "MSIE 10.0", "MSIE 11.0"]
+        if any(x in user_agent for x in unsupported_browsers):
+            # bad browser
+            self.write("""Your browser is not supported.<br />
+                Please try the following link in a supported browser: <br />
+                <a href="%s">%s</a> </br>
+                <p>
+                Supported browsers are %s.
+                </p>
+                <br />
+                """ % (formatted_url, formatted_url, supported_browsers))
+            return
+        #TODO: try to import template from autonetkit_cisco messages
         logging.info("Rendering template with uuid %s" % uuid)
         template = os.path.join(self.content_path, "index.html")
         self.render(template, uuid = uuid)
@@ -322,6 +344,7 @@ def main():
 
     ank_accessor = AnkAccessor(simplified_overlays = simplified_overlays)
 
+    #TODO: inherit the IndexHandler to switch based on browser version
     application = tornado.web.Application([
         (r'/ws', MyWebSocketHandler, {"ank_accessor": ank_accessor,
             'singleuser_mode': singleuser_mode,
