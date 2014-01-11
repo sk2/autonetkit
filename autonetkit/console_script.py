@@ -234,6 +234,8 @@ def main(options):
         log.error(
             "Error generating network configurations: %s. More information may be available in the debug log." % err)
         log.debug("Error generating network configurations", exc_info=True)
+        if settings['General']['stack_trace']:
+            print traceback.print_exc()
         import sys
         sys.exit("Unable to build configurations.")
 
@@ -289,6 +291,7 @@ def create_nidb(anm):
         ipv4_node = anm['ipv4'].node(node)
         if ipv4_node:
             node.ipv4_subnet = ipv4_node.subnet
+            #TODO: copy across IPv6 seperately
             node.ipv6_subnet = ipv4_node['ipv6'].subnet
 
 # add edges to switches
