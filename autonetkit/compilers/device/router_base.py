@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 from autonetkit.compiler import sort_sessions
 from autonetkit.compilers.device.device_base import DeviceCompiler
+from autonetkit.nidb import config_stanza
 
 import autonetkit.plugins.naming as naming
 import autonetkit.log as log
@@ -203,6 +204,7 @@ class RouterCompiler(DeviceCompiler):
 
         g_ospf = self.anm['ospf']
         g_ipv4 = self.anm['ipv4']
+        node.add_stanza("ospf")
 
         node.ospf.ipv4_mpls_te = False  # default, inherited enable if necessary
 
@@ -231,13 +233,16 @@ class RouterCompiler(DeviceCompiler):
                     ospf_cost = 1  # default
             interface.ospf_cost = ospf_cost
             network = ipv4_int.subnet
+
             if ospf_int and ospf_int.is_bound and network \
                 not in added_networks:  # don't add more than once
                 added_networks.add(network)
-                node.ospf.ospf_links.append(network=network,
-                        area=ospf_int.area)
+                link_stanza = config_stanza(network = network, area = ospf_int.area)
+                node.ospf.ospf_links.append(link_stanza)
+
 
             # also add networks for subnets to servers in the same AS
+
 
     def bgp(self, node):
         phy_node = self.anm['phy'].node(node)

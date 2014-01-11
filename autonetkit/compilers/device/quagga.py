@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 from autonetkit.compilers.device.router_base import RouterCompiler
+from autonetkit.nidb import config_stanza
 
 
 class QuaggaCompiler(RouterCompiler):
@@ -28,6 +29,7 @@ class QuaggaCompiler(RouterCompiler):
             node.loopback_zero.ipv4_address = ipv4_node.loopback
             node.loopback_zero.ipv4_subnet = node.loopback_subnet
 
+
     def ospf(self, node):
         """Quagga ospf compiler"""
 
@@ -43,11 +45,12 @@ class QuaggaCompiler(RouterCompiler):
 
             bgp_int = self.anm['bgp'].interface(interface)
             if bgp_int.ebgp:  # ebgp interface
-                node.ospf.passive_interfaces.append(id=interface.id)
+                node.ospf.passive_interfaces.append(config_stanza(id=interface.id))
                 subnet = bgp_int['ipv4'].subnet
                 default_ebgp_area = 0
-                node.ospf.ospf_links.append(network=subnet,
-                        area=default_ebgp_area)
+                node.ospf.ospf_links.append(
+                    config_stanza(network=subnet,
+                        area=default_ebgp_area))
 
     def isis(self, node):
         """Sets ISIS links
