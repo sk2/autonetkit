@@ -7,7 +7,7 @@ import netaddr
 from autonetkit.ank import sn_preflen_to_network
 from autonetkit.compiler import sort_sessions
 from autonetkit.compilers.device.router_base import RouterCompiler
-
+from autonetkit.nidb import config_stanza
 
 class IosBaseCompiler(RouterCompiler):
 
@@ -35,6 +35,7 @@ class IosBaseCompiler(RouterCompiler):
         node.use_cdp = phy_node.use_cdp
 
         if node in self.anm['ospf']:
+            node.add_stanza("ospf")
             node.ospf.use_ipv4 = phy_node.use_ipv4
             node.ospf.use_ipv6 = phy_node.use_ipv6
 
@@ -596,15 +597,17 @@ class IosXrCompiler(IosBaseCompiler):
             if ospf_int and ospf_int.is_bound:
                 area = ospf_int.area
                 area = str(area)  # can't serialize IPAddress object to JSON
-                interfaces_by_area[area].append({'id': interface.id,
-                        'cost': int(ospf_int.cost), 'passive': False})
+                stanza = config_stanza(id = interface.id,
+                        cost = int(ospf_int.cost), passive = False)
+                interfaces_by_area[area].append(stanza)
 
         loopback_zero = node.loopback_zero
         ospf_loopback_zero = g_ospf.interface(loopback_zero)
         router_area = ospf_loopback_zero.area  # area assigned to router
         router_area = str(router_area)  # can't serialize IPAddress object to JSON
-        interfaces_by_area[router_area].append({'id': node.loopback_zero.id,
-                'cost': 0, 'passive': True})
+        stanza = config_stanza(id = node.loopback_zero.id,
+            cost = 0, passive = True)
+        interfaces_by_area[router_area].append(stanza)
 
         node.ospf.interfaces = dict(interfaces_by_area)
 
