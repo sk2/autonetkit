@@ -110,8 +110,9 @@ class RouterCompiler(DeviceCompiler):
         #TODO: allow this to work for ibgp and ebgp
         if (
             (self.anm.has_overlay('ebgp_v4') and node in self.anm['ebgp_v4'])
-            or
-            (self.anm.has_overlay('ibgp_v4') and node in self.anm['ibgp_v4'])
+            or (self.anm.has_overlay('ibgp_v4') and node in self.anm['ibgp_v4'])
+            or (self.anm.has_overlay('ibgp_v6') and node in self.anm['ibgp_v6'])
+            or (self.anm.has_overlay('ibgp_v6') and node in self.anm['ibgp_v6'])
             or
             (self.anm.has_overlay('bgp') and node in self.anm['bgp'])):
             self.bgp(node)
@@ -214,7 +215,7 @@ class RouterCompiler(DeviceCompiler):
 
         node.ospf.ipv4_mpls_te = False  # default, inherited enable if necessary
 
-        node.ospf.loopback_area = g_ospf.node(node).area
+        node.ospf.loopback_area = g_ospf.node(node).area or 0
 
         node.ospf.process_id = 1  # TODO: set this in build_network module
         node.ospf.lo_interface = self.lo_interface
