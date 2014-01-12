@@ -65,3 +65,19 @@ output.txt
 
 cache/*
 script.profile
+
+.tox/*
+tests/*
+*.sublime-workspace
+
+run_tests.sh
+
+rsync.sh
+
+icon.pdf
+
+icon.graffle
+
+.ipynb_checkpoints/Untitled0-checkpoint.ipynb
+
+autonetkit.sublime-project
