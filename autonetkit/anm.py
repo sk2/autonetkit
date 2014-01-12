@@ -1528,6 +1528,12 @@ class OverlayGraph(OverlayBase):
 
         if nbunch is None:
             nbunch = self.nodes()
+
+        if nbunch in self:
+            nbunch = [nbunch]  # single node in the list for iteration
+
+        # if the node is in the underlying networkx graph, then map to an overlay node
+        nbunch = [self.node(n) if n in self._graph else n for n in nbunch]
         for node in nbunch:
             for (key, value) in kwargs.items():
                 node.set(key, value)
