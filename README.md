@@ -15,8 +15,7 @@ The primary focus is on emulated networks, but the framework can be extended to 
 
     g_ospf = anm.add_overlay("ospf")
     g_ospf.add_nodes_from(g_in.routers())
-    g_ospf.add_edges_from(e for e in g_in.edges()
-        if e.src.asn == e.dst.asn)
+    g_ospf.add_edges_from(e for e in g_in.edges() if e.src.asn == e.dst.asn)
 
 ## Visualization
 
@@ -92,10 +91,11 @@ More information on AutoNetkit:
 
 *  [AutoNetkit YouTube Channel](http://www.youtube.com/autonetkit)
 *  [CoNEXT 2013 Slides](https://db.tt/JkRrU5q5) (Dec 13)
-*  [PyCon Australia 2013 Presentation on Autonetkit](http://t.co/H4NWROoAJK) [(Slides)](http://t.co/x0NXLMATEq) (July 13)
-*  [AutoNetkit website](http://www.autonetkit.org)
-*  [API Documentation](https://autonetkit.readthedocs.org/)
 *  [CoNext 2013 Conference Paper](http://conferences.sigcomm.org/co-next/2013/program/p235.pdf)
+*  [PyCon Australia 2013 Presentation on Autonetkit](http://t.co/H4NWROoAJK) [(Slides)](http://t.co/x0NXLMATEq) (July 13)
+
+*  [API Documentation](https://autonetkit.readthedocs.org/)
+*  [AutoNetkit website](http://www.autonetkit.org)
 
 # Contact
 *  [Twitter](https://twitter.com/autonetkit)
