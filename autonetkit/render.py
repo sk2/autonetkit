@@ -101,6 +101,8 @@ def render_inline(node, render_template_file, to_memory = True,
                 except KeyError, error:
                     log.warning( "Unable to render %s:"
                         " %s not set" % (node, error))
+                    from mako import exceptions
+                    log.debug(exceptions.text_error_template().render())
                 except AttributeError, error:
                     log.warning( "Unable to render %s: %s " % (node, error))
                     from mako import exceptions
@@ -176,17 +178,19 @@ def render_node(node, folder_cache):
                 except KeyError, error:
                     log.warning( "Unable to render %s:"
                         " %s not set" % (node, error))
+                    from mako import exceptions
+                    log.debug(exceptions.text_error_template().render())
                 except AttributeError, error:
                     log.warning( "Unable to render %s: %s " % (node, error))
                     from mako import exceptions
-                    log.warning(exceptions.text_error_template().render())
+                    log.debug(exceptions.text_error_template().render())
                 except NameError, error:
                     log.warning( "Unable to render %s: %s. "
                         "Check all variables used are defined" % (node, error))
                 except TypeError, error:
                     log.warning( "Unable to render %s: %s." % (node, error))
                     from mako import exceptions
-                    log.warning(exceptions.text_error_template().render())
+                    log.debug(exceptions.text_error_template().render())
 
 
         if node.render.to_memory:
