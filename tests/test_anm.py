@@ -119,4 +119,12 @@ assert(str(sorted(g_phy.nodes())) == "[r1, r2, r3, r4, r5]")
 
 assert(test_node.label == "r1")
 
+
+"""
+g_in.update("r4", asn = 2)
+g_in.update(["r1", "r2", "r3"], asn = 1)
+
+test = g_in.node("r5")
+"""
+
 autonetkit.update_http(anm)
