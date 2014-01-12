@@ -15,6 +15,7 @@ class QuaggaCompiler(RouterCompiler):
 
     def interfaces(self, node):
         """Quagga interface compiler"""
+        #TODO: put this on the router base?
 
         ipv4_node = self.anm['ipv4'].node(node)
         phy_node = self.anm['phy'].node(node)
