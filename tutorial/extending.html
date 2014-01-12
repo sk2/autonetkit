@@ -1860,7 +1860,7 @@ In&nbsp;[8]:
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
 <div class="prompt input_prompt">
-In&nbsp;[10]:
+In&nbsp;[9]:
 </div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="n">g_ibgp</span> <span class="o">=</span> <span class="n">anm</span><span class="o">.</span><span class="n">add_overlay</span><span class="p">(</span><span class="s">&quot;ibgp_v4&quot;</span><span class="p">,</span> <span class="n">directed</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
@@ -1881,7 +1881,7 @@ In&nbsp;[10]:
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
 <div class="prompt input_prompt">
-In&nbsp;[11]:
+In&nbsp;[10]:
 </div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="kn">import</span> <span class="nn">autonetkit.ank</span> <span class="kn">as</span> <span class="nn">ank_utils</span>
@@ -1943,7 +1943,7 @@ INFO:ANK:Allocating v4 Primary Host loopback IPs
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
 <div class="prompt input_prompt">
-In&nbsp;[12]:
+In&nbsp;[11]:
 </div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="c"># Now construct NIDB</span>
@@ -1971,7 +1971,7 @@ In&nbsp;[12]:
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
 <div class="prompt input_prompt">
-In&nbsp;[13]:
+In&nbsp;[12]:
 </div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="kn">import</span> <span class="nn">autonetkit.compilers.platform.netkit</span> <span class="kn">as</span> <span class="nn">pl_netkit</span>
@@ -2005,7 +2005,7 @@ INFO:ANK:Compiling Netkit for localhost
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
 <div class="prompt input_prompt">
-In&nbsp;[14]:
+In&nbsp;[13]:
 </div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="kn">import</span> <span class="nn">autonetkit.render</span>
@@ -2075,7 +2075,7 @@ INFO:ANK:Rendering Network
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
 <div class="prompt input_prompt">
-In&nbsp;[15]:
+In&nbsp;[14]:
 </div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="c"># AutoNetkit renderer expects filenames for templates</span>
@@ -2120,7 +2120,7 @@ In&nbsp;[15]:
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
 <div class="prompt input_prompt">
-In&nbsp;[16]:
+In&nbsp;[15]:
 </div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="kn">from</span> <span class="nn">autonetkit.compilers.device</span> <span class="kn">import</span> <span class="n">router_base</span>
@@ -2146,7 +2146,7 @@ In&nbsp;[16]:
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
 <div class="prompt input_prompt">
-In&nbsp;[17]:
+In&nbsp;[16]:
 </div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="n">topology_template_str</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;Topology rendered on ${date} by ${version_banner}</span>
@@ -2167,7 +2167,7 @@ In&nbsp;[17]:
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
 <div class="prompt input_prompt">
-In&nbsp;[18]:
+In&nbsp;[17]:
 </div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="kn">from</span> <span class="nn">autonetkit.compilers.platform</span> <span class="kn">import</span> <span class="n">platform_base</span>
@@ -2175,13 +2175,10 @@ In&nbsp;[18]:
 <span class="kn">from</span> <span class="nn">autonetkit.nidb</span> <span class="kn">import</span> <span class="n">config_stanza</span>
 
 <span class="k">class</span> <span class="nc">simple_platform_compiler</span><span class="p">(</span><span class="n">platform_base</span><span class="o">.</span><span class="n">PlatformCompiler</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">compile</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">mgmt_address_block</span> <span class="o">=</span> <span class="n">netaddr</span><span class="o">.</span><span class="n">IPNetwork</span><span class="p">(</span><span class="s">&quot;172.16.0.0/16&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">iter_hosts</span><span class="p">()</span>
-        
+    <span class="k">def</span> <span class="nf">compile</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>        
         <span class="n">rtr_comp</span> <span class="o">=</span> <span class="n">simple_router_compiler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nidb</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="p">)</span>
         
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nidb</span><span class="o">.</span><span class="n">routers</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">):</span>
-            <span class="n">node</span><span class="o">.</span><span class="n">mgmt_ip</span> <span class="o">=</span> <span class="n">mgmt_address_block</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
             <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">interface</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">physical_interfaces</span><span class="p">):</span>
                 <span class="n">interface</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="s">&quot;eth</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">index</span>
             
@@ -2190,13 +2187,11 @@ In&nbsp;[18]:
             <span class="n">node</span><span class="o">.</span><span class="n">render</span><span class="o">.</span><span class="n">dst_folder</span> <span class="o">=</span> <span class="s">&quot;rendered&quot;</span>
             <span class="n">node</span><span class="o">.</span><span class="n">render</span><span class="o">.</span><span class="n">dst_file</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">.conf&quot;</span> <span class="o">%</span> <span class="n">node</span>
             <span class="c"># and compile</span>
-            <span class="n">rtr_comp</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
-            <span class="n">node</span><span class="o">.</span><span class="n">dump</span><span class="p">()</span>
-            
+            <span class="n">rtr_comp</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>            
                 
         <span class="c"># and the topology</span>
         <span class="n">lab_topology</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nidb</span><span class="o">.</span><span class="n">topology</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">]</span>
-        <span class="c"># template settings for the rendered</span>
+        <span class="c"># template settings for the renderer</span>
         <span class="n">lab_topology</span><span class="o">.</span><span class="n">render_template</span> <span class="o">=</span> <span class="n">topology_template</span>
         <span class="n">lab_topology</span><span class="o">.</span><span class="n">render_dst_folder</span> <span class="o">=</span> <span class="s">&quot;rendered&quot;</span>
         <span class="n">lab_topology</span><span class="o">.</span><span class="n">render_dst_file</span> <span class="o">=</span> <span class="s">&quot;lab.conf&quot;</span>
@@ -2215,438 +2210,13 @@ In&nbsp;[18]:
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
 <div class="prompt input_prompt">
-In&nbsp;[19]:
+In&nbsp;[18]:
 </div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="n">sim_plat</span> <span class="o">=</span> <span class="n">simple_platform_compiler</span><span class="p">(</span><span class="n">nidb</span><span class="p">,</span> <span class="n">anm</span><span class="p">,</span> <span class="s">&quot;localhost&quot;</span><span class="p">)</span>
 <span class="n">sim_plat</span><span class="o">.</span><span class="n">compile</span><span class="p">()</span>
-<span class="c">#autonetkit.update_http(anm, nidb)</span>
+<span class="n">autonetkit</span><span class="o">.</span><span class="n">update_http</span><span class="p">(</span><span class="n">anm</span><span class="p">,</span> <span class="n">nidb</span><span class="p">)</span>
 </pre></div>
-
-</div>
-</div>
-
-<div class="vbox output_wrapper">
-<div class="output vbox">
-
-
-<div class="hbox output_area"><div class="prompt"></div>
-<div class="box-flex1 output_subarea output_stream output_stdout">
-<pre>
-{&apos;_interfaces&apos;: {0: {&apos;description&apos;: &apos;Loopback&apos;,
-                     &apos;id&apos;: &apos;lo:1&apos;,
-                     &apos;id_brief&apos;: &apos;&apos;,
-                     &apos;ipv4_address&apos;: IPAddress(&apos;192.168.0.4&apos;),
-                     &apos;ipv4_subnet&apos;: IPNetwork(&apos;192.168.0.4/32&apos;),
-                     &apos;type&apos;: &apos;loopback&apos;},
-                 1: {&apos;description&apos;: &apos;to r2&apos;,
-                     &apos;id&apos;: &apos;eth0&apos;,
-                     &apos;id_brief&apos;: &apos;&apos;,
-                     &apos;ipv4_address&apos;: IPAddress(&apos;10.0.0.10&apos;),
-                     &apos;ipv4_cidr&apos;: IPNetwork(&apos;10.0.0.10/30&apos;),
-                     &apos;ipv4_subnet&apos;: IPNetwork(&apos;10.0.0.8/30&apos;),
-                     &apos;numeric_id&apos;: 0,
-                     &apos;ospf_cost&apos;: 1,
-                     &apos;physical&apos;: True,
-                     &apos;type&apos;: &apos;physical&apos;,
-                     &apos;use_ipv4&apos;: True},
-                 2: {&apos;description&apos;: &apos;to r3&apos;,
-                     &apos;id&apos;: &apos;eth1&apos;,
-                     &apos;id_brief&apos;: &apos;&apos;,
-                     &apos;ipv4_address&apos;: IPAddress(&apos;10.0.0.14&apos;),
-                     &apos;ipv4_cidr&apos;: IPNetwork(&apos;10.0.0.14/30&apos;),
-                     &apos;ipv4_subnet&apos;: IPNetwork(&apos;10.0.0.12/30&apos;),
-                     &apos;numeric_id&apos;: 1,
-                     &apos;ospf_cost&apos;: 1,
-                     &apos;physical&apos;: True,
-                     &apos;type&apos;: &apos;physical&apos;,
-                     &apos;use_ipv4&apos;: True},
-                 3: {&apos;description&apos;: &apos;to r5&apos;,
-                     &apos;id&apos;: &apos;eth2&apos;,
-                     &apos;id_brief&apos;: &apos;&apos;,
-                     &apos;ipv4_address&apos;: IPAddress(&apos;10.0.128.1&apos;),
-                     &apos;ipv4_cidr&apos;: IPNetwork(&apos;10.0.128.1/30&apos;),
-                     &apos;ipv4_subnet&apos;: IPNetwork(&apos;10.0.128.0/30&apos;),
-                     &apos;numeric_id&apos;: 2,
-                     &apos;physical&apos;: True,
-                     &apos;type&apos;: &apos;physical&apos;,
-                     &apos;use_ipv4&apos;: True}},
- &apos;asn&apos;: 1,
- &apos;bgp&apos;: {&apos;debug&apos;: True,
-         &apos;ebgp_neighbors&apos;: [{&apos;asn&apos;: 2,
-                             &apos;dst_int_ip&apos;: IPAddress(&apos;10.0.128.2&apos;),
-                             &apos;local_int_ip&apos;: IPAddress(&apos;10.0.128.1&apos;),
-                             &apos;loopback&apos;: IPAddress(&apos;192.168.0.9&apos;),
-                             &apos;neighbor&apos;: &apos;r5&apos;,
-                             &apos;update_source&apos;: None,
-                             &apos;use_ipv4&apos;: True,
-                             &apos;use_ipv6&apos;: False}],
-         &apos;ibgp_neighbors&apos;: [{&apos;asn&apos;: 1,
-                             &apos;loopback&apos;: IPAddress(&apos;192.168.0.1&apos;),
-                             &apos;neighbor&apos;: &apos;r1&apos;,
-                             &apos;update_source&apos;: None,
-                             &apos;use_ipv4&apos;: True,
-                             &apos;use_ipv6&apos;: False},
-                            {&apos;asn&apos;: 1,
-                             &apos;loopback&apos;: IPAddress(&apos;192.168.0.2&apos;),
-                             &apos;neighbor&apos;: &apos;r2&apos;,
-                             &apos;update_source&apos;: None,
-                             &apos;use_ipv4&apos;: True,
-                             &apos;use_ipv6&apos;: False},
-                            {&apos;asn&apos;: 1,
-                             &apos;loopback&apos;: IPAddress(&apos;192.168.0.3&apos;),
-                             &apos;neighbor&apos;: &apos;r3&apos;,
-                             &apos;update_source&apos;: None,
-                             &apos;use_ipv4&apos;: True,
-                             &apos;use_ipv6&apos;: False}],
-         &apos;ibgp_rr_clients&apos;: [],
-         &apos;ibgp_rr_parents&apos;: [],
-         &apos;ipv4_advertise_subnets&apos;: [IPNetwork(&apos;10.0.0.0/16&apos;)],
-         &apos;ipv6_advertise_subnets&apos;: []},
- &apos;device_type&apos;: &apos;router&apos;,
- &apos;host&apos;: &apos;localhost&apos;,
- &apos;hostname&apos;: &apos;r4&apos;,
- &apos;input_label&apos;: &apos;r4&apos;,
- &apos;interfaces&apos;: [],
- &apos;ip&apos;: {&apos;use_ipv4&apos;: True, &apos;use_ipv6&apos;: False},
- &apos;label&apos;: &apos;r4&apos;,
- &apos;loopback&apos;: IPAddress(&apos;192.168.0.4&apos;),
- &apos;loopback_subnet&apos;: IPNetwork(&apos;192.168.0.4/32&apos;),
- &apos;mgmt_ip&apos;: IPAddress(&apos;172.16.0.1&apos;),
- &apos;ospf&apos;: [(&apos;ipv4_mpls_te&apos;, False), (&apos;loopback_area&apos;, 0), (&apos;process_id&apos;, 1), (&apos;lo_interface&apos;, &apos;lo:1&apos;), (&apos;ospf_links&apos;, [[(&apos;network&apos;, IPNetwork(&apos;10.0.0.8/30&apos;)), (&apos;area&apos;, None)], [(&apos;network&apos;, IPNetwork(&apos;10.0.0.12/30&apos;)), (&apos;area&apos;, None)]]), (&apos;passive_interfaces&apos;, [[(&apos;id&apos;, &apos;eth2&apos;)]])],
- &apos;platform&apos;: &apos;netkit&apos;,
- &apos;render&apos;: {&apos;base&apos;: &apos;templates/quagga&apos;,
-            &apos;base_dst_folder&apos;: &apos;rendered/localhost/netkit/r4&apos;,
-            &apos;custom&apos;: {&apos;abc&apos;: &apos;def.txt&apos;},
-            &apos;dst_file&apos;: &apos;r4.conf&apos;,
-            &apos;dst_folder&apos;: &apos;rendered&apos;,
-            &apos;template&apos;: &apos;router.mako&apos;},
- &apos;ssh&apos;: {&apos;use_key&apos;: True},
- &apos;tap&apos;: {&apos;id&apos;: &apos;eth3&apos;, &apos;ip&apos;: IPAddress(&apos;172.16.0.6&apos;)},
- &apos;x&apos;: 324,
- &apos;y&apos;: 162,
- &apos;zebra&apos;: {&apos;password&apos;: &apos;1234&apos;, &apos;static_routes&apos;: []}}
-{&apos;_interfaces&apos;: {0: {&apos;description&apos;: &apos;Loopback&apos;,
-                     &apos;id&apos;: &apos;lo:1&apos;,
-                     &apos;id_brief&apos;: &apos;&apos;,
-                     &apos;ipv4_address&apos;: IPAddress(&apos;192.168.0.9&apos;),
-                     &apos;ipv4_subnet&apos;: IPNetwork(&apos;192.168.0.9/32&apos;),
-                     &apos;type&apos;: &apos;loopback&apos;},
-                 1: {&apos;description&apos;: &apos;to r4&apos;,
-                     &apos;id&apos;: &apos;eth0&apos;,
-                     &apos;id_brief&apos;: &apos;&apos;,
-                     &apos;ipv4_address&apos;: IPAddress(&apos;10.0.128.2&apos;),
-                     &apos;ipv4_cidr&apos;: IPNetwork(&apos;10.0.128.2/30&apos;),
-                     &apos;ipv4_subnet&apos;: IPNetwork(&apos;10.0.128.0/30&apos;),
-                     &apos;numeric_id&apos;: 0,
-                     &apos;physical&apos;: True,
-                     &apos;type&apos;: &apos;physical&apos;,
-                     &apos;use_ipv4&apos;: True},
-                 2: {&apos;description&apos;: &apos;to r3&apos;,
-                     &apos;id&apos;: &apos;eth1&apos;,
-                     &apos;id_brief&apos;: &apos;&apos;,
-                     &apos;ipv4_address&apos;: IPAddress(&apos;10.1.0.2&apos;),
-                     &apos;ipv4_cidr&apos;: IPNetwork(&apos;10.1.0.2/16&apos;),
-                     &apos;ipv4_subnet&apos;: IPNetwork(&apos;10.1.0.0/16&apos;),
-                     &apos;numeric_id&apos;: 1,
-                     &apos;physical&apos;: True,
-                     &apos;type&apos;: &apos;physical&apos;,
-                     &apos;use_ipv4&apos;: True}},
- &apos;asn&apos;: 2,
- &apos;bgp&apos;: {&apos;debug&apos;: True,
-         &apos;ebgp_neighbors&apos;: [{&apos;asn&apos;: 1,
-                             &apos;dst_int_ip&apos;: IPAddress(&apos;10.1.0.1&apos;),
-                             &apos;local_int_ip&apos;: IPAddress(&apos;10.1.0.2&apos;),
-                             &apos;loopback&apos;: IPAddress(&apos;192.168.0.3&apos;),
-                             &apos;neighbor&apos;: &apos;r3&apos;,
-                             &apos;update_source&apos;: None,
-                             &apos;use_ipv4&apos;: True,
-                             &apos;use_ipv6&apos;: False},
-                            {&apos;asn&apos;: 1,
-                             &apos;dst_int_ip&apos;: IPAddress(&apos;10.0.128.1&apos;),
-                             &apos;local_int_ip&apos;: IPAddress(&apos;10.0.128.2&apos;),
-                             &apos;loopback&apos;: IPAddress(&apos;192.168.0.4&apos;),
-                             &apos;neighbor&apos;: &apos;r4&apos;,
-                             &apos;update_source&apos;: None,
-                             &apos;use_ipv4&apos;: True,
-                             &apos;use_ipv6&apos;: False}],
-         &apos;ibgp_neighbors&apos;: [],
-         &apos;ibgp_rr_clients&apos;: [],
-         &apos;ibgp_rr_parents&apos;: [],
-         &apos;ipv4_advertise_subnets&apos;: [IPNetwork(&apos;10.1.0.0/16&apos;)],
-         &apos;ipv6_advertise_subnets&apos;: []},
- &apos;device_type&apos;: &apos;router&apos;,
- &apos;host&apos;: &apos;localhost&apos;,
- &apos;hostname&apos;: &apos;r5&apos;,
- &apos;input_label&apos;: &apos;r5&apos;,
- &apos;interfaces&apos;: [],
- &apos;ip&apos;: {&apos;use_ipv4&apos;: True, &apos;use_ipv6&apos;: False},
- &apos;label&apos;: &apos;r5&apos;,
- &apos;loopback&apos;: IPAddress(&apos;192.168.0.9&apos;),
- &apos;loopback_subnet&apos;: IPNetwork(&apos;192.168.0.9/32&apos;),
- &apos;mgmt_ip&apos;: IPAddress(&apos;172.16.0.2&apos;),
- &apos;ospf&apos;: [(&apos;ipv4_mpls_te&apos;, False), (&apos;loopback_area&apos;, 0), (&apos;process_id&apos;, 1), (&apos;lo_interface&apos;, &apos;lo:1&apos;), (&apos;ospf_links&apos;, []), (&apos;passive_interfaces&apos;, [[(&apos;id&apos;, &apos;eth0&apos;)], [(&apos;id&apos;, &apos;eth1&apos;)]])],
- &apos;platform&apos;: &apos;netkit&apos;,
- &apos;render&apos;: {&apos;base&apos;: &apos;templates/quagga&apos;,
-            &apos;base_dst_folder&apos;: &apos;rendered/localhost/netkit/r5&apos;,
-            &apos;custom&apos;: {&apos;abc&apos;: &apos;def.txt&apos;},
-            &apos;dst_file&apos;: &apos;r5.conf&apos;,
-            &apos;dst_folder&apos;: &apos;rendered&apos;,
-            &apos;template&apos;: &apos;router.mako&apos;},
- &apos;ssh&apos;: {&apos;use_key&apos;: True},
- &apos;tap&apos;: {&apos;id&apos;: &apos;eth2&apos;, &apos;ip&apos;: IPAddress(&apos;172.16.0.7&apos;)},
- &apos;x&apos;: 486,
- &apos;y&apos;: 324,
- &apos;zebra&apos;: {&apos;password&apos;: &apos;1234&apos;, &apos;static_routes&apos;: []}}
-{&apos;_interfaces&apos;: {0: {&apos;description&apos;: &apos;Loopback&apos;,
-                     &apos;id&apos;: &apos;lo:1&apos;,
-                     &apos;id_brief&apos;: &apos;&apos;,
-                     &apos;ipv4_address&apos;: IPAddress(&apos;192.168.0.1&apos;),
-                     &apos;ipv4_subnet&apos;: IPNetwork(&apos;192.168.0.1/32&apos;),
-                     &apos;type&apos;: &apos;loopback&apos;},
-                 1: {&apos;description&apos;: &apos;to r2&apos;,
-                     &apos;id&apos;: &apos;eth0&apos;,
-                     &apos;id_brief&apos;: &apos;&apos;,
-                     &apos;ipv4_address&apos;: IPAddress(&apos;10.0.0.1&apos;),
-                     &apos;ipv4_cidr&apos;: IPNetwork(&apos;10.0.0.1/30&apos;),
-                     &apos;ipv4_subnet&apos;: IPNetwork(&apos;10.0.0.0/30&apos;),
-                     &apos;numeric_id&apos;: 0,
-                     &apos;ospf_cost&apos;: 1,
-                     &apos;physical&apos;: True,
-                     &apos;type&apos;: &apos;physical&apos;,
-                     &apos;use_ipv4&apos;: True},
-                 2: {&apos;description&apos;: &apos;to r3&apos;,
-                     &apos;id&apos;: &apos;eth1&apos;,
-                     &apos;id_brief&apos;: &apos;&apos;,
-                     &apos;ipv4_address&apos;: IPAddress(&apos;10.0.0.5&apos;),
-                     &apos;ipv4_cidr&apos;: IPNetwork(&apos;10.0.0.5/30&apos;),
-                     &apos;ipv4_subnet&apos;: IPNetwork(&apos;10.0.0.4/30&apos;),
-                     &apos;numeric_id&apos;: 1,
-                     &apos;ospf_cost&apos;: 1,
-                     &apos;physical&apos;: True,
-                     &apos;type&apos;: &apos;physical&apos;,
-                     &apos;use_ipv4&apos;: True}},
- &apos;asn&apos;: 1,
- &apos;bgp&apos;: {&apos;debug&apos;: True,
-         &apos;ebgp_neighbors&apos;: [],
-         &apos;ibgp_neighbors&apos;: [{&apos;asn&apos;: 1,
-                             &apos;loopback&apos;: IPAddress(&apos;192.168.0.2&apos;),
-                             &apos;neighbor&apos;: &apos;r2&apos;,
-                             &apos;update_source&apos;: None,
-                             &apos;use_ipv4&apos;: True,
-                             &apos;use_ipv6&apos;: False},
-                            {&apos;asn&apos;: 1,
-                             &apos;loopback&apos;: IPAddress(&apos;192.168.0.3&apos;),
-                             &apos;neighbor&apos;: &apos;r3&apos;,
-                             &apos;update_source&apos;: None,
-                             &apos;use_ipv4&apos;: True,
-                             &apos;use_ipv6&apos;: False},
-                            {&apos;asn&apos;: 1,
-                             &apos;loopback&apos;: IPAddress(&apos;192.168.0.4&apos;),
-                             &apos;neighbor&apos;: &apos;r4&apos;,
-                             &apos;update_source&apos;: None,
-                             &apos;use_ipv4&apos;: True,
-                             &apos;use_ipv6&apos;: False}],
-         &apos;ibgp_rr_clients&apos;: [],
-         &apos;ibgp_rr_parents&apos;: [],
-         &apos;ipv4_advertise_subnets&apos;: [IPNetwork(&apos;10.0.0.0/16&apos;)],
-         &apos;ipv6_advertise_subnets&apos;: []},
- &apos;device_type&apos;: &apos;router&apos;,
- &apos;host&apos;: &apos;localhost&apos;,
- &apos;hostname&apos;: &apos;r1&apos;,
- &apos;input_label&apos;: &apos;r1&apos;,
- &apos;interfaces&apos;: [],
- &apos;ip&apos;: {&apos;use_ipv4&apos;: True, &apos;use_ipv6&apos;: False},
- &apos;label&apos;: &apos;r1&apos;,
- &apos;loopback&apos;: IPAddress(&apos;192.168.0.1&apos;),
- &apos;loopback_subnet&apos;: IPNetwork(&apos;192.168.0.1/32&apos;),
- &apos;mgmt_ip&apos;: IPAddress(&apos;172.16.0.3&apos;),
- &apos;ospf&apos;: [(&apos;ipv4_mpls_te&apos;, False), (&apos;loopback_area&apos;, 0), (&apos;process_id&apos;, 1), (&apos;lo_interface&apos;, &apos;lo:1&apos;), (&apos;ospf_links&apos;, [[(&apos;network&apos;, IPNetwork(&apos;10.0.0.0/30&apos;)), (&apos;area&apos;, None)], [(&apos;network&apos;, IPNetwork(&apos;10.0.0.4/30&apos;)), (&apos;area&apos;, None)]]), (&apos;passive_interfaces&apos;, [])],
- &apos;platform&apos;: &apos;netkit&apos;,
- &apos;render&apos;: {&apos;base&apos;: &apos;templates/quagga&apos;,
-            &apos;base_dst_folder&apos;: &apos;rendered/localhost/netkit/r1&apos;,
-            &apos;custom&apos;: {&apos;abc&apos;: &apos;def.txt&apos;},
-            &apos;dst_file&apos;: &apos;r1.conf&apos;,
-            &apos;dst_folder&apos;: &apos;rendered&apos;,
-            &apos;template&apos;: &apos;router.mako&apos;},
- &apos;ssh&apos;: {&apos;use_key&apos;: True},
- &apos;tap&apos;: {&apos;id&apos;: &apos;eth2&apos;, &apos;ip&apos;: IPAddress(&apos;172.16.0.3&apos;)},
- &apos;x&apos;: 0,
- &apos;y&apos;: 54,
- &apos;zebra&apos;: {&apos;password&apos;: &apos;1234&apos;, &apos;static_routes&apos;: []}}
-{&apos;_interfaces&apos;: {0: {&apos;description&apos;: &apos;Loopback&apos;,
-                     &apos;id&apos;: &apos;lo:1&apos;,
-                     &apos;id_brief&apos;: &apos;&apos;,
-                     &apos;ipv4_address&apos;: IPAddress(&apos;192.168.0.2&apos;),
-                     &apos;ipv4_subnet&apos;: IPNetwork(&apos;192.168.0.2/32&apos;),
-                     &apos;type&apos;: &apos;loopback&apos;},
-                 1: {&apos;description&apos;: &apos;to r1&apos;,
-                     &apos;id&apos;: &apos;eth0&apos;,
-                     &apos;id_brief&apos;: &apos;&apos;,
-                     &apos;ipv4_address&apos;: IPAddress(&apos;10.0.0.2&apos;),
-                     &apos;ipv4_cidr&apos;: IPNetwork(&apos;10.0.0.2/30&apos;),
-                     &apos;ipv4_subnet&apos;: IPNetwork(&apos;10.0.0.0/30&apos;),
-                     &apos;numeric_id&apos;: 0,
-                     &apos;ospf_cost&apos;: 1,
-                     &apos;physical&apos;: True,
-                     &apos;type&apos;: &apos;physical&apos;,
-                     &apos;use_ipv4&apos;: True},
-                 2: {&apos;description&apos;: &apos;to r4&apos;,
-                     &apos;id&apos;: &apos;eth1&apos;,
-                     &apos;id_brief&apos;: &apos;&apos;,
-                     &apos;ipv4_address&apos;: IPAddress(&apos;10.0.0.9&apos;),
-                     &apos;ipv4_cidr&apos;: IPNetwork(&apos;10.0.0.9/30&apos;),
-                     &apos;ipv4_subnet&apos;: IPNetwork(&apos;10.0.0.8/30&apos;),
-                     &apos;numeric_id&apos;: 1,
-                     &apos;ospf_cost&apos;: 1,
-                     &apos;physical&apos;: True,
-                     &apos;type&apos;: &apos;physical&apos;,
-                     &apos;use_ipv4&apos;: True}},
- &apos;asn&apos;: 1,
- &apos;bgp&apos;: {&apos;debug&apos;: True,
-         &apos;ebgp_neighbors&apos;: [],
-         &apos;ibgp_neighbors&apos;: [{&apos;asn&apos;: 1,
-                             &apos;loopback&apos;: IPAddress(&apos;192.168.0.1&apos;),
-                             &apos;neighbor&apos;: &apos;r1&apos;,
-                             &apos;update_source&apos;: None,
-                             &apos;use_ipv4&apos;: True,
-                             &apos;use_ipv6&apos;: False},
-                            {&apos;asn&apos;: 1,
-                             &apos;loopback&apos;: IPAddress(&apos;192.168.0.3&apos;),
-                             &apos;neighbor&apos;: &apos;r3&apos;,
-                             &apos;update_source&apos;: None,
-                             &apos;use_ipv4&apos;: True,
-                             &apos;use_ipv6&apos;: False},
-                            {&apos;asn&apos;: 1,
-                             &apos;loopback&apos;: IPAddress(&apos;192.168.0.4&apos;),
-                             &apos;neighbor&apos;: &apos;r4&apos;,
-                             &apos;update_source&apos;: None,
-                             &apos;use_ipv4&apos;: True,
-                             &apos;use_ipv6&apos;: False}],
-         &apos;ibgp_rr_clients&apos;: [],
-         &apos;ibgp_rr_parents&apos;: [],
-         &apos;ipv4_advertise_subnets&apos;: [IPNetwork(&apos;10.0.0.0/16&apos;)],
-         &apos;ipv6_advertise_subnets&apos;: []},
- &apos;device_type&apos;: &apos;router&apos;,
- &apos;host&apos;: &apos;localhost&apos;,
- &apos;hostname&apos;: &apos;r2&apos;,
- &apos;input_label&apos;: &apos;r2&apos;,
- &apos;interfaces&apos;: [],
- &apos;ip&apos;: {&apos;use_ipv4&apos;: True, &apos;use_ipv6&apos;: False},
- &apos;label&apos;: &apos;r2&apos;,
- &apos;loopback&apos;: IPAddress(&apos;192.168.0.2&apos;),
- &apos;loopback_subnet&apos;: IPNetwork(&apos;192.168.0.2/32&apos;),
- &apos;mgmt_ip&apos;: IPAddress(&apos;172.16.0.4&apos;),
- &apos;ospf&apos;: [(&apos;ipv4_mpls_te&apos;, False), (&apos;loopback_area&apos;, 0), (&apos;process_id&apos;, 1), (&apos;lo_interface&apos;, &apos;lo:1&apos;), (&apos;ospf_links&apos;, [[(&apos;network&apos;, IPNetwork(&apos;10.0.0.0/30&apos;)), (&apos;area&apos;, None)], [(&apos;network&apos;, IPNetwork(&apos;10.0.0.8/30&apos;)), (&apos;area&apos;, None)]]), (&apos;passive_interfaces&apos;, [])],
- &apos;platform&apos;: &apos;netkit&apos;,
- &apos;render&apos;: {&apos;base&apos;: &apos;templates/quagga&apos;,
-            &apos;base_dst_folder&apos;: &apos;rendered/localhost/netkit/r2&apos;,
-            &apos;custom&apos;: {&apos;abc&apos;: &apos;def.txt&apos;},
-            &apos;dst_file&apos;: &apos;r2.conf&apos;,
-            &apos;dst_folder&apos;: &apos;rendered&apos;,
-            &apos;template&apos;: &apos;router.mako&apos;},
- &apos;ssh&apos;: {&apos;use_key&apos;: True},
- &apos;tap&apos;: {&apos;id&apos;: &apos;eth2&apos;, &apos;ip&apos;: IPAddress(&apos;172.16.0.4&apos;)},
- &apos;x&apos;: 216,
- &apos;y&apos;: 0,
- &apos;zebra&apos;: {&apos;password&apos;: &apos;1234&apos;, &apos;static_routes&apos;: []}}
-{&apos;_interfaces&apos;: {0: {&apos;description&apos;: &apos;Loopback&apos;,
-                     &apos;id&apos;: &apos;lo:1&apos;,
-                     &apos;id_brief&apos;: &apos;&apos;,
-                     &apos;ipv4_address&apos;: IPAddress(&apos;192.168.0.3&apos;),
-                     &apos;ipv4_subnet&apos;: IPNetwork(&apos;192.168.0.3/32&apos;),
-                     &apos;type&apos;: &apos;loopback&apos;},
-                 1: {&apos;description&apos;: &apos;to r1&apos;,
-                     &apos;id&apos;: &apos;eth0&apos;,
-                     &apos;id_brief&apos;: &apos;&apos;,
-                     &apos;ipv4_address&apos;: IPAddress(&apos;10.0.0.6&apos;),
-                     &apos;ipv4_cidr&apos;: IPNetwork(&apos;10.0.0.6/30&apos;),
-                     &apos;ipv4_subnet&apos;: IPNetwork(&apos;10.0.0.4/30&apos;),
-                     &apos;numeric_id&apos;: 0,
-                     &apos;ospf_cost&apos;: 1,
-                     &apos;physical&apos;: True,
-                     &apos;type&apos;: &apos;physical&apos;,
-                     &apos;use_ipv4&apos;: True},
-                 2: {&apos;description&apos;: &apos;to r4&apos;,
-                     &apos;id&apos;: &apos;eth1&apos;,
-                     &apos;id_brief&apos;: &apos;&apos;,
-                     &apos;ipv4_address&apos;: IPAddress(&apos;10.0.0.13&apos;),
-                     &apos;ipv4_cidr&apos;: IPNetwork(&apos;10.0.0.13/30&apos;),
-                     &apos;ipv4_subnet&apos;: IPNetwork(&apos;10.0.0.12/30&apos;),
-                     &apos;numeric_id&apos;: 1,
-                     &apos;ospf_cost&apos;: 1,
-                     &apos;physical&apos;: True,
-                     &apos;type&apos;: &apos;physical&apos;,
-                     &apos;use_ipv4&apos;: True},
-                 3: {&apos;description&apos;: &apos;to r5&apos;,
-                     &apos;id&apos;: &apos;eth2&apos;,
-                     &apos;id_brief&apos;: &apos;&apos;,
-                     &apos;ipv4_address&apos;: IPAddress(&apos;10.1.0.1&apos;),
-                     &apos;ipv4_cidr&apos;: IPNetwork(&apos;10.1.0.1/16&apos;),
-                     &apos;ipv4_subnet&apos;: IPNetwork(&apos;10.1.0.0/16&apos;),
-                     &apos;numeric_id&apos;: 2,
-                     &apos;physical&apos;: True,
-                     &apos;type&apos;: &apos;physical&apos;,
-                     &apos;use_ipv4&apos;: True}},
- &apos;asn&apos;: 1,
- &apos;bgp&apos;: {&apos;debug&apos;: True,
-         &apos;ebgp_neighbors&apos;: [{&apos;asn&apos;: 2,
-                             &apos;dst_int_ip&apos;: IPAddress(&apos;10.1.0.2&apos;),
-                             &apos;local_int_ip&apos;: IPAddress(&apos;10.1.0.1&apos;),
-                             &apos;loopback&apos;: IPAddress(&apos;192.168.0.9&apos;),
-                             &apos;neighbor&apos;: &apos;r5&apos;,
-                             &apos;update_source&apos;: None,
-                             &apos;use_ipv4&apos;: True,
-                             &apos;use_ipv6&apos;: False}],
-         &apos;ibgp_neighbors&apos;: [{&apos;asn&apos;: 1,
-                             &apos;loopback&apos;: IPAddress(&apos;192.168.0.1&apos;),
-                             &apos;neighbor&apos;: &apos;r1&apos;,
-                             &apos;update_source&apos;: None,
-                             &apos;use_ipv4&apos;: True,
-                             &apos;use_ipv6&apos;: False},
-                            {&apos;asn&apos;: 1,
-                             &apos;loopback&apos;: IPAddress(&apos;192.168.0.2&apos;),
-                             &apos;neighbor&apos;: &apos;r2&apos;,
-                             &apos;update_source&apos;: None,
-                             &apos;use_ipv4&apos;: True,
-                             &apos;use_ipv6&apos;: False},
-                            {&apos;asn&apos;: 1,
-                             &apos;loopback&apos;: IPAddress(&apos;192.168.0.4&apos;),
-                             &apos;neighbor&apos;: &apos;r4&apos;,
-                             &apos;update_source&apos;: None,
-                             &apos;use_ipv4&apos;: True,
-                             &apos;use_ipv6&apos;: False}],
-         &apos;ibgp_rr_clients&apos;: [],
-         &apos;ibgp_rr_parents&apos;: [],
-         &apos;ipv4_advertise_subnets&apos;: [IPNetwork(&apos;10.0.0.0/16&apos;)],
-         &apos;ipv6_advertise_subnets&apos;: []},
- &apos;device_type&apos;: &apos;router&apos;,
- &apos;host&apos;: &apos;localhost&apos;,
- &apos;hostname&apos;: &apos;r3&apos;,
- &apos;input_label&apos;: &apos;r3&apos;,
- &apos;interfaces&apos;: [],
- &apos;ip&apos;: {&apos;use_ipv4&apos;: True, &apos;use_ipv6&apos;: False},
- &apos;label&apos;: &apos;r3&apos;,
- &apos;loopback&apos;: IPAddress(&apos;192.168.0.3&apos;),
- &apos;loopback_subnet&apos;: IPNetwork(&apos;192.168.0.3/32&apos;),
- &apos;mgmt_ip&apos;: IPAddress(&apos;172.16.0.5&apos;),
- &apos;ospf&apos;: [(&apos;ipv4_mpls_te&apos;, False), (&apos;loopback_area&apos;, 0), (&apos;process_id&apos;, 1), (&apos;lo_interface&apos;, &apos;lo:1&apos;), (&apos;ospf_links&apos;, [[(&apos;network&apos;, IPNetwork(&apos;10.0.0.4/30&apos;)), (&apos;area&apos;, None)], [(&apos;network&apos;, IPNetwork(&apos;10.0.0.12/30&apos;)), (&apos;area&apos;, None)]]), (&apos;passive_interfaces&apos;, [[(&apos;id&apos;, &apos;eth2&apos;)]])],
- &apos;platform&apos;: &apos;netkit&apos;,
- &apos;render&apos;: {&apos;base&apos;: &apos;templates/quagga&apos;,
-            &apos;base_dst_folder&apos;: &apos;rendered/localhost/netkit/r3&apos;,
-            &apos;custom&apos;: {&apos;abc&apos;: &apos;def.txt&apos;},
-            &apos;dst_file&apos;: &apos;r3.conf&apos;,
-            &apos;dst_folder&apos;: &apos;rendered&apos;,
-            &apos;template&apos;: &apos;router.mako&apos;},
- &apos;ssh&apos;: {&apos;use_key&apos;: True},
- &apos;tap&apos;: {&apos;id&apos;: &apos;eth3&apos;, &apos;ip&apos;: IPAddress(&apos;172.16.0.5&apos;)},
- &apos;x&apos;: 162,
- &apos;y&apos;: 270,
- &apos;zebra&apos;: {&apos;password&apos;: &apos;1234&apos;, &apos;static_routes&apos;: []}}
-
-</pre>
-</div>
-</div>
 
 </div>
 </div>
@@ -2655,7 +2225,7 @@ In&nbsp;[19]:
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
 <div class="prompt input_prompt">
-In&nbsp;[20]:
+In&nbsp;[19]:
 </div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="kn">import</span> <span class="nn">autonetkit.render</span>
@@ -2686,7 +2256,7 @@ INFO:ANK:Rendering Network
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
 <div class="prompt input_prompt">
-In&nbsp;[21]:
+In&nbsp;[20]:
 </div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">&quot;rendered/lab.conf&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
@@ -2703,7 +2273,7 @@ In&nbsp;[21]:
 <div class="hbox output_area"><div class="prompt"></div>
 <div class="box-flex1 output_subarea output_stream output_stdout">
 <pre>
-Topology rendered on 2014-01-13 00:58 by autonetkit_0.8.2
+Topology rendered on 2014-01-13 01:23 by autonetkit_0.8.2
 host: r4
 host: r5
 host: r1
@@ -2722,7 +2292,7 @@ host: r3
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
 <div class="prompt input_prompt">
-In&nbsp;[22]:
+In&nbsp;[21]:
 </div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">&quot;rendered/r1.conf&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
@@ -2739,7 +2309,7 @@ In&nbsp;[22]:
 <div class="hbox output_area"><div class="prompt"></div>
 <div class="box-flex1 output_subarea output_stream output_stdout">
 <pre>
-Router rendered on 2014-01-13 00:58 by autonetkit_0.8.2
+Router rendered on 2014-01-13 01:23 by autonetkit_0.8.2
 interface lo:1
     description Loopback
     ip address 192.168.0.1 netmask 255.255.255.255
@@ -2782,7 +2352,7 @@ router bgp 1
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
 <div class="prompt input_prompt">
-In&nbsp;[23]:
+In&nbsp;[22]:
 </div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">&quot;rendered/r5.conf&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
@@ -2799,7 +2369,7 @@ In&nbsp;[23]:
 <div class="hbox output_area"><div class="prompt"></div>
 <div class="box-flex1 output_subarea output_stream output_stdout">
 <pre>
-Router rendered on 2014-01-13 00:58 by autonetkit_0.8.2
+Router rendered on 2014-01-13 01:23 by autonetkit_0.8.2
 interface lo:1
     description Loopback
     ip address 192.168.0.9 netmask 255.255.255.255
