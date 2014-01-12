@@ -229,6 +229,19 @@ def jsonify_anm_with_graphics(anm, nidb = None):
                 })
 
                 #TODO: if no label set, then use node if
+            elif n in phy_graph:
+                #TODO: if in phy but x/y not set, then fall through to setting random
+                #TODO: tidy by moving x/y to higher up before each overlay
+                # try to copy x/y from phy
+                OverlayGraph.node[n].update( {
+                        'x': phy_graph.node[n].get('x'),
+                        'y': phy_graph.node[n].get('y'),
+                        'asn': phy_graph.node[n]['asn'],
+                        'label': phy_graph.node[n]['label'],
+                        'device_type': phy_graph.node[n]['device_type'],
+                        'device_subtype': phy_graph.node[n].get('device_subtype'),
+                        'pop': phy_graph.node[n].get('pop'),
+                })
             else:
                 import random
                 log.debug("Converting to graphics JSON format: node %s not in graphics overlay" % n)
@@ -301,10 +314,11 @@ def jsonify_anm_with_graphics(anm, nidb = None):
 def prepare_nidb(nidb):
     graph = nidb._graph
     for node in graph:
-        graph.node[node]['x'] = graph.node[node]['graphics']['x']
-        graph.node[node]['y'] = graph.node[node]['graphics']['y']
-        graph.node[node]['device_type'] = graph.node[node]['graphics']['device_type']
-        graph.node[node]['device_subtype'] = graph.node[node]['graphics']['device_subtype']
+        if graph.node[node].get("graphics"):
+            graph.node[node]['x'] = graph.node[node]['graphics']['x']
+            graph.node[node]['y'] = graph.node[node]['graphics']['y']
+            graph.node[node]['device_type'] = graph.node[node]['graphics']['device_type']
+            graph.node[node]['device_subtype'] = graph.node[node]['graphics']['device_subtype']
 
         for interface_index in graph.node[node]['_interfaces']:
             try:
