@@ -2,6 +2,7 @@ import json
 import string
 
 import autonetkit.anm
+import autonetkit.nidb
 import autonetkit.log as log
 import autonetkit.plugins
 import autonetkit.plugins.ipv4
@@ -58,6 +59,9 @@ class AnkEncoder(json.JSONEncoder):
         if isinstance(obj, netaddr.IPAddress):
             return str(obj)
         if isinstance(obj, netaddr.IPNetwork):
+            return str(obj)
+        if isinstance(obj, autonetkit.nidb.nidb_node):
+            #TODO: need to unserialize nidb nodes...
             return str(obj)
         if isinstance(obj, autonetkit.anm.OverlayNode):
             #TODO: add documentation about serializing anm nodes
