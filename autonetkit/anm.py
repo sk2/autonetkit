@@ -5,6 +5,7 @@ import itertools
 import pprint
 import string
 import time
+from functools import total_ordering
 
 import autonetkit.log as log
 import networkx as nx
@@ -252,6 +253,7 @@ class overlay_interface(object):
         return [e.dst_int for e in edges]
 
 
+@total_ordering
 class OverlayNode(object):
 
     """OverlayNode"""
@@ -299,6 +301,9 @@ class OverlayNode(object):
             return self.node_id == other.node_id
         except AttributeError:
             return self.node_id == other  # eg compare Node to label
+
+    def __ne__(self, other):
+            return not self.__eq__(other)
 
     @property
     def loopback_zero(self):
@@ -677,6 +682,7 @@ class OverlayNode(object):
         return self.__setattr__(key, val)
 
 
+@total_ordering
 class OverlayEdge(object):
 
     """API to access link in network"""
