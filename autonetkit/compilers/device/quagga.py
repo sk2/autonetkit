@@ -43,8 +43,8 @@ class QuaggaCompiler(RouterCompiler):
             if interface.exclude_igp:
                 continue  # don't configure IGP for this interface
 
-            bgp_int = self.anm['bgp'].interface(interface)
-            if bgp_int.ebgp:  # ebgp interface
+            bgp_int = self.anm['ebgp_v4'].interface(interface)
+            if bgp_int.is_bound:  # ebgp interface
                 node.ospf.passive_interfaces.append(config_stanza(id=interface.id))
                 subnet = bgp_int['ipv4'].subnet
                 default_ebgp_area = 0
