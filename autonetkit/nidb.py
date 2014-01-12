@@ -31,6 +31,8 @@ class config_stanza(object):
         return stanza
 
     def __setitem__(self, key, value):
+        if isinstance(value, dict):
+            log.warning("Adding dictionary %s: did you mean to add a config_stanza?" % key)
         self._odict[key] = value
 
     def __setattr__(self, key, value):
@@ -38,7 +40,11 @@ class config_stanza(object):
 
     def __getattr__(self, key):
         #TODO: decide how to return misses
-        return self._odict[key]
+        try:
+            return self._odict[key]
+        except KeyError:
+            #TODO: log a key miss, and if strict turned on, give warning
+            return
 
     # TODO: add __iter__, __keys etc
 
@@ -549,6 +555,15 @@ class nidb_node(object):
 
     def add_stanza(self, name, **kwargs):
         #TODO: decide if want shortcut for *args to set to True
+        if self.get(name):
+            value = self.get(name)
+            if isinstance(value, config_stanza):
+                # Don't recreate
+                log.debug("Stanza %s already exists for %s" % (name, self))
+                return value
+            else:
+                log.warning("Creating stanza: %s already set as %s for %s" % (name, type(value), self))
+
         stanza = config_stanza(**kwargs)
         self.__setattr__(name, stanza)
         return stanza
