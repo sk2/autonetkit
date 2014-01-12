@@ -204,7 +204,7 @@ class RouterCompiler(DeviceCompiler):
 
         g_ospf = self.anm['ospf']
         g_ipv4 = self.anm['ipv4']
-        node.add_stanza("ospf")
+        ospf_stanza = node.add_stanza("ospf")
 
         node.ospf.ipv4_mpls_te = False  # default, inherited enable if necessary
 
