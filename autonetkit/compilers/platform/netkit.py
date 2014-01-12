@@ -25,6 +25,7 @@ class NetkitCompiler(PlatformCompiler):
         for phy_node in g_phy.nodes('is_l3device', host=self.host, syntax='quagga'):
             folder_name = naming.network_hostname(phy_node)
             nidb_node = self.nidb.node(phy_node)
+            #TODO: order by folder and file template src/dst
             nidb_node.render.base = os.path.join("templates","quagga")
             nidb_node.render.template = os.path.join("templates",
                 "netkit_startup.mako")
