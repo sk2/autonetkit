@@ -107,7 +107,13 @@ class RouterCompiler(DeviceCompiler):
             self.isis(node)
         if self.anm.has_overlay('eigrp') and node in self.anm['eigrp']:
             self.eigrp(node)
-        if self.anm.has_overlay('bgp') and node in self.anm['bgp']:
+        #TODO: allow this to work for ibgp and ebgp
+        if (
+            (self.anm.has_overlay('ebgp_v4') and node in self.anm['ebgp_v4'])
+            or
+            (self.anm.has_overlay('ibgp_v4') and node in self.anm['ibgp_v4'])
+            or
+            (self.anm.has_overlay('bgp') and node in self.anm['bgp'])):
             self.bgp(node)
 
     def interfaces(self, node):
@@ -227,7 +233,7 @@ class RouterCompiler(DeviceCompiler):
             except TypeError:
                 try:
                     ospf_cost = netaddr.IPAddress(ospf_int.cost)
-                except TypeError:
+                except (TypeError, netaddr.AddrFormatError):
                     log.debug('Using default OSPF cost of 1 for %s on %s'
                                % (ospf_int, node))
                     ospf_cost = 1  # default
@@ -246,9 +252,9 @@ class RouterCompiler(DeviceCompiler):
 
     def bgp(self, node):
         phy_node = self.anm['phy'].node(node)
-        g_bgp = self.anm['bgp']
         g_ipv4 = self.anm['ipv4']
-        g_ipv6 = self.anm['ipv6']
+        if node.ip.use_ipv6:
+            g_ipv6 = self.anm['ipv6']
         asn = phy_node.asn
         node.asn = asn
         node.bgp.ipv4_advertise_subnets = []
@@ -283,20 +289,21 @@ class RouterCompiler(DeviceCompiler):
 
         # TODO: check v6 hierarchy only created if node set to being v4 or v6
 
-        g_ibgp_v6 = self.anm['ibgp_v6']
-        for session in sort_sessions(g_ibgp_v6.edges(phy_node)):
-            if session.exclude:
-                log.debug('Skipping excluded ibgp session %s' % session)
-                continue  # exclude from regular ibgp config (eg VRF, VPLS, etc)
-            data = self.ibgp_session_data(session, ip_version=6)
+        if node.ip.use_ipv6:
+            g_ibgp_v6 = self.anm['ibgp_v6']
+            for session in sort_sessions(g_ibgp_v6.edges(phy_node)):
+                if session.exclude:
+                    log.debug('Skipping excluded ibgp session %s' % session)
+                    continue  # exclude from regular ibgp config (eg VRF, VPLS, etc)
+                data = self.ibgp_session_data(session, ip_version=6)
 
-            direction = session.direction
-            if direction == 'down':
-                ibgp_rr_clients.append(data)
-            elif direction == 'up':
-                ibgp_rr_parents.append(data)
-            else:
-                ibgp_neighbors.append(data)
+                direction = session.direction
+                if direction == 'down':
+                    ibgp_rr_clients.append(data)
+                elif direction == 'up':
+                    ibgp_rr_parents.append(data)
+                else:
+                    ibgp_neighbors.append(data)
 
         # TODO: update this to use ibgp_v4 and ibgp_v6 overlays
 
@@ -315,13 +322,14 @@ class RouterCompiler(DeviceCompiler):
             data = self.ebgp_session_data(session, ip_version=4)
             ebgp_neighbors.append(data)
 
-        g_ebgp_v6 = self.anm['ebgp_v6']
-        for session in sort_sessions(g_ebgp_v6.edges(phy_node)):
-            if session.exclude:
-                log.debug('Skipping excluded ebgp session %s' % session)
+        if node.ip.use_ipv6:
+            g_ebgp_v6 = self.anm['ebgp_v6']
+            for session in sort_sessions(g_ebgp_v6.edges(phy_node)):
+                if session.exclude:
+                    log.debug('Skipping excluded ebgp session %s' % session)
                 continue  # exclude from regular ibgp config (eg VRF, VPLS, etc)
-            data = self.ebgp_session_data(session, ip_version=6)
-            ebgp_neighbors.append(data)
+                data = self.ebgp_session_data(session, ip_version=6)
+                ebgp_neighbors.append(data)
 
         node.bgp.ebgp_neighbors = ebgp_neighbors
         node.bgp.ebgp_neighbors.sort('asn')
