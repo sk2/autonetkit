@@ -29,7 +29,6 @@ class OverlayNotFound(AutoNetkitException):
     def __str__(self):
         return 'Overlay %s not found' % self.Errors
 
-
 # TODO: rename to OverlayInterface
 
 class overlay_interface(object):
@@ -40,7 +39,7 @@ class overlay_interface(object):
         overlay_id,
         node_id,
         interface_id,
-        ):
+    ):
         object.__setattr__(self, 'anm', anm)
         object.__setattr__(self, 'overlay_id', overlay_id)
         object.__setattr__(self, 'node_id', node_id)
@@ -67,7 +66,8 @@ class overlay_interface(object):
 
     def __nonzero__(self):
 
-        # TODO: work out why description and type being set/copied to each overlay
+        # TODO: work out why description and type being set/copied to each
+        # overlay
 
         try:
             interface = self._interface
@@ -81,7 +81,7 @@ class overlay_interface(object):
         # TODO: check how is comparing the nodes
 
         return (self.node, self.interface_id) < (other.node,
-                other.interface_id)
+                                                 other.interface_id)
 
     @property
     def is_bound(self):
@@ -130,17 +130,17 @@ class overlay_interface(object):
 
         if not self.anm.has_overlay(overlay_id):
             log.warning('Trying to access interface %s for non-existent overlay %s'
-                         % (self, overlay_id))
+                        % (self, overlay_id))
             return None
 
         if not self.node_id in self.anm.overlay_nx_graphs[overlay_id]:
             log.debug('Trying to access interface %s for non-existent node %s in overlay %s'
-                       % (self, self.node_id, self.overlay_id))
+                      % (self, self.node_id, self.overlay_id))
             return None
 
         try:
             return overlay_interface(self.anm, overlay_id,
-                    self.node_id, self.interface_id)
+                                     self.node_id, self.interface_id)
         except KeyError:
             return
 
@@ -261,7 +261,7 @@ class OverlayNode(object):
         anm,
         overlay_id,
         node_id,
-        ):
+    ):
 
 # Set using this method to bypass __setattr__
 
@@ -339,9 +339,9 @@ class OverlayNode(object):
         else:
             if self_node_string == other_node_string:
                 self_node_id = """""".join([x for x in self.node_id
-                        if x in string.digits])
+                                            if x in string.digits])
                 other_node_id = """""".join([x for x in other.node_id
-                        if x in string.digits])
+                                             if x in string.digits])
                 try:
                     self_node_id = int(self_node_id)
                 except ValueError:
@@ -371,7 +371,7 @@ class OverlayNode(object):
         type='physical',
         *args,
         **kwargs
-        ):
+    ):
         """"""
 
         data = dict(kwargs)
@@ -379,9 +379,10 @@ class OverlayNode(object):
         if self.overlay_id != 'phy' and self.phy:
             next_id = self.phy._next_int_id
             self.phy._interfaces[next_id] = {'type': type,
-                    'description': description}
+                                             'description': description}
 
-            # TODO: fix this workaround for not returning description from phy graph
+            # TODO: fix this workaround for not returning description from phy
+            # graph
 
             data['description'] = description
         else:
@@ -396,7 +397,7 @@ class OverlayNode(object):
         '''Public function to add a loopback interface'''
 
         interface_id = self._add_interface(type='loopback', *args,
-                **kwargs)
+                                           **kwargs)
         return overlay_interface(self.anm, self.overlay_id,
                                  self.node_id, interface_id)
 
@@ -431,7 +432,7 @@ class OverlayNode(object):
         try:
             if key.interface_id in self._interface_ids:
                 return overlay_interface(self.anm, self.overlay_id,
-                        self.node_id, key.interface_id)
+                                         self.node_id, key.interface_id)
         except AttributeError:
 
             # try with key as id
@@ -439,7 +440,7 @@ class OverlayNode(object):
             try:
                 if key in self._interface_ids:
                     return overlay_interface(self.anm, self.overlay_id,
-                            self.node_id, key)
+                                             self.node_id, key)
             except AttributeError:
 
                 # no match for either
@@ -458,7 +459,7 @@ class OverlayNode(object):
             # the interface mappings from phy
 
             return self.phy._graph.node[self.node_id]['_interfaces'
-                    ].keys()
+                                                      ].keys()
         else:
             try:
                 return self._graph.node[self.node_id]['_interfaces']
@@ -528,10 +529,10 @@ class OverlayNode(object):
 
             try:
                 return self.anm.overlay_nx_graphs['phy'
-                        ].node[self.node_id]['asn']
+                                                  ].node[self.node_id]['asn']
             except KeyError:
                 if self.node_id not in self.anm.overlay_nx_graphs['phy'
-                        ]:
+                                                                  ]:
                     message = \
                         'Node id %s not found in physical overlay' \
                         % self.node_id
@@ -551,7 +552,7 @@ class OverlayNode(object):
 
         try:
             self.anm.overlay_nx_graphs['phy'].node[self.node_id]['asn'
-                    ] = value
+                                                                 ] = value
         except KeyError:
 
             # set ASN directly on the node, eg for collision domains
@@ -655,7 +656,8 @@ class OverlayNode(object):
 
         # TODO: look at mapping the object __dict__ straight to the graph.node[self.node_id]
         # TODO: fix wrt using @x.setter won't work due to following:
-        # as per http://docs.python.org/2/reference/datamodel.html#customizing-attribute-access
+        # as per
+        # http://docs.python.org/2/reference/datamodel.html#customizing-attribute-access
 
         # TODO: fix workaround for asn
 
@@ -685,7 +687,7 @@ class OverlayEdge(object):
         overlay_id,
         src_id,
         dst_id,
-        ):
+    ):
 
 # Set using this method to bypass __setattr__
 
@@ -711,7 +713,7 @@ class OverlayEdge(object):
 
         try:
             return (self.src_id, self.dst_id) == (other.src_id,
-                    other.dst_id)
+                                                  other.dst_id)
         except AttributeError:
             return self.node_id == other
 
@@ -936,7 +938,7 @@ class OverlayBase(object):
             for (src, dst) in self._graph.edges_iter(src_id):
                 if dst == dst_id:
                     return OverlayEdge(self._anm, self._overlay_id,
-                            src, dst)
+                                       src, dst)
 
         # TODO: tidy this logic up
 
@@ -970,7 +972,7 @@ class OverlayBase(object):
                     # searching by nodes
 
                     return OverlayEdge(self._anm, self._overlay_id,
-                            src, dst)
+                                       src, dst)
             except KeyError:
                 pass  #
 
@@ -1080,8 +1082,8 @@ class OverlayBase(object):
         else:
             data = nodes
         data = sorted(data, key=lambda x: x.get(attribute))
-        for (key, grouping) in itertools.groupby(data, key=lambda x: \
-                x.get(attribute)):
+        for (key, grouping) in itertools.groupby(data, key=lambda x:
+                                                 x.get(attribute)):
             result[key] = list(grouping)
 
         return result
@@ -1091,7 +1093,7 @@ class OverlayBase(object):
         nbunch=None,
         *args,
         **kwargs
-        ):
+    ):
         """"""
 
         if not nbunch:
@@ -1112,7 +1114,7 @@ class OverlayBase(object):
         dst_nbunch=None,
         *args,
         **kwargs
-        ):
+    ):
         """"""
 
 # nbunch may be single node
@@ -1133,7 +1135,7 @@ class OverlayBase(object):
                         kwargs.items())
 
         valid_edges = ((src, dst) for (src, dst) in
-            self._graph.edges_iter(src_nbunch))
+                       self._graph.edges_iter(src_nbunch))
         if dst_nbunch:
             try:
                 dst_nbunch = dst_nbunch.node_id
@@ -1146,10 +1148,11 @@ class OverlayBase(object):
 
                               # only store the id in OverlayEdge
 
-                dst_nbunch = set(dst_nbunch)  # faster membership test than other sequences
+                # faster membership test than other sequences
+                dst_nbunch = set(dst_nbunch)
 
             valid_edges = ((src, dst) for (src, dst) in valid_edges
-                if dst in dst_nbunch)
+                           if dst in dst_nbunch)
 
         if len(args) or len(kwargs):
             all_edges = iter(OverlayEdge(self._anm, self._overlay_id,
@@ -1171,7 +1174,7 @@ class OverlaySubgraph(OverlayBase):
         overlay_id,
         graph,
         name=None,
-        ):
+    ):
         """"""
 
         super(OverlaySubgraph, self).__init__(anm, overlay_id)
@@ -1212,9 +1215,9 @@ class OverlayGraph(OverlayBase):
         retain=None,
         update=False,
         **kwargs
-        ):
+    ):
         """Update won't append data (which could clobber) if node exists"""
-        nbunch = list(nbunch) # listify in case consumed in try/except
+        nbunch = list(nbunch)  # listify in case consumed in try/except
 
         if not retain:
             retain = []
@@ -1241,15 +1244,16 @@ class OverlayGraph(OverlayBase):
             nbunch = add_nodes
         else:
             try:
-                nbunch = [n.node_id for n in nbunch]  # only store the id in overlay
+                # only store the id in overlay
+                nbunch = [n.node_id for n in nbunch]
             except AttributeError:
-                pass # use nbunch directly as the node IDs
+                pass  # use nbunch directly as the node IDs
 
         self._graph.add_nodes_from(nbunch, **kwargs)
         for node in self._graph.nodes():
             node_data = self._graph.node[node]
             if "label" not in node_data:
-                node_data["label"] = str(node) # use node id
+                node_data["label"] = str(node)  # use node id
 
         self._init_interfaces(node_ids)
 
@@ -1258,7 +1262,7 @@ class OverlayGraph(OverlayBase):
         node,
         retain=None,
         **kwargs
-        ):
+    ):
         """Adds node to overlay"""
 
         if not retain:
@@ -1283,11 +1287,11 @@ class OverlayGraph(OverlayBase):
 
     def _init_interfaces(self, nbunch=None):
         """Initialises interfaces"""
-        #TODO: this needs a major refactor!
+        # TODO: this needs a major refactor!
 
-        #store the original bunch to check if going input->phy
+        # store the original bunch to check if going input->phy
         if nbunch is not None:
-            nbunch = list(nbunch) # listify generators
+            nbunch = list(nbunch)  # listify generators
 
         original_nbunch = {}
 
@@ -1314,13 +1318,14 @@ class OverlayGraph(OverlayBase):
                 interface_data = {'description': None,
                                   'type': 'physical'}
 
-                # need to do dict() to copy, otherwise all point to same memory location -> clobber
+                # need to do dict() to copy, otherwise all point to same memory
+                # location -> clobber
 
                 data = dict((key, dict(interface_data)) for key in
                             phy_interfaces)
                 self._graph.node[node]['_interfaces'] = data
             except KeyError:
-                #TODO: split this off into seperate function
+                # TODO: split this off into seperate function
                 # test if adding from input graph
                 # Note: this has to be done on a node-by-node basis
                 # as ANK allows adding nodes from multiple graphs at once
@@ -1332,19 +1337,21 @@ class OverlayGraph(OverlayBase):
                         if original_node.overlay_id == "input":
                             # are doing input->phy
                             # copy the
-                            original_interfaces = original_node.get("_interfaces")
+                            original_interfaces = original_node.get(
+                                "_interfaces")
                             if original_interfaces is not None:
                                 # Initialise with the keys
                                 int_data = {k: {"description": v.get("description"), "type": v.get("type")}
-                                for k, v in original_interfaces.items()}
-                                self._graph.node[node]['_interfaces'] = int_data
+                                            for k, v in original_interfaces.items()}
+                                self._graph.node[node][
+                                    '_interfaces'] = int_data
 
                 else:
                     # no counterpart in physical graph, initialise
                     log.debug('Initialise interfaces for %s in %s' % (node,
-                      self._overlay_id))
+                                                                      self._overlay_id))
                     self._graph.node[node]['_interfaces'] = \
-                    {0: {'description': 'loopback', 'type': 'loopback'}}
+                        {0: {'description': 'loopback', 'type': 'loopback'}}
 
     def allocate_interfaces(self):
         """allocates edges to interfaces"""
@@ -1355,7 +1362,7 @@ class OverlayGraph(OverlayBase):
                         self.edges()):
                 input_interfaces_allocated = True
             else:
-                log.info('Input interfaces not allocated')
+                log.info('Automatically assigning input interfaces')
                 input_interfaces_allocated = False
 
         if self._overlay_id == 'input':
@@ -1399,9 +1406,9 @@ class OverlayGraph(OverlayBase):
             dst = edge.dst
             dst = edge.dst
             src_int_id = src._add_interface('%s to %s' % (src.label,
-                    dst.label))
+                                                          dst.label))
             dst_int_id = dst._add_interface('%s to %s' % (dst.label,
-                    src.label))
+                                                          src.label))
             edge._interfaces = {}
             edge._interfaces[src.id] = src_int_id
             edge._interfaces[dst.id] = dst_int_id
@@ -1428,7 +1435,7 @@ class OverlayGraph(OverlayBase):
         dst,
         retain=None,
         **kwargs
-        ):
+    ):
         """Adds an edge to the overlay"""
 
         if not retain:
@@ -1460,7 +1467,7 @@ class OverlayGraph(OverlayBase):
         bidirectional=False,
         retain=None,
         **kwargs
-        ):
+    ):
         """Add edges. Unlike NetworkX, can only add an edge if both
         src and dst in graph already.
         If they are not, then they will not be added (silently ignored)
@@ -1485,7 +1492,7 @@ class OverlayGraph(OverlayBase):
                 for edge in ebunch:
                     data = dict((key, edge.get(key)) for key in retain)
                     add_edges.append((edge.src.node_id,
-                            edge.dst.node_id, data))
+                                      edge.dst.node_id, data))
                 ebunch = add_edges
             else:
                 ebunch = [(e.src.node_id, e.dst.node_id, {}) for e in
@@ -1501,16 +1508,16 @@ class OverlayGraph(OverlayBase):
                     _interfaces = {src.node_id: src.interface_id,
                                    dst.node_id: dst.interface_id}
                     ebunch_out.append((src.node_id, dst.node_id,
-                            {'_interfaces': _interfaces}))
+                                       {'_interfaces': _interfaces}))
                 else:
                     try:
                         src_id = src.node_id
                     except AttributeError:
-                        src_id = src # use directly
+                        src_id = src  # use directly
                     try:
                         dst_id = dst.node_id
                     except AttributeError:
-                        dst_id = dst # use directly
+                        dst_id = dst  # use directly
                     ebunch_out.append((src_id, dst_id, {'_interfaces': {}}))
 
             ebunch = ebunch_out
@@ -1540,6 +1547,7 @@ class OverlayGraph(OverlayBase):
 
     def update_edges(self, ebunch=None, **kwargs):
         """Sets property defined in kwargs to all edges in ebunch"""
+        # TODO: also allow (src_id, dst_id) and single overlay edge
 
         if not ebunch:
             ebunch = self.edges()
@@ -1570,7 +1578,7 @@ class AbstractNetworkModel(object):
         self.label_attrs = ['label']
         self._build_node_label()
         self.timestamp = time.strftime('%Y%m%d_%H%M%S',
-                time.localtime())
+                                       time.localtime())
 
     def __repr__(self):
         """"""
@@ -1682,7 +1690,7 @@ class AbstractNetworkModel(object):
             'pop',
             'label',
             'asn',
-            ])
+        ])
         return g_in
 
     def add_overlay(
@@ -1693,7 +1701,7 @@ class AbstractNetworkModel(object):
         directed=False,
         multi_edge=False,
         retain=None,
-        ):
+    ):
         """Adds overlay graph of name name"""
 
         if graph:
@@ -1746,9 +1754,9 @@ class AbstractNetworkModel(object):
 
         def custom_label(node):
             return self.label_seperator.join(str(self._overlays['phy'
-                    ].node[node.node_id].get(val)) for val in
-                    self.label_attrs if self._overlays['phy'
-                    ].node[node.node_id].get(val) is not None)
+                                                                ].node[node.node_id].get(val)) for val in
+                                             self.label_attrs if self._overlays['phy'
+                                                                                ].node[node.node_id].get(val) is not None)
 
         self.node_label = custom_label
 
