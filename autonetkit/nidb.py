@@ -3,6 +3,7 @@ import functools
 import pprint
 import string
 import time
+from functools import total_ordering
 
 import ank_json
 import autonetkit.log as log
@@ -811,6 +812,7 @@ class nidb_graph_data(object):
 
 class lab_topology(object):
     """API to access lab topology in network"""
+    #TODO: replace this with config_stanza
 
     def __init__(self, nidb, topology_id):
 #Set using this method to bypass __setattr__
