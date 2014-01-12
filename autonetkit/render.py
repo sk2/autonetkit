@@ -39,9 +39,13 @@ def initialise_lookup():
     except ImportError:
         pass # Cisco ANK not present
 
+    # and cwd
+    lookup.directories.append(os.getcwd())
+
     return lookup
 
 #TODO: make lookup initialised once rather than global for module import
+# and allow users to append to the lookup
 lookup = initialise_lookup()
 
 def format_version_banner():
