@@ -327,8 +327,9 @@ class RouterCompiler(DeviceCompiler):
             g_ebgp_v6 = self.anm['ebgp_v6']
             for session in sort_sessions(g_ebgp_v6.edges(phy_node)):
                 if session.exclude:
+                    print "Exclude"
                     log.debug('Skipping excluded ebgp session %s' % session)
-                continue  # exclude from regular ibgp config (eg VRF, VPLS, etc)
+                    continue  # exclude from regular ibgp config (eg VRF, VPLS, etc)
                 data = self.ebgp_session_data(session, ip_version=6)
                 ebgp_neighbors.append(data)
 
