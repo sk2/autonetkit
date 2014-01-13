@@ -1,8 +1,10 @@
 Changelog
 =========
 
-Testing release
----------------
+v0.8.3 (2014-01-13)
+-------------------
+
+- Add gitchangelog support. [sk2]
 
 - Move indent correctly inside loop. [sk2]
 
