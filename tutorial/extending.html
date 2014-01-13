@@ -2084,7 +2084,7 @@ In&nbsp;[14]:
 <span class="si">% f</span><span class="s">or interface in node.interfaces:</span>
 <span class="s">interface ${interface.id}</span>
 <span class="s">    description ${interface.description}</span>
-<span class="s">    ip address ${interface.ipv4_address} netmask ${interface.ipv4_subnet.netmask}</span>
+<span class="s">    ip address ${interface.ipv4_address} netmask ${interface.ipv4_netmask}</span>
 <span class="si">% e</span><span class="s">ndfor</span>
 <span class="s">!</span>
 <span class="s">router ospf ${node.ospf.process_id}</span>
@@ -2096,7 +2096,7 @@ In&nbsp;[14]:
 <span class="si">% f</span><span class="s">or neigh in node.bgp.ibgp_neighbors:</span>
 <span class="s">  ! ${neigh.neighbor}</span>
 <span class="s">  neighbor ${neigh.loopback} remote-as ${neigh.asn}</span>
-<span class="s">  neighbor ${neigh.loopback} update-source ${node.loopback}</span>
+<span class="s">  neighbor ${neigh.loopback} update-source ${node.loopback_zero.ipv4_address}</span>
 <span class="s">  neighbor ${neigh.loopback} next-hop-self</span>
 <span class="si">% e</span><span class="s">ndfor</span>
 <span class="s">!</span>
@@ -2124,19 +2124,63 @@ In&nbsp;[15]:
 </div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="kn">from</span> <span class="nn">autonetkit.compilers.device</span> <span class="kn">import</span> <span class="n">router_base</span>
+<span class="kn">from</span> <span class="nn">autonetkit.nidb</span> <span class="kn">import</span> <span class="n">config_stanza</span>
 <span class="k">class</span> <span class="nc">simple_router_compiler</span><span class="p">(</span><span class="n">router_base</span><span class="o">.</span><span class="n">RouterCompiler</span><span class="p">):</span>
     <span class="n">lo_interface</span> <span class="o">=</span> <span class="s">&#39;lo:1&#39;</span>
+    
+    <span class="k">def</span> <span class="nf">compile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interfaces</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ospf</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bgp</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">interfaces</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="c"># Append attributes to the interface, rather than add a stanza</span>
         <span class="n">ipv4_node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="p">[</span><span class="s">&#39;ipv4&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
-        <span class="n">phy_node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="p">[</span><span class="s">&#39;phy&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
-
-        <span class="nb">super</span><span class="p">(</span><span class="n">simple_router_compiler</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">interfaces</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">is_l3device</span><span class="p">:</span>
             <span class="n">node</span><span class="o">.</span><span class="n">loopback_zero</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lo_interface</span>
             <span class="n">node</span><span class="o">.</span><span class="n">loopback_zero</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="s">&#39;Loopback&#39;</span>
             <span class="n">node</span><span class="o">.</span><span class="n">loopback_zero</span><span class="o">.</span><span class="n">ipv4_address</span> <span class="o">=</span> <span class="n">ipv4_node</span><span class="o">.</span><span class="n">loopback</span>
-            <span class="n">node</span><span class="o">.</span><span class="n">loopback_zero</span><span class="o">.</span><span class="n">ipv4_subnet</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">loopback_subnet</span> 
+            <span class="n">node</span><span class="o">.</span><span class="n">loopback_zero</span><span class="o">.</span><span class="n">ipv4_netmask</span> <span class="o">=</span> <span class="s">&quot;255.255.255.255&quot;</span> 
+        <span class="c">#interface_list.append(stanza)</span>
+
+        <span class="k">for</span> <span class="n">interface</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">physical_interfaces</span><span class="p">:</span>
+            <span class="n">ipv4_int</span> <span class="o">=</span> <span class="n">ipv4_node</span><span class="o">.</span><span class="n">interface</span><span class="p">(</span><span class="n">interface</span><span class="p">)</span>
+            <span class="n">interface</span><span class="o">.</span><span class="n">ipv4_address</span> <span class="o">=</span> <span class="n">ipv4_int</span><span class="o">.</span><span class="n">ip_address</span>
+            <span class="n">interface</span><span class="o">.</span><span class="n">ipv4_netmask</span> <span class="o">=</span> <span class="n">ipv4_int</span><span class="o">.</span><span class="n">subnet</span><span class="o">.</span><span class="n">netmask</span>
+                                                                    
+    <span class="k">def</span> <span class="nf">ospf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">add_stanza</span><span class="p">(</span><span class="s">&quot;ospf&quot;</span><span class="p">,</span> <span class="n">process_id</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">ospf_links</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">interface</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">physical_interfaces</span><span class="p">:</span>
+            <span class="n">ipv4_int</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="p">[</span><span class="s">&#39;ipv4&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">interface</span><span class="p">(</span><span class="n">interface</span><span class="p">)</span>
+            <span class="n">ospf_links</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">config_stanza</span><span class="p">(</span><span class="n">network</span><span class="o">=</span><span class="n">ipv4_int</span><span class="o">.</span><span class="n">subnet</span><span class="p">,</span>
+                                            <span class="n">area</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">ospf</span><span class="o">.</span><span class="n">ospf_links</span> <span class="o">=</span> <span class="n">ospf_links</span>
+    
+    <span class="k">def</span> <span class="nf">bgp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">add_stanza</span><span class="p">(</span><span class="s">&quot;bgp&quot;</span><span class="p">)</span>
+        <span class="n">g_ebgp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anm</span><span class="p">[</span><span class="s">&quot;ebgp_v4&quot;</span><span class="p">]</span>
+        <span class="n">ebgp_neighbors</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">ibgp_neighbors</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">session</span> <span class="ow">in</span> <span class="n">g_ebgp</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+            <span class="n">neighbor</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">dst</span> <span class="c"># remote node</span>
+            <span class="n">stanza</span> <span class="o">=</span> <span class="n">config_stanza</span><span class="p">(</span><span class="n">neighbor</span> <span class="o">=</span> <span class="n">neighbor</span><span class="p">,</span>
+                                   <span class="n">asn</span> <span class="o">=</span> <span class="n">neighbor</span><span class="o">.</span><span class="n">asn</span><span class="p">)</span>
+            <span class="c"># Can obtain the dst int, as created bgp session</span>
+            <span class="c"># from physical links</span>
+            <span class="n">stanza</span><span class="o">.</span><span class="n">local_int_ip</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">src_int</span><span class="p">[</span><span class="s">&#39;ipv4&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">ip_address</span>
+            <span class="n">stanza</span><span class="o">.</span><span class="n">dst_int_ip</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">dst_int</span><span class="p">[</span><span class="s">&#39;ipv4&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">ip_address</span>
+            <span class="n">ebgp_neighbors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stanza</span><span class="p">)</span>
+            
+        <span class="k">for</span> <span class="n">session</span> <span class="ow">in</span> <span class="n">g_ibgp</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+            <span class="n">neighbor</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">dst</span> <span class="c"># remote node</span>
+            <span class="n">stanza</span> <span class="o">=</span> <span class="n">config_stanza</span><span class="p">(</span><span class="n">neighbor</span> <span class="o">=</span> <span class="n">neighbor</span><span class="p">,</span>
+                                   <span class="n">asn</span> <span class="o">=</span> <span class="n">neighbor</span><span class="o">.</span><span class="n">asn</span><span class="p">)</span>
+            <span class="n">stanza</span><span class="o">.</span><span class="n">loopback</span> <span class="o">=</span> <span class="n">neighbor</span><span class="p">[</span><span class="s">&#39;ipv4&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">loopback</span>
+            <span class="n">ibgp_neighbors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stanza</span><span class="p">)</span>
+            
+        <span class="n">node</span><span class="o">.</span><span class="n">bgp</span><span class="o">.</span><span class="n">ebgp_neighbors</span> <span class="o">=</span> <span class="n">ebgp_neighbors</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">bgp</span><span class="o">.</span><span class="n">ibgp_neighbors</span> <span class="o">=</span> <span class="n">ibgp_neighbors</span>
 </pre></div>
 
 </div>
@@ -2213,6 +2257,30 @@ In&nbsp;[17]:
 In&nbsp;[18]:
 </div>
 <div class="input_area box-flex1">
+<div class="highlight"><pre><span class="c"># rebuild the NIDB clean</span>
+<span class="n">nidb</span> <span class="o">=</span> <span class="n">autonetkit</span><span class="o">.</span><span class="n">NIDB</span><span class="p">()</span>
+<span class="c"># NIDB is separate to the ANM -&gt; copy over more properties</span>
+<span class="n">retain</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;label&#39;</span><span class="p">,</span> <span class="s">&#39;host&#39;</span><span class="p">,</span> <span class="s">&#39;platform&#39;</span><span class="p">,</span> <span class="s">&#39;x&#39;</span><span class="p">,</span> <span class="s">&#39;y&#39;</span><span class="p">,</span> <span class="s">&#39;asn&#39;</span><span class="p">,</span> <span class="s">&#39;device_type&#39;</span><span class="p">]</span>
+<span class="n">nidb</span><span class="o">.</span><span class="n">add_nodes_from</span><span class="p">(</span><span class="n">g_phy</span><span class="p">,</span> <span class="n">retain</span><span class="o">=</span><span class="n">retain</span><span class="p">)</span>
+
+<span class="c"># Usually have a base g_ip which has structure</span>
+<span class="c"># allocate to g_ipv4, g_ipv6</span>
+<span class="n">nidb</span><span class="o">.</span><span class="n">add_nodes_from</span><span class="p">(</span><span class="n">g_phy</span><span class="p">,</span> <span class="n">retain</span><span class="o">=</span><span class="n">retain</span><span class="p">)</span>
+<span class="n">retain</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&quot;subnet&quot;</span><span class="p">)</span> <span class="c"># also copy across subnet</span>
+<span class="n">nidb</span><span class="o">.</span><span class="n">add_nodes_from</span><span class="p">(</span><span class="n">g_ipv4</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="s">&quot;collision_domain&quot;</span><span class="p">),</span> <span class="n">retain</span><span class="o">=</span><span class="n">retain</span><span class="p">)</span>
+<span class="n">nidb</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">(</span><span class="n">g_ipv4</span><span class="o">.</span><span class="n">edges</span><span class="p">())</span>
+</pre></div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell vbox">
+<div class="input hbox">
+<div class="prompt input_prompt">
+In&nbsp;[19]:
+</div>
+<div class="input_area box-flex1">
 <div class="highlight"><pre><span class="n">sim_plat</span> <span class="o">=</span> <span class="n">simple_platform_compiler</span><span class="p">(</span><span class="n">nidb</span><span class="p">,</span> <span class="n">anm</span><span class="p">,</span> <span class="s">&quot;localhost&quot;</span><span class="p">)</span>
 <span class="n">sim_plat</span><span class="o">.</span><span class="n">compile</span><span class="p">()</span>
 <span class="n">autonetkit</span><span class="o">.</span><span class="n">update_http</span><span class="p">(</span><span class="n">anm</span><span class="p">,</span> <span class="n">nidb</span><span class="p">)</span>
@@ -2225,7 +2293,7 @@ In&nbsp;[18]:
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
 <div class="prompt input_prompt">
-In&nbsp;[19]:
+In&nbsp;[20]:
 </div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="kn">import</span> <span class="nn">autonetkit.render</span>
@@ -2256,7 +2324,7 @@ INFO:ANK:Rendering Network
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
 <div class="prompt input_prompt">
-In&nbsp;[20]:
+In&nbsp;[21]:
 </div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">&quot;rendered/lab.conf&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
@@ -2273,7 +2341,7 @@ In&nbsp;[20]:
 <div class="hbox output_area"><div class="prompt"></div>
 <div class="box-flex1 output_subarea output_stream output_stdout">
 <pre>
-Topology rendered on 2014-01-13 01:23 by autonetkit_0.8.2
+Topology rendered on 2014-01-13 11:26 by autonetkit_0.8.2
 host: r4
 host: r5
 host: r1
@@ -2292,7 +2360,7 @@ host: r3
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
 <div class="prompt input_prompt">
-In&nbsp;[21]:
+In&nbsp;[22]:
 </div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">&quot;rendered/r1.conf&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
@@ -2309,22 +2377,26 @@ In&nbsp;[21]:
 <div class="hbox output_area"><div class="prompt"></div>
 <div class="box-flex1 output_subarea output_stream output_stdout">
 <pre>
-Router rendered on 2014-01-13 01:23 by autonetkit_0.8.2
+Router rendered on 2014-01-13 11:26 by autonetkit_0.8.2
 interface lo:1
     description Loopback
     ip address 192.168.0.1 netmask 255.255.255.255
 interface eth0
-    description to r2
+    description r1 to r2
     ip address 10.0.0.1 netmask 255.255.255.252
 interface eth1
-    description to r3
+    description r1 to r3
     ip address 10.0.0.5 netmask 255.255.255.252
 !
 router ospf 1
-    network 10.0.0.0/30 area None
-    network 10.0.0.4/30 area None
+    network 10.0.0.0/30 area 0
+    network 10.0.0.4/30 area 0
 !
 router bgp 1
+  ! r4
+  neighbor 192.168.0.4 remote-as 1
+  neighbor 192.168.0.4 update-source 192.168.0.1
+  neighbor 192.168.0.4 next-hop-self
   ! r2
   neighbor 192.168.0.2 remote-as 1
   neighbor 192.168.0.2 update-source 192.168.0.1
@@ -2333,10 +2405,6 @@ router bgp 1
   neighbor 192.168.0.3 remote-as 1
   neighbor 192.168.0.3 update-source 192.168.0.1
   neighbor 192.168.0.3 next-hop-self
-  ! r4
-  neighbor 192.168.0.4 remote-as 1
-  neighbor 192.168.0.4 update-source 192.168.0.1
-  neighbor 192.168.0.4 next-hop-self
 !
 !    
 
@@ -2352,7 +2420,7 @@ router bgp 1
 <div class="cell border-box-sizing code_cell vbox">
 <div class="input hbox">
 <div class="prompt input_prompt">
-In&nbsp;[22]:
+In&nbsp;[23]:
 </div>
 <div class="input_area box-flex1">
 <div class="highlight"><pre><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">&quot;rendered/r5.conf&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
@@ -2369,27 +2437,29 @@ In&nbsp;[22]:
 <div class="hbox output_area"><div class="prompt"></div>
 <div class="box-flex1 output_subarea output_stream output_stdout">
 <pre>
-Router rendered on 2014-01-13 01:23 by autonetkit_0.8.2
+Router rendered on 2014-01-13 11:26 by autonetkit_0.8.2
 interface lo:1
     description Loopback
     ip address 192.168.0.9 netmask 255.255.255.255
 interface eth0
-    description to r4
+    description r5 to r4
     ip address 10.0.128.2 netmask 255.255.255.252
 interface eth1
-    description to r3
+    description r5 to r3
     ip address 10.1.0.2 netmask 255.255.0.0
 !
 router ospf 1
+    network 10.0.128.0/30 area 0
+    network 10.1.0.0/16 area 0
 !
 router bgp 2
 !
-  ! r3
-  neighbor 10.1.0.1 remote-as 1
-  neighbor 10.1.0.1 update-source 10.1.0.2
   ! r4
   neighbor 10.0.128.1 remote-as 1
   neighbor 10.0.128.1 update-source 10.0.128.2
+  ! r3
+  neighbor 10.1.0.1 remote-as 1
+  neighbor 10.1.0.1 update-source 10.1.0.2
 !    
 
 
