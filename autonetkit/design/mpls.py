@@ -58,16 +58,18 @@ def vrf_pre_process(anm):
 def allocate_vrf_roles(g_vrf):
     """Allocate VRF roles"""
     g_phy = g_vrf.anm['phy']
+    #TODO: might be clearer like ibgp with is_p is_pe etc booleans?  - final step to translate to role for vis
     for node in g_vrf.nodes(vrf_role="CE"):
         if not node.vrf:
             node.vrf = "default_vrf"
 
-    for node in g_vrf.nodes('vrf'):
+    for node in sorted(g_vrf.nodes('vrf')):
         node.vrf_role = "CE"
+        node.log.info("VRF role set to CE")
 
     non_ce_nodes = [node for node in g_vrf if node.vrf_role != "CE"]
 
-    for node in non_ce_nodes:
+    for node in sorted(non_ce_nodes):
         phy_neighbors = g_phy.node(node).neighbors("is_router")
         # neighbors from physical graph for connectivity
         phy_neighbors = [neigh for neigh in phy_neighbors]
@@ -75,8 +77,10 @@ def allocate_vrf_roles(g_vrf):
         if any(g_vrf.node(neigh).vrf_role == "CE" for neigh in phy_neighbors):
             # phy neigh has vrf set in this graph
             node.vrf_role = "PE"
+            node.log.info("VRF role set to PE (connected to a CE router)")
         else:
             node.vrf_role = "P"  # default role
+            node.log.info("VRF role set to P (not connected to any CE routers)")
 
 def add_vrf_loopbacks(g_vrf):
     """Adds loopbacks for VRFs, and stores VRFs connected to PE router"""
