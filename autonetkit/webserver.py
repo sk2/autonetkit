@@ -18,6 +18,9 @@ from tornado.web import Application, asynchronous, RequestHandler
 from multiprocessing.pool import ThreadPool
 _workers = ThreadPool(10)
 
+#TODO: add command line option to start the
+# and applying the socket id to pass to the zmq queues
+# Also then start both the zmq device and server as a thread
 def run_background(func, callback, args=(), kwds={}):
     def _callback(result):
         IOLoop.instance().add_callback(lambda: callback(result))
@@ -25,6 +28,7 @@ def run_background(func, callback, args=(), kwds={}):
 
 # blocking task like querying to MySQL
 def blocking_task(host, uuid, overlay_id):
+    #TODO: try phantom here - warn if not found
     print host, uuid, overlay_id
     try:
         from autonetkit_cisco_webui.screenshot import grab
@@ -35,6 +39,9 @@ def blocking_task(host, uuid, overlay_id):
     else:
         result = grab(host, uuid, overlay_id)
         return result
+
+
+    #TODO: also support autonetkit vis
 
 
 
