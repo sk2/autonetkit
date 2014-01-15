@@ -47,6 +47,10 @@ class config_stanza(object):
             #TODO: log a key miss, and if strict turned on, give warning
             return
 
+    def items(self):
+        #TODO map this to proper dict inherit to support these methods, keys, etc
+        return self._odict.items()
+
     # TODO: add __iter__, __keys etc
 
     #self.__dict__['_odict'][key] = value
