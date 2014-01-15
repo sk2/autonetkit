@@ -1,5 +1,6 @@
 import json
 import string
+import logging
 
 import autonetkit.anm
 import autonetkit.nidb
@@ -82,6 +83,9 @@ class AnkEncoder(json.JSONEncoder):
             return str(obj)
         if isinstance(obj, nx.classes.Graph):
             return json_graph.node_link_data(obj)
+
+        if isinstance(obj, logging.LoggerAdapter):
+            return ""
 
         return json.JSONEncoder.default(self, obj)
 

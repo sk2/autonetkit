@@ -16,6 +16,13 @@ try:
 except ImportError:
     import pickle
 
+import logging
+
+
+#TODO: rename duplicate use of logger var in log setup
+class CustomAdapter(logging.LoggerAdapter):
+    def process(self, msg, kwargs):
+        return '[%s]: %s' % (self.extra['item'], msg), kwargs
 
 class AutoNetkitException(Exception):
 
@@ -45,6 +52,10 @@ class overlay_interface(object):
         object.__setattr__(self, 'overlay_id', overlay_id)
         object.__setattr__(self, 'node_id', node_id)
         object.__setattr__(self, 'interface_id', interface_id)
+        logger = logging.getLogger("ANK")
+        logstring = "Node: %s" % str(self)
+        logger = CustomAdapter(logger, {'item': logstring})
+        object.__setattr__(self, 'log', logger)
 
     def __key(self):
         """Note: key doesn't include overlay_id to allow fast cross-layer comparisons"""
@@ -60,7 +71,7 @@ class overlay_interface(object):
 
     def __repr__(self):
         description = self.description or self.interface_id
-        return '(%s, %s)' % (self.node, description)
+        return '(%s, %s)' % (description, self.nodes)
 
     def __eq__(self, other):
         return self.__key() == other.__key()
@@ -269,10 +280,12 @@ class OverlayNode(object):
 
         object.__setattr__(self, 'anm', anm)
         object.__setattr__(self, 'overlay_id', overlay_id)
-
 # should be able to use _graph from here as anm and overlay_id are defined
-
         object.__setattr__(self, 'node_id', node_id)
+        logger = logging.getLogger("ANK")
+        logstring = "Node: %s" % str(self)
+        logger = CustomAdapter(logger, {'item': logstring})
+        object.__setattr__(self, 'log', logger)
 
     def __hash__(self):
         """"""
@@ -701,6 +714,10 @@ class OverlayEdge(object):
         object.__setattr__(self, 'overlay_id', overlay_id)
         object.__setattr__(self, 'src_id', src_id)
         object.__setattr__(self, 'dst_id', dst_id)
+        logger = logging.getLogger("ANK")
+        logstring = "Interface: %s" % str(self)
+        logger = CustomAdapter(logger, {'item': logstring})
+        object.__setattr__(self, 'log', logger)
 
     def __key(self):
         """Note: key doesn't include overlay_id to allow fast cross-layer comparisons"""
@@ -902,6 +919,10 @@ class OverlayBase(object):
             raise OverlayNotFound(overlay_id)
         self._anm = anm
         self._overlay_id = overlay_id
+        logger = logging.getLogger("ANK")
+        logstring = "Overlay: %s" % str(overlay_id)
+        logger = CustomAdapter(logger, {'item': logstring})
+        object.__setattr__(self, 'log', logger)
 
     def __repr__(self):
         """"""

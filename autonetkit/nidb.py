@@ -15,6 +15,12 @@ except ImportError:
     import pickle
 
 from collections import OrderedDict
+import logging
+
+
+class CustomAdapter(logging.LoggerAdapter):
+    def process(self, msg, kwargs):
+        return '[%s]: %s' % (self.extra['item'], msg), kwargs
 
 # based on http://docs.python.org/2.7/library/collections#collections.OrderedDict
 # and http://stackoverflow.com/q/455059
@@ -213,6 +219,9 @@ class overlay_interface(object):
         object.__setattr__(self, 'nidb', nidb)
         object.__setattr__(self, 'node_id', node_id)
         object.__setattr__(self, 'interface_id', interface_id)
+        logger = logging.getLogger("ANK")
+        logstring = "Interface: %s" % str(self)
+        self.log = CustomAdapter(logger, {'item': logstring})
 
     def __key(self):
         # based on http://stackoverflow.com/q/2909106
@@ -364,6 +373,9 @@ class overlay_edge(object):
         object.__setattr__(self, 'nidb', nidb)
         object.__setattr__(self, 'src_id', src_id)
         object.__setattr__(self, 'dst_id', dst_id)
+        logger = logging.getLogger("ANK")
+        logstring = "Edge: %s" % str(self)
+        self.log = CustomAdapter(logger, {'item': logstring})
 
     def __repr__(self):
         return "(%s, %s)" % (self.src, self.dst)
@@ -428,6 +440,7 @@ class overlay_node_accessor(object):
 #Set using this method to bypass __setattr__
         object.__setattr__(self, 'nidb', nidb)
         object.__setattr__(self, 'node_id', node_id)
+
 
     def __repr__(self):
         #TODO: make this list overlays the node is present in
@@ -546,6 +559,13 @@ class nidb_node(object):
 #Set using this method to bypass __setattr__
         object.__setattr__(self, 'nidb', nidb)
         object.__setattr__(self, 'node_id', node_id)
+        logger = logging.getLogger("ANK")
+        #TODO: also pass the node object to the logger for building custom output lists
+        # ie create a special handler that just outputs the specific node/link/interface errors
+        logstring = "Node: %s" % str(self)
+        self.log = CustomAdapter(logger, {'item': logstring})
+
+    #TODO: make a json objct that returns keys that aren't logs, etc - filter out
 
     def __repr__(self):
         return self._node_data['label']
