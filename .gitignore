@@ -95,3 +95,5 @@ example/.ipynb_checkpoints/Extending AutoNetkit-checkpoint.ipynb
 example/router.mako
 
 example/topology.mako
+
+autonetkit/templates/quagga.conf.mako

@@ -1,10 +1,10 @@
 hostname ${node.hostname}
-password ${node.zebra.password}   
+password ${node.zebra.password}
 !log stdout
-% for interface in node.interfaces:  
+% for interface in node.interfaces:
   % if interface.isis:
 interface ${interface.id}
-  ip router isis ${node.isis.process_id} 
+  ip router isis ${node.isis.process_id}
     % if interface.physical:
   ## level-2-only - why would I want only level 2 network wide?
   isis circuit-type level-2-only
@@ -19,7 +19,7 @@ interface ${interface.id}
   % endif
 % endfor
 !
-% if node.isis: 
+% if node.isis:
 router isis ${node.isis.process_id}
   net ${node.isis.net}
   metric-style wide
