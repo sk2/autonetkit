@@ -221,6 +221,43 @@ class RouterCompiler(DeviceCompiler):
         node.ospf.lo_interface = self.lo_interface
 
         node.ospf.ospf_links = []
+
+        # aggregate by area
+        from collections import defaultdict
+        interfaces_by_area = defaultdict(list)
+
+        for interface in node.physical_interfaces:
+            if interface.exclude_igp:
+                continue  # don't configure IGP for this interface
+
+            ospf_int = g_ospf.interface(interface)
+            if ospf_int and ospf_int.is_bound:
+                area = ospf_int.area
+                #TODO: can we remove the next line?
+                area = str(area)  # can't serialize IPAddress object to JSON
+                #TODO: put in interface rather than interface.id for consistency
+                stanza = config_stanza(id = interface.id,
+                        cost = int(ospf_int.cost), passive = False)
+
+                if node.ip.use_ipv4:
+                    stanza.ipv4_address = ospf_int['ipv4'].ip_address
+                    stanza.ipv4_subnet = ospf_int['ipv4'].subnet
+                if node.ip.use_ipv6:
+                    stanza.ipv6_address = ospf_int['ipv6'].ip_address
+                    stanza.ipv6_subnet = ospf_int['ipv6'].subnet
+
+                interfaces_by_area[area].append(stanza)
+
+        loopback_zero = node.loopback_zero
+        ospf_loopback_zero = g_ospf.interface(loopback_zero)
+        router_area = ospf_loopback_zero.area  # area assigned to router
+        router_area = str(router_area)  # can't serialize IPAddress object to JSON
+        stanza = config_stanza(id = node.loopback_zero.id,
+            cost = 0, passive = True)
+        interfaces_by_area[router_area].append(stanza)
+
+        node.ospf.interfaces_by_area = config_stanza(**interfaces_by_area)
+
         added_networks = set()
         for interface in node.physical_interfaces:
             if interface.exclude_igp:
@@ -244,7 +281,7 @@ class RouterCompiler(DeviceCompiler):
             if ospf_int and ospf_int.is_bound and network \
                 not in added_networks:  # don't add more than once
                 added_networks.add(network)
-                link_stanza = config_stanza(network = network, area = ospf_int.area)
+                link_stanza = config_stanza(network = network, interface = interface, area = ospf_int.area)
                 node.ospf.ospf_links.append(link_stanza)
 
 
