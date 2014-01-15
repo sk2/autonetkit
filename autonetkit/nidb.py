@@ -564,6 +564,7 @@ class nidb_node(object):
         # ie create a special handler that just outputs the specific node/link/interface errors
         logstring = "Node: %s" % str(self)
         self.log = CustomAdapter(logger, {'item': logstring})
+        nidb_node.do_render = False
 
     #TODO: make a json objct that returns keys that aren't logs, etc - filter out
 
@@ -584,7 +585,7 @@ class nidb_node(object):
             value = self.get(name)
             if isinstance(value, config_stanza):
                 # Don't recreate
-                log.debug("Stanza %s already exists for %s" % (name, self))
+                self.log.debug("Stanza %s already exists" % name)
                 return value
             else:
                 log.warning("Creating stanza: %s already set as %s for %s" % (name, type(value), self))

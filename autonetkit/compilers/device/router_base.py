@@ -79,14 +79,15 @@ class RouterCompiler(DeviceCompiler):
         super(RouterCompiler, self).__init__(nidb, anm)
 
     def compile(self, node):
+        node.do_render = True # turn on rendering
+
         phy_node = self.anm['phy'].node(node)
         ipv4_node = self.anm['ipv4'].node(node)
 
         node.ip.use_ipv4 = phy_node.use_ipv4 or False
         node.ip.use_ipv6 = phy_node.use_ipv6 or False
         if not (node.ip.use_ipv4 and node.ip.use_ipv6):
-            log.debug('Neither IPv4 nor IPv6 specified for %s, using IPv4'
-                       % node)
+            node.log.debug('Neither IPv4 nor IPv6 specified: using default IPv4')
 
             # node.ip.use_ipv4 = True
 

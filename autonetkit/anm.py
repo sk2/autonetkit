@@ -482,7 +482,7 @@ class OverlayNode(object):
             try:
                 return self._graph.node[self.node_id]['_interfaces']
             except KeyError:
-                log.debug('No interfaces initialised for %s' % self)
+                self.log.debug('No interfaces initialised')
                 return []
 
     @property
@@ -492,7 +492,7 @@ class OverlayNode(object):
         try:
             return self._graph.node[self.node_id]['_interfaces']
         except KeyError:
-            log.debug('No interfaces initialised for %s' % self)
+            self.log.debug('No interfaces initialised for')
             return []
 
     @property
@@ -1375,8 +1375,9 @@ class OverlayGraph(OverlayBase):
 
                 else:
                     # no counterpart in physical graph, initialise
-                    log.debug('Initialise interfaces for %s in %s' % (node,
-                                                                      self._overlay_id))
+                    # Can't do node log becaue node doesn't exist yet
+                    overlay_node = OverlayNode(self.anm, self._overlay_id, node)
+                    overlay_node.log.debug('Initialise interfaces in overlay %s' % self._overlay_id)
                     self._graph.node[node]['_interfaces'] = \
                         {0: {'description': 'loopback', 'type': 'loopback'}}
 

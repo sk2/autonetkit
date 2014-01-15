@@ -232,6 +232,7 @@ def apply_design_rules(anm):
 
 def build(input_graph):
     """Main function to build network overlay topologies"""
+    anm = None
     try:
         anm = initialise(input_graph)
         anm = apply_design_rules(anm)
@@ -239,8 +240,12 @@ def build(input_graph):
     except Exception, e:
         # Send the visualisation to help debugging
         import autonetkit
-        autonetkit.update_http(anm)
-        raise
+        try:
+            autonetkit.update_http(anm)
+        except Exception, e:
+            # problem with vis -> could be coupled with original exception - raise original
+            log.warning("Unable to visualise: %s" % e)
+        raise # raise the original exception
     return anm
 
 

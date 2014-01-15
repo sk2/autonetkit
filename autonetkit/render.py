@@ -78,7 +78,7 @@ def render_inline(node, render_template_file, to_memory = True,
     Note: supports rendering to memory (ie back to nidb rather than file)
     """
 
-    log.debug("Rendering template %s for %s" % (render_template_file, node))
+    node.log.debug("Rendering template %s" % (render_template_file))
     render_template_file #TODO: remove this?
 
     version_banner= format_version_banner()
@@ -131,8 +131,14 @@ def render_inline(node, render_template_file, to_memory = True,
             return render_output
 
 #TODO: Add support for both src template and src folder (eg for quagga, servers)
-def render_node(node, folder_cache):
-    log.debug("Rendering %s" % node)
+def render_node(node, folder_cache = None):
+    if not node.do_render:
+        node.log.debug("Rendering disabled for node")
+        return
+
+    if not folder_cache:
+        folder_cache = {}
+
     try:
         render_output_dir = node.render.dst_folder
         #TODO: could check if base is set, so don't put error into debug log
@@ -160,7 +166,6 @@ def render_node(node, folder_cache):
                 pass # created by another process, safe to ignore
             else:
                 raise e
-
 
     if render_template_file:
         try:
@@ -204,8 +209,10 @@ def render_node(node, folder_cache):
                         version_banner = version_banner,
                         date = date,
                         )
+
     if render_base:
         #TODO: remove the folder cache for simplicity: doesn't sufficiently improve speed to warrant complexity
+        #TODO: revert to shutil copy
         if render_base in folder_cache:
             src_folder = folder_cache[render_base]['folder']
             fs_mako_templates = folder_cache[render_base]['templates']
@@ -277,17 +284,20 @@ def cache_folders(nidb):
 def render(nidb):
     #TODO: config option for single or multi threaded
     log.info("Rendering Network")
-    folder_cache = cache_folders(nidb)
+    #folder_cache = cache_folders(nidb)
+    #render_single(nidb, folder_cache)
+    folder_cache = None
     render_single(nidb, folder_cache)
     render_topologies(nidb)
 
 #TODO: Also cache for topologies
 
-    folder_cache_dir = folder_cache['_folder_cache_dir']
-    shutil.rmtree(folder_cache_dir)
+    if folder_cache:
+        folder_cache_dir = folder_cache['_folder_cache_dir']
+        shutil.rmtree(folder_cache_dir)
 
 
-def render_single(nidb, folder_cache):
+def render_single(nidb, folder_cache = None):
     for node in sorted(nidb):
         render_node(node, folder_cache)
 
