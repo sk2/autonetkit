@@ -33,9 +33,9 @@ interface ${interface.id}
 % endfor
 ## Loopback
 interface lo
-description local loopback
-ip address 127.0.0.1/8
-ip address ${node.loopback}/32
+  description local loopback
+  ip address 127.0.0.1/8
+  ip address ${node.loopback}/32
 !
 %endif
 % if node.bgp:
