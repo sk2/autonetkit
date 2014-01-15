@@ -1,7 +1,7 @@
 % if node.zebra:
 hostname ${node.hostname}
 password ${node.zebra.password}
-enable password ${node.zebra.password}      
+enable password ${node.zebra.password}
 banner motd file /etc/quagga/motd.txt
 % for static_route in node.zebra.static_routes:
 ! ${static_route.description}
