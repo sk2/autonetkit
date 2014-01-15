@@ -78,10 +78,14 @@ class CiscoCompiler(PlatformCompiler):
             yield x
 
     def compile(self):
+        self.compile_devices()
+        self.assign_management_interfaces()
+
+
+    def _parameters(self):
+        g_phy = self.anm['phy']
         settings = autonetkit.config.settings
         to_memory = settings['Compiler']['Cisco']['to memory']
-#TODO: need to copy across the interface name from edge to the interface
-        g_phy = self.anm['phy']
         use_mgmt_interfaces = g_phy.data.mgmt_interfaces_enabled
         if use_mgmt_interfaces:
             log.info("Allocating management interfaces for Cisco")
@@ -95,10 +99,22 @@ class CiscoCompiler(PlatformCompiler):
             dst_folder = os.path.join("rendered", self.host, timestamp, "cisco")
         else:
             dst_folder = os.path.join("rendered", self.host, "cisco")
+
+        #TODO: use a namedtuple
+        return to_memory, use_mgmt_interfaces, dst_folder
+
+    def compile_devices(self):
+        g_phy = self.anm['phy']
+
+        to_memory, use_mgmt_interfaces, dst_folder = self._parameters()
+#TODO: need to copy across the interface name from edge to the interface
+
 # TODO: merge common router code, so end up with three loops: routers, ios
 # routers, ios_xr routers
 
     #TODO: Split out each device compiler into own function
+
+    #TODO: look for unused code paths here - especially for interface allocation
 
         # store autonetkit_cisco version
         from pkg_resources import get_distribution
@@ -336,14 +352,11 @@ class CiscoCompiler(PlatformCompiler):
             nidb_node = self.nidb.node(phy_node)
             nidb_node.input_label = phy_node.id  # set specifically for now for other variants
 
-# TODO: use more os.path.join for render folders
-# TODO: Split compilers into seperate modules
-
-        if use_mgmt_interfaces:
-            self.assign_management_interfaces()
-
     def assign_management_interfaces(self):
         g_phy = self.anm['phy']
+        use_mgmt_interfaces = g_phy.data.mgmt_interfaces_enabled
+        if not use_mgmt_interfaces:
+            return
         lab_topology = self.nidb.topology[self.host]
         oob_management_ips = {}
 
