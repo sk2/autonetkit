@@ -1,13 +1,12 @@
 
 # AutoNetkit
-This is the current development beta.
+
+AutoNetkit is a configuration engine to quickly and easily build large-scale network configurations.
+While the primary focus is on emulated networks, the framework can be extended to hardware networks.
+
+![Flowchart](http://sk2.github.io/autonetkit/img/flowchart.png)
 
 [![PyPi version](https://pypip.in/v/autonetkit/badge.png)](https://crate.io/packages/autonetkit/)
-
-# About
-
-AutoNetkit is a configuration engine to quickly and easily build large scale network configurations.
-The primary focus is on emulated networks, but the framework can be extended to hardware networks.
 
 # Features
 
