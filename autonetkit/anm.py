@@ -1339,6 +1339,7 @@ class OverlayGraph(OverlayBase):
 
         phy_graph = self._anm.overlay_nx_graphs['phy']
 
+        initialised_nodes = []
         for node in nbunch:
             try:
                 phy_interfaces = phy_graph.node[node]['_interfaces']
@@ -1376,10 +1377,14 @@ class OverlayGraph(OverlayBase):
                 else:
                     # no counterpart in physical graph, initialise
                     # Can't do node log becaue node doesn't exist yet
-                    overlay_node = OverlayNode(self.anm, self._overlay_id, node)
-                    overlay_node.log.debug('Initialise interfaces in overlay %s' % self._overlay_id)
                     self._graph.node[node]['_interfaces'] = \
                         {0: {'description': 'loopback', 'type': 'loopback'}}
+                    initialised_nodes.append(node)
+
+        if len(initialised_nodes):
+            initialised_nodes = [OverlayNode(self.anm, self._overlay_id, n) for n in initialised_nodes]
+            initialised_nodes = sorted([str(n) for n in initialised_nodes])
+            self.log.debug("Initialised interfaces for %s" % ", ".join(initialised_nodes))
 
     def allocate_interfaces(self):
         """allocates edges to interfaces"""
