@@ -69,6 +69,7 @@ class IosBaseCompiler(RouterCompiler):
                     ipv4_loopback_subnet.prefixlen)
 
         if node.ip.use_ipv6:
+            #TODO: clean this up so can set on router_base: call cidr not address and update templates
             node.loopback_zero.use_ipv6 = True
             ipv6_loopback_zero = phy_loopback_zero['ipv6']
             node.loopback_zero.ipv6_address = \

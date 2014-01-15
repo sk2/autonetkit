@@ -123,6 +123,17 @@ class RouterCompiler(DeviceCompiler):
         node.loopback_zero.id = self.lo_interface
         node.loopback_zero.description = 'Loopback'
 
+        if node.ip.use_ipv4:
+            ipv4_node = self.anm['ipv4'].node(node)
+            node.loopback_zero.ipv4_address = ipv4_node.loopback
+            node.loopback_zero.ipv4_subnet = node.loopback_subnet
+
+        #TODO: bne consistent wit hcidr name so can use in cisco ios xr templates
+        #if node.ip.use_ipv6:
+            #ipv6_node = self.anm['ipv6'].node(node)
+            #node.loopback_zero.ipv6_address = ipv6_node.loopback
+            #node.loopback_zero.ipv6_subnet = node.loopback_subnet
+
         for interface in node.physical_interfaces:
             phy_int = self.anm['phy'].interface(interface)
             interface.physical = True
@@ -283,7 +294,6 @@ class RouterCompiler(DeviceCompiler):
                 added_networks.add(network)
                 link_stanza = config_stanza(network = network, interface = interface, area = ospf_int.area)
                 node.ospf.ospf_links.append(link_stanza)
-
 
             # also add networks for subnets to servers in the same AS
 
