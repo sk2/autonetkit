@@ -317,8 +317,12 @@ def compile_network(anm):
             import autonetkit.compilers.platform.netkit as pl_netkit
             platform_compiler = pl_netkit.NetkitCompiler(nidb, anm, host)
         elif platform == "cisco":
-            import autonetkit.compilers.platform.cisco as pl_cisco
-            platform_compiler = pl_cisco.CiscoCompiler(nidb, anm, host)
+            try:
+                import autonetkit_cisco.compilers.platform.cisco as pl_cisco
+                platform_compiler = pl_cisco.CiscoCompiler(nidb, anm, host)
+            except ImportError, e:
+                print e
+                log.warning("Unable to load Cisco platform compiler")
         elif platform == "dynagen":
             import autonetkit.compilers.platform.dynagen as pl_dynagen
             platform_compiler = pl_dynagen.DynagenCompiler(nidb, anm, host)
