@@ -31,9 +31,9 @@ def validate_ibgp(anm):
         graph = asn_subgraph._graph
         # get subgraph
         if not nx.is_strongly_connected(graph):
-            log.warning("iBGP v4 topology for ASN%s is disconnected" % asn)
+            g_ibgp_v4.log.warning("iBGP v4 topology for ASN%s is disconnected" % asn)
         else:
-            log.debug("iBGP v4 topology for ASN%s is connected" % asn)
+            g_ibgp_v4.log.debug("iBGP v4 topology for ASN%s is connected" % asn)
 
 
 def all_same(items):

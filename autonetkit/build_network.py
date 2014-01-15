@@ -124,7 +124,7 @@ def check_server_asns(anm):
         if server.asn not in l3_neighbor_asns:
             neighs_with_asn = ["%s: AS %s" % (n, n.asn)
                 for n in l3_neighbors] # tuples for warning message
-            log.warning("Server %s does not belong to same ASN as neighbors %s" % (server, neighs_with_asn))
+            server.log.warning("Server does not belong to same ASN as neighbors %s" % (neighs_with_asn))
 
             if len(l3_neighbors) == 1:
                 # single ASN of neighbor -> auto correct
