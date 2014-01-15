@@ -21,11 +21,11 @@ def build_ospf(anm):
     g_ospf = anm.add_overlay("ospf")
 
     if not anm['phy'].data.enable_routing:
-        log.info("Routing disabled, not configuring OSPF")
+        g_ospf.log.info("Routing disabled, not configuring OSPF")
         return
 
     if not any(n.igp == "ospf" for n in g_in):
-        log.debug("No OSPF nodes")
+        g_ospf.log.debug("No OSPF nodes")
         return
 
     g_ospf.add_nodes_from(g_in.nodes("is_router", igp = "ospf"), retain=['asn'])
@@ -35,7 +35,7 @@ def build_ospf(anm):
 
     ank_utils.copy_attr_from(g_in, g_ospf, "ospf_area", dst_attr="area")
     ank_utils.copy_edge_attr_from(g_in, g_ospf, "ospf_cost",
-        dst_attr="cost",  type=float)
+        dst_attr="cost",  type=float, default = 1)
 
     ank_utils.aggregate_nodes(g_ospf, g_ospf.nodes("is_switch"))
     exploded_edges = ank_utils.explode_nodes(g_ospf, g_ospf.nodes("is_switch"))
@@ -65,8 +65,8 @@ def build_ospf(anm):
                 try:
                     router.area = netaddr.IPAddress(router.area)
                 except netaddr.core.AddrFormatError:
-                    log.warning("Invalid OSPF area %s for %s. Using default"
-                                " of %s" % (router.area, router, default_area))
+                    router.log.warning("Invalid OSPF area %s. Using default"
+                                " of %s" % (router.area, default_area))
                     router.area = default_area
 
     #TODO: use interfaces throughout, rather than edges
@@ -108,17 +108,15 @@ def build_ospf(anm):
                 # intersection has at least one element -> router has area zero
                 router.type = "backbone ABR"
             elif router.area in area_zero_ids:
-                log.debug("Router %s belongs to area %s but has no area zero interfaces" %(router, router.area))
+                router.log.debug("Router belongs to area %s but has no area zero interfaces" %(router, router.area))
                 router.type = "backbone ABR"
             else:
-                log.warning(
-                    "%s spans multiple areas but is not a member of area 0"
-                    % router)
+                router.log.warning("spans multiple areas but is not a member of area 0")
                 router.type = "INVALID"
 
     if (any(area_zero_int in router.areas for router in g_ospf) and
             any(area_zero_ip in router.areas for router in g_ospf)):
-        log.warning("Using both area 0 and area 0.0.0.0")
+        router.log.warning("Using both area 0 and area 0.0.0.0")
 
     for link in g_ospf.edges():
         if not link.cost:
@@ -164,7 +162,7 @@ def build_eigrp(anm):
     g_eigrp = anm.add_overlay("eigrp")
 
     if not anm['phy'].data.enable_routing:
-        log.info("Routing disabled, not configuring EIGRP")
+        g_eigrp.log.info("Routing disabled, not configuring EIGRP")
         return
 
     if not any(n.igp == "eigrp" for n in g_in):
@@ -207,11 +205,11 @@ def build_isis(anm):
     g_isis = anm.add_overlay("isis")
 
     if not anm['phy'].data.enable_routing:
-        log.info("Routing disabled, not configuring EIGRP")
+        g_isis.log.info("Routing disabled, not configuring ISIS")
         return
 
     if not any(n.igp == "isis" for n in g_in):
-        log.debug("No ISIS nodes")
+        g_isis.log.debug("No ISIS nodes")
         return
     g_ipv4 = anm['ipv4']
     g_isis.add_nodes_from(g_in.nodes("is_router", igp = "isis"), retain=['asn'])

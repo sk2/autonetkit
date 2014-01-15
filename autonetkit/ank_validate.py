@@ -75,7 +75,7 @@ def validate_ipv4(anm):
     all_int_ips = [i.ip_address for i in all_ints]
 
     if all_unique(all_int_ips):
-        log.debug("All interface IPs globally unique")
+        g_ipv4.log.debug("All interface IPs globally unique")
     else:
         tests_passed = False
         duplicates = duplicate_items(all_int_ips)
@@ -84,10 +84,10 @@ def validate_ipv4(anm):
                 if n.ip_address in duplicate_ips]
         duplicates = ", ".join("%s: %s" % (i.node, i.ip_address)
             for i in duplicate_ints)
-        log.warning("Global duplicate IP addresses %s" % duplicates)
+        g_ipv4.log.warning("Global duplicate IP addresses %s" % duplicates)
 
     for cd in g_ipv4.nodes("collision_domain"):
-        log.debug("Verifying subnet and interface IPs for %s" % cd)
+        cd.log.debug("Verifying subnet and interface IPs")
         neigh_ints = list(cd.neighbor_interfaces())
         neigh_int_subnets = [i.subnet for i in neigh_ints]
         if all_same(neigh_int_subnets):
@@ -108,14 +108,14 @@ def validate_ipv4(anm):
             mismatches = ", ".join("%s not in %s on %s" %
                     (i.ip_address, i.subnet, i.node)
                     for i in ip_subnet_mismatches)
-            log.warning("Mismatched IP subnets for %s: %s" %
-                    (cd, mismatches))
+            cd.log.warning("Mismatched IP subnets: %s" %
+                    mismatches)
         else:
-            log.debug("All subnets match for %s" % cd)
+            cd.log.debug("All subnets match")
 
         neigh_int_ips = [i.ip_address for i in neigh_ints]
         if all_unique(neigh_int_ips):
-            log.debug("All interface IP addresses unique for %s" % cd)
+            cd.log.debug("All interface IP addresses are unique")
             duplicates = duplicate_items(neigh_int_ips)
         else:
             tests_passed = False
@@ -124,12 +124,11 @@ def validate_ipv4(anm):
                     if n.ip_address in duplicate_ips]
             duplicates = ", ".join("%s: %s" % (i.node, i.ip_address)
                     for i in duplicate_ints)
-            log.warning("Duplicate IP addresses on %s. %s" %
-                    (cd, duplicates))
+            cd.log.warning("Duplicate IP addresses: %s" % duplicates)
 
     if tests_passed:
-        log.info("All IPv4 tests passed.")
+        g_ipv4.log.info("All IP tests passed.")
     else:
-        log.warning("Some IPv4 tests failed.")
+        g_ipv4.log.warning("Some IP tests failed.")
 
     return tests_passed

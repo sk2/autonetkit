@@ -7,6 +7,7 @@ from autonetkit.compilers.device.device_base import DeviceCompiler
 class ServerCompiler(DeviceCompiler):
 
     def compile(self, node):
+        node.do_render = True # turn on rendering
         phy_node = self.anm['phy'].node(node)
         ipv4_node = self.anm['ipv4'].node(node)
         super(ServerCompiler, self).compile(node)

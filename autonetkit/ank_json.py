@@ -79,7 +79,6 @@ class AnkEncoder(json.JSONEncoder):
             return str(obj)
         if isinstance(obj, autonetkit.nidb.nidb_node_category):
             #TODO: add documentation about serializing anm nodes
-            log.debug("%s is nidb nidb_node_category. Use attribute rather than object in compiler." % obj)
             return str(obj)
         if isinstance(obj, nx.classes.Graph):
             return json_graph.node_link_data(obj)

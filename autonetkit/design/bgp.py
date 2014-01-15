@@ -57,14 +57,14 @@ def build_ebgp(anm):
     ebgp_switches = [n for n in g_in.nodes("is_switch")
             if not ank_utils.neigh_equal(g_phy, n, "asn")]
     g_ebgp.add_nodes_from(ebgp_switches, retain=['asn'])
-    log.debug("eBGP switches are %s" % ebgp_switches)
+    g_ebgp.log.debug("eBGP switches are %s" % ebgp_switches)
     g_ebgp.add_edges_from((e for e in g_in.edges()
             if e.src in ebgp_switches or e.dst in ebgp_switches),
     bidirectional=True, type='ebgp')
     ank_utils.aggregate_nodes(g_ebgp, ebgp_switches)
     # need to recalculate as may have aggregated
     ebgp_switches = list(g_ebgp.nodes("is_switch"))
-    log.debug("aggregated eBGP switches are %s" % ebgp_switches)
+    g_ebgp.log.debug("aggregated eBGP switches are %s" % ebgp_switches)
     exploded_edges = ank_utils.explode_nodes(g_ebgp, ebgp_switches)
     same_asn_edges = []
     for edge in exploded_edges:
@@ -81,6 +81,9 @@ def build_ibgp(anm):
     g_in = anm['input']
     g_phy = anm['phy']
     g_bgp = anm['bgp']
+
+
+    #TODO: build direct to ibgp graph - can construct combined bgp for vis
 
     ank_utils.copy_attr_from(g_in, g_bgp, "ibgp_level")
     ank_utils.copy_attr_from(g_in, g_bgp, "ibgp_l2_cluster", "hrr_cluster")
