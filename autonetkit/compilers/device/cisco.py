@@ -586,31 +586,6 @@ class IosXrCompiler(IosBaseCompiler):
     def ospf(self, node):
         super(IosXrCompiler, self).ospf(node)
 
-        g_ospf = self.anm['ospf']
-        interfaces_by_area = defaultdict(list)
-
-        for interface in node.physical_interfaces:
-            if interface.exclude_igp:
-                continue  # don't configure IGP for this interface
-
-            ospf_int = g_ospf.interface(interface)
-            if ospf_int and ospf_int.is_bound:
-                area = ospf_int.area
-                area = str(area)  # can't serialize IPAddress object to JSON
-                stanza = config_stanza(id = interface.id,
-                        cost = int(ospf_int.cost), passive = False)
-                interfaces_by_area[area].append(stanza)
-
-        loopback_zero = node.loopback_zero
-        ospf_loopback_zero = g_ospf.interface(loopback_zero)
-        router_area = ospf_loopback_zero.area  # area assigned to router
-        router_area = str(router_area)  # can't serialize IPAddress object to JSON
-        stanza = config_stanza(id = node.loopback_zero.id,
-            cost = 0, passive = True)
-        interfaces_by_area[router_area].append(stanza)
-
-        node.ospf.interfaces = dict(interfaces_by_area)
-
     def eigrp(self, node):
         super(IosXrCompiler, self).eigrp(node)
 
