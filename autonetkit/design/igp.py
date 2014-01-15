@@ -108,7 +108,7 @@ def build_ospf(anm):
                 # intersection has at least one element -> router has area zero
                 router.type = "backbone ABR"
             elif router.area in area_zero_ids:
-                router.log.debug("Router belongs to area %s but has no area zero interfaces" %(router, router.area))
+                router.log.debug("Router belongs to area %s but has no area zero interfaces" %(router.area))
                 router.type = "backbone ABR"
             else:
                 router.log.warning("spans multiple areas but is not a member of area 0")

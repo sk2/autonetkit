@@ -463,8 +463,7 @@ class IpTree(object):
                         else:
                             sub_child.subnet = iterhosts.next()
 
-                        log.debug('Allocate sub_child to %s %s'
-                                  % (sub_child, sub_child.subnet))
+                        #log.debug('Allocate sub_child to %s %s'% (sub_child, sub_child.subnet))
                 elif child.is_host():
                     child.subnet = subnet.next()
                 elif child.is_loopback_group():
