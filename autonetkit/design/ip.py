@@ -8,7 +8,7 @@ from autonetkit.ank_utils import call_log
 @call_log
 def build_ipv6(anm):
     """Builds IPv6 graph, using nodes and edges from IPv4 graph"""
-
+    import netaddr
     import autonetkit.plugins.ipv6 as ipv6
 
     # uses the nodes and edges from ipv4
@@ -23,13 +23,21 @@ def build_ipv6(anm):
     # TODO: replace this with direct allocation to interfaces in ip alloc plugin
 
     for node in g_ipv6.nodes('is_l3device'):
-        node.loopback_zero.ip_address = node.loopback
         for interface in node:
             edges = list(interface.edges())
             if len(edges):
                 edge = edges[0]  # first (only) edge
                 interface.ip_address = edge.ip  # TODO: make this consistent
                 interface.subnet = edge.dst.subnet  # from collision domain
+
+    for node in g_ipv6.nodes('is_router'):
+        #TODO: test this code
+        node.loopback_zero.ip_address = node.loopback
+        node.loopback_zero.subnet = netaddr.IPNetwork("%s/32" % node.loopback)
+        for interface in node.loopback_interfaces:
+            if not interface.is_loopback_zero:
+                interface.ip_address = interface.loopback #TODO: fix this inconsistency elsewhere
+
 
 
 @call_log
@@ -233,6 +241,7 @@ def build_ipv4(anm, infrastructure=True):
     """Builds IPv4 graph"""
 
     import autonetkit.plugins.ipv4 as ipv4
+    import netaddr
     g_ipv4 = anm.add_overlay('ipv4')
     g_ip = anm['ip']
     g_in = anm['input']
@@ -284,6 +293,11 @@ def build_ipv4(anm, infrastructure=True):
     ipv4.allocate_vrf_loopbacks(g_ipv4, vrf_loopback_block)
 
     # TODO: replace this with direct allocation to interfaces in ip alloc plugin
+    #TODO: add option for nonzero interfaces on node - ie node.secondary_loopbacks
 
-    for node in g_ipv4.nodes('is_l3device'):
+    for node in g_ipv4.nodes('is_router'):
         node.loopback_zero.ip_address = node.loopback
+        node.loopback_zero.subnet = netaddr.IPNetwork("%s/32" % node.loopback)
+        for interface in node.loopback_interfaces:
+            if not interface.is_loopback_zero:
+                interface.ip_address = interface.loopback #TODO: fix this inconsistency elsewhere
