@@ -71,7 +71,7 @@ class overlay_interface(object):
 
     def __repr__(self):
         description = self.description or self.interface_id
-        return '(%s, %s)' % (description, self.nodes)
+        return '(%s, %s)' % (description, self.node)
 
     def __eq__(self, other):
         return self.__key() == other.__key()
