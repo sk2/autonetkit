@@ -7,6 +7,7 @@ import autonetkit.plugins.naming as naming
 from autonetkit.ank import sn_preflen_to_network
 from autonetkit.compilers.platform.platform_base import PlatformCompiler
 import itertools
+from autonetkit.ank_utils import call_log
 
 
 from autonetkit.compilers.device.cisco import IosBaseCompiler, IosClassicCompiler, IosXrCompiler, NxOsCompiler, StarOsCompiler
@@ -77,6 +78,7 @@ class CiscoCompiler(PlatformCompiler):
         for x in itertools.count(0):
             yield x
 
+    @call_log
     def compile(self):
         self.compile_devices()
         self.assign_management_interfaces()
@@ -103,6 +105,7 @@ class CiscoCompiler(PlatformCompiler):
         #TODO: use a namedtuple
         return to_memory, use_mgmt_interfaces, dst_folder
 
+    @call_log
     def compile_devices(self):
         g_phy = self.anm['phy']
 

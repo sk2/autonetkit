@@ -1,6 +1,9 @@
 import autonetkit.log as log
 import autonetkit.ank as ank_utils
 
+from autonetkit.ank_utils import call_log
+
+@call_log
 def build_ospf(anm):
     """
     Build OSPF graph.
@@ -134,6 +137,7 @@ def build_ospf(anm):
         router.loopback_zero.area = router.area
         router.loopback_zero.cost = 0
 
+@call_log
 def ip_to_net_ent_title_ios(ip_addr):
     """ Converts an IP address into an OSI Network Entity Title
     suitable for use in IS-IS on IOS.
@@ -155,6 +159,7 @@ def ip_to_net_ent_title_ios(ip_addr):
     return ".".join([area_id, ip_octets[0:4], ip_octets[4:8], ip_octets[8:12],
                      "00"])
 
+@call_log
 def build_eigrp(anm):
     """Build eigrp overlay"""
     g_in = anm['input']
@@ -198,6 +203,7 @@ def build_eigrp(anm):
             interface.metric = edge.metric
             interface.multipoint = edge.multipoint
 
+@call_log
 def build_isis(anm):
     """Build isis overlay"""
     g_in = anm['input']

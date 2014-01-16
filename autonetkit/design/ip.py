@@ -3,7 +3,9 @@
 import autonetkit.log as log
 import autonetkit.ank as ank_utils
 
+from autonetkit.ank_utils import call_log
 
+@call_log
 def build_ipv6(anm):
     """Builds IPv6 graph, using nodes and edges from IPv4 graph"""
 
@@ -30,6 +32,7 @@ def build_ipv6(anm):
                 interface.subnet = edge.dst.subnet  # from collision domain
 
 
+@call_log
 def manual_ipv4_infrastructure_allocation(anm):
     """Applies manual IPv4 allocation"""
 
@@ -96,6 +99,7 @@ def manual_ipv4_infrastructure_allocation(anm):
     g_ipv4.data.infra_blocks = infra_blocks
 
 
+@call_log
 def manual_ipv4_loopback_allocation(anm):
     """Applies manual IPv4 allocation"""
 
@@ -117,6 +121,7 @@ def manual_ipv4_loopback_allocation(anm):
     g_ipv4.data.loopback_blocks = loopback_blocks
 
 
+@call_log
 def build_ip(anm):
     g_ip = anm.add_overlay('ip')
     g_in = anm['input']
@@ -182,6 +187,7 @@ def build_ip(anm):
             graphics_node.label = cd_label
 
 
+@call_log
 def extract_ipv4_blocks(anm):
 
     # TODO: set all these blocks globally in config file, rather than repeated in load, build_network, compile, etc
@@ -222,6 +228,7 @@ def extract_ipv4_blocks(anm):
     return (infra_block, loopback_block, vrf_loopback_block)
 
 
+@call_log
 def build_ipv4(anm, infrastructure=True):
     """Builds IPv4 graph"""
 

@@ -5,12 +5,14 @@ import socket
 import autonetkit.ank_json
 import autonetkit.config as config
 import autonetkit.log as log
+from autonetkit.ank_utils import call_log
 
 use_http_post = config.settings['Http Post']['active']
 if use_http_post:
     import urllib
 
 
+@call_log
 def format_http_url(host=None, port=None, route='publish'):
     if not host and not port:
         host = config.settings['Http Post']['server']
@@ -20,6 +22,7 @@ def format_http_url(host=None, port=None, route='publish'):
 
 default_http_url = format_http_url()
 
+@call_log
 def update_http(
     anm=None,
     nidb=None,
@@ -56,6 +59,7 @@ def update_http(
 
         log.info('Visualisation server running')
 
+@call_log
 def get_uuid(anm):
     try:
         return config.settings['Http Post']['uuid']
@@ -64,6 +68,7 @@ def get_uuid(anm):
         return 'singleuser'
 
 
+@call_log
 def highlight(
     nodes=None,
     edges=None,
