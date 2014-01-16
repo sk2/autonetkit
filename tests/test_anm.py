@@ -66,7 +66,7 @@ assert(loopback0.is_loopback_zero)
 
 #TODO: need to add more loopbacks to test
 
-assert(str(loopback0) == "(r1, loopback)")
+assert(str(loopback0) == "(loopback, r1)")
 
 eth0 = test_node.interface(1)
 assert(eth0.is_bound)
@@ -80,7 +80,6 @@ assert(eth0.phy == eth0) # should be itself as phy overlay
 
 #Cross-layer access
 assert(eth0['input'] is not None)
-
 
 assert(eth0.neighbors() == [g_phy.node("r2").interface(1), g_phy.node("r3").interface(1)])
 
@@ -111,7 +110,7 @@ assert(test_node.is_router)
 assert(not test_node.is_switch)
 assert(not test_node.is_server)
 assert(str(list(test_node.neighbors())) == "[r2, r3]")
-assert(str(list(test_node.neighbor_interfaces())) == "[(r2, eth0), (r3, eth0)]")
+assert(str(list(test_node.neighbor_interfaces())) == "[(eth0, r2), (eth0, r3)]")
 # Test getting from another overlay
 assert(test_node['input'].asn == 1)
 
