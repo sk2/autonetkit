@@ -280,7 +280,7 @@ def create_nidb(anm):
     g_ip = anm['ip']
     g_graphics = anm['graphics']
     nidb.add_nodes_from(
-        g_phy, retain=['label', 'host', 'platform', 'Network', 'update'])
+        g_phy, retain=['label', 'host', 'platform', 'Network', 'update', 'asn'])
 
     cd_nodes = [n for n in g_ip.nodes(
         "collision_domain") if not n.is_switch]  # Only add created cds - otherwise overwrite host of switched
