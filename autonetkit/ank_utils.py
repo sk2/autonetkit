@@ -5,6 +5,12 @@ AutoNetkit Utilities
 #from anm import overlay_node, overlay_edge
 import autonetkit
 
+def call_log(fn, *args, **kwargs):
+    def decorator(*args, **kwargs):
+        #print "\t" + fn.__name__
+        return fn(*args, **kwargs)
+
+    return decorator
 
 def unwrap_nodes(nodes):
     """Unwrap nodes"""

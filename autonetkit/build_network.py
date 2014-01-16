@@ -18,7 +18,9 @@ SETTINGS = autonetkit.config.settings
 #TODO: note that build network now assumes input graph has interface mappings on nodes/edges
 
 __all__ = ['build']
+from autonetkit.ank_utils import call_log
 
+@call_log
 def load(input_graph_string):
     try:
         input_graph = graphml.load_graphml(input_graph_string)
@@ -40,6 +42,7 @@ def load(input_graph_string):
 
     return input_graph
 
+@call_log
 def grid_2d(dim):
     """Creates a 2d grid of dimension dim"""
     graph = nx.grid_2d_graph(dim, dim)
@@ -70,6 +73,7 @@ def grid_2d(dim):
 
     return graph
 
+@call_log
 def initialise(input_graph):
     """Initialises the input graph with from a NetworkX graph"""
     anm = autonetkit.anm.AbstractNetworkModel()
@@ -108,6 +112,7 @@ def initialise(input_graph):
 
     return anm
 
+@call_log
 def check_server_asns(anm):
     """Checks that servers have appropriate ASN allocated.
     Warns and auto-corrects servers which are connected to routers of a difference AS.
@@ -137,6 +142,7 @@ def check_server_asns(anm):
                         (server, server.asn))
 
 
+@call_log
 def apply_design_rules(anm):
     """Applies appropriate design rules to ANM"""
     g_in = anm['input']
@@ -230,6 +236,7 @@ def apply_design_rules(anm):
     return anm
 
 
+@call_log
 def build(input_graph):
     """Main function to build network overlay topologies"""
     anm = None
@@ -250,6 +257,7 @@ def build(input_graph):
 
 
 
+@call_log
 def build_phy(anm):
     """Build physical overlay"""
     g_in = anm['input']
@@ -292,6 +300,7 @@ def build_phy(anm):
             if specified_id:
                 interface.specified_id = specified_id # map across
 
+@call_log
 def build_l3_connectivity(anm):
     """ creates l3_connectivity graph, which is switch nodes aggregated and exploded"""
     #TODO: use this as base for ospf, ebgp, ip, etc rather than exploding in each
@@ -311,6 +320,7 @@ def build_l3_connectivity(anm):
         edge.src_int.multipoint = True
         edge.dst_int.multipoint = True
 
+@call_log
 def build_conn(anm):
     """Build connectivity overlay"""
     g_in = anm['input']
