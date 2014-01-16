@@ -35,7 +35,7 @@ def build_ospf(anm):
 
     ank_utils.copy_attr_from(g_in, g_ospf, "ospf_area", dst_attr="area")
     ank_utils.copy_edge_attr_from(g_in, g_ospf, "ospf_cost",
-        dst_attr="cost",  type=float, default = 1)
+        dst_attr="cost",  type=int, default = 1)
 
     ank_utils.aggregate_nodes(g_ospf, g_ospf.nodes("is_switch"))
     exploded_edges = ank_utils.explode_nodes(g_ospf, g_ospf.nodes("is_switch"))
