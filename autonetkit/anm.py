@@ -659,9 +659,32 @@ class OverlayNode(object):
         This is useful for accesing attributes passed through from graphml"""
 
         try:
-            return self._graph.node[self.node_id].get(key)
+            node_data = self._graph.node[self.node_id]
         except KeyError:
+            #TODO: only carry out this logic if "Strict mode"
+            if key == "device_type":
+                #TODO: tidy accessors so this doesn't occur, and remove the suppress
+                pass # supress
+                return
+            self.log.debug("Cannot access %s: node not present in %s"
+                %(key, self.overlay_id))
             return
+        else:
+            try:
+                result = node_data[key]
+                return result
+            except KeyError:
+                if key == "device_type":
+                    #TODO: tidy accessors so this doesn't occur, and remove the suppress
+                    pass # supress
+                    return
+
+                # from http://stackoverflow.com/q/2654113
+                self.log.debug("Accessing unset attribute %s in %s" % (key, self.overlay_id))
+                #import inspect
+                #caller = ", ".join(reversed([elem[3] for elem in inspect.stack()[1:-4]]))
+                #self.log.debug("Caller: %s" % caller)
+                return
 
     def get(self, key):
         """For consistency, node.get(key) is neater than getattr(node, key)"""
