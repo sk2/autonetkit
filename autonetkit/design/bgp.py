@@ -94,8 +94,11 @@ def build_ibgp(anm):
     #TODO: build direct to ibgp graph - can construct combined bgp for vis
 
     ank_utils.copy_attr_from(g_in, g_bgp, "ibgp_level")
-    ank_utils.copy_attr_from(g_in, g_bgp, "ibgp_l2_cluster", "hrr_cluster")
-    ank_utils.copy_attr_from(g_in, g_bgp, "ibgp_l3_cluster", "rr_cluster")
+    ank_utils.copy_attr_from(g_in, g_bgp, "ibgp_l2_cluster", "hrr_cluster", default = None)
+    ank_utils.copy_attr_from(g_in, g_bgp, "ibgp_l3_cluster", "rr_cluster", default = None)
+
+    ank_utils.set_node_default(g_bgp,  is_hrr = None, is_rr = None, is_rrc=None)
+
 
     """Levels:
     0: no BGP

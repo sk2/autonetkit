@@ -93,7 +93,7 @@ def initialise(input_graph):
     # TODO: make this set from config and also in the input file
     if expand_fqdn and len(ank_utils.unique_attr(g_in, "asn")) > 1:
         # Multiple ASNs set, use label format device.asn
-        anm.set_node_label(".", ['label', 'pop', 'asn'])
+        anm.set_node_label(".", ['label', 'asn'])
 
     g_in.update(
         g_in.nodes("is_router", platform="junosphere"), syntax="junos")
@@ -101,9 +101,10 @@ def initialise(input_graph):
     g_in.update(g_in.nodes("is_router", platform="netkit"), syntax="quagga")
     g_in.update(g_in.nodes("is_server", platform="netkit"), syntax="quagga")
 
+    autonetkit.ank.set_node_default(g_in,  specified_int_names=None)
+
     g_graphics = anm.add_overlay("graphics")  # plotting data
     g_graphics.add_nodes_from(g_in, retain=['x', 'y', 'device_type',
-        'label', 'device_subtype', 'pop', 'asn'])
 
     if g_in.data.Creator == "Maestro":
         #TODO: move this to other module
@@ -273,6 +274,7 @@ def build_phy(anm):
     if g_in.data.Creator == "Topology Zoo Toolset":
         ank_utils.copy_attr_from(g_in, g_phy, "Network")
 
+    ank_utils.set_node_default(g_phy,  Network=None)
     g_phy.add_edges_from(g_in.edges(type="physical"))
     # TODO: make this automatic if adding to the physical graph?
 
@@ -291,6 +293,8 @@ def build_phy(anm):
         ank_utils.copy_attr_from(g_in, g_phy, "dont_configure_static_routing")
         ank_utils.copy_attr_from(g_in, g_phy, "server_username")
         ank_utils.copy_attr_from(g_in, g_phy, "server_ssh_key")
+
+    ank_utils.set_node_default(g_phy,  use_ipv4 = False, use_ipv6=False)
 
     g_phy.allocate_interfaces()
 
