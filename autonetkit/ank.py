@@ -29,10 +29,15 @@ def name_folder_safe(foldername):
         foldername = foldername.replace("__", "_")
     return foldername
 
-def set_node_default(OverlayGraph, nbunch, **kwargs):
-    """Sets all nodes in nbunch to value if key not already set"""
+def set_node_default(OverlayGraph, nbunch = None, **kwargs):
+    """Sets all nodes in nbunch to value if key not already set
+    Note: this won't apply to future nodes added
+    """
     graph = unwrap_graph(OverlayGraph)
-    nbunch = unwrap_nodes(nbunch)
+    if nbunch is None:
+        nbunch = graph.nodes()
+    else:
+        nbunch = unwrap_nodes(nbunch)
     for node in nbunch:
         for key, val in kwargs.items():
             if key not in graph.node[node]:
