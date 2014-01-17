@@ -232,6 +232,9 @@ def build_vrf(anm):
     g_l3conn = anm['l3_conn']
     g_vrf = anm.add_overlay("vrf")
 
+    import autonetkit
+    autonetkit.ank.set_node_default(g_in,  vrf=None)
+
     if not any(True for n in g_in if n.is_router and n.vrf):
         log.debug("No VRFs set")
         return

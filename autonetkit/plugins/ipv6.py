@@ -34,7 +34,7 @@ def assign_asn_to_interasn_cds(G_ip):
     return
 
 
-def allocate_ips(G_ip):
+def allocate_ips(G_ip, infra_block = None, loopback_block = None, secondary_loopback_block = None):
     log.info('Allocating Host loopback IPs')
 
 # assign a /64 to each asn
@@ -47,13 +47,9 @@ def allocate_ips(G_ip):
 
 # TODO: check if need to do network address... possibly only for loopback_pool and infra_pool so maps to asn
 
-    global_pool = netaddr.IPNetwork('2001:db8::/32').subnet(48)
-    global_pool = netaddr.IPNetwork('::/32').subnet(64)
-    global_pool.next()  # network address
-    [global_pool.next() for i in range(9)]  # consume generator to start infra at "a", loopbacks at "b"
-    loopback_pool = global_pool.next().subnet(80)
-    infra_pool = global_pool.next().subnet(80)
-    secondary_loopback_pool = global_pool.next().subnet(80)
+    loopback_pool = loopback_block.subnet(80)
+    infra_pool = infra_block.subnet(80)
+    secondary_loopback_pool = secondary_loopback_block.subnet(80)
 
     # consume the first address as it is the network address
 
