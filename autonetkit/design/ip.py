@@ -18,7 +18,18 @@ def build_ipv6(anm):
     g_ipv6.add_nodes_from(g_ip, retain=['label', 'collision_domain'])  # retain if collision domain or not
     g_ipv6.add_edges_from(g_ip.edges())
 
-    ipv6.allocate_ips(g_ipv6)
+    global_pool = netaddr.IPNetwork('2001:db8::/32').subnet(48)
+    global_pool = netaddr.IPNetwork('::/32').subnet(64)
+    global_pool.next()  # network address
+    [global_pool.next() for i in range(9)]  # consume generator to start infra at "a", loopbacks at "b"
+    loopback_block = global_pool.next()
+    infra_block = global_pool.next()
+    secondary_loopback_block = global_pool.next()
+
+    block_message = "IPv4 allocations: Infrastructure: %s, Loopback: %s" % (infra_block, loopback_block)
+    log.info(block_message)
+
+    ipv6.allocate_ips(g_ipv6, infra_block, loopback_block, secondary_loopback_block)
 
     # TODO: replace this with direct allocation to interfaces in ip alloc plugin
 
@@ -178,7 +189,9 @@ def build_ip(anm):
             node.host = ank_utils.neigh_attr(g_ip, node, 'host',
                     g_phy).next()  # first attribute
 
-# set collision domain IPs
+    # set collision domain IPs
+    #TODO; work out why this throws a json exception
+    #autonetkit.ank.set_node_default(g_ip,  collision_domain=False)
 
     for node in g_ip.nodes('collision_domain'):
         graphics_node = g_graphics.node(node)
@@ -193,7 +206,7 @@ def build_ip(anm):
             node.label = cd_label
             node.cd_id = cd_label
             graphics_node.label = cd_label
-
+            node.device_type = "collision_domain"
 
 @call_log
 def extract_ipv4_blocks(anm):
@@ -257,6 +270,13 @@ def build_ipv4(anm, infrastructure=True):
 
     (infra_block, loopback_block, vrf_loopback_block) = \
         extract_ipv4_blocks(anm)
+
+    block_message = "IPv4 allocations: Infrastructure: %s, Loopback: %s" % (infra_block, loopback_block)
+    if any(i for n in g_ip.nodes() for i in
+     n.loopback_interfaces if not i.is_loopback_zero):
+        block_message += " Secondary Loopbacks: %s" % vrf_loopback_block
+
+    log.info(block_message)
 
     # See if IP addresses specified on each interface
 

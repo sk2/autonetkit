@@ -86,8 +86,8 @@ def initialise(input_graph):
         # if not specified then automatically assign interface names
         g_in.data.specified_int_names = False
 
-    import autonetkit.plugins.graph_product as graph_product
-    graph_product.expand(g_in)  # apply graph products if relevant
+    #import autonetkit.plugins.graph_product as graph_product
+    #graph_product.expand(g_in)  # apply graph products if relevant
 
     expand_fqdn = False
     # TODO: make this set from config and also in the input file
@@ -105,6 +105,7 @@ def initialise(input_graph):
 
     g_graphics = anm.add_overlay("graphics")  # plotting data
     g_graphics.add_nodes_from(g_in, retain=['x', 'y', 'device_type',
+        'label', 'device_subtype', 'asn'])
 
     if g_in.data.Creator == "Maestro":
         #TODO: move this to other module
@@ -194,9 +195,7 @@ def apply_design_rules(anm):
         anm.add_overlay("ipv6") # placeholder for compiler logic
 
     default_igp = g_in.data.igp or "ospf"
-    non_igp_nodes = [n for n in g_in if not n.igp]
-#TODO: should this be modifying g_in?
-    g_in.update(non_igp_nodes, igp=default_igp) # store igp onto each node
+    ank_utils.set_node_default(g_in,  igp=default_igp)
 
     ank_utils.copy_attr_from(g_in, g_phy, "include_csr")
 
