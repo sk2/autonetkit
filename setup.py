@@ -4,11 +4,7 @@ import sys
 
 setup (
      name = "autonetkit",
-<<<<<<< HEAD
      version = "0.8.8",
-=======
-     version = "0.8.7",
->>>>>>> e6074eed5c8db6478e8fe4dfa5e8c69d406592b1
      description = 'Automatic configuration generation for emulated networks',
      long_description = 'Automatic configuration generation for emulated networks',
 
