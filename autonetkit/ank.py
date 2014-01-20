@@ -297,6 +297,7 @@ def neigh_most_frequent(OverlayGraph, node, attribute, attribute_graph = None):
         attribute_graph = graph # use input graph
     node = unwrap_nodes(node)
     values = [attribute_graph.node[n].get(attribute) for n in graph.neighbors(node)]
+    values = sorted(values)
     return most_frequent(values)
 
 
