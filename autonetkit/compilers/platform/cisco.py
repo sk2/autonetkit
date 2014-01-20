@@ -345,47 +345,9 @@ class CiscoCompiler(PlatformCompiler):
         lab_topology = self.nidb.topology[self.host]
         oob_management_ips = {}
 
-        #TODO: remove this code now allocated externally
-
-        #TODO: make this seperate function
-        from netaddr import IPNetwork, IPRange
-
-        mgmt_address_start = g_phy.data.mgmt_address_start
-        mgmt_address_end = g_phy.data.mgmt_address_end
-        mgmt_prefixlen = int(g_phy.data.mgmt_prefixlen)
-
-        #TODO: need to check if range is insufficient
-        mgmt_ips = (IPRange(mgmt_address_start, mgmt_address_end))
-        mgmt_ips_iter = iter(mgmt_ips) # to iterate over
-
-        mgmt_address_start_network = IPNetwork(mgmt_address_start) # as /32 for supernet
-        mgmt_address_end_network = IPNetwork(mgmt_address_end) # as /32 for supernet
-        # retrieve the first supernet, as this is the range requested. subsequent are the subnets
-        start_subnet = mgmt_address_start_network.supernet(mgmt_prefixlen)[0] # retrieve first
-        end_subnet = mgmt_address_end_network.supernet(mgmt_prefixlen)[0] # retrieve first
-
-        try: # validation
-            assert(start_subnet == end_subnet)
-            log.debug("Verified: Cisco management subnets match")
-        except AssertionError:
-            log.warning("Error: Cisco management subnets do not match: %s and %s, using start subnet"
-                    % (start_subnet, end_subnet))
-
-        mgmt_subnet = start_subnet
         hosts_to_allocate = sorted(self.nidb.nodes('is_l3device', host=self.host))
         dhcp_subtypes = {"vios"}
         dhcp_hosts = [h for h in hosts_to_allocate if h.device_subtype in dhcp_subtypes]
-        non_dhcp_hosts = [h for h in hosts_to_allocate if h.device_subtype not in dhcp_subtypes]
-
-        try: # validation
-            assert(len(mgmt_ips) >= len(non_dhcp_hosts))
-            log.debug("Verified: Cisco management IP range is sufficient size %s for %s hosts"
-                    % (len(mgmt_ips), len(non_dhcp_hosts)))
-        except AssertionError:
-            log.warning("Error: Cisco management IP range is insufficient size %s for %s hosts"
-                    % (len(mgmt_ips), len(non_dhcp_hosts)))
-            # TODO: need to use default range
-            return
 
         for nidb_node in hosts_to_allocate:
             for interface in nidb_node.physical_interfaces:
@@ -395,18 +357,8 @@ class CiscoCompiler(PlatformCompiler):
                     interface.mgmt = True
                     interface.comment = "Configured on launch"
                     if nidb_node.ip.use_ipv4:
-                        interface.use_ipv4 = False
+                        interface.use_ipv4 = False # want a "no ip address" stanza
                     if nidb_node.use_cdp:
                         interface.use_cdp = True # ensure CDP activated
                     if nidb_node in dhcp_hosts:
                         interface.use_dhcp = True
-                        oob_management_ips[str(nidb_node)] = "dhcp"
-                    else:
-                        ipv4_address = mgmt_ips_iter.next()
-                        interface.ipv4_address = ipv4_address
-                        interface.ipv4_subnet = mgmt_subnet
-                        interface.ipv4_cidr = sn_preflen_to_network(ipv4_address, mgmt_prefixlen)
-                        oob_management_ips[str(nidb_node)] = ipv4_address
-
-        lab_topology.oob_management_ips = oob_management_ips
-
