@@ -940,6 +940,7 @@ class OverlayBase(object):
 
         if overlay_id not in anm.overlay_nx_graphs:
             raise OverlayNotFound(overlay_id)
+            #TODO: return False instead?
         self._anm = anm
         self._overlay_id = overlay_id
         logger = logging.getLogger("ANK")
