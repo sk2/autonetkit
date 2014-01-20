@@ -102,3 +102,5 @@ pycallgraph2.png
 pycallgraph.png
 
 *.conf
+
+example.json
