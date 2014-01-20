@@ -107,7 +107,7 @@ def initialise(input_graph):
     g_graphics.add_nodes_from(g_in, retain=['x', 'y', 'device_type',
         'label', 'device_subtype', 'asn'])
 
-    if g_in.data.Creator == "Maestro":
+    if g_in.data.Creator == "VIRL":
         #TODO: move this to other module
         # Multiple ASNs set, use label format device.asn
         anm.set_node_label(".", ['label_full'])
@@ -277,7 +277,7 @@ def build_phy(anm):
     g_phy.add_edges_from(g_in.edges(type="physical"))
     # TODO: make this automatic if adding to the physical graph?
 
-    if g_in.data.Creator == "Maestro":
+    if g_in.data.Creator == "VIRL":
         g_phy.data.mgmt_interfaces_enabled = g_in.data.mgmt_interfaces_enabled
         #TODO: remove this code now allocated externally
         g_phy.data.mgmt_address_start = g_in.data.mgmt_address_start
