@@ -307,8 +307,9 @@ def most_frequent(iterable):
         log.warning("Unable to calculate most_frequent, %s" % e)
         return None
 
-def neigh_most_frequent(OverlayGraph, node, attribute, attribute_graph = None):
+def neigh_most_frequent(OverlayGraph, node, attribute, attribute_graph = None, allow_none = False):
     """Used to explicitly force most frequent - useful if integers such as ASN which would otherwise return mean"""
+    #TODO: rename to median?
     graph = unwrap_graph(OverlayGraph)
     if attribute_graph:
         attribute_graph = unwrap_graph(attribute_graph)
@@ -317,6 +318,8 @@ def neigh_most_frequent(OverlayGraph, node, attribute, attribute_graph = None):
     node = unwrap_nodes(node)
     values = [attribute_graph.node[n].get(attribute) for n in graph.neighbors(node)]
     values = sorted(values)
+    if not allow_none:
+        values = [v for v in values if v is not None]
     return most_frequent(values)
 
 
