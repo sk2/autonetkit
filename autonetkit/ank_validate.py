@@ -10,12 +10,18 @@ def validate(anm):
     tests_passed = validate_ipv4(anm) and tests_passed
 
     validate_ibgp(anm)
+    all_nodes_have_asn(anm)
 
     if tests_passed:
         log.info("All validation tests passed.")
     else:
         log.warning("Some validation tests failed.")
 
+def all_nodes_have_asn(anm):
+    g_phy = anm['phy']
+    for node in g_phy:
+        if node.asn is None:
+            log.warning("No ASN set for physical device %s" % node)
 
 def validate_ibgp(anm):
     import networkx as nx
