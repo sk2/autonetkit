@@ -49,8 +49,6 @@ def build_ipv6(anm):
             if not interface.is_loopback_zero:
                 interface.ip_address = interface.loopback #TODO: fix this inconsistency elsewhere
 
-
-
 @call_log
 def manual_ipv4_infrastructure_allocation(anm):
     """Applies manual IPv4 allocation"""
@@ -142,13 +140,15 @@ def manual_ipv4_loopback_allocation(anm):
 
 @call_log
 def build_ip(anm):
+    #TODO: use the l3_conn graph
     g_ip = anm.add_overlay('ip')
     g_in = anm['input']
     g_graphics = anm['graphics']
     g_phy = anm['phy']
 
-    g_ip.add_nodes_from(g_in)
-    g_ip.add_edges_from(g_in.edges(type='physical'))
+    #TODO: add these from layer2 graph - and scrap g_ip: clone g_layer2 to g_ipv4 and g_ipv6
+    g_ip.add_nodes_from(g_phy)
+    g_ip.add_edges_from(g_phy.edges())
 
     ank_utils.aggregate_nodes(g_ip, g_ip.nodes('is_switch'))
 
@@ -195,11 +195,12 @@ def build_ip(anm):
 
     for node in g_ip.nodes('collision_domain'):
         graphics_node = g_graphics.node(node)
-        graphics_node.device_type = 'collision_domain'
+        #graphics_node.device_type = 'collision_domain'
+        if node.is_switch:
+            node['phy'].collision_domain = True
         if not node.is_switch:
-
             # use node sorting, as accomodates for numeric/string names
-
+            graphics_node.device_type = 'collision_domain'
             neighbors = sorted(neigh for neigh in node.neighbors())
             label = '_'.join(neigh.label for neigh in neighbors)
             cd_label = 'cd_%s' % label  # switches keep their names
