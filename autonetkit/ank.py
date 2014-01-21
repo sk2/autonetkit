@@ -213,6 +213,25 @@ def explode_nodes(OverlayGraph, nodes, retain = []):
 def label(OverlayGraph, nodes):
     return list(OverlayGraph._anm.node_label(node) for node in nodes)
 
+def connected_subgraphs(OverlayGraph, nodes):
+    nodes = list(unwrap_nodes(nodes))
+    graph = unwrap_graph(OverlayGraph)
+    subgraph = graph.subgraph(nodes)
+    if not len(subgraph.edges()):
+        #print "Nothing to aggregate for %s: no edges in subgraph"
+        pass
+    total_added_edges = []
+    if graph.is_directed():
+        component_nodes_list = nx.strongly_connected_components(subgraph)
+    else:
+        component_nodes_list = nx.connected_components(subgraph)
+
+    wrapped = []
+    for component in component_nodes_list:
+        wrapped.append(list(wrap_nodes(OverlayGraph, component)))
+
+    return wrapped
+
 def aggregate_nodes(OverlayGraph, nodes, retain = []):
     """Combines connected into a single node"""
     try:
