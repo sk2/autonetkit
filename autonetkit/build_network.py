@@ -263,7 +263,7 @@ def remove_parallel_switch_links(anm):
     g_phy = anm['phy']
     subs = ank_utils.connected_subgraphs(g_phy, g_phy.nodes('is_switch'))
     for component in subs:
-        log.info("Checking for multiple links to switch cluster %s" % str(sorted(component)))
+        log.debug("Checking for multiple links to switch cluster %s" % str(sorted(component)))
 
         # Collect all links into this cluster
         external_edges = []
@@ -288,10 +288,6 @@ def remove_parallel_switch_links(anm):
                     str(sorted(component)), interfaces, interfaces_to_disconnect))
 
                 g_phy.remove_edges_from(edges_to_remove)
-
-                print dst
-                for interface in dst:
-                    print interface, interface.is_bound
 
 @call_log
 def build_phy(anm):
