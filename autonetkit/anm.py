@@ -302,11 +302,6 @@ class OverlayNode(object):
 
         return self.interfaces(type='physical')
 
-    def __getnewargs__(self):
-        """"""
-
-        return ()
-
     def __eq__(self, other):
         """"""
 
@@ -767,11 +762,6 @@ class OverlayEdge(object):
         """String of node"""
 
         return '%s: (%s, %s)' % (self.overlay_id, self.src, self.dst)
-
-    def __getnewargs__(self):
-        """"""
-
-        return ()
 
     def __getitem__(self, key):
         """"""
@@ -1641,12 +1631,6 @@ class AbstractNetworkModel(object):
         """"""
 
         return 'ANM %s' % self.timestamp
-
-    @staticmethod
-    def __getnewargs__():
-        """"""
-
-        return ()
 
     @property
     def overlay_nx_graphs(self):
