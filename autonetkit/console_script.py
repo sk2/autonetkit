@@ -176,7 +176,6 @@ def main(options):
     if options.target == "cisco":
         # output target is Cisco
         log.info("Setting output target as Cisco")
-        settings['Graphml']['Node Defaults']['platform'] = "cisco"
         settings['Graphml']['Node Defaults']['platform'] = "VIRL"
         settings['Graphml']['Node Defaults']['host'] = "internal"
         settings['Graphml']['Node Defaults']['syntax'] = "ios_xr"
