@@ -22,6 +22,7 @@ from autonetkit.ank_utils import call_log
 
 @call_log
 def load(input_graph_string):
+    #TODO: look at XML header for file type
     try:
         input_graph = graphml.load_graphml(input_graph_string)
     except autonetkit.exception.AnkIncorrectFileFormat:
@@ -111,7 +112,8 @@ def initialise(input_graph):
     if g_in.data.Creator == "VIRL":
         #TODO: move this to other module
         # Multiple ASNs set, use label format device.asn
-        anm.set_node_label(".", ['label_full'])
+        #anm.set_node_label(".", ['label_full'])
+        pass
 
     return anm
 
