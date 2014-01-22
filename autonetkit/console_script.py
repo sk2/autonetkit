@@ -177,11 +177,12 @@ def main(options):
         # output target is Cisco
         log.info("Setting output target as Cisco")
         settings['Graphml']['Node Defaults']['platform'] = "cisco"
+        settings['Graphml']['Node Defaults']['platform'] = "VIRL"
         settings['Graphml']['Node Defaults']['host'] = "internal"
         settings['Graphml']['Node Defaults']['syntax'] = "ios_xr"
         settings['Compiler']['Cisco']['to memory'] = 1
         settings['General']['deploy'] = 1
-        settings['Deploy Hosts']['internal'] = {'cisco':
+        settings['Deploy Hosts']['internal'] = {'VIRL':
                                                 {'deploy': 1}}
 
     if options.debug or settings['General']['debug']:
@@ -316,13 +317,13 @@ def compile_network(anm):
         if platform == "netkit":
             import autonetkit.compilers.platform.netkit as pl_netkit
             platform_compiler = pl_netkit.NetkitCompiler(nidb, anm, host)
-        elif platform == "cisco":
+        elif platform == "VIRL":
             try:
                 import autonetkit_cisco.compilers.platform.cisco as pl_cisco
                 platform_compiler = pl_cisco.CiscoCompiler(nidb, anm, host)
             except ImportError, e:
                 print e
-                log.warning("Unable to load Cisco platform compiler")
+                log.warning("Unable to load VIRL platform compiler")
         elif platform == "dynagen":
             import autonetkit.compilers.platform.dynagen as pl_dynagen
             platform_compiler = pl_dynagen.DynagenCompiler(nidb, anm, host)
@@ -363,7 +364,7 @@ def deploy_network(anm, nidb, input_graph_string=None):
                     from autonetkit_cisco import deploy as cisco_deploy
                 except ImportError:
                     pass  # development module, may not be available
-                if platform == "cisco":
+                if platform == "VIRL":
                     create_new_xml = False
                     if not input_graph_string:
                         create_new_xml = True  # no input, eg if came from grid
@@ -389,7 +390,7 @@ def deploy_network(anm, nidb, input_graph_string=None):
                 netkit_deploy.extract(host, username, tar_file,
                                       config_path, timeout=60, key_filename=key_file,
                                       parallel_count=10)
-                if platform == "cisco":
+                if platform == "VIRL":
                     # TODO: check why using nklab here
                     cisco_deploy.package(config_path, "nklab")
 

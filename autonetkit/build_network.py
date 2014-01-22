@@ -31,14 +31,15 @@ def load(input_graph_string):
         except ImportError, e:
             log.debug("Unable to load autonetkit_cisco %s" % e)
             return  # module not present (development module)
-        input_graph = cisco_load.load(input_graph_string)
-# add local deployment host
-        SETTINGS['General']['deploy'] = True
-        SETTINGS['Deploy Hosts']['internal'] = {
-            'cisco': {
-            'deploy': True,
-            },
-        }
+        else:
+            input_graph = cisco_load.load(input_graph_string)
+            # add local deployment host
+            SETTINGS['General']['deploy'] = True
+            SETTINGS['Deploy Hosts']['internal'] = {
+                        'VIRL': {
+                        'deploy': True,
+                        },
+                        }
 
     return input_graph
 
