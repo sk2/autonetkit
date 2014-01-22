@@ -295,6 +295,8 @@ class CiscoCompiler(PlatformCompiler):
                 if not interface.id:
                     interface.id = self.numeric_to_interface_label_nxos(interface.numeric_id)
 
+            nidb_node.supported_features = config_stanza(mpls_te = False, mpls_oam = False, vrf = False)
+
             nxos_compiler.compile(nidb_node)
             #TODO: make this work other way around
 

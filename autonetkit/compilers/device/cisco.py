@@ -644,6 +644,34 @@ class IosXrCompiler(IosBaseCompiler):
 
 class NxOsCompiler(IosBaseCompiler):
 
+    def compile(self, node):
+        super(NxOsCompiler, self).compile(node)
+        self.mpls_te(node)
+        self.mpls_oam(node)
+
+    def mpls_te(self, node):
+        g_mpls_te = self.anm['mpls_te']
+        if node not in g_mpls_te:
+            return   # no mpls te configured
+
+        if node.supported_features.mpls_te is False:
+            node.log.warning("Feature MPLS TE is not supported for %s on the %s platform" % (node.device_subtype, node.platform))
+
+    def mpls_oam(self, node):
+        g_mpls_oam = self.anm['mpls_oam']
+        if node not in g_mpls_oam:
+            return   # no mpls oam configured
+
+        if node.supported_features.mpls_oam is False:
+            node.log.warning("Feature MPLS OAM is not supported for %s the on %s platform" % (node.device_subtype, node.platform))
+
+    def vrf(self, node):
+        g_vrf = self.anm['vrf']
+        if node not in g_vrf:
+            return   # no mpls oam configured
+        if node.supported_features.vrf is False:
+            node.log.warning("Feature VRF is not supported for %s on the %s platform" % (node.device_subtype, node.platform))
+
     def interfaces(self, node):
 
 # need to aggregate areas
