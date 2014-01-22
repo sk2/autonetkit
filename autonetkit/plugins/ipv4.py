@@ -61,8 +61,8 @@ class TreeNode(object):
             return '%s' % self.subnet
         return 'TreeNode: %s' % self.node
 
-    def is_collision_domain(self):
-        return self.host and self.host.collision_domain
+    def is_broadcast_domain(self):
+        return self.host and self.host.broadcast_domain
 
     def is_loopback_group(self):
         return self.loopback_group
@@ -253,7 +253,7 @@ class IpTree(object):
                 continue  # finished for loopbacks, continue only for collision domains
 
             for item in items:
-                if item.collision_domain:
+                if item.broadcast_domain:
                     subgraph.add_node(self.next_node_id, prefixlen=32
                             - subnet_size(item.degree()), host=item)
                 if item.is_l3device:
@@ -372,7 +372,7 @@ class IpTree(object):
 
 # add children of collision domains
 
-        cd_nodes = [n for n in self if n.is_collision_domain()]
+        cd_nodes = [n for n in self if n.is_broadcast_domain()]
         for cd in cd_nodes:
             for edge in sorted(cd.host.edges()):
 
@@ -399,7 +399,7 @@ class IpTree(object):
 
 # handle case where children subnet
 
-            if node.is_loopback_group() or node.is_collision_domain():  # special case of single AS -> root is loopback_group
+            if node.is_loopback_group() or node.is_broadcast_domain():  # special case of single AS -> root is loopback_group
 
                 # TODO: generalise this rather than repeated code with below
                 # node.subnet = subnet.next() # Note: don't break into smaller subnets if single-AS
@@ -439,7 +439,7 @@ class IpTree(object):
 
                 # traverse the tree
 
-                if child.is_collision_domain():
+                if child.is_broadcast_domain():
                     subnet = subnet.next()
                     child.subnet = subnet
                     iterhosts = child.subnet.iter_hosts()  # ensures start at .1 rather than .0
@@ -553,7 +553,7 @@ class IpTree(object):
         for host_tree_node in host_tree_nodes:
             host_tree_node.host.loopback = host_tree_node.subnet
 
-        cds = [n for n in self if n.is_collision_domain()]
+        cds = [n for n in self if n.is_broadcast_domain()]
         for cd in cds:
             cd.host.subnet = cd.subnet
 
@@ -579,14 +579,14 @@ class IpTree(object):
 
 def assign_asn_to_interasn_cds(g_ip, address_block=None):
     G_phy = g_ip.overlay('phy')
-    for collision_domain in g_ip.nodes('collision_domain'):
-        neigh_asn = list(ank_utils.neigh_attr(g_ip, collision_domain,
+    for broadcast_domain in g_ip.nodes('broadcast_domain'):
+        neigh_asn = list(ank_utils.neigh_attr(g_ip, broadcast_domain,
                          'asn', G_phy))  # asn of neighbors
         if len(set(neigh_asn)) == 1:
             asn = set(neigh_asn).pop()  # asn of any neigh, as all same
         else:
             asn = ank_utils.most_frequent(neigh_asn)  # allocate cd to asn with most neighbors in it
-        collision_domain.asn = asn
+        broadcast_domain.asn = asn
 
     return
 
@@ -597,7 +597,7 @@ def allocate_infra(g_ip, address_block=None):
     log.info('Allocating v4 Infrastructure IPs')
     ip_tree = IpTree(address_block)
     assign_asn_to_interasn_cds(g_ip)
-    ip_tree.add_nodes(g_ip.nodes('collision_domain'))
+    ip_tree.add_nodes(g_ip.nodes('broadcast_domain'))
     ip_tree.build()
 
     # cd_tree = ip_tree.json()

@@ -9,7 +9,7 @@ def build_reverse_mappings_from_nidb(nidb):
     }
 
     for node in nidb:
-        if node.collision_domain:
+        if node.broadcast_domain:
             rev_map["subnets"][str(node.ipv4_subnet)] = node
         else:
             rev_map["loopbacks"][str(node.loopback)] = node

@@ -15,7 +15,7 @@ def build_ipv6(anm):
 
     g_ipv6 = anm.add_overlay('ipv6')
     g_ip = anm['ip']
-    g_ipv6.add_nodes_from(g_ip, retain=['label', 'collision_domain'])  # retain if collision domain or not
+    g_ipv6.add_nodes_from(g_ip, retain=['label', 'broadcast_domain'])  # retain if collision domain or not
     g_ipv6.add_edges_from(g_ip.edges())
 
     global_pool = netaddr.IPNetwork('2001:db8::/32').subnet(48)
@@ -69,12 +69,12 @@ def manual_ipv4_infrastructure_allocation(anm):
             cidr_string = '%s/%s' % (ip_address, prefixlen)
             interface.subnet = netaddr.IPNetwork(cidr_string)
 
-    collision_domains = [d for d in g_ipv4 if d.collision_domain]
+    broadcast_domains = [d for d in g_ipv4 if d.broadcast_domain]
 
     # TODO: allow this to work with specified ip_address/subnet as well as ip_address/prefixlen
 
     from netaddr import IPNetwork
-    for coll_dom in collision_domains:
+    for coll_dom in broadcast_domains:
         connected_interfaces = [edge.dst_int for edge in
                                 coll_dom.edges()]
         cd_subnets = [IPNetwork('%s/%s' % (i.subnet.network,
@@ -108,8 +108,8 @@ def manual_ipv4_infrastructure_allocation(anm):
 
     infra_blocks = {}
     for (asn, devices) in g_ipv4.groupby('asn').items():
-        collision_domains = [d for d in devices if d.collision_domain]
-        subnets = [cd.subnet for cd in collision_domains
+        broadcast_domains = [d for d in devices if d.broadcast_domain]
+        subnets = [cd.subnet for cd in broadcast_domains
         if cd.subnet is not None] # only if subnet is set
         infra_blocks[asn] = netaddr.cidr_merge(subnets)
 
@@ -176,11 +176,11 @@ def build_ip(anm):
         node.asn = asn  # need to use asn in IP overlay for aggregating subnets
 
     switch_nodes = g_ip.nodes('is_switch')  # regenerate due to aggregated
-    g_ip.update(switch_nodes, collision_domain=True)
+    g_ip.update(switch_nodes, broadcast_domain=True)
 
                  # switches are part of collision domain
 
-    g_ip.update(split_created_nodes, collision_domain=True)
+    g_ip.update(split_created_nodes, broadcast_domain=True)
 
 # Assign collision domain to a host if all neighbours from same host
 
@@ -191,23 +191,23 @@ def build_ip(anm):
 
     # set collision domain IPs
     #TODO; work out why this throws a json exception
-    #autonetkit.ank.set_node_default(g_ip,  collision_domain=False)
+    #autonetkit.ank.set_node_default(g_ip,  broadcast_domain=False)
 
-    for node in g_ip.nodes('collision_domain'):
+    for node in g_ip.nodes('broadcast_domain'):
         graphics_node = g_graphics.node(node)
-        #graphics_node.device_type = 'collision_domain'
+        #graphics_node.device_type = 'broadcast_domain'
         if node.is_switch:
-            node['phy'].collision_domain = True
+            node['phy'].broadcast_domain = True
         if not node.is_switch:
             # use node sorting, as accomodates for numeric/string names
-            graphics_node.device_type = 'collision_domain'
+            graphics_node.device_type = 'broadcast_domain'
             neighbors = sorted(neigh for neigh in node.neighbors())
             label = '_'.join(neigh.label for neigh in neighbors)
             cd_label = 'cd_%s' % label  # switches keep their names
             node.label = cd_label
             node.cd_id = cd_label
             graphics_node.label = cd_label
-            node.device_type = "collision_domain"
+            node.device_type = "broadcast_domain"
 
 @call_log
 def extract_ipv4_blocks(anm):
@@ -259,12 +259,12 @@ def build_ipv4(anm, infrastructure=True):
     g_ipv4 = anm.add_overlay('ipv4')
     g_ip = anm['ip']
     g_in = anm['input']
-    g_ipv4.add_nodes_from(g_ip, retain=['label', 'collision_domain'])  # retain if collision domain or not
+    g_ipv4.add_nodes_from(g_ip, retain=['label', 'broadcast_domain'])  # retain if collision domain or not
 
     # Copy ASN attribute chosen for collision domains (used in alloc algorithm)
 
     ank_utils.copy_attr_from(g_ip, g_ipv4, 'asn',
-                             nbunch=g_ipv4.nodes('collision_domain'))
+                             nbunch=g_ipv4.nodes('broadcast_domain'))
     g_ipv4.add_edges_from(g_ip.edges())
 
     # check if ip ranges have been specified on g_in

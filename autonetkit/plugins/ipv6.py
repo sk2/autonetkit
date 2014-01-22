@@ -22,14 +22,14 @@ def assign_asn_to_interasn_cds(G_ip):
     # TODO: make this a common function to ip4 and ip6
 
     G_phy = G_ip.overlay('phy')
-    for collision_domain in G_ip.nodes('collision_domain'):
-        neigh_asn = list(ank_utils.neigh_attr(G_ip, collision_domain,
+    for broadcast_domain in G_ip.nodes('broadcast_domain'):
+        neigh_asn = list(ank_utils.neigh_attr(G_ip, broadcast_domain,
                          'asn', G_phy))  # asn of neighbors
         if len(set(neigh_asn)) == 1:
             asn = set(neigh_asn).pop()  # asn of any neigh, as all same
         else:
             asn = ank_utils.most_frequent(neigh_asn)  # allocate cd to asn with most neighbors in it
-        collision_domain.asn = asn
+        broadcast_domain.asn = asn
 
     return
 
@@ -69,7 +69,7 @@ def allocate_ips(G_ip, infra_block = None, loopback_block = None, secondary_loop
         subnets.next()  # network address
         ptp_subnet = subnets.next().subnet(126)
         ptp_subnet.next()  # network address
-        all_cds = set(d for d in devices if d.collision_domain)
+        all_cds = set(d for d in devices if d.broadcast_domain)
         ptp_cds = [cd for cd in all_cds if cd.degree() == 2]
 
         for cd in sorted(ptp_cds):
@@ -126,7 +126,7 @@ def allocate_ips(G_ip, infra_block = None, loopback_block = None, secondary_loop
 
     for asn in unique_asns:
         children = []
-        for cd in G_ip.nodes('collision_domain', asn=asn):
+        for cd in G_ip.nodes('broadcast_domain', asn=asn):
             cd_children = []
             for edge in cd.edges():
                 cd_children.append({'name': '%s %s' % (edge.ip,

@@ -283,11 +283,11 @@ def create_nidb(anm):
         g_phy, retain=['label', 'host', 'platform', 'Network', 'update', 'asn'])
 
     cd_nodes = [n for n in g_ip.nodes(
-        "collision_domain") if not n.is_switch]  # Only add created cds - otherwise overwrite host of switched
+        "broadcast_domain") if not n.is_switch]  # Only add created cds - otherwise overwrite host of switched
     nidb.add_nodes_from(
-        cd_nodes, retain=['label', 'host'], collision_domain=True)
+        cd_nodes, retain=['label', 'host'], broadcast_domain=True)
 
-    for node in nidb.nodes("collision_domain"):
+    for node in nidb.nodes("broadcast_domain"):
         ipv4_node = anm['ipv4'].node(node)
         if ipv4_node:
             node.ipv4_subnet = ipv4_node.subnet

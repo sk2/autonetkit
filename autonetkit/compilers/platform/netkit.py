@@ -97,7 +97,7 @@ class NetkitCompiler(PlatformCompiler):
         if not len(host_nodes):
             log.debug("No Netkit hosts for %s" % self.host)
 # also need collision domains for this host
-        cd_nodes = self.nidb.nodes("collision_domain", host=self.host)
+        cd_nodes = self.nidb.nodes("broadcast_domain", host=self.host)
         host_nodes += cd_nodes
         subgraph = self.nidb.subgraph(host_nodes, self.host)
 
@@ -107,13 +107,13 @@ class NetkitCompiler(PlatformCompiler):
         lab_topology.config_items = []
         for node in sorted(subgraph.nodes("is_l3device")):
             for interface in node.physical_interfaces:
-                collision_domain = str(interface.ipv4_subnet).replace("/", ".")
+                broadcast_domain = str(interface.ipv4_subnet).replace("/", ".")
                 #netkit lab.conf uses 1 instead of eth1
                 numeric_id = interface.numeric_id
                 lab_topology.config_items.append(
                     device=naming.network_hostname(node),
                     key=numeric_id,
-                    value=collision_domain,
+                    value=broadcast_domain,
                 )
 
         lab_topology.tap_ips = []

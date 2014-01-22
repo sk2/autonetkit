@@ -93,7 +93,7 @@ def validate_ipv4(anm):
             for i in duplicate_ints)
         g_ipv4.log.warning("Global duplicate IP addresses %s" % duplicates)
 
-    for cd in g_ipv4.nodes("collision_domain"):
+    for cd in g_ipv4.nodes("broadcast_domain"):
         cd.log.debug("Verifying subnet and interface IPs")
         neigh_ints = list(cd.neighbor_interfaces())
         neigh_int_subnets = [i.subnet for i in neigh_ints]
