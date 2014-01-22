@@ -710,8 +710,16 @@ class nidb_node(object):
 #TODO: make this work with ASN (which isn't always imported to NIDB)
         self_node_id = self.node_id
         other_node_id = other.node_id
-        self_node_string = [x for x in self.node_id if x not in string.digits]
-        other_node_string = [x for x in self.node_id if x not in string.digits]
+        try:
+            self_node_string = [x for x in self.node_id if x not in string.digits]
+        except TypeError:
+            self_node_string = self.node_id
+
+        try:
+            other_node_string = [x for x in other.node_id if x not in string.digits]
+        except TypeError:
+            other_node_string = other.node_id
+
         if self_node_string == other_node_string:
             self_node_id = "".join([x for x in self.node_id if x in string.digits])
             other_node_id = "".join([x for x in other.node_id if x in string.digits])
