@@ -38,6 +38,7 @@ def validate_ibgp(anm):
         # get subgraph
         if not nx.is_strongly_connected(graph):
             g_ibgp_v4.log.warning("iBGP v4 topology for ASN%s is disconnected" % asn)
+            #TODO: list connected components - but not the primary?
         else:
             g_ibgp_v4.log.debug("iBGP v4 topology for ASN%s is connected" % asn)
 
@@ -133,7 +134,7 @@ def validate_ipv4(anm):
             cd.log.warning("Duplicate IP addresses: %s" % duplicates)
 
     if tests_passed:
-        g_ipv4.log.info("All IP tests passed.")
+        g_ipv4.log.debug("All IP tests passed.")
     else:
         g_ipv4.log.warning("Some IP tests failed.")
 

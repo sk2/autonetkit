@@ -31,12 +31,10 @@ class PlatformCompiler(object):
                         continue
                     if interface.is_physical and not interface.is_bound:
                         continue
-                    log.info("%s %s" % (interface, interface.is_bound))
                     # interface is connected
                     interface.use_ipv4 = True
                     interface.ipv4_address = ipv4_int.ip_address
                     interface.ipv4_subnet = ipv4_int.subnet
-                    log.info("%s %s %s" % (interface, interface.is_bound, ipv4_int.dump()))
                     interface.ipv4_cidr = sn_preflen_to_network(interface.ipv4_address,
                             interface.ipv4_subnet.prefixlen)
                 if phy_node.use_ipv6:

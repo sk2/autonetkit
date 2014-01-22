@@ -89,12 +89,8 @@ class CiscoCompiler(PlatformCompiler):
         settings = autonetkit.config.settings
         to_memory = settings['Compiler']['Cisco']['to memory']
         use_mgmt_interfaces = g_phy.data.mgmt_interfaces_enabled
-        if use_mgmt_interfaces:
-            log.info("Allocating management interfaces for Cisco")
-        else:
-            log.info("Not allocating management interfaces for Cisco")
 
-        log.info("Compiling Cisco for %s" % self.host)
+
         now = datetime.now()
         if settings['Compiler']['Cisco']['timestamp']:
             timestamp = now.strftime("%Y%m%d_%H%M%S_%f")
@@ -110,6 +106,10 @@ class CiscoCompiler(PlatformCompiler):
         g_phy = self.anm['phy']
 
         to_memory, use_mgmt_interfaces, dst_folder = self._parameters()
+        if use_mgmt_interfaces:
+            log.info("Allocating VIRL management interfaces")
+        else:
+            log.info("Not allocating VIRL management interfaces")
 #TODO: need to copy across the interface name from edge to the interface
 
 # TODO: merge common router code, so end up with three loops: routers, ios

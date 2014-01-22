@@ -26,8 +26,9 @@ def mpls_te(anm):
     # build up edge list sequentially, to provide meaningful messages for multipoint links
 
     multipoint_edges = [e for e in g_l3_conn.edges() if e.multipoint]
-    log.info('Excluding multi-point edges from MPLS TE topology: %s'
-             % ', '.join(str(e) for e in multipoint_edges))
+    if len(multipoint_edges):
+        log.info('Excluding multi-point edges from MPLS TE topology: %s'
+           % ', '.join(str(e) for e in multipoint_edges))
 
     edges_to_add = set(g_l3_conn.edges()) - set(multipoint_edges)
     g_mpls_te.add_edges_from(edges_to_add)
