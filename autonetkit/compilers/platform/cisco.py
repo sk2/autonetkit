@@ -1,16 +1,20 @@
+import itertools
 import os
 from datetime import datetime
+
 import autonetkit
 import autonetkit.config
 import autonetkit.log as log
 import autonetkit.plugins.naming as naming
 from autonetkit.ank import sn_preflen_to_network
-from autonetkit.compilers.platform.platform_base import PlatformCompiler
-import itertools
 from autonetkit.ank_utils import call_log
+from autonetkit.compilers.device.cisco import (IosBaseCompiler,
+                                               IosClassicCompiler,
+                                               IosXrCompiler, NxOsCompiler,
+                                               StarOsCompiler)
+from autonetkit.compilers.platform.platform_base import PlatformCompiler
+from autonetkit.nidb import config_stanza
 
-
-from autonetkit.compilers.device.cisco import IosBaseCompiler, IosClassicCompiler, IosXrCompiler, NxOsCompiler, StarOsCompiler
 
 class CiscoCompiler(PlatformCompiler):
     """Platform compiler for Cisco"""
