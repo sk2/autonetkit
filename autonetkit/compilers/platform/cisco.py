@@ -124,6 +124,7 @@ class CiscoCompiler(PlatformCompiler):
     #TODO: look for unused code paths here - especially for interface allocation
 
         # store autonetkit_cisco version
+        log.info("Generating device configurations")
         from pkg_resources import get_distribution
         ank_cisco_version = get_distribution("autonetkit_cisco").version
 
