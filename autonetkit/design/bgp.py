@@ -14,7 +14,7 @@ def build_ibgp_v4(anm):
     g_ibgpv4 = anm.add_overlay("ibgp_v4", directed=True)
     ipv4_nodes = set(g_phy.nodes("is_router", "use_ipv4"))
     g_ibgpv4.add_nodes_from((n for n in g_bgp if n in ipv4_nodes),
-            retain = ["ibgp_level", "hrr_cluster", "rr_cluster"] )
+            retain = ["ibgp_level", "ibgp_role", "hrr_cluster", "rr_cluster"] )
     g_ibgpv4.add_edges_from(g_bgp.edges(type="ibgp"), retain="direction")
 
 @call_log
@@ -27,7 +27,7 @@ def build_ibgp_v6(anm):
     g_ibgpv6 = anm.add_overlay("ibgp_v6", directed=True)
     ipv6_nodes = set(g_phy.nodes("is_router", "use_ipv6"))
     g_ibgpv6.add_nodes_from((n for n in g_bgp if n in ipv6_nodes),
-            retain = ["ibgp_level", "hrr_cluster", "rr_cluster"] )
+            retain = ["ibgp_level", "ibgp_role", "hrr_cluster", "rr_cluster"] )
     g_ibgpv6.add_edges_from(g_bgp.edges(type="ibgp"), retain="direction")
 
 @call_log
@@ -129,9 +129,17 @@ def build_ibgp(anm):
         elif n.ibgp_level == 3:
             n.is_rr = True
 
-    bgp_nodes = [n for n in g_bgp if not n.ibgp_level == 0]
+    ibgp_nodes = [n for n in g_bgp if not n.ibgp_level == 0]
 
-    for asn, asn_devices in ank_utils.groupby("asn", bgp_nodes):
+
+    # Notify user of non-ibgp nodes
+    non_ibgp_nodes = [n for n in g_bgp if n.ibgp_level == 0]
+    if len(non_ibgp_nodes) < 10:
+        log.info("Skipping iBGP for iBGP disabled nodes: %s" % non_ibgp_nodes)
+    elif len(non_ibgp_nodes) >= 10:
+        log.info("Skipping iBGP for iBGP disabled nodes: refer to visualization for resulting topology.")
+
+    for asn, asn_devices in ank_utils.groupby("asn", ibgp_nodes):
         asn_devices = list(asn_devices)
 
         asn_rrs = [n for n in asn_devices if n.is_rr]
@@ -169,7 +177,6 @@ def build_ibgp(anm):
             down_links = [(t, s) for (s, t) in up_links]
             g_bgp.add_edges_from(down_links, type='ibgp', direction='over')
 
-
             for hrr_cluster, hrr_cluster_rtrs in ank_utils.groupby("hrr_cluster", rr_cluster_rtrs):
                 hrr_cluster_rtrs = list(hrr_cluster_rtrs)
 
@@ -203,6 +210,44 @@ def build_ibgp(anm):
                         g_bgp.add_edges_from(down_links, type='ibgp', direction='down')
 
                     #TODO: Special case: if no hrr or rr cluster set, then connect to global RRs
+
+        #TODO: add consistency check to ensure is_hrr etc matches
+    """Levels:
+    0: no BGP
+    1: RRC
+    2: HRR
+    3: RR
+    """
+    levels_to_roles = {
+    0: "Disabled",
+    1: "RR Client",
+    2: "Hierarchical RR",
+    3: "Route Reflector",
+    }
+
+    expected_level_values = {
+    0: (True, None, None, None),
+    1: (None, True, None, None),
+    2: (None, None, True, None),
+    3: (None, None, None, True),
+    }
+
+    for node in g_bgp:
+        #TODO: move this to the validate stage
+        values = (node.is_no_ibgp, node.is_rrc, node.is_hrr, node.is_rr)
+        if values.count(True) != 1:
+            log.warning("Inconsistency in iBGP attributes")
+        else:
+            if values != expected_level_values[node.ibgp_level]:
+                log.warning("Inconsistency in iBGP attributes")
+
+
+    for node in g_bgp:
+        if node.top_level_peers:
+            node.ibgp_role = "Top-level Peer"
+        else:
+            node.ibgp_role = levels_to_roles[node.ibgp_level]
+
 
 @call_log
 def build_bgp(anm):
