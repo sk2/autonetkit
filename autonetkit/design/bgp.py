@@ -234,6 +234,8 @@ def build_ibgp(anm):
 
     for node in g_bgp:
         #TODO: move this to the validate stage
+        if node.top_level_peer:
+            continue # don't check the roles
         values = (node.is_no_ibgp, node.is_rrc, node.is_hrr, node.is_rr)
         if values.count(True) != 1:
             log.warning("Inconsistency in iBGP attributes")
@@ -243,7 +245,7 @@ def build_ibgp(anm):
 
 
     for node in g_bgp:
-        if node.top_level_peers:
+        if node.top_level_peer:
             node.ibgp_role = "Top-level Peer"
         else:
             node.ibgp_role = levels_to_roles[node.ibgp_level]
