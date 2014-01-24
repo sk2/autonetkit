@@ -332,7 +332,7 @@ def compile_network(anm):
                 nidb, anm, host)
 
         if any(g_phy.nodes(host=host, platform=platform)):
-            log.info("Compile for %s on %s" % (platform, host))
+            log.info("Compiling configurations for %s on %s" % (platform, host))
             platform_compiler.compile()  # only compile if hosts set
         else:
             log.debug("No devices set for %s on %s" % (platform, host))
