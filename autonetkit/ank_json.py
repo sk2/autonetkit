@@ -266,11 +266,19 @@ def jsonify_anm_with_graphics(anm, nidb = None):
 
         border_offset = 20 # so don't plot right at edge
         for n in OverlayGraph:
+            #TODO: do this once per node, rather than each time
             OverlayGraph.node[n]['x'] += - x_min + border_offset
             OverlayGraph.node[n]['y'] += - y_min + border_offset
+            #TODO: make scale to graph size: if size is <100 dont apply
+            #OverlayGraph.node[n]['x'] = round(OverlayGraph.node[n]['x']/25) * 25
+            #OverlayGraph.node[n]['y'] = round(OverlayGraph.node[n]['y']/25) * 25
+
+            # and round to the nearest grid size
+            # for now round to nearest 10
 
         anm_json[overlay_id] = ank_json_dumps(OverlayGraph)
         test_anm_data[overlay_id] = OverlayGraph
+
 
     if nidb:
         test_anm_data['nidb'] = prepare_nidb(nidb)
