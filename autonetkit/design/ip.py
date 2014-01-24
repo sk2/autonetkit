@@ -15,6 +15,7 @@ def build_ipv6(anm):
 
     g_ipv6 = anm.add_overlay('ipv6')
     g_ip = anm['ip']
+    g_in = anm['input']
     g_ipv6.add_nodes_from(g_ip, retain=['label', 'broadcast_domain'])  # retain if collision domain or not
     g_ipv6.add_edges_from(g_ip.edges())
 
@@ -32,6 +33,17 @@ def build_ipv6(anm):
     ipv6.allocate_ips(g_ipv6, infra_block, loopback_block, secondary_loopback_block)
 
     # TODO: replace this with direct allocation to interfaces in ip alloc plugin
+    allocated = sorted([n for n in g_ip if n['input'].loopback_v6])
+    if len(allocated):
+        log.warning("Using automatic IPv6 loopback allocation. IPv6 loopback addresses specified on nodes %s will be ignored." % allocated)
+
+    allocated = []
+    l3_devices = [d for d in g_in if d.device_type in ('router', 'server')]
+    for node in l3_devices:
+        allocated += sorted([i for i in node.physical_interfaces if i.is_bound and i.ipv6_address])
+    #TODO: what if IP is set but not a prefix?
+    if len(allocated):
+        log.warning("Using automatic IPv6 interface allocation. IPv6 interface addresses specified on interfaces %s will be ignored." % allocated)
 
     for node in g_ipv6.nodes('is_l3device'):
         for interface in node:
@@ -281,12 +293,13 @@ def build_ipv4(anm, infrastructure=True):
 
     # See if IP addresses specified on each interface
 
-    l3_devices = [d for d in g_in if d.device_type in ('router',
-                  'server')]
+    # do we need this still? in ANM?
+    l3_devices = [d for d in g_in if d.device_type in ('router', 'server')]
 
     manual_alloc_devices = set()
     for device in l3_devices:
         physical_interfaces = list(device.physical_interfaces)
+        allocated = list(interface.ipv4_address for interface in physical_interfaces if interface.is_bound)
         if all(interface.ipv4_address for interface in
                physical_interfaces if interface.is_bound):
             manual_alloc_devices.add(device)  # add as a manual allocated device
@@ -295,6 +308,17 @@ def build_ipv4(anm, infrastructure=True):
         manual_alloc_ipv4_infrastructure = True
     else:
         manual_alloc_ipv4_infrastructure = False
+        # warn if any set
+        allocated = []
+        unallocated = []
+        for node in l3_devices:
+            allocated += sorted([i for i in node.physical_interfaces if i.is_bound and i.ipv4_address])
+            unallocated += sorted([i for i in node.physical_interfaces if i.is_bound and not i.ipv4_address])
+
+        #TODO: what if IP is set but not a prefix?
+        if len(allocated):
+            #TODO: if set is > 50% of nodes then list those that are NOT set
+            log.warning("Using automatic IPv4 interface allocation. IPv4 interface addresses specified on interfaces %s will be ignored." % allocated)
 
     # TODO: need to set allocate_ipv4 by default in the readers
 
@@ -306,6 +330,12 @@ def build_ipv4(anm, infrastructure=True):
     if g_in.data.alloc_ipv4_loopbacks is False:
         manual_ipv4_loopback_allocation(anm)
     else:
+        # Check if some nodes are allocated
+        allocated = sorted([n for n in g_ip if n['input'].loopback_v4])
+        unallocated = sorted([n for n in g_ip if not n['input'].loopback_v4])
+        if len(allocated):
+            log.warning("Using automatic IPv4 loopback allocation. IPv4 loopback addresses specified on nodes %s will be ignored." % allocated)
+            #TODO: if set is > 50% of nodes then list those that are NOT set
         ipv4.allocate_loopbacks(g_ipv4, loopback_block)
 
     # TODO: need to also support secondary_loopbacks for IPv6
