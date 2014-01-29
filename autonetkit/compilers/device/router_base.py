@@ -179,9 +179,12 @@ class RouterCompiler(DeviceCompiler):
 # TODO: for consistency, make ipv6_cidr
 
                     interface.ipv6_subnet = ipv6_int.subnet
-                    interface.ipv6_address = \
+                    try:
+                        interface.ipv6_address = \
                         sn_preflen_to_network(ipv6_int.ip_address,
                             interface.ipv6_subnet.prefixlen)
+                    except AttributeError:
+                        log.warning("Unable to format interface ")
 
         for interface in node.loopback_interfaces:
 

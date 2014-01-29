@@ -44,7 +44,11 @@ class PlatformCompiler(object):
                     if interface.is_physical and not interface.is_bound:
                         continue
                     interface.use_ipv6 = True
-                    interface.ipv6_subnet = ipv6_int.subnet
-                    interface.ipv6_address = sn_preflen_to_network(ipv6_int.ip_address,
-                        interface.ipv6_subnet.prefixlen)
+                    try:
+                        #TODO: copy ip address as well
+                        interface.ipv6_subnet = ipv6_int.subnet
+                        interface.ipv6_address = sn_preflen_to_network(ipv6_int.ip_address,
+                            interface.ipv6_subnet.prefixlen)
+                    except AttributeError:
+                        log.warning("Unable to copy IPv6 subnet for %s" % interface)
 

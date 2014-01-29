@@ -5,9 +5,97 @@ import autonetkit.ank as ank_utils
 
 from autonetkit.ank_utils import call_log
 
+
+@call_log
+def manual_ipv6_loopback_allocation(anm):
+    """Applies manual IPv6 allocation"""
+
+    import netaddr
+    g_ipv6 = anm['ipv6']
+
+    for l3_device in g_ipv6.nodes('is_l3device'):
+        l3_device.loopback = l3_device['input'].loopback_v6
+
+    # also need to form aggregated IP blocks (used for e.g. routing prefix
+    # advertisement)
+
+    loopback_blocks = {}
+    for (asn, devices) in g_ipv6.groupby('asn').items():
+        routers = [d for d in devices if d.is_router]
+        loopbacks = [r.loopback for r in routers]
+        loopback_blocks[asn] = netaddr.cidr_merge(loopbacks)
+
+    g_ipv6.data.loopback_blocks = loopback_blocks
+
+@call_log
+def manual_ipv6_infrastructure_allocation(anm):
+    """Applies manual IPv6 allocation"""
+
+    import netaddr
+    g_ipv6 = anm['ipv6']
+    log.info('Using specified IPv6 infrastructure allocation')
+
+    for node in g_ipv6.nodes('is_l3device'):
+        for interface in node.physical_interfaces:
+            if not interface['input'].is_bound:
+                continue  # unbound interface
+            ip_address = netaddr.IPAddress(interface['input'
+                    ].ipv6_address)
+            prefixlen = interface['input'].ipv6_prefixlen
+            interface.ip_address = ip_address
+            interface.prefixlen = prefixlen
+            cidr_string = '%s/%s' % (ip_address, prefixlen)
+            interface.subnet = netaddr.IPNetwork(cidr_string)
+
+    broadcast_domains = [d for d in g_ipv6 if d.broadcast_domain]
+
+    # TODO: allow this to work with specified ip_address/subnet as well as ip_address/prefixlen
+
+    from netaddr import IPNetwork
+    for coll_dom in broadcast_domains:
+        connected_interfaces = [edge.dst_int for edge in
+                                coll_dom.edges()]
+        cd_subnets = [IPNetwork('%s/%s' % (i.subnet.network,
+                      i.prefixlen)) for i in connected_interfaces]
+
+
+        if len(cd_subnets) == 0:
+            log.warning("Collision domain %s is not connected to any nodes" % coll_dom)
+            continue
+
+        try:
+            assert len(set(cd_subnets)) == 1
+        except AssertionError:
+            mismatch_subnets = '; '.join('%s: %s/%s' % (i,
+                    i.subnet.network, i.prefixlen) for i in
+                    connected_interfaces)
+            log.warning('Non matching subnets from collision domain %s: %s'
+                         % (coll_dom, mismatch_subnets))
+        else:
+            coll_dom.subnet = cd_subnets[0]  # take first entry
+
+        # apply to remote interfaces
+
+        for edge in coll_dom.edges():
+            edge.dst_int.subnet = coll_dom.subnet
+
+    # also need to form aggregated IP blocks (used for e.g. routing prefix
+    # advertisement)
+    # import autonetkit
+    # autonetkit.update_http(anm)
+
+    infra_blocks = {}
+    for (asn, devices) in g_ipv6.groupby('asn').items():
+        broadcast_domains = [d for d in devices if d.broadcast_domain]
+        subnets = [cd.subnet for cd in broadcast_domains
+        if cd.subnet is not None] # only if subnet is set
+        infra_blocks[asn] = netaddr.cidr_merge(subnets)
+
+    g_ipv6.data.infra_blocks = infra_blocks
+
 @call_log
 def build_ipv6(anm):
-    """Builds IPv6 graph, using nodes and edges from IPv4 graph"""
+    """Builds IPv6 graph, using nodes and edges from IP graph"""
     import netaddr
     import autonetkit.plugins.ipv6 as ipv6
 
@@ -16,7 +104,7 @@ def build_ipv6(anm):
     g_ipv6 = anm.add_overlay('ipv6')
     g_ip = anm['ip']
     g_in = anm['input']
-    g_ipv6.add_nodes_from(g_ip, retain=['label', 'broadcast_domain'])  # retain if collision domain or not
+    g_ipv6.add_nodes_from(g_ip, retain=['label', 'asn', 'broadcast_domain'])  # retain if collision domain or not
     g_ipv6.add_edges_from(g_ip.edges())
 
     global_pool = netaddr.IPNetwork('2001:db8::/32').subnet(48)
@@ -27,31 +115,63 @@ def build_ipv6(anm):
     infra_block = global_pool.next()
     secondary_loopback_block = global_pool.next()
 
-    block_message = "IPv4 allocations: Infrastructure: %s, Loopback: %s" % (infra_block, loopback_block)
+    block_message = "IPv6 allocations: Infrastructure: %s, Loopback: %s" % (infra_block, loopback_block)
     log.info(block_message)
-
-    ipv6.allocate_ips(g_ipv6, infra_block, loopback_block, secondary_loopback_block)
 
     # TODO: replace this with direct allocation to interfaces in ip alloc plugin
     allocated = sorted([n for n in g_ip if n['input'].loopback_v6])
-    if len(allocated):
-        log.warning("Using automatic IPv6 loopback allocation. IPv6 loopback addresses specified on nodes %s will be ignored." % allocated)
+    if len(allocated) == len(g_ip.nodes("is_l3device")):
+        # all allocated
+        #TODO: need to infer subnetomanual_ipv6_loopback_allocation
+        manual_ipv6_loopback_allocation(anm)
+    else:
+        if len(allocated):
+            log.warning("Using automatic IPv6 loopback allocation. IPv6 loopback addresses specified on nodes %s will be ignored." % allocated)
 
-    allocated = []
+        ipv6.allocate_loopbacks(g_ipv6, loopback_block)
+
+
     l3_devices = [d for d in g_in if d.device_type in ('router', 'server')]
-    for node in l3_devices:
-        allocated += sorted([i for i in node.physical_interfaces if i.is_bound and i.ipv6_address])
-    #TODO: what if IP is set but not a prefix?
-    if len(allocated):
-        log.warning("Using automatic IPv6 interface allocation. IPv6 interface addresses specified on interfaces %s will be ignored." % allocated)
 
-    for node in g_ipv6.nodes('is_l3device'):
-        for interface in node:
-            edges = list(interface.edges())
-            if len(edges):
-                edge = edges[0]  # first (only) edge
-                interface.ip_address = edge.ip  # TODO: make this consistent
-                interface.subnet = edge.dst.subnet  # from collision domain
+    manual_alloc_devices = set()
+    for device in l3_devices:
+        physical_interfaces = list(device.physical_interfaces)
+        allocated = list(interface.ipv6_address for interface in physical_interfaces if interface.is_bound)
+        if all(interface.ipv6_address for interface in
+               physical_interfaces if interface.is_bound):
+            manual_alloc_devices.add(device)  # add as a manual allocated device
+
+    if manual_alloc_devices == set(l3_devices):
+        manual_alloc_ipv6_infrastructure = True
+    else:
+        manual_alloc_ipv6_infrastructure = False
+        # warn if any set
+        allocated = []
+        unallocated = []
+        for node in l3_devices:
+            allocated += sorted([i for i in node.physical_interfaces if i.is_bound and i.ipv6_address])
+            unallocated += sorted([i for i in node.physical_interfaces if i.is_bound and not i.ipv6_address])
+
+        #TODO: what if IP is set but not a prefix?
+        if len(allocated):
+            #TODO: if set is > 50% of nodes then list those that are NOT set
+            log.warning("Using automatic IPv6 interface allocation. IPv6 interface addresses specified on interfaces %s will be ignored." % allocated)
+
+    if manual_alloc_ipv6_infrastructure:
+        manual_ipv6_infrastructure_allocation(anm)
+    else:
+        ipv6.allocate_infra(g_ipv6, infra_block)
+        #TODO: see if this is still needed or if can allocate direct from the ipv6 allocation plugin
+        for node in g_ipv6.nodes('is_l3device'):
+            for interface in node:
+                edges = list(interface.edges())
+                if len(edges):
+                    edge = edges[0]  # first (only) edge
+                    interface.ip_address = edge.ip  # TODO: make this consistent
+                    interface.subnet = edge.dst.subnet  # from collision domain
+
+
+    ipv6.allocate_vrf_loopbacks(g_ipv6, secondary_loopback_block)
 
     for node in g_ipv6.nodes('is_router'):
         #TODO: test this code
