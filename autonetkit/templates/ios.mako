@@ -214,7 +214,7 @@ router eigrp ${node.eigrp.name}
  exit-address-family
  !
 % endif
-% if node.eigrp.use_ipv4:
+% if node.eigrp.use_ipv6:
  address-family ipv6 unicast autonomous-system ${node.asn}
   !
   topology base
