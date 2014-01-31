@@ -72,7 +72,7 @@ def allocate_infra(g_ip, address_block=None):
     for asn in sorted(unique_asns):
         infra_blocks[asn] = infra_pool.next()
 
-    for (asn, devices) in g_ip.groupby('asn').items():
+    for (asn, devices) in sorted(g_ip.groupby('asn').items()):
         subnets = infra_blocks[asn].subnet(96)
         subnets.next()  # network address
         ptp_subnet = subnets.next().subnet(126)
