@@ -123,10 +123,13 @@ def build_ipv6(anm):
     if len(allocated) == len(g_ip.nodes("is_l3device")):
         # all allocated
         #TODO: need to infer subnetomanual_ipv6_loopback_allocation
+        log.info("Using user-specified IPv6 loopback addresses")
         manual_ipv6_loopback_allocation(anm)
     else:
         if len(allocated):
             log.warning("Using automatic IPv6 loopback allocation. IPv6 loopback addresses specified on nodes %s will be ignored." % allocated)
+        else:
+            log.info("Automatically assigning IPv6 loopback addresses")
 
         ipv6.allocate_loopbacks(g_ipv6, loopback_block)
 
@@ -142,6 +145,7 @@ def build_ipv6(anm):
             manual_alloc_devices.add(device)  # add as a manual allocated device
 
     if manual_alloc_devices == set(l3_devices):
+        log.info("Using user-specified IPv6 infrastructure addresses")
         manual_alloc_ipv6_infrastructure = True
     else:
         manual_alloc_ipv6_infrastructure = False
@@ -156,6 +160,8 @@ def build_ipv6(anm):
         if len(allocated):
             #TODO: if set is > 50% of nodes then list those that are NOT set
             log.warning("Using automatic IPv6 interface allocation. IPv6 interface addresses specified on interfaces %s will be ignored." % allocated)
+        else:
+            log.info("Automatically assigning IPv6 infrastructure addresses")
 
     if manual_alloc_ipv6_infrastructure:
         manual_ipv6_infrastructure_allocation(anm)
