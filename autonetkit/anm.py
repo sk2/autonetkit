@@ -500,6 +500,13 @@ class OverlayNode(object):
         return self.device_type == 'router' or self.phy.device_type \
             == 'router'
 
+    def is_device_type(self, device_type):
+        """Generic user-defined cross-overlay search for device_type
+        either from this graph or the physical graph"""
+
+        return self.device_type == device_type or self.phy.device_type \
+            == device_type
+
     def is_switch(self):
         """Returns if device is a switch"""
 

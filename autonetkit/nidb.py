@@ -570,6 +570,10 @@ class nidb_node(object):
     def is_router(self):
         return self.device_type == "router"
 
+    def is_device_type(self, device_type):
+        """Generic user-defined cross-overlay search for device_type for consistency with ANM"""
+        return self.device_type == device_type
+
     def is_switch(self):
         return self.device_type == "switch"
 
