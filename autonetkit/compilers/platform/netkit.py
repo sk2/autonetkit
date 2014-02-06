@@ -42,12 +42,14 @@ class NetkitCompiler(PlatformCompiler):
                     }
 
 # allocate zebra information
+            nidb_node.add_stanza("zebra")
             if nidb_node.is_router:
                 nidb_node.zebra.password = "1234"
             hostname = folder_name
             if hostname[0] in string.digits:
                 hostname = "r" + hostname
             nidb_node.hostname = hostname  # can't have . in quagga hostnames
+            nidb_node.add_stanza("ssh")
             nidb_node.ssh.use_key = True  # TODO: make this set based on presence of key
 
             # Note this could take external data
@@ -58,6 +60,7 @@ class NetkitCompiler(PlatformCompiler):
                 interface.id = self.index_to_int_id(numeric_id)
 
 # and allocate tap interface
+            nidb_node.add_stanza("tap")
             nidb_node.tap.id = self.index_to_int_id(int_ids.next())
 
             quagga_compiler.compile(nidb_node)
