@@ -30,7 +30,7 @@ class UbuntuCompiler(ServerCompiler):
         l3_conn_node = self.anm['l3_conn'].node(node)
         phy_node = self.anm['phy'].node(node)
         gateway_list = [n for n in l3_conn_node.neighbors()
-                        if n.is_router]
+                        if n.is_router()]
         if not len(gateway_list):
             log.warning('Server %s is not directly connected to any routers'
                          % node)

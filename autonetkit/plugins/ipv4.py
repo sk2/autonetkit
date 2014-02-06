@@ -230,7 +230,7 @@ class IpTree(object):
                     subgraph.node[root_node]['group_attr'] = attr_value
                     continue  # finished for loopbacks, continue only for collision domains
 
-            if all(item.is_l3device for item in items):
+            if all(item.is_l3device() for item in items):
 
                 # Note: only l3 devices are added for loopbacks: cds allocate to edges not devices (for now) - will be fixed when move to proper interface model
 
@@ -256,7 +256,7 @@ class IpTree(object):
                 if item.broadcast_domain:
                     subgraph.add_node(self.next_node_id, prefixlen=32
                             - subnet_size(item.degree()), host=item)
-                if item.is_l3device:
+                if item.is_l3device():
                     subgraph.add_node(self.next_node_id, prefixlen=32,
                             host=item)
 
@@ -543,9 +543,10 @@ class IpTree(object):
 
 # assigns allocated addresses back to hosts
         # don't look at host nodes now - use loopback_groups
-
+        #TODO: make check for interface and loopback zero now
         host_tree_nodes = [n for n in self if n.is_host()
-                           and n.host.is_l3device]
+                            and isinstance(n.host, autonetkit.anm.OverlayNode)
+                           and n.host.is_l3device()]
 
         # for host_tree_node in host_tree_nodes:
             # print host_tree_node, host_tree_node.subnet

@@ -364,7 +364,7 @@ class IosBaseCompiler(RouterCompiler):
 
             edge = edges[0]
             dst = edge.dst
-            if not dst.is_router:
+            if not dst.is_router():
                 log.debug('Connection to non-router host not added to IGP'
                           )
                 continue

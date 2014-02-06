@@ -24,7 +24,7 @@ class QuaggaCompiler(RouterCompiler):
 
         # OSPF cost
 
-        if phy_node.is_l3device:
+        if phy_node.is_l3device():
             node.loopback_zero.id = self.lo_interface
             node.loopback_zero.description = 'Loopback'
             node.loopback_zero.ipv4_address = ipv4_node.loopback

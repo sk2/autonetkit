@@ -283,7 +283,7 @@ def create_nidb(anm):
         g_phy, retain=['label', 'host', 'platform', 'Network', 'update', 'asn'])
 
     cd_nodes = [n for n in g_ip.nodes(
-        "broadcast_domain") if not n.is_switch]  # Only add created cds - otherwise overwrite host of switched
+        "broadcast_domain") if not n.is_switch()]  # Only add created cds - otherwise overwrite host of switched
     nidb.add_nodes_from(
         cd_nodes, retain=['label', 'host'], broadcast_domain=True)
 
@@ -296,7 +296,7 @@ def create_nidb(anm):
 
 # add edges to switches
     edges_to_add = [edge for edge in g_phy.edges()
-                    if edge.src.is_switch or edge.dst.is_switch]
+                    if edge.src.is_switch() or edge.dst.is_switch()]
     # cd edges from split
     edges_to_add += [edge for edge in g_ip.edges() if edge.split]
     nidb.add_edges_from(edges_to_add)

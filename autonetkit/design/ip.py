@@ -21,7 +21,7 @@ def manual_ipv6_loopback_allocation(anm):
 
     loopback_blocks = {}
     for (asn, devices) in g_ipv6.groupby('asn').items():
-        routers = [d for d in devices if d.is_router]
+        routers = [d for d in devices if d.is_router()]
         loopbacks = [r.loopback for r in routers]
         loopback_blocks[asn] = netaddr.cidr_merge(loopbacks)
 
@@ -269,7 +269,7 @@ def manual_ipv4_loopback_allocation(anm):
 
     loopback_blocks = {}
     for (asn, devices) in g_ipv4.groupby('asn').items():
-        routers = [d for d in devices if d.is_router]
+        routers = [d for d in devices if d.is_router()]
         loopbacks = [r.loopback for r in routers]
         loopback_blocks[asn] = netaddr.cidr_merge(loopbacks)
 
@@ -291,7 +291,7 @@ def build_ip(anm):
     ank_utils.aggregate_nodes(g_ip, g_ip.switches())
 
     edges_to_split = [edge for edge in g_ip.edges()
-        if edge.src.is_l3device and edge.dst.is_l3device]
+        if edge.src.is_l3device() and edge.dst.is_l3device()]
     for edge in edges_to_split:
         edge.split = True  # mark as split for use in building nidb
 
@@ -334,9 +334,9 @@ def build_ip(anm):
     for node in g_ip.nodes('broadcast_domain'):
         graphics_node = g_graphics.node(node)
         #graphics_node.device_type = 'broadcast_domain'
-        if node.is_switch:
+        if node.is_switch():
             node['phy'].broadcast_domain = True
-        if not node.is_switch:
+        if not node.is_switch():
             # use node sorting, as accomodates for numeric/string names
             graphics_node.device_type = 'broadcast_domain'
             neighbors = sorted(neigh for neigh in node.neighbors())

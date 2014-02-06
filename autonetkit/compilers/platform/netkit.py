@@ -43,7 +43,7 @@ class NetkitCompiler(PlatformCompiler):
 
 # allocate zebra information
             nidb_node.add_stanza("zebra")
-            if nidb_node.is_router:
+            if nidb_node.is_router():
                 nidb_node.zebra.password = "1234"
             hostname = folder_name
             if hostname[0] in string.digits:

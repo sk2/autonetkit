@@ -32,7 +32,7 @@ class PlatformCompiler(object):
                 phy_int = phy_node.interface(interface)
                 if phy_node.use_ipv4:
                     ipv4_int = phy_int['ipv4']
-                    if node.is_server and interface.is_loopback:
+                    if node.is_server() and interface.is_loopback:
                         continue
                     if interface.is_physical and not interface.is_bound:
                         continue
@@ -44,7 +44,7 @@ class PlatformCompiler(object):
                             interface.ipv4_subnet.prefixlen)
                 if phy_node.use_ipv6:
                     ipv6_int = phy_int['ipv6']
-                    if node.is_server and interface.is_loopback:
+                    if node.is_server() and interface.is_loopback:
                         continue
                     if interface.is_physical and not interface.is_bound:
                         continue

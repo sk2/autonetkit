@@ -494,33 +494,29 @@ class OverlayNode(object):
 
         return self.anm.overlay_nx_graphs[self.overlay_id]
 
-    @property
     def is_router(self):
         """Either from this graph or the physical graph"""
 
         return self.device_type == 'router' or self.phy.device_type \
             == 'router'
 
-    @property
     def is_switch(self):
         """Returns if device is a switch"""
 
         return self.device_type == 'switch' or self.phy.device_type \
             == 'switch'
 
-    @property
     def is_server(self):
         """Returns if device is a server"""
 
         return self.device_type == 'server' or self.phy.device_type \
             == 'server'
 
-    @property
     def is_l3device(self):
         """Layer 3 devices: router, server, cloud, host
         ie not switch
         """
-        return self.is_router or self.is_server
+        return self.is_router() or self.is_server()
 
     def __getitem__(self, key):
         """Get item key"""
@@ -1104,24 +1100,24 @@ class OverlayBase(object):
         """Shortcut for nodes(), sets device_type to be router"""
 
         result = self.nodes(*args, **kwargs)
-        return [r for r in result if r.is_router]
+        return [r for r in result if r.is_router()]
 
     def switches(self, *args, **kwargs):
         """Shortcut for nodes(), sets device_type to be switch"""
 
         result = self.nodes(*args, **kwargs)
-        return [r for r in result if r.is_switch]
+        return [r for r in result if r.is_switch()]
 
     def servers(self, *args, **kwargs):
             """Shortcut for nodes(), sets device_type to be server"""
 
             result = self.nodes(*args, **kwargs)
-            return [r for r in result if r.is_server]
+            return [r for r in result if r.is_server()]
 
     def l3devices(self, *args, **kwargs):
         """Shortcut for nodes(), sets device_type to be server"""
         result = self.nodes(*args, **kwargs)
-        return [r for r in result if r.is_l3device]
+        return [r for r in result if r.is_l3device()]
 
     def device(self, key):
         """To access programatically"""

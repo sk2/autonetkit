@@ -567,25 +567,21 @@ class nidb_node(object):
     def __nonzero__(self):
         return self.node_id in self.nidb._graph
 
-    @property
     def is_router(self):
         return self.device_type == "router"
 
-    @property
     def is_switch(self):
         return self.device_type == "switch"
 
-    @property
     def is_server(self):
         return self.device_type == "server"
 
-    @property
     def is_l3device(self):
         """Layer 3 devices: router, server, cloud, host
         ie not switch
         """
         #TODO: need to check for cloud, host
-        return self.is_router or self.is_server
+        return self.is_router() or self.is_server()
 
     def edges(self, *args, **kwargs):
         #TODO: want to add filter for *args and **kwargs here too
@@ -847,24 +843,24 @@ class NIDB_base(object):
         """Shortcut for nodes(), sets device_type to be router"""
 
         result = self.nodes(*args, **kwargs)
-        return [r for r in result if r.is_router]
+        return [r for r in result if r.is_router()]
 
     def switches(self, *args, **kwargs):
         """Shortcut for nodes(), sets device_type to be switch"""
 
         result = self.nodes(*args, **kwargs)
-        return [r for r in result if r.is_switch]
+        return [r for r in result if r.is_switch()]
 
     def servers(self, *args, **kwargs):
             """Shortcut for nodes(), sets device_type to be server"""
 
             result = self.nodes(*args, **kwargs)
-            return [r for r in result if r.is_server]
+            return [r for r in result if r.is_server()]
 
     def l3devices(self, *args, **kwargs):
         """Shortcut for nodes(), sets device_type to be server"""
         result = self.nodes(*args, **kwargs)
-        return [r for r in result if r.is_l3device]
+        return [r for r in result if r.is_l3device()]
 
     def filter(self, nbunch = None, *args, **kwargs):
         #TODO: also allow nbunch to be passed in to subfilter on...?
