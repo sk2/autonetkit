@@ -4,6 +4,7 @@ from autonetkit.compilers.platform.platform_base import PlatformCompiler
 import itertools
 import autonetkit.ank as ank
 from autonetkit.compilers.device.cisco import IosClassicCompiler
+from autonetkit.nidb import config_stanza
 
 class DynagenCompiler(PlatformCompiler):
     """Dynagen Platform Compiler"""
@@ -105,6 +106,7 @@ class DynagenCompiler(PlatformCompiler):
                 number_of_slots)]
             cnfg = os.path.join(self.config_dir, router.render.dst_file)
 
+            #TODO: make this a config stanza
             lab_topology.routers.append(
                 hostname=str(router),
                 model=7200,

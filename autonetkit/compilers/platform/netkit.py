@@ -9,6 +9,7 @@ import string
 import itertools
 from autonetkit.ank_utils import alphabetical_sort as alpha_sort
 from autonetkit.compilers.device.quagga import QuaggaCompiler
+from autonetkit.nidb import config_stanza
 
 class NetkitCompiler(PlatformCompiler):
     """Netkit Platform Compiler"""
@@ -25,6 +26,7 @@ class NetkitCompiler(PlatformCompiler):
         for phy_node in g_phy.nodes('is_l3device', host=self.host, syntax='quagga'):
             folder_name = naming.network_hostname(phy_node)
             nidb_node = self.nidb.node(phy_node)
+            nidb_node.add_stanza("render")
             #TODO: order by folder and file template src/dst
             nidb_node.render.base = os.path.join("templates","quagga")
             nidb_node.render.template = os.path.join("templates",

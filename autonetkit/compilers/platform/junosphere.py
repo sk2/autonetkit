@@ -4,6 +4,7 @@ from autonetkit.compilers.platform.platform_base import PlatformCompiler
 import itertools
 import autonetkit.ank as ank
 #from autonetkit.compilers.device.
+from autonetkit.nidb import config_stanza
 
 class JunosphereCompiler(PlatformCompiler):
     """Junosphere Platform Compiler"""
@@ -19,6 +20,7 @@ class JunosphereCompiler(PlatformCompiler):
         junos_compiler = JunosCompiler(self.nidb, self.anm)
         for phy_node in g_phy.nodes('is_router', host=self.host, syntax='junos'):
             nidb_node = self.nidb.node(phy_node)
+            nidb_node.add_stanza("render")
             nidb_node.render.template = os.path.join("templates","junos.mako")
             nidb_node.render.dst_folder = os.path.join("rendered",self.host,"junosphere")
             nidb_node.render.dst_file = "%s.conf" % ank.name_folder_safe(

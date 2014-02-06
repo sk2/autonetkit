@@ -16,6 +16,7 @@ except ImportError:
 
 from collections import OrderedDict
 import logging
+from autonetkit.ank_utils import call_log
 
 
 class CustomAdapter(logging.LoggerAdapter):
@@ -25,7 +26,14 @@ class CustomAdapter(logging.LoggerAdapter):
 # based on http://docs.python.org/2.7/library/collections#collections.OrderedDict
 # and http://stackoverflow.com/q/455059
 class config_stanza(object):
-    def __init__(self, **kwargs):
+    def __init__(self, *args, **kwargs):
+        if len(args) == 1 and isinstance(args[0], config_stanza):
+            # Clone the data (shallow copy)
+            #TODO: check how this relates to calling dict() on a dict - same?
+            in_dict = args[0]._odict
+            object.__setattr__(self, '_odict', OrderedDict(in_dict))
+            return
+
         object.__setattr__(self, '_odict', OrderedDict(kwargs))
 
     def __repr__(self):
@@ -36,6 +44,9 @@ class config_stanza(object):
         stanza = config_stanza(**kwargs)
         self[name] = stanza
         return stanza
+
+    def __getitem__(self, key):
+        return self._odict[key]
 
     def __setitem__(self, key, value):
         if isinstance(value, dict):
@@ -50,12 +61,19 @@ class config_stanza(object):
         try:
             return self._odict[key]
         except KeyError:
+            #TODO: implement warning here
             #TODO: log a key miss, and if strict turned on, give warning
             return
 
     def items(self):
         #TODO map this to proper dict inherit to support these methods, keys, etc
         return self._odict.items()
+
+    def __iter__(self):
+        return iter(self._odict.items())
+
+    def __len__(self):
+        return len(self._odict)
 
     # TODO: add __iter__, __keys etc
 
@@ -563,7 +581,8 @@ class nidb_node(object):
         #TODO: also pass the node object to the logger for building custom output lists
         # ie create a special handler that just outputs the specific node/link/interface errors
         logstring = "Node: %s" % str(self)
-        self.log = CustomAdapter(logger, {'item': logstring})
+        logger = CustomAdapter(logger, {'item': logstring})
+        object.__setattr__(self, 'log', logger)
 
     #TODO: make a json objct that returns keys that aren't logs, etc - filter out
 
@@ -783,31 +802,12 @@ class nidb_node(object):
     def __getattr__(self, key):
         """Returns edge property"""
         data = self._node_data.get(key)
-        try:
-            [item.keys() for item in data]
-            #print "from nidb node", self.nidb, self.node_id, key
-            return overlay_data_list_of_dicts(self._node_data, key)
-        except TypeError:
-            pass # Not set yet
-        except AttributeError:
-            pass # not a dict
 
         #TODO: remove once deprecated nidb_node_category
         if isinstance(data, config_stanza):
             return data
 
-        try:
-            data.keys()
-            return nidb_node_category(self.nidb, self.node_id, key)
-        except TypeError:
-            pass # Not set yet
-        except AttributeError:
-            pass # not a dict
-
-        if data:
-            return data
-        else:
-            return nidb_node_category(self.nidb, self.node_id, key)
+        return data
 
     def __setattr__(self, key, val):
         """Sets edge property"""
@@ -971,6 +971,7 @@ class NIDB_base(object):
     def copy_graphics(self, G_graphics):
         """Transfers graphics data from anm to nidb"""
         for node in self:
+            node.add_stanza("graphics")
             graphics_node = G_graphics.node(node)
             node.graphics.x = graphics_node.x
             node.graphics.y = graphics_node.y

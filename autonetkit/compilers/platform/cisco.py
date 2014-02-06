@@ -132,6 +132,7 @@ class CiscoCompiler(PlatformCompiler):
             loopback_ids = self.loopback_interface_ids()
             # allocate loopbacks to routes (same for all ios variants)
             nidb_node = self.nidb.node(phy_node)
+            nidb_node.add_stanza("render")
             nidb_node.ank_cisco_version = ank_cisco_version
             nidb_node.indices = phy_node.indices
 
@@ -159,6 +160,8 @@ class CiscoCompiler(PlatformCompiler):
         ubuntu_compiler = UbuntuCompiler(self.nidb, self.anm)
         for phy_node in g_phy.nodes('is_server', host=self.host):
             nidb_node = self.nidb.node(phy_node)
+            nidb_node.add_stanza("render")
+            nidb_node.add_stanza("ip")
 
             #TODO: look at server syntax also, same as for routers
             for interface in nidb_node.physical_interfaces:
@@ -212,6 +215,7 @@ class CiscoCompiler(PlatformCompiler):
                 if n.syntax in ("ios", "ios_xe"))
         for phy_node in ios_nodes:
             nidb_node = self.nidb.node(phy_node)
+            nidb_node.add_stanza("render")
             nidb_node.render.template = os.path.join("templates","ios.mako")
             if to_memory:
                 nidb_node.render.to_memory = True
@@ -262,6 +266,7 @@ class CiscoCompiler(PlatformCompiler):
 
         for phy_node in g_phy.nodes('is_router', host=self.host, syntax='ios_xr'):
             nidb_node = self.nidb.node(phy_node)
+            nidb_node.add_stanza("render")
             nidb_node.render.template = os.path.join("templates","ios_xr","router.conf.mako")
             if to_memory:
                 nidb_node.render.to_memory = True
@@ -286,6 +291,7 @@ class CiscoCompiler(PlatformCompiler):
         nxos_compiler = NxOsCompiler(self.nidb, self.anm)
         for phy_node in g_phy.nodes('is_router', host=self.host, syntax='nx_os'):
             nidb_node = self.nidb.node(phy_node)
+            nidb_node.add_stanza("render")
             nidb_node.render.template = os.path.join("templates","nx_os.mako")
             if to_memory:
                 nidb_node.render.to_memory = True
@@ -313,6 +319,7 @@ class CiscoCompiler(PlatformCompiler):
         staros_compiler = StarOsCompiler(self.nidb, self.anm)
         for phy_node in g_phy.nodes('is_router', host=self.host, syntax='StarOS'):
             nidb_node = self.nidb.node(phy_node)
+            nidb_node.add_stanza("render")
             nidb_node.render.template = os.path.join("templates","staros.mako")
             if to_memory:
                 nidb_node.render.to_memory = True

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import autonetkit.log as log
 from autonetkit.compilers.device.server_base import ServerCompiler
-
+from autonetkit.nidb import config_stanza
 
 class UbuntuCompiler(ServerCompiler):
 
@@ -51,6 +51,7 @@ class UbuntuCompiler(ServerCompiler):
         gateway_interface = gateway_edge_l3.dst_int
 
         gateway_ipv4 = gateway_ipv6 = None
+        node.add_stanza("ip")
         if node.ip.use_ipv4:
             gateway_ipv4 = gateway_interface['ipv4'].ip_address
         if node.ip.use_ipv6:
@@ -63,6 +64,8 @@ class UbuntuCompiler(ServerCompiler):
 
         # IGP advertised infrastructure pool from same AS
 
+        static_routes_v4 = []
+        host_routes_v4 = []
         for (asn, asn_routes)  in self.anm['ipv4'].data['infra_blocks'].items():
 
            # host_routes_v4
@@ -76,10 +79,11 @@ class UbuntuCompiler(ServerCompiler):
                 'description': 'Route to infra subnet in AS %s via %s' \
                 % (asn, gateway),
                 }
+                route_entry = config_stanza(**route_entry)
                 if infra_route.prefixlen == 32:
-                    node.host_routes_v4.append(route_entry)
+                    host_routes_v4.append(route_entry)
                 else:
-                    node.static_routes_v4.append(route_entry)
+                    static_routes_v4.append(route_entry)
 
         # eBGP advertised loopbacks in all (same + other) ASes
 
@@ -94,23 +98,25 @@ class UbuntuCompiler(ServerCompiler):
                     'description': 'Route to loopback subnet in AS %s via %s' \
                         % (asn, gateway),
                     }
+                route_entry = config_stanza(**route_entry)
                 if asn_route.prefixlen == 32:
-                    node.host_routes_v4.append(route_entry)
+                    host_routes_v4.append(route_entry)
                 else:
-                    node.static_routes_v4.append(route_entry)
+                    static_routes_v4.append(route_entry)
 
         # TODO: combine the above logic into single step rather than creating dict then formatting with it
 
         cloud_init_static_routes = []
-        for entry in node.static_routes_v4:
+        for entry in static_routes_v4:
             formatted = 'route add -net %s gw %s dev %s' \
                 % (entry.network, entry.gw, entry.interface)
             cloud_init_static_routes.append(formatted)
-        for entry in node.host_routes_v4:
+        for entry in host_routes_v4:
             formatted = 'route add -host %s gw %s dev %s' \
                 % (entry.prefix, entry.gw, entry.interface)
             cloud_init_static_routes.append(formatted)
 
+        node.add_stanza("cloud_init")
         node.cloud_init.static_routes = cloud_init_static_routes
 
 

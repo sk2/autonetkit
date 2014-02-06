@@ -23,6 +23,11 @@ class PlatformCompiler(object):
         #TODO:  check if this will clobber with platform?
         for node in self.nidb.nodes('is_l3device', host=self.host):
             phy_node = self.anm['phy'].node(node)
+
+            node.add_stanza("ip")
+            node.ip.use_ipv4 = phy_node.use_ipv4 or False
+            node.ip.use_ipv6 = phy_node.use_ipv6 or False
+
             for interface in node.interfaces:
                 phy_int = phy_node.interface(interface)
                 if phy_node.use_ipv4:

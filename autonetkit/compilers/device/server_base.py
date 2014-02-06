@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import autonetkit.log as log
 from autonetkit.compilers.device.device_base import DeviceCompiler
-
+from autonetkit.nidb import config_stanza
 
 class ServerCompiler(DeviceCompiler):
 

@@ -84,6 +84,7 @@ class RouterCompiler(DeviceCompiler):
         phy_node = self.anm['phy'].node(node)
         ipv4_node = self.anm['ipv4'].node(node)
 
+        node.add_stanza("ip")
         node.ip.use_ipv4 = phy_node.use_ipv4 or False
         node.ip.use_ipv6 = phy_node.use_ipv6 or False
         if not (node.ip.use_ipv4 and node.ip.use_ipv6):
@@ -309,6 +310,8 @@ class RouterCompiler(DeviceCompiler):
             g_ipv6 = self.anm['ipv6']
         asn = phy_node.asn
         node.asn = asn
+        node.add_stanza("bgp")
+
         node.bgp.ipv4_advertise_subnets = []
         if node.ip.use_ipv4:
             node.bgp.ipv4_advertise_subnets = \
@@ -330,14 +333,15 @@ class RouterCompiler(DeviceCompiler):
                 continue  # exclude from regular ibgp config (eg VRF, VPLS, etc)
 
             data = self.ibgp_session_data(session, ip_version=4)
+            bgp_stanza = config_stanza(**data)
 
             direction = session.direction
             if direction == 'down':
-                ibgp_rr_clients.append(data)
+                ibgp_rr_clients.append(bgp_stanza)
             elif direction == 'up':
-                ibgp_rr_parents.append(data)
+                ibgp_rr_parents.append(bgp_stanza)
             else:
-                ibgp_neighbors.append(data)
+                ibgp_neighbors.append(bgp_stanza)
 
         # TODO: check v6 hierarchy only created if node set to being v4 or v6
 
@@ -348,14 +352,15 @@ class RouterCompiler(DeviceCompiler):
                     log.debug('Skipping excluded ibgp session %s' % session)
                     continue  # exclude from regular ibgp config (eg VRF, VPLS, etc)
                 data = self.ibgp_session_data(session, ip_version=6)
+                bgp_stanza = config_stanza(**data)
 
                 direction = session.direction
                 if direction == 'down':
-                    ibgp_rr_clients.append(data)
+                    ibgp_rr_clients.append(bgp_stanza)
                 elif direction == 'up':
-                    ibgp_rr_parents.append(data)
+                    ibgp_rr_parents.append(bgp_stanza)
                 else:
-                    ibgp_neighbors.append(data)
+                    ibgp_neighbors.append(bgp_stanza)
 
         # TODO: update this to use ibgp_v4 and ibgp_v6 overlays
 
@@ -372,7 +377,8 @@ class RouterCompiler(DeviceCompiler):
                 log.debug('Skipping excluded ebgp session %s' % session)
                 continue  # exclude from regular ibgp config (eg VRF, VPLS, etc)
             data = self.ebgp_session_data(session, ip_version=4)
-            ebgp_neighbors.append(data)
+            bgp_stanza = config_stanza(**data)
+            ebgp_neighbors.append(bgp_stanza)
 
         if node.ip.use_ipv6:
             g_ebgp_v6 = self.anm['ebgp_v6']
@@ -382,10 +388,11 @@ class RouterCompiler(DeviceCompiler):
                     log.debug('Skipping excluded ebgp session %s' % session)
                     continue  # exclude from regular ibgp config (eg VRF, VPLS, etc)
                 data = self.ebgp_session_data(session, ip_version=6)
-                ebgp_neighbors.append(data)
+                bgp_stanza = config_stanza(**data)
+                ebgp_neighbors.append(bgp_stanza)
 
+        ebgp_neighbors = sorted(ebgp_neighbors, key = lambda x: x.asn)
         node.bgp.ebgp_neighbors = ebgp_neighbors
-        node.bgp.ebgp_neighbors.sort('asn')
 
         return
 
