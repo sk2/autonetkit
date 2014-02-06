@@ -29,7 +29,7 @@ class DynagenCompiler(PlatformCompiler):
         g_phy = self.anm['phy']
         G_graphics = self.anm['graphics']
         ios_compiler = IosClassicCompiler(self.nidb, self.anm)
-        for phy_node in g_phy.nodes('is_router', host=self.host, syntax='ios'):
+        for phy_node in g_phy.routers(host=self.host, syntax='ios'):
             nidb_node = self.nidb.node(phy_node)
             graphics_node = G_graphics.node(phy_node)
             nidb_node.render.template = os.path.join("templates", "ios.mako")
@@ -58,7 +58,7 @@ class DynagenCompiler(PlatformCompiler):
         # TODO: take tap subnet parameter
         con_ports = self.console_ports()
 
-        for node in sorted(self.nidb.nodes("is_l3device", host=self.host)):
+        for node in sorted(self.nidb.l3devices(host=self.host)):
             # TODO: fix sorting order
             # TODO: check this works for switches
             node.console_port = con_ports.next()

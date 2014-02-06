@@ -12,7 +12,7 @@ def build_ibgp_v4(anm):
     g_bgp = anm['bgp']
     g_phy = anm['phy']
     g_ibgpv4 = anm.add_overlay("ibgp_v4", directed=True)
-    ipv4_nodes = set(g_phy.nodes("is_router", "use_ipv4"))
+    ipv4_nodes = set(g_phy.routers("use_ipv4"))
     g_ibgpv4.add_nodes_from((n for n in g_bgp if n in ipv4_nodes),
             retain = ["ibgp_level", "ibgp_role", "hrr_cluster", "rr_cluster"] )
     g_ibgpv4.add_edges_from(g_bgp.edges(type="ibgp"), retain="direction")
@@ -25,7 +25,7 @@ def build_ibgp_v6(anm):
     g_bgp = anm['bgp']
     g_phy = anm['phy']
     g_ibgpv6 = anm.add_overlay("ibgp_v6", directed=True)
-    ipv6_nodes = set(g_phy.nodes("is_router", "use_ipv6"))
+    ipv6_nodes = set(g_phy.routers("use_ipv6"))
     g_ibgpv6.add_nodes_from((n for n in g_bgp if n in ipv6_nodes),
             retain = ["ibgp_level", "ibgp_role", "hrr_cluster", "rr_cluster"] )
     g_ibgpv6.add_edges_from(g_bgp.edges(type="ibgp"), retain="direction")
@@ -37,7 +37,7 @@ def build_ebgp_v4(anm):
     g_ebgp = anm['ebgp']
     g_phy = anm['phy']
     g_ebgpv4 = anm.add_overlay("ebgp_v4", directed=True)
-    ipv4_nodes = set(g_phy.nodes("is_router", "use_ipv4"))
+    ipv4_nodes = set(g_phy.routers("use_ipv4"))
     g_ebgpv4.add_nodes_from(n for n in g_ebgp if n in ipv4_nodes)
     g_ebgpv4.add_edges_from(g_ebgp.edges(), retain="direction")
 
@@ -47,7 +47,7 @@ def build_ebgp_v6(anm):
     g_ebgp = anm['ebgp']
     g_phy = anm['phy']
     g_ebgpv6 = anm.add_overlay("ebgp_v6", directed=True)
-    ipv6_nodes = set(g_phy.nodes("is_router", "use_ipv6"))
+    ipv6_nodes = set(g_phy.routers("use_ipv6"))
     g_ebgpv6.add_nodes_from(n for n in g_ebgp if n in ipv6_nodes)
     g_ebgpv6.add_edges_from(g_ebgp.edges(), retain="direction")
 
@@ -57,11 +57,11 @@ def build_ebgp(anm):
     g_in = anm['input']
     g_phy = anm['phy']
     g_ebgp = anm.add_overlay("ebgp", directed=True)
-    g_ebgp.add_nodes_from(g_in.nodes("is_router"))
+    g_ebgp.add_nodes_from(g_in.routers())
     ebgp_edges = [e for e in g_in.edges() if not e.attr_equal("asn")]
     g_ebgp.add_edges_from(ebgp_edges, bidirectional=True, type='ebgp')
 
-    ebgp_switches = [n for n in g_in.nodes("is_switch")
+    ebgp_switches = [n for n in g_in.switches()
             if not ank_utils.neigh_equal(g_phy, n, "asn")]
     g_ebgp.add_nodes_from(ebgp_switches, retain=['asn'])
     g_ebgp.log.debug("eBGP switches are %s" % ebgp_switches)
@@ -70,7 +70,7 @@ def build_ebgp(anm):
     bidirectional=True, type='ebgp')
     ank_utils.aggregate_nodes(g_ebgp, ebgp_switches)
     # need to recalculate as may have aggregated
-    ebgp_switches = list(g_ebgp.nodes("is_switch"))
+    ebgp_switches = list(g_ebgp.switches())
     g_ebgp.log.debug("aggregated eBGP switches are %s" % ebgp_switches)
     exploded_edges = ank_utils.explode_nodes(g_ebgp, ebgp_switches)
     same_asn_edges = []
@@ -268,7 +268,7 @@ def build_bgp(anm):
 
     """TODO: remove from here once compiler updated"""
     g_bgp = anm.add_overlay("bgp", directed=True)
-    g_bgp.add_nodes_from(g_in.nodes("is_router"))
+    g_bgp.add_nodes_from(g_in.routers())
     ebgp_edges = [edge for edge in g_in.edges() if not edge.attr_equal("asn")]
     g_bgp.add_edges_from(ebgp_edges, bidirectional=True, type='ebgp')
 

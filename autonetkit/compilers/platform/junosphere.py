@@ -18,7 +18,7 @@ class JunosphereCompiler(PlatformCompiler):
         log.info("Compiling Junosphere for %s" % self.host)
         g_phy = self.anm['phy']
         junos_compiler = JunosCompiler(self.nidb, self.anm)
-        for phy_node in g_phy.nodes('is_router', host=self.host, syntax='junos'):
+        for phy_node in g_phy.routers(host=self.host, syntax='junos'):
             nidb_node = self.nidb.node(phy_node)
             nidb_node.add_stanza("render")
             nidb_node.render.template = os.path.join("templates","junos.mako")

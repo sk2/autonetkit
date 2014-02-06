@@ -31,9 +31,8 @@ def build_ospf(anm):
         g_ospf.log.debug("No OSPF nodes")
         return
 
-    g_ospf.add_nodes_from(g_in.nodes("is_router", igp = "ospf"), retain=['asn'])
-    g_ospf.add_nodes_from(g_in.nodes("is_server", igp = "ospf"), retain=['asn'])
-    g_ospf.add_nodes_from(g_in.nodes("is_switch"), retain=['asn'])
+    g_ospf.add_nodes_from(g_in.l3devices(igp = "ospf"), retain=['asn'])
+    g_ospf.add_nodes_from(g_in.switches(), retain=['asn'])
     g_ospf.add_edges_from(g_in.edges())
 
     ank_utils.copy_attr_from(g_in, g_ospf, "ospf_area", dst_attr="area")

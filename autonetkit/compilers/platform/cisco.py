@@ -128,7 +128,7 @@ class CiscoCompiler(PlatformCompiler):
         from pkg_resources import get_distribution
         ank_cisco_version = get_distribution("autonetkit_cisco").version
 
-        for phy_node in g_phy.nodes('is_l3device', host=self.host):
+        for phy_node in g_phy.l3devices(host=self.host):
             loopback_ids = self.loopback_interface_ids()
             # allocate loopbacks to routes (same for all ios variants)
             nidb_node = self.nidb.node(phy_node)
@@ -158,7 +158,7 @@ class CiscoCompiler(PlatformCompiler):
         from autonetkit_cisco.compilers.device.ubuntu import UbuntuCompiler
 
         ubuntu_compiler = UbuntuCompiler(self.nidb, self.anm)
-        for phy_node in g_phy.nodes('is_server', host=self.host):
+        for phy_node in g_phy.servers(host=self.host):
             nidb_node = self.nidb.node(phy_node)
             nidb_node.add_stanza("render")
             nidb_node.add_stanza("ip")
@@ -210,9 +210,11 @@ class CiscoCompiler(PlatformCompiler):
                         phy_node)
 
 
+        #TODO: refactor out common logic
+
         ios_compiler = IosClassicCompiler(self.nidb, self.anm)
-        ios_nodes = (n for n in g_phy.nodes('is_router', host=self.host)
-                if n.syntax in ("ios", "ios_xe"))
+        host_routers = g_phy.routers(host=self.host)
+        ios_nodes = (n for n in host_routers if n.syntax in ("ios", "ios_xe"))
         for phy_node in ios_nodes:
             nidb_node = self.nidb.node(phy_node)
             nidb_node.add_stanza("render")
@@ -264,7 +266,7 @@ class CiscoCompiler(PlatformCompiler):
         except ImportError:
             ios_xr_compiler = IosXrCompiler(self.nidb, self.anm)
 
-        for phy_node in g_phy.nodes('is_router', host=self.host, syntax='ios_xr'):
+        for phy_node in g_phy.routers(host=self.host, syntax='ios_xr'):
             nidb_node = self.nidb.node(phy_node)
             nidb_node.add_stanza("render")
             nidb_node.render.template = os.path.join("templates","ios_xr","router.conf.mako")
@@ -289,7 +291,7 @@ class CiscoCompiler(PlatformCompiler):
                 mgmt_int.id = mgmt_int_id
 
         nxos_compiler = NxOsCompiler(self.nidb, self.anm)
-        for phy_node in g_phy.nodes('is_router', host=self.host, syntax='nx_os'):
+        for phy_node in g_phy.routers(host=self.host, syntax='nx_os'):
             nidb_node = self.nidb.node(phy_node)
             nidb_node.add_stanza("render")
             nidb_node.render.template = os.path.join("templates","nx_os.mako")
@@ -317,7 +319,7 @@ class CiscoCompiler(PlatformCompiler):
                 mgmt_int.id = mgmt_int_id
 
         staros_compiler = StarOsCompiler(self.nidb, self.anm)
-        for phy_node in g_phy.nodes('is_router', host=self.host, syntax='StarOS'):
+        for phy_node in g_phy.routers(host=self.host, syntax='StarOS'):
             nidb_node = self.nidb.node(phy_node)
             nidb_node.add_stanza("render")
             nidb_node.render.template = os.path.join("templates","staros.mako")
@@ -342,14 +344,6 @@ class CiscoCompiler(PlatformCompiler):
                 mgmt_int = nidb_node.add_interface(management = True)
                 mgmt_int.id = mgmt_int_id
 
-
-        other_nodes = [phy_node for phy_node in g_phy.nodes('is_router', host=self.host)
-                       if phy_node.syntax not in ("ios", "ios_xr")]
-        for node in other_nodes:
-            #TODO: check why we need this
-            phy_node = g_phy.node(node)
-            nidb_node = self.nidb.node(phy_node)
-            nidb_node.input_label = phy_node.id  # set specifically for now for other variants
 
     def assign_management_interfaces(self):
         g_phy = self.anm['phy']

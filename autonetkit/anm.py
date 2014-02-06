@@ -366,7 +366,6 @@ class OverlayNode(object):
 
         return (self.asn, self_node_id) < (other.asn, other_node_id)
 
-    @property
     def _next_int_id(self):
         """"""
 
@@ -390,7 +389,7 @@ class OverlayNode(object):
         data = dict(kwargs)
 
         if self.overlay_id != 'phy' and self.phy:
-            next_id = self.phy._next_int_id
+            next_id = self.phy._next_int_id()
             self.phy._interfaces[next_id] = {'type': type,
                                              'description': description}
 
@@ -399,7 +398,7 @@ class OverlayNode(object):
 
             data['description'] = description
         else:
-            next_id = self._next_int_id
+            next_id = self._next_int_id()
             data['type'] = type  # store type on node
             data['description'] = description
 
@@ -434,7 +433,7 @@ class OverlayNode(object):
         all_interfaces = iter(overlay_interface(self.anm,
                               self.overlay_id, self.node_id,
                               interface_id) for interface_id in
-                              self._interface_ids)
+                              self._interface_ids())
 
         retval = (i for i in all_interfaces if filter_func(i))
         return retval
@@ -443,7 +442,7 @@ class OverlayNode(object):
         """Returns interface based on interface id"""
 
         try:
-            if key.interface_id in self._interface_ids:
+            if key.interface_id in self._interface_ids():
                 return overlay_interface(self.anm, self.overlay_id,
                                          self.node_id, key.interface_id)
         except AttributeError:
@@ -451,7 +450,7 @@ class OverlayNode(object):
             # try with key as id
 
             try:
-                if key in self._interface_ids:
+                if key in self._interface_ids():
                     return overlay_interface(self.anm, self.overlay_id,
                                              self.node_id, key)
             except AttributeError:
@@ -462,7 +461,6 @@ class OverlayNode(object):
                             % (key, self))
                 return None
 
-    @property
     def _interface_ids(self):
         """Returns interface ids for this node"""
 
@@ -522,7 +520,6 @@ class OverlayNode(object):
         """Layer 3 devices: router, server, cloud, host
         ie not switch
         """
-
         return self.is_router or self.is_server
 
     def __getitem__(self, key):
@@ -533,6 +530,7 @@ class OverlayNode(object):
     @property
     def asn(self):
         """Returns ASN of this node"""
+        #TODO: make a function (not property)
 
         try:
             return self._graph.node[self.node_id]['asn']  # not in this graph
@@ -560,6 +558,7 @@ class OverlayNode(object):
 
     @asn.setter
     def asn(self, value):
+        #TODO: make a function (not property)
 
         # TODO: double check this logic
 
@@ -606,6 +605,7 @@ class OverlayNode(object):
         return iter(edge.dst_int for edge in self.edges())
 
     @property
+    #TODO: make a function to reflect dynamic nature: constructed from other attributes
     def label(self):
         """Returns node label (mapped from ANM)"""
 
@@ -617,6 +617,7 @@ class OverlayNode(object):
         Same as node.overlay.phy
         ie node.phy.x is same as node.overlay.phy.x
         """
+        #TODO: do we need this with node['phy']?
 
 # refer back to the physical node, to access attributes such as name
 
@@ -808,6 +809,7 @@ class OverlayEdge(object):
         return overlay_interface(self.anm, self.overlay_id,
                                  self.dst_id, dst_int_id)
 
+    #TODO: see if these are still used
     def attr_equal(self, *args):
         """Return edges which both src and dst have attributes equal"""
 
@@ -1103,6 +1105,24 @@ class OverlayBase(object):
 
         kwargs['device_type'] = 'router'
         return self.nodes(*args, **kwargs)
+
+    def switches(self, *args, **kwargs):
+        """Shortcut for nodes(), sets device_type to be switch"""
+
+        kwargs['device_type'] = 'switch'
+        return self.nodes(*args, **kwargs)
+
+    def servers(self, *args, **kwargs):
+            """Shortcut for nodes(), sets device_type to be server"""
+
+            kwargs['device_type'] = 'server'
+            return self.nodes(*args, **kwargs)
+
+    def l3devices(self, *args, **kwargs):
+        """Shortcut for nodes(), sets device_type to be server"""
+        result = self.nodes(*args, **kwargs)
+        #TODO: tie into the defined set of l3 devices
+        return [r for r in result if r.is_l3device]
 
     def device(self, key):
         """To access programatically"""

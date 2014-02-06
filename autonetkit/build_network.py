@@ -97,11 +97,11 @@ def initialise(input_graph):
         # Multiple ASNs set, use label format device.asn
         anm.set_node_label(".", ['label', 'asn'])
 
-    g_in.update(
-        g_in.nodes("is_router", platform="junosphere"), syntax="junos")
-    g_in.update(g_in.nodes("is_router", platform="dynagen"), syntax="ios")
-    g_in.update(g_in.nodes("is_router", platform="netkit"), syntax="quagga")
-    g_in.update(g_in.nodes("is_server", platform="netkit"), syntax="quagga")
+    g_in.update(g_in.routers(platform="junosphere"), syntax="junos")
+    g_in.update(g_in.routers(platform="dynagen"), syntax="ios")
+    g_in.update(g_in.routers(platform="netkit"), syntax="quagga")
+    #TODO: is this used?
+    g_in.update(g_in.servers(platform="netkit"), syntax="quagga")
 
     autonetkit.ank.set_node_default(g_in,  specified_int_names=None)
 
@@ -126,7 +126,7 @@ def check_server_asns(anm):
     #TODO: Move to validate module?
     g_phy = anm['phy']
 
-    for server in g_phy.nodes('is_server'):
+    for server in g_phy.servers():
         if server.device_subtype in ("SNAT", "FLAT"):
             continue # Don't warn on ASN for NAT elements
         l3_neighbors = list(server['l3_conn'].neighbors())
@@ -263,7 +263,7 @@ def build(input_graph):
 
 def remove_parallel_switch_links(anm):
     g_phy = anm['phy']
-    subs = ank_utils.connected_subgraphs(g_phy, g_phy.nodes('is_switch'))
+    subs = ank_utils.connected_subgraphs(g_phy, g_phy.switches())
     for component in subs:
         log.debug("Checking for multiple links to switch cluster %s" % str(sorted(component)))
 
@@ -348,12 +348,12 @@ def build_l3_connectivity(anm):
     g_l3conn.add_nodes_from(g_in, retain=['label', 'update', 'device_type', 'asn',
         'specified_int_names',
         'device_subtype', 'platform', 'host', 'syntax'])
-    g_l3conn.add_nodes_from(g_in.nodes("is_switch"), retain=['asn'])
+    g_l3conn.add_nodes_from(g_in.switches(), retain=['asn'])
     g_l3conn.add_edges_from(g_in.edges())
 
-    ank_utils.aggregate_nodes(g_l3conn, g_l3conn.nodes("is_switch"))
+    ank_utils.aggregate_nodes(g_l3conn, g_l3conn.switches())
     exploded_edges = ank_utils.explode_nodes(g_l3conn,
-        g_l3conn.nodes("is_switch"))
+        g_l3conn.switches())
     for edge in exploded_edges:
         edge.multipoint = True
         edge.src_int.multipoint = True
