@@ -585,11 +585,13 @@ class IosXrCompiler(IosBaseCompiler):
 
         for interface in mpls_te_node.physical_interfaces:
             nidb_interface = self.nidb.interface(interface)
-            rsvp_interfaces.append({'id': nidb_interface.id,
-                                   'bandwidth_percent': 100})
+            stanza = config_stanza(id = nidb_interface.id,
+                                   bandwidth_percent = 100)
+            rsvp_interfaces.append(stanza)
 
             mpls_te_interfaces.append(nidb_interface.id)
 
+        node.add_stanza("rsvp")
         node.rsvp.interfaces = rsvp_interfaces
         node.mpls.te_interfaces = mpls_te_interfaces
 
