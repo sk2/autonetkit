@@ -1,15 +1,16 @@
 import json
-import string
 import logging
+import string
 
 import autonetkit.anm
-import autonetkit.nidb
 import autonetkit.log as log
+import autonetkit.nidb
 import autonetkit.plugins
 import autonetkit.plugins.ipv4
 import netaddr
 import networkx as nx
 from networkx.readwrite import json_graph
+
 
 class AnkEncoder(json.JSONEncoder):
     """Handles netaddr objects by converting to string form"""
@@ -26,24 +27,33 @@ class AnkEncoder(json.JSONEncoder):
             return str(obj)
         if isinstance(obj, autonetkit.anm.OverlayNode):
             #TODO: add documentation about serializing anm nodes
+            #TODO: remove now?
             log.warning("%s is anm overlay_node. Use attribute rather than object in compiler." % obj)
             return str(obj)
         if isinstance(obj, autonetkit.plugins.ipv4.TreeNode):
+            #TODO: remove now?
             #TODO: add documentation about serializing anm nodes
             return str(obj)
         if isinstance(obj, autonetkit.anm.OverlayEdge):
             #TODO: add documentation about serializing anm nodes
+            #TODO: remove now?
             log.warning("%s is anm overlay_edge. Use attribute rather than object in compiler." % obj)
             return str(obj)
         if isinstance(obj, autonetkit.nidb.config_stanza):
+            retval = obj.to_json()
+            return retval
+        if isinstance(obj, autonetkit.nidb.overlay_interface):
+            #TODO: check this is consistent with deserialization
             return str(obj)
         if isinstance(obj, autonetkit.nidb.nidb_node_category):
             #TODO: add documentation about serializing anm nodes
             return str(obj)
         if isinstance(obj, nx.classes.Graph):
+            #TODO: remove now?
             return json_graph.node_link_data(obj)
 
         if isinstance(obj, logging.LoggerAdapter):
+            #TODO: filter this out in the to_json methods
             return ""
 
         return json.JSONEncoder.default(self, obj)
@@ -102,6 +112,9 @@ def ank_json_custom_loads(data):
             except AttributeError:
                 pass # not a string
 # handle lists of IP addresses
+            if isinstance(val, dict) and val.get("_config_stanza") == True:
+                val = autonetkit.nidb.config_stanza(**val)
+                inst[key] = val # update with (possibly) updated list
 
             if isinstance(val, list):
                 if any(isinstance(elem, basestring) for elem in val):
