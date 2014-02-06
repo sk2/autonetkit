@@ -845,8 +845,26 @@ class NIDB_base(object):
 
     def routers(self, *args, **kwargs):
         """Shortcut for nodes(), sets device_type to be router"""
-        kwargs['device_type'] = 'router'
-        return self.nodes(*args, **kwargs)
+
+        result = self.nodes(*args, **kwargs)
+        return [r for r in result if r.is_router]
+
+    def switches(self, *args, **kwargs):
+        """Shortcut for nodes(), sets device_type to be switch"""
+
+        result = self.nodes(*args, **kwargs)
+        return [r for r in result if r.is_switch]
+
+    def servers(self, *args, **kwargs):
+            """Shortcut for nodes(), sets device_type to be server"""
+
+            result = self.nodes(*args, **kwargs)
+            return [r for r in result if r.is_server]
+
+    def l3devices(self, *args, **kwargs):
+        """Shortcut for nodes(), sets device_type to be server"""
+        result = self.nodes(*args, **kwargs)
+        return [r for r in result if r.is_l3device]
 
     def filter(self, nbunch = None, *args, **kwargs):
         #TODO: also allow nbunch to be passed in to subfilter on...?
