@@ -39,6 +39,11 @@ class config_stanza(object):
     def __repr__(self):
         return str(self._odict.items())
 
+    def to_json(self):
+        retval = OrderedDict(self._odict) # clone to append to
+        retval['_config_stanza'] = True
+        return retval
+
     def add_stanza(self, name, **kwargs):
         """Adds a sub-stanza to this stanza"""
         stanza = config_stanza(**kwargs)
@@ -606,6 +611,7 @@ class nidb_node(object):
                 self.log.debug("Stanza %s already exists" % name)
                 return value
             else:
+                #TODO: remove? - as shouldn't reach here now? GH-186
                 log.warning("Creating stanza: %s already set as %s for %s" % (name, type(value), self))
 
         stanza = config_stanza(**kwargs)
