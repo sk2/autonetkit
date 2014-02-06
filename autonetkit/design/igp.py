@@ -39,8 +39,8 @@ def build_ospf(anm):
     ank_utils.copy_edge_attr_from(g_in, g_ospf, "ospf_cost",
         dst_attr="cost",  type=int, default = 1)
 
-    ank_utils.aggregate_nodes(g_ospf, g_ospf.nodes("is_switch"))
-    exploded_edges = ank_utils.explode_nodes(g_ospf, g_ospf.nodes("is_switch"))
+    ank_utils.aggregate_nodes(g_ospf, g_ospf.switches())
+    exploded_edges = ank_utils.explode_nodes(g_ospf, g_ospf.switches())
     for edge in exploded_edges:
         edge.multipoint = True
 
@@ -173,16 +173,13 @@ def build_eigrp(anm):
         log.debug("No EIGRP nodes")
         return
     g_ipv4 = anm['ipv4']
-    g_eigrp.add_nodes_from(g_in.nodes("is_router",
-        igp = "eigrp"), retain=['asn'])
-    g_eigrp.add_nodes_from(g_in.nodes("is_server",
-        igp = "eigrp"), retain=['asn'])
-    g_eigrp.add_nodes_from(g_in.nodes("is_switch"), retain=['asn'])
+    g_eigrp.add_nodes_from(g_in.l3devices(igp = "eigrp"), retain=['asn'])
+    g_eigrp.add_nodes_from(g_in.switches(), retain=['asn'])
     g_eigrp.add_edges_from(g_in.edges())
 # Merge and explode switches
-    ank_utils.aggregate_nodes(g_eigrp, g_eigrp.nodes("is_switch"))
+    ank_utils.aggregate_nodes(g_eigrp, g_eigrp.switches())
     exploded_edges = ank_utils.explode_nodes(g_eigrp,
-        g_eigrp.nodes("is_switch"))
+        g_eigrp.switches())
     for edge in exploded_edges:
         edge.multipoint = True
 
@@ -217,20 +214,19 @@ def build_isis(anm):
         g_isis.log.debug("No ISIS nodes")
         return
     g_ipv4 = anm['ipv4']
-    g_isis.add_nodes_from(g_in.nodes("is_router", igp = "isis"), retain=['asn'])
-    g_isis.add_nodes_from(g_in.nodes("is_server", igp = "isis"), retain=['asn'])
-    g_isis.add_nodes_from(g_in.nodes("is_switch"), retain=['asn'])
+    g_isis.add_nodes_from(g_in.l3devices(igp = "isis"), retain=['asn'])
+    g_isis.add_nodes_from(g_in.switches(), retain=['asn'])
     g_isis.add_edges_from(g_in.edges())
 # Merge and explode switches
-    ank_utils.aggregate_nodes(g_isis, g_isis.nodes("is_switch"))
-    exploded_edges = ank_utils.explode_nodes(g_isis, g_isis.nodes("is_switch"))
+    ank_utils.aggregate_nodes(g_isis, g_isis.switches())
+    exploded_edges = ank_utils.explode_nodes(g_isis, g_isis.switches())
     for edge in exploded_edges:
         edge.multipoint = True
 
     g_isis.remove_edges_from(
         [link for link in g_isis.edges() if link.src.asn != link.dst.asn])
 
-    for node in g_isis.nodes("is_router"):
+    for node in g_isis.routers():
         ip_node = g_ipv4.node(node)
         node.net = ip_to_net_ent_title_ios(ip_node.loopback)
         node.process_id = 1  # default

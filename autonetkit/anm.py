@@ -1103,25 +1103,24 @@ class OverlayBase(object):
     def routers(self, *args, **kwargs):
         """Shortcut for nodes(), sets device_type to be router"""
 
-        kwargs['device_type'] = 'router'
-        return self.nodes(*args, **kwargs)
+        result = self.nodes(*args, **kwargs)
+        return [r for r in result if r.is_router]
 
     def switches(self, *args, **kwargs):
         """Shortcut for nodes(), sets device_type to be switch"""
 
-        kwargs['device_type'] = 'switch'
-        return self.nodes(*args, **kwargs)
+        result = self.nodes(*args, **kwargs)
+        return [r for r in result if r.is_switch]
 
     def servers(self, *args, **kwargs):
             """Shortcut for nodes(), sets device_type to be server"""
 
-            kwargs['device_type'] = 'server'
-            return self.nodes(*args, **kwargs)
+            result = self.nodes(*args, **kwargs)
+            return [r for r in result if r.is_server]
 
     def l3devices(self, *args, **kwargs):
         """Shortcut for nodes(), sets device_type to be server"""
         result = self.nodes(*args, **kwargs)
-        #TODO: tie into the defined set of l3 devices
         return [r for r in result if r.is_l3device]
 
     def device(self, key):

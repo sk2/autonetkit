@@ -15,7 +15,7 @@ def mpls_te(anm):
     # add regardless, so allows quick check of node in anm['mpls_te'] in compilers
 
     g_mpls_te = anm.add_overlay('mpls_te')
-    if not any(True for n in g_in if n.is_router and n.mpls_te_enabled):
+    if not any(True for n in g_in.routers() if n.mpls_te_enabled):
         log.debug('No nodes with mpls_te_enabled set')
         return
 
@@ -76,8 +76,9 @@ def allocate_vrf_roles(g_vrf):
     non_ce_nodes = [node for node in g_vrf if node.vrf_role != "CE"]
 
     for node in sorted(non_ce_nodes):
-        phy_neighbors = g_phy.node(node).neighbors("is_router")
+        phy_neighbors = [n for n in g_phy.node(node).neighbors() if n.is_router]
         # neighbors from physical graph for connectivity
+        #TODO: does this do anything?
         phy_neighbors = [neigh for neigh in phy_neighbors]
             # filter to just this asn
         if any(g_vrf.node(neigh).vrf_role == "CE" for neigh in phy_neighbors):
@@ -185,7 +186,7 @@ def build_mpls_ldp(anm):
     g_vrf = anm['vrf']
     g_l3conn = anm['l3_conn']
     g_mpls_ldp = anm.add_overlay("mpls_ldp")
-    nodes_to_add = [n for n in g_in.nodes("is_router")
+    nodes_to_add = [n for n in g_in.routers()
             if n['vrf'].vrf_role in ("PE", "P")]
     g_mpls_ldp.add_nodes_from(nodes_to_add, retain=["vrf_role", "vrf"])
 
@@ -236,11 +237,11 @@ def build_vrf(anm):
     import autonetkit
     autonetkit.ank.set_node_default(g_in,  vrf=None)
 
-    if not any(True for n in g_in if n.is_router and n.vrf):
+    if not any(True for n in g_in.routers() if n.vrf):
         log.debug("No VRFs set")
         return
 
-    g_vrf.add_nodes_from(g_in.nodes("is_router"), retain=["vrf_role", "vrf"])
+    g_vrf.add_nodes_from(g_in.routers(), retain=["vrf_role", "vrf"])
 
     allocate_vrf_roles(g_vrf)
 
