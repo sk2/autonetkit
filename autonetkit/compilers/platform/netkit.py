@@ -115,21 +115,22 @@ class NetkitCompiler(PlatformCompiler):
                 broadcast_domain = str(interface.ipv4_subnet).replace("/", ".")
                 #netkit lab.conf uses 1 instead of eth1
                 numeric_id = interface.numeric_id
-                lab_topology.config_items.append(
+                stanza = config_stanza(
                     device=naming.network_hostname(node),
                     key=numeric_id,
                     value=broadcast_domain,
                 )
+                lab_topology.config_items.append(stanza)
 
         lab_topology.tap_ips = []
         for node in subgraph:
             if node.tap:
-                lab_topology.tap_ips.append(
+                stanza = config_stanza(
                     device=naming.network_hostname(node),
                     id=node.tap.id.replace("eth", ""),  # strip ethx -> x
                     ip=node.tap.ip,
                 )
+                lab_topology.tap_ips.append(stanza)
 
-        lab_topology.tap_ips.sort("ip")
-        lab_topology.config_items.sort("device")
-
+        lab_topology.tap_ips = sorted(lab_topology.tap_ips, key = lambda x: x.ip)
+        lab_topology.config_items = sorted(lab_topology.config_items, key = lambda x: x.device)

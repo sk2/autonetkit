@@ -584,6 +584,7 @@ class nidb_node(object):
         """Layer 3 devices: router, server, cloud, host
         ie not switch
         """
+        #TODO: need to check for cloud, host
         return self.is_router or self.is_server
 
     def edges(self, *args, **kwargs):
@@ -666,17 +667,7 @@ class lab_topology(object):
     def __getattr__(self, key):
         """Returns topology property"""
         data = self._topology_data.get(key)
-        try:
-            [item.keys() for item in data]
-#TODO: replace this with an OrderedDict
-            #print "from lab_topology", self.nidb, self.topology_id, key
-            return overlay_data_list_of_dicts(self._topology_data, key)
-        except AttributeError:
-            pass # not a dict
-        except TypeError:
-            pass # also not a dict
         return data
-        return self._topology_data.get(key)
 
     def __setattr__(self, key, val):
         """Sets topology property"""
