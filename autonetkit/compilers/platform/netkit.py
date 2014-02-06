@@ -23,7 +23,7 @@ class NetkitCompiler(PlatformCompiler):
         g_phy = self.anm['phy']
         quagga_compiler = QuaggaCompiler(self.nidb, self.anm)
 # TODO: this should be all l3 devices not just routers
-        for phy_node in g_phy.nodes('is_l3device', host=self.host, syntax='quagga'):
+        for phy_node in g_phy.l3devices(host=self.host, syntax='quagga'):
             folder_name = naming.network_hostname(phy_node)
             nidb_node = self.nidb.node(phy_node)
             nidb_node.add_stanza("render")
@@ -83,7 +83,7 @@ class NetkitCompiler(PlatformCompiler):
             or "172.16.0.0/16").iter_hosts() # added for backwards compatibility
         lab_topology.tap_host = address_block.next()
         lab_topology.tap_vm = address_block.next()  # for tunnel host
-        for node in sorted(self.nidb.nodes("is_l3device", host=self.host)):
+        for node in sorted(self.nidb.l3devices(host=self.host)):
             node.tap.ip = address_block.next()
 
     def lab_topology(self):
@@ -107,10 +107,10 @@ class NetkitCompiler(PlatformCompiler):
         subgraph = self.nidb.subgraph(host_nodes, self.host)
 
         lab_topology.machines = " ".join(alpha_sort(naming.network_hostname(phy_node)
-            for phy_node in subgraph.nodes("is_l3device")))
+            for phy_node in subgraph.l3devices()))
 
         lab_topology.config_items = []
-        for node in sorted(subgraph.nodes("is_l3device")):
+        for node in sorted(subgraph.l3devices()):
             for interface in node.physical_interfaces:
                 broadcast_domain = str(interface.ipv4_subnet).replace("/", ".")
                 #netkit lab.conf uses 1 instead of eth1

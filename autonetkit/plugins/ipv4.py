@@ -619,7 +619,7 @@ def allocate_loopbacks(g_ip, address_block=None):
         address_block = netaddr.IPNetwork('192.168.0.0/22')
     log.info('Allocating v4 Primary Host loopback IPs')
     ip_tree = IpTree(address_block)
-    ip_tree.add_nodes(g_ip.nodes('is_l3device'))
+    ip_tree.add_nodes(g_ip.l3devices())
     ip_tree.build()
 
     # loopback_tree = ip_tree.json()

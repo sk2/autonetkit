@@ -353,7 +353,7 @@ class CiscoCompiler(PlatformCompiler):
         lab_topology = self.nidb.topology[self.host]
         oob_management_ips = {}
 
-        hosts_to_allocate = sorted(self.nidb.nodes('is_l3device', host=self.host))
+        hosts_to_allocate = sorted(self.nidb.l3devices(host=self.host))
         dhcp_subtypes = {"vios"}
         dhcp_hosts = [h for h in hosts_to_allocate if h.device_subtype in dhcp_subtypes]
 

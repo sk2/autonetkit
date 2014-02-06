@@ -272,14 +272,14 @@ def build_bgp(anm):
     ebgp_edges = [edge for edge in g_in.edges() if not edge.attr_equal("asn")]
     g_bgp.add_edges_from(ebgp_edges, bidirectional=True, type='ebgp')
 
-    ebgp_switches = [n for n in g_in.nodes("is_switch")
+    ebgp_switches = [n for n in g_in.switches()
             if not ank_utils.neigh_equal(g_phy, n, "asn")]
     g_bgp.add_nodes_from(ebgp_switches, retain=['asn'])
     log.debug("eBGP switches are %s" % ebgp_switches)
     g_bgp.add_edges_from((e for e in g_in.edges()
             if e.src in ebgp_switches or e.dst in ebgp_switches), bidirectional=True, type='ebgp')
     ank_utils.aggregate_nodes(g_bgp, ebgp_switches)
-    ebgp_switches = list(g_bgp.nodes("is_switch")) # need to recalculate as may have aggregated
+    ebgp_switches = list(g_bgp.switches()) # need to recalculate as may have aggregated
     log.debug("aggregated eBGP switches are %s" % ebgp_switches)
     exploded_edges = ank_utils.explode_nodes(g_bgp, ebgp_switches)
 

@@ -21,7 +21,7 @@ class PlatformCompiler(object):
         from autonetkit.ank import sn_preflen_to_network
 
         #TODO:  check if this will clobber with platform?
-        for node in self.nidb.nodes('is_l3device', host=self.host):
+        for node in self.nidb.l3devices(host=self.host):
             phy_node = self.anm['phy'].node(node)
 
             node.add_stanza("ip")

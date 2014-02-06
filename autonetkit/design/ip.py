@@ -13,7 +13,7 @@ def manual_ipv6_loopback_allocation(anm):
     import netaddr
     g_ipv6 = anm['ipv6']
 
-    for l3_device in g_ipv6.nodes('is_l3device'):
+    for l3_device in g_ipv6.l3devices():
         l3_device.loopback = l3_device['input'].loopback_v6
 
     # also need to form aggregated IP blocks (used for e.g. routing prefix
@@ -35,7 +35,7 @@ def manual_ipv6_infrastructure_allocation(anm):
     g_ipv6 = anm['ipv6']
     log.info('Using specified IPv6 infrastructure allocation')
 
-    for node in g_ipv6.nodes('is_l3device'):
+    for node in g_ipv6.l3devices():
         for interface in node.physical_interfaces:
             if not interface['input'].is_bound:
                 continue  # unbound interface
@@ -120,7 +120,7 @@ def build_ipv6(anm):
 
     # TODO: replace this with direct allocation to interfaces in ip alloc plugin
     allocated = sorted([n for n in g_ip if n['input'].loopback_v6])
-    if len(allocated) == len(g_ip.nodes("is_l3device")):
+    if len(allocated) == len(g_ip.l3devices()):
         # all allocated
         #TODO: need to infer subnetomanual_ipv6_loopback_allocation
         log.info("Using user-specified IPv6 loopback addresses")
@@ -168,7 +168,7 @@ def build_ipv6(anm):
     else:
         ipv6.allocate_infra(g_ipv6, infra_block)
         #TODO: see if this is still needed or if can allocate direct from the ipv6 allocation plugin
-        for node in g_ipv6.nodes('is_l3device'):
+        for node in g_ipv6.l3devices():
             for interface in node:
                 edges = list(interface.edges())
                 if len(edges):
@@ -179,7 +179,7 @@ def build_ipv6(anm):
 
     ipv6.allocate_vrf_loopbacks(g_ipv6, secondary_loopback_block)
 
-    for node in g_ipv6.nodes('is_router'):
+    for node in g_ipv6.routers():
         #TODO: test this code
         node.loopback_zero.ip_address = node.loopback
         node.loopback_zero.subnet = netaddr.IPNetwork("%s/32" % node.loopback)
@@ -195,7 +195,7 @@ def manual_ipv4_infrastructure_allocation(anm):
     g_ipv4 = anm['ipv4']
     log.info('Using specified IPv4 infrastructure allocation')
 
-    for node in g_ipv4.nodes('is_l3device'):
+    for node in g_ipv4.l3devices():
         for interface in node.physical_interfaces:
             if not interface['input'].is_bound:
                 continue  # unbound interface
@@ -261,7 +261,7 @@ def manual_ipv4_loopback_allocation(anm):
     import netaddr
     g_ipv4 = anm['ipv4']
 
-    for l3_device in g_ipv4.nodes('is_l3device'):
+    for l3_device in g_ipv4.l3devices():
         l3_device.loopback = l3_device['input'].loopback_v4
 
     # also need to form aggregated IP blocks (used for e.g. routing prefix
@@ -288,10 +288,10 @@ def build_ip(anm):
     g_ip.add_nodes_from(g_phy)
     g_ip.add_edges_from(g_phy.edges())
 
-    ank_utils.aggregate_nodes(g_ip, g_ip.nodes('is_switch'))
+    ank_utils.aggregate_nodes(g_ip, g_ip.switches())
 
     edges_to_split = [edge for edge in g_ip.edges()
-                      if edge.attr_both('is_l3device')]
+        if edge.src.is_l3device and edge.dst.is_l3device]
     for edge in edges_to_split:
         edge.split = True  # mark as split for use in building nidb
 
@@ -313,7 +313,7 @@ def build_ip(anm):
         node['graphics'].asn = asn
         node.asn = asn  # need to use asn in IP overlay for aggregating subnets
 
-    switch_nodes = g_ip.nodes('is_switch')  # regenerate due to aggregated
+    switch_nodes = g_ip.switches()  # regenerate due to aggregated
     g_ip.update(switch_nodes, broadcast_domain=True)
 
                  # switches are part of collision domain
@@ -472,7 +472,7 @@ def build_ipv4(anm, infrastructure=True):
     # TODO: replace this with direct allocation to interfaces in ip alloc plugin
     #TODO: add option for nonzero interfaces on node - ie node.secondary_loopbacks
 
-    for node in g_ipv4.nodes('is_router'):
+    for node in g_ipv4.routers():
         node.loopback_zero.ip_address = node.loopback
         node.loopback_zero.subnet = netaddr.IPNetwork("%s/32" % node.loopback)
         for interface in node.loopback_interfaces:
