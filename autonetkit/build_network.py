@@ -10,6 +10,7 @@ import autonetkit.exception
 import autonetkit.load.graphml as graphml
 import autonetkit.log as log
 import networkx as nx
+from autonetkit.exception import AutoNetkitException
 
 SETTINGS = autonetkit.config.settings
 

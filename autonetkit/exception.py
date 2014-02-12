@@ -1,9 +1,6 @@
-
-# based on NetworkX exceptions
-
-class AnkException(Exception):
+class AutoNetkitException(Exception):
     """Base class for AutoNetkit Exceptions"""
 
-class AnkIncorrectFileFormat(AnkException):
+class AnkIncorrectFileFormat(AutoNetkitException):
     """Wrong file format"""
 

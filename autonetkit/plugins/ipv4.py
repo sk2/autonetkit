@@ -13,6 +13,7 @@ import autonetkit.ank_messaging
 import autonetkit.log as log
 import netaddr
 import networkx as nx
+from autonetkit.exception import AutoNetkitException
 
 # TODO: allow slack in allocations: both for ASN (group level), and for collision domains to allow new nodes to be easily added
 
@@ -363,11 +364,10 @@ class IpTree(object):
             global_ip_block = \
                 self.root_ip_block.subnet(global_prefix_len).next()
         except StopIteration:
-            log.error('Unable to subnet IP block: trying to create subnets of size %s from %s'
-                       % (global_prefix_len,
-                      self.root_ip_block.prefixlen))
-            raise SystemExit  # TODO: throw ANK specific exception here
-            return
+            message = ('Unable to subnet IP block: trying to create subnets of size %s from %s'
+                       % (global_prefix_len, self.root_ip_block.prefixlen))
+            log.error(message)
+            raise AutoNetkitException(message)  # TODO: throw ANK specific exception here
         self.graph = global_graph
 
 # add children of collision domains
