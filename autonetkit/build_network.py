@@ -58,7 +58,7 @@ def grid_2d(dim):
         graph.node[node]['platform'] = 'cisco'
         graph.node[node]['syntax'] = 'ios_xr'
         graph.node[node]['host'] = 'internal'
-        graph.node[node]['ibgp_level'] = 0
+        graph.node[node]['ibgp_role'] = "Peer"
 
     mapping = {node: "%s_%s" % (node[0], node[1]) for node in graph}
     # Networkx wipes data if remap with same labels

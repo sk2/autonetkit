@@ -52,13 +52,13 @@ def mpls_oam(anm):
 @call_log
 def vrf_pre_process(anm):
     """Marks nodes in g_in as appropriate based on vrf roles.
-    CE nodes -> ibgp_level = 0, so not in ibgp (this is allocated later)
+    CE nodes -> ibgp_role = Disabled, so not in iBGP (this is allocated later)
     """
     log.debug("Applying VRF pre-processing")
     g_vrf = anm['vrf']
     for node in g_vrf.nodes(vrf_role = "CE"):
         log.debug("Marking CE node %s as non-ibgp" % node)
-        node['input'].ibgp_level = 0
+        node['input'].ibgp_role = "Disabled"
 
 @call_log
 def allocate_vrf_roles(g_vrf):
@@ -122,6 +122,7 @@ def build_ibgp_vpn_v4(anm):
     pe_nodes = set(g_vrf.nodes(vrf_role = "PE"))
     pe_rrc_nodes = {n for n in ibgp_v4_nodes if
             n in pe_nodes and n.ibgp_role == "RRC"}
+    #TODO: warn if pe_rrc_nodes?
     ce_nodes = set(g_vrf.nodes(vrf_role = "CE"))
 
     if len(pe_nodes) == len(ce_nodes) == len(pe_rrc_nodes) == 0:
@@ -132,11 +133,11 @@ def build_ibgp_vpn_v4(anm):
 
     ibgp_vpn_v4_nodes = (n for n in ibgp_v4_nodes
             if n not in pe_rrc_nodes and n not in ce_nodes)
-    g_ibgp_vpn_v4.add_nodes_from(ibgp_vpn_v4_nodes, retain = ["ibgp_role", "ibgp_level"])
+    g_ibgp_vpn_v4.add_nodes_from(ibgp_vpn_v4_nodes, retain = ["ibgp_role"])
     g_ibgp_vpn_v4.add_edges_from(g_ibgp_v4.edges(), retain = "direction")
 
     for node in g_ibgp_vpn_v4:
-        if node.ibgp_level in (2, 3): # HRR or RR
+        if node.ibgp_role in ("HRR", "RR"):
             node.retain_route_target = True
 
     ce_edges = [e for e in g_ibgp_vpn_v4.edges()
