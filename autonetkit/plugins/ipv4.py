@@ -199,6 +199,8 @@ class IpTree(object):
 
         unallocated_nodes = sorted(unallocated_nodes, key=key_func)
         groupings = itertools.groupby(unallocated_nodes, key=key_func)
+        prefixes_by_attr = {}
+
         for (attr_value, items) in groupings:
 
 # make subtree for each attr
@@ -316,6 +318,7 @@ class IpTree(object):
 
             subgraph.node[root_node]['prefixlen'] = 16
             subgraph.node[root_node]['group_attr'] = attr_value
+            prefixes_by_attr[attr_value] = subgraph.node[root_node]['prefixlen']
 
         global_graph = nx.DiGraph()
         subgraphs = sorted(subgraphs, key=lambda x: \
@@ -364,8 +367,10 @@ class IpTree(object):
             global_ip_block = \
                 self.root_ip_block.subnet(global_prefix_len).next()
         except StopIteration:
-            message = ('Unable to subnet IP block: trying to create subnets of size %s from %s'
-                       % (global_prefix_len, self.root_ip_block.prefixlen))
+            #message = ("Unable to allocate IPv4 subnets. ")
+            formatted_prefixes = ", ".join("AS%s: /%s" % (k,v) for k,v in sorted(prefixes_by_attr.items()))
+            message = ("Cannot create requested number of /%s subnets from root block %s. Please specify a larger root IP block. (Requested subnet allocations are: %s)"
+                       % (global_prefix_len, self.root_ip_block, formatted_prefixes))
             log.error(message)
             raise AutoNetkitException(message)  # TODO: throw ANK specific exception here
         self.graph = global_graph
