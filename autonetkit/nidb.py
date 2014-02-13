@@ -88,6 +88,7 @@ class config_stanza(object):
 
 
 class interface_data_dict(collections.MutableMapping):
+    #TODO: replace with config stanza
     """A dictionary which allows access as dict.key as well as dict['key']
     Based on http://stackoverflow.com/questions/3387691
     only allows read only acess
@@ -160,7 +161,7 @@ class overlay_interface(object):
 
     def __repr__(self):
         description = self.description or self.interface_id
-        return "(%s, %s)" % (self.node, description)
+        return "%s.%s" % (self.node, description)
 
     def __nonzero__(self):
         """Allows for checking if node exists
