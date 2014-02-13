@@ -65,8 +65,7 @@ assert(not loopback0.is_physical)
 assert(loopback0.is_loopback_zero)
 
 #TODO: need to add more loopbacks to test
-
-assert(str(loopback0) == "(loopback.r1)")
+assert(str(loopback0) == "loopback.r1")
 
 eth0 = test_node.interface(1)
 assert(eth0.is_bound)
@@ -110,7 +109,7 @@ assert(test_node.is_router())
 assert(not test_node.is_switch())
 assert(not test_node.is_server())
 assert(str(list(test_node.neighbors())) == "[r2, r3]")
-assert(str(list(test_node.neighbor_interfaces())) == "[(eth0.r2), (eth0.r3)]")
+assert(str(list(test_node.neighbor_interfaces())) == "[eth0.r2, eth0.r3]")
 # Test getting from another overlay
 assert(test_node['input'].asn == 1)
 
