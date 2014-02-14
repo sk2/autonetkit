@@ -118,6 +118,13 @@ def build_ibgp_vpn_v4(anm):
     g_vrf = anm['vrf']
     g_ibgp_vpn_v4 = anm.add_overlay("ibgp_vpn_v4", directed=True)
 
+    v6_vrf_nodes = [n for n in g_vrf
+        if n.vrf is not None and n['phy'].use_ipv6 is True]
+    if len(v6_vrf_nodes):
+        message = ", ".join(str(s) for s in v6_vrf_nodes)
+        log.warning("This version of AutoNetkit does not support IPv6 MPLS VPNs. "
+            "The following nodes have IPv6 enabled but will not have an associated IPv6 MPLS VPN topolog created: %s" % message)
+
     ibgp_v4_nodes = list(g_ibgp_v4.nodes())
     pe_nodes = set(g_vrf.nodes(vrf_role = "PE"))
     pe_rrc_nodes = {n for n in ibgp_v4_nodes if
@@ -245,7 +252,6 @@ def build_vrf(anm):
     g_vrf.add_nodes_from(g_in.routers(), retain=["vrf_role", "vrf"])
 
     allocate_vrf_roles(g_vrf)
-
     vrf_pre_process(anm)
 
     def is_pe_ce_edge(edge):
