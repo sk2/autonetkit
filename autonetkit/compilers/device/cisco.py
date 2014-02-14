@@ -316,6 +316,7 @@ class IosBaseCompiler(RouterCompiler):
                 if interface.exclude_igp:
                     continue  # don't configure IGP for this interface
 
+                #TODO: use config_stanza here
                 interface.ospf = {
                     'cost': ospf_int.cost,
                     'area': ospf_int.area,
