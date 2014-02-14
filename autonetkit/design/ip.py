@@ -111,8 +111,8 @@ def build_ipv6(anm):
     global_pool = netaddr.IPNetwork('::/32').subnet(64)
     global_pool.next()  # network address
     [global_pool.next() for i in range(9)]  # consume generator to start infra at "a", loopbacks at "b"
-    loopback_block = global_pool.next()
     infra_block = global_pool.next()
+    loopback_block = global_pool.next()
     secondary_loopback_block = global_pool.next()
 
     block_message = "IPv6 allocations: Infrastructure: %s, Loopback: %s" % (infra_block, loopback_block)
@@ -175,7 +175,6 @@ def build_ipv6(anm):
                     edge = edges[0]  # first (only) edge
                     interface.ip_address = edge.ip  # TODO: make this consistent
                     interface.subnet = edge.dst.subnet  # from collision domain
-
 
     ipv6.allocate_vrf_loopbacks(g_ipv6, secondary_loopback_block)
 
