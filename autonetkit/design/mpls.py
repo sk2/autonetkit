@@ -69,12 +69,18 @@ def allocate_vrf_roles(g_vrf):
         if not node.vrf:
             node.vrf = "default_vrf"
 
+    ce_set_nodes = []
     for node in sorted(g_vrf.nodes('vrf')):
         node.vrf_role = "CE"
-        node.log.info("VRF role set to CE")
+        ce_set_nodes.append(node)
+    if len(ce_set_nodes):
+        message = ", ".join(str(n) for n in sorted(ce_set_nodes))
+        g_vrf.log.info("VRF role set to CE for %s" % message)
 
     non_ce_nodes = [node for node in g_vrf if node.vrf_role != "CE"]
 
+    pe_set_nodes = []
+    p_set_nodes = []
     for node in sorted(non_ce_nodes):
         phy_neighbors = [n for n in g_phy.node(node).neighbors() if n.is_router()]
         # neighbors from physical graph for connectivity
@@ -84,10 +90,17 @@ def allocate_vrf_roles(g_vrf):
         if any(g_vrf.node(neigh).vrf_role == "CE" for neigh in phy_neighbors):
             # phy neigh has vrf set in this graph
             node.vrf_role = "PE"
-            node.log.info("VRF role set to PE (connected to a CE router)")
+            pe_set_nodes.append(node)
         else:
             node.vrf_role = "P"  # default role
-            node.log.info("VRF role set to P (not connected to any CE routers)")
+            p_set_nodes.append(node)
+
+    if len(pe_set_nodes):
+        message = ", ".join(str(n) for n in sorted(pe_set_nodes))
+        g_vrf.log.info("VRF role set to PE for %s" % message)
+    if len(p_set_nodes):
+        message = ", ".join(str(n) for n in sorted(p_set_nodes))
+        g_vrf.log.info("VRF role set to P for %s" % message)
 
 @call_log
 def add_vrf_loopbacks(g_vrf):
