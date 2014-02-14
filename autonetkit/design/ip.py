@@ -28,6 +28,46 @@ def manual_ipv6_loopback_allocation(anm):
     g_ipv6.data.loopback_blocks = loopback_blocks
 
 @call_log
+def extract_ipv6_blocks(anm):
+
+    # TODO: set all these blocks globally in config file, rather than repeated in load, build_network, compile, etc
+
+    from autonetkit.ank import sn_preflen_to_network
+    from netaddr import IPNetwork
+    g_in = anm['input']
+
+    try:
+        infra_subnet = g_in.data.ipv6_infra_subnet
+        infra_prefix = g_in.data.ipv6_infra_prefix
+        infra_block = sn_preflen_to_network(infra_subnet, infra_prefix)
+    except Exception, e:
+        log.debug('Unable to obtain IPv6 infra_subnet from input graph: %s'
+                  % e)
+        infra_block = IPNetwork('0:0:0:a::/64')
+
+    try:
+        loopback_subnet = g_in.data.ipv6_loopback_subnet
+        loopback_prefix = g_in.data.ipv6_loopback_prefix
+        loopback_block = sn_preflen_to_network(loopback_subnet,
+                loopback_prefix)
+    except Exception, e:
+        log.debug('Unable to obtain IPv6 loopback_subnet from input graph: %s'
+                   % e)
+        loopback_block = IPNetwork('0:0:0:b::/64')
+
+    try:
+        vrf_loopback_subnet = g_in.data.ipv6_vrf_loopback_subnet
+        vrf_loopback_prefix = g_in.data.ipv6_vrf_loopback_prefix
+        vrf_loopback_block = sn_preflen_to_network(vrf_loopback_subnet,
+                vrf_loopback_prefix)
+    except Exception, e:
+        log.debug('Unable to obtain IPv6 vrf_loopback_subnet from input graph: %s'
+                   % e)
+        vrf_loopback_block = IPNetwork('0:0:0:c::/64')
+
+    return (infra_block, loopback_block, vrf_loopback_block)
+
+@call_log
 def manual_ipv6_infrastructure_allocation(anm):
     """Applies manual IPv6 allocation"""
 
@@ -107,15 +147,14 @@ def build_ipv6(anm):
     g_ipv6.add_nodes_from(g_ip, retain=['label', 'asn', 'broadcast_domain'])  # retain if collision domain or not
     g_ipv6.add_edges_from(g_ip.edges())
 
-    global_pool = netaddr.IPNetwork('2001:db8::/32').subnet(48)
-    global_pool = netaddr.IPNetwork('::/32').subnet(64)
-    global_pool.next()  # network address
-    [global_pool.next() for i in range(9)]  # consume generator to start infra at "a", loopbacks at "b"
-    infra_block = global_pool.next()
-    loopback_block = global_pool.next()
-    secondary_loopback_block = global_pool.next()
+    #TODO: tidy up naming consitency of secondary_loopback_block and vrf_loopback_block
+    (infra_block, loopback_block, secondary_loopback_block) = \
+        extract_ipv6_blocks(anm)
 
     block_message = "IPv6 allocations: Infrastructure: %s, Loopback: %s" % (infra_block, loopback_block)
+    if any(i for n in g_ip.nodes() for i in
+     n.loopback_interfaces if not i.is_loopback_zero):
+        block_message += " Secondary Loopbacks: %s" % secondary_loopback_block
     log.info(block_message)
 
     # TODO: replace this with direct allocation to interfaces in ip alloc plugin
@@ -132,7 +171,6 @@ def build_ipv6(anm):
             log.info("Automatically assigning IPv6 loopback addresses")
 
         ipv6.allocate_loopbacks(g_ipv6, loopback_block)
-
 
     l3_devices = [d for d in g_in if d.device_type in ('router', 'server')]
 
@@ -360,7 +398,7 @@ def extract_ipv4_blocks(anm):
         infra_prefix = g_in.data.ipv4_infra_prefix
         infra_block = sn_preflen_to_network(infra_subnet, infra_prefix)
     except Exception, e:
-        log.debug('Unable to obtain infra_subnet from input graph: %s'
+        log.debug('Unable to obtain IPv4 infra_subnet from input graph: %s'
                   % e)
         infra_block = IPNetwork('10.0.0.0/8')
 
@@ -370,9 +408,9 @@ def extract_ipv4_blocks(anm):
         loopback_block = sn_preflen_to_network(loopback_subnet,
                 loopback_prefix)
     except Exception, e:
-        log.debug('Unable to obtain loopback_subnet from input graph: %s'
+        log.debug('Unable to obtain IPv4 loopback_subnet from input graph: %s'
                    % e)
-        loopback_block = IPNetwork('10.0.0.0/8')
+        loopback_block = IPNetwork('192.168.0.0/22')
 
     try:
         vrf_loopback_subnet = g_in.data.ipv4_vrf_loopback_subnet
@@ -380,7 +418,7 @@ def extract_ipv4_blocks(anm):
         vrf_loopback_block = sn_preflen_to_network(vrf_loopback_subnet,
                 vrf_loopback_prefix)
     except Exception, e:
-        log.debug('Unable to obtain vrf_loopback_subnet from input graph: %s'
+        log.debug('Unable to obtain IPv4 vrf_loopback_subnet from input graph: %s'
                    % e)
         vrf_loopback_block = IPNetwork('172.16.0.0/24')
 
