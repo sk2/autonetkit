@@ -347,20 +347,20 @@ router bgp ${node.asn}
 % for neigh in vrf.vrf_ibgp_neighbors:
   % if loop.first:
   % endif
-  % if neigh['use_ipv4']:
-    neighbor ${neigh['dst_int_ip']} remote-as ${neigh['asn']}
-    neighbor ${neigh['dst_int_ip']} activate
-    neighbor ${neigh['dst_int_ip']} as-override
+  % if neigh.use_ipv4:
+    neighbor ${neigh.dst_int_ip} remote-as ${neigh.asn}
+    neighbor ${neigh.dst_int_ip} activate
+    neighbor ${neigh.dst_int_ip} as-override
     !
   %endif
 % endfor
 % for neigh in vrf.vrf_ebgp_neighbors:
   % if loop.first:
   % endif
-  % if neigh['use_ipv4']:
-    neighbor ${neigh['dst_int_ip']} remote-as ${neigh['asn']}
-    neighbor ${neigh['dst_int_ip']} activate
-    neighbor ${neigh['dst_int_ip']} as-override
+  % if neigh.use_ipv4:
+    neighbor ${neigh.dst_int_ip} remote-as ${neigh.asn}
+    neighbor ${neigh.dst_int_ip} activate
+    neighbor ${neigh.dst_int_ip} as-override
     !
   %endif
 % endfor

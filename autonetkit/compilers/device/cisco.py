@@ -194,13 +194,15 @@ class IosBaseCompiler(RouterCompiler):
             for session in sort_sessions(g_ibgp_v4.edges(vrf_node)):
                 if session.exclude and session.vrf:
                     data = self.ibgp_session_data(session, ip_version=4)
-                    vrf_ibgp_neighbors[session.vrf].append(data)
+                    stanza = config_stanza(data)
+                    vrf_ibgp_neighbors[session.vrf].append(stanza)
 
             g_ibgp_v6 = self.anm['ibgp_v6']
             for session in sort_sessions(g_ibgp_v6.edges(vrf_node)):
                 if session.exclude and session.vrf:
                     data = self.ibgp_session_data(session, ip_version=6)
-                    vrf_ibgp_neighbors[session.vrf].append(data)
+                    stanza = config_stanza(data)
+                    vrf_ibgp_neighbors[session.vrf].append(stanza)
 
             # eBGP sessions for this VRF
 
@@ -209,12 +211,14 @@ class IosBaseCompiler(RouterCompiler):
             for session in sort_sessions(g_ebgp_v4.edges(vrf_node)):
                 if session.exclude and session.vrf:
                     data = self.ebgp_session_data(session, ip_version=4)
-                    vrf_ebgp_neighbors[session.vrf].append(data)
+                    stanza = config_stanza(data)
+                    vrf_ebgp_neighbors[session.vrf].append(stanza)
 
             for session in sort_sessions(g_ebgp_v6.edges(vrf_node)):
                 if session.exclude and session.vrf:
                     data = self.ebgp_session_data(session, ip_version=6)
-                    vrf_ebgp_neighbors[session.vrf].append(data)
+                    stanza = config_stanza(data)
+                    vrf_ebgp_neighbors[session.vrf].append(stanza)
 
             for vrf in vrf_node.node_vrf_names:
                 rd_index = vrf_node.rd_indices[vrf]
@@ -236,7 +240,7 @@ class IosBaseCompiler(RouterCompiler):
             retain = False
             if vpnv4_node.retain_route_target:
                 retain = True
-            node.bgp.vpnv4 = {'retain_route_target': retain}
+            node.bgp.vpnv4 = config_stanza(retain_route_target = retain)
 
     def vrf_igp_interfaces(self, node):
 
