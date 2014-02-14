@@ -129,8 +129,6 @@ def build_ibgp(anm):
         down_links = []
 
         # 0. RRCs can only belong to either an rr_cluster or a hrr_cluster
-        for r in rrcs:
-            print r, r.rr_cluster, r.hrr_cluster
         invalid_rrcs = [r for r in rrcs if r.rr_cluster is not None and r.hrr_cluster is not None]
         if len(invalid_rrcs):
             message = ", ".join(str(r) for r in invalid_rrcs)
