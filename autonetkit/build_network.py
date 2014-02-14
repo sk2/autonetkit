@@ -156,15 +156,13 @@ def apply_design_rules(anm):
     build_phy(anm)
     g_phy = anm['phy']
 
-    #autonetkit.update_http(anm)
     build_l3_connectivity(anm)
-
     check_server_asns(anm)
-    #autonetkit.update_http(anm)
 
     from autonetkit.design.mpls import build_vrf
     build_vrf(anm) # need to do before to add loopbacks before ip allocations
     from autonetkit.design.ip import build_ip, build_ipv4, build_ipv6
+    #TODO: replace this with layer2 overlay topology creation
     build_ip(anm) # ip infrastructure topology
 
 #TODO: set defaults at the start, rather than inline, ie set g_in.data.address_family then use later
