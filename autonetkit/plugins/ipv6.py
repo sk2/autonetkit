@@ -128,6 +128,7 @@ def allocate_vrf_loopbacks(g_ip, address_block=None):
         secondary_loopback_hosts.next()  # drop .0 as a host address (valid but can be confusing)
         for interface in sorted(secondary_loopbacks):
             interface.loopback = secondary_loopback_hosts.next()
+            interface.subnet = netaddr.IPNetwork("%s/128" % interface.loopback)
 
 def allocate_ips(G_ip, infra_block = None, loopback_block = None, secondary_loopback_block = None):
     log.info('Allocating Host loopback IPs')
