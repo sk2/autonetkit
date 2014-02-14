@@ -34,6 +34,12 @@ class config_stanza(object):
             object.__setattr__(self, '_odict', OrderedDict(in_dict))
             return
 
+        if len(args) == 1 and isinstance(args[0], dict):
+            # Clone the data (shallow copy)
+            in_dict = args[0]
+            object.__setattr__(self, '_odict', OrderedDict(in_dict))
+            return
+
         object.__setattr__(self, '_odict', OrderedDict(kwargs))
 
     def __repr__(self):
