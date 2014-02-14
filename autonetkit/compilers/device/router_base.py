@@ -35,6 +35,7 @@ class RouterCompiler(DeviceCompiler):
             use_ipv4 = False
             use_ipv6 = True
 
+        #TODO: return config_stanza rather than a dict
         data = {  # TODO: this is platform dependent???
             'neighbor': neigh.label,
             'use_ipv4': use_ipv4,
@@ -61,6 +62,7 @@ class RouterCompiler(DeviceCompiler):
             use_ipv4 = False
             use_ipv6 = True
 
+        #TODO: return config_stanza rather than a dict
         data = {  # TODO: change templates to access from node.bgp.lo_int
             'neighbor': neigh.label,
             'use_ipv4': use_ipv4,
