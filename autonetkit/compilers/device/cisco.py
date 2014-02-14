@@ -539,9 +539,6 @@ class IosClassicCompiler(IosBaseCompiler):
                 if not neigh.use_ipv4:
                     continue
 
-                # TODO: fix up limitation where can't add as overlay_data
-                # (this causes problems serializing, when adding convert to dict?)
-
                 neigh_data = config_stanza(neigh)
                 vpnv4_neighbors.append(neigh_data)
 
@@ -549,7 +546,7 @@ class IosClassicCompiler(IosBaseCompiler):
                 if not neigh.use_ipv4:
                     continue
                 neigh_data = config_stanza(neigh)
-                neigh_data['rr_client'] = True
+                neigh_data.rr_client = True
                 vpnv4_neighbors.append(neigh_data)
 
             for neigh in node.bgp.ibgp_rr_parents:
@@ -557,8 +554,6 @@ class IosClassicCompiler(IosBaseCompiler):
                     continue
                 neigh_data = config_stanza(neigh)
                 vpnv4_neighbors.append(neigh_data)
-
-        # vpnv4_neighbors = natural_sort(vpnv4_neighbors, key = lambda x: x['dst_int_ip'])
 
         vpnv4_neighbors = sorted(vpnv4_neighbors, key=lambda x: \
                                  x['loopback'])
