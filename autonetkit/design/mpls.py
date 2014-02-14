@@ -132,7 +132,7 @@ def build_ibgp_vpn_v4(anm):
     #TODO: extend this to only connect nodes which are connected in VRFs, so don't set to others
 
     ibgp_vpn_v4_nodes = (n for n in ibgp_v4_nodes
-            if n not in pe_rrc_nodes and n not in ce_nodes)
+            if n not in ce_nodes)
     g_ibgp_vpn_v4.add_nodes_from(ibgp_vpn_v4_nodes, retain = ["ibgp_role"])
     g_ibgp_vpn_v4.add_edges_from(g_ibgp_v4.edges(), retain = "direction")
 
