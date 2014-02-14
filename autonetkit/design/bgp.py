@@ -117,91 +117,73 @@ def build_ibgp(anm):
     for asn, asn_devices in ank_utils.groupby("asn", ibgp_nodes):
         asn_devices = list(asn_devices)
 
-        asn_rrs = [n for n in asn_devices if n.ibgp_role == "RR"]
-        over_links = [(s, t) for s in asn_rrs for t in asn_rrs if s != t]
+        # iBGP peer peers with
+        peers = [n for n in asn_devices if n.ibgp_role == "Peer"]
+        rrs = [n for n in asn_devices if n.ibgp_role == "RR"]
+        hrrs = [n for n in asn_devices if n.ibgp_role == "HRR"]
+        rrcs = [n for n in asn_devices if n.ibgp_role == "RRC"]
+
+
+        over_links = []
+        up_links = []
+        down_links = []
+
+        # 0. RRCs can only belong to either an rr_cluster or a hrr_cluster
+        for r in rrcs:
+            print r, r.rr_cluster, r.hrr_cluster
+        invalid_rrcs = [r for r in rrcs if r.rr_cluster is not None and r.hrr_cluster is not None]
+        if len(invalid_rrcs):
+            message = ", ".join(str(r) for r in invalid_rrcs)
+            log.warning("RRCs can only have either a rr_cluster or hrr_cluster set. "
+                "The following have both set, and only the rr_cluster will be used: %s" % message)
+
+        #TODO: do we also want to warn for RRCs with no cluster set? Do we also exclude these?
+        #TODO: do we also want to warn for HRRs and RRs with no cluster set? Do we also exclude these?
+
+        # 1. Peers:
+        # 1a. Peers connect over to peers
+        over_links += [(s,t) for s in peers for t in peers]
+        # 1b. Peers connect over to RRs
+        over_links += [(s,t) for s in peers for t in rrs]
+
+        # 2. RRs:
+        # 2a. RRs connect over to Peers
+        over_links += [(s,t) for s in rrs for t in peers]
+        # 2b. RRs connect over to RRs
+        over_links += [(s,t) for s in rrs for t in rrs]
+        # 2c. RRs connect down to RRCs in same rr_cluster
+        down_links += [(s,t) for s in rrs for t in rrcs
+            if s.rr_cluster == t.rr_cluster != None]
+        # 2d. RRs connect down to HRRs in the same rr_cluster
+        down_links += [(s,t) for s in rrs for t in hrrs
+            if s.rr_cluster == t.rr_cluster != None]
+
+        # 3. HRRs
+        # 3a. HRRs connect up to RRs in the same rr_cluster
+        up_links += [(s,t) for s in hrrs for t in rrs
+            if s.rr_cluster == t.rr_cluster != None]
+        # 3b. HRRs connect down to RRCs in same hrr_cluster (providing RRC has no rr_cluster set)
+        down_links += [(s,t) for s in hrrs for t in rrcs
+            if s.hrr_cluster == t.hrr_cluster != None
+            and t.rr_cluster is None]
+
+        # 4. RRCs
+        # 4a. RRCs connect up to RRs in the same rr_cluster (regardless if RRC has hrr_cluster set)
+        up_links += [(s,t) for s in rrcs for t in rrs
+            if s.rr_cluster == t.rr_cluster != None]
+        # 3b. RRCs connect up to HRRs in same hrr_cluster (providing RRC has no rr_cluster set)
+        up_links += [(s,t) for s in rrcs for t in hrrs
+            if s.hrr_cluster == t.hrr_cluster != None
+            and s.rr_cluster is None]
+
+        # Remove self-links
+        over_links = [(s,t) for s,t in over_links if s!=t]
+        up_links = [(s,t) for s,t in up_links if s!=t]
+        down_links = [(s,t) for s,t in down_links if s!=t]
+
         g_bgp.add_edges_from(over_links, type='ibgp', direction='over')
-
-        top_level_peers = [n for n in asn_devices
-        if n.ibgp_role == "Peer" and n.rr_cluster is None and n.hrr_cluster is None]
-        # Full mesh top level peers
-        over_links = [(s, t) for s in top_level_peers for t in top_level_peers if s != t]
-        g_bgp.add_edges_from(over_links, type='ibgp', direction='over')
-        # Mesh with ASN rrs
-        over_links = [(s, t) for s in top_level_peers for t in asn_rrs if s != t]
-        g_bgp.add_edges_from(over_links, type='ibgp', direction='over')
-        # and other direction
-        over_links = [(s, t) for s in asn_rrs for t in top_level_peers if s != t]
-        g_bgp.add_edges_from(over_links, type='ibgp', direction='over')
-
-        for rr_cluster, rr_cluster_rtrs in ank_utils.groupby("rr_cluster", asn_devices):
-            rr_cluster_rtrs = list(rr_cluster_rtrs)
-
-            rr_cluster_rrs = [n for n in rr_cluster_rtrs if n.ibgp_role == "RR"]
-            rr_cluster_hrrs = [n for n in rr_cluster_rtrs if n.ibgp_role == "HRR"]
-
-            rr_parents = rr_cluster_rrs # Default is to parent HRRs to RRs in same rr_cluster
-            if len(rr_cluster_hrrs) and not len(rr_cluster_rrs):
-                if rr_cluster is None:
-                    # Special case: connect to global RRs
-                    rr_parents = asn_rrs
-                else:
-                    log.warning("RR Cluster %s in ASN%s has no RRs" % (rr_cluster, asn))
-
-            # Connect HRRs to RRs in the same rr_cluster
-            up_links = [(s, t) for s in rr_cluster_hrrs for t in rr_parents]
-            g_bgp.add_edges_from(up_links, type='ibgp', direction='over')
-            down_links = [(t, s) for (s, t) in up_links]
-            g_bgp.add_edges_from(down_links, type='ibgp', direction='over')
-
-            # peers
-            rr_cluster_peers = [n for n in rr_cluster_rtrs if n.ibgp_role == "Peer" and n.hrr_cluster is None]
-            # peers <-> peers, and peers <-> RRs
-            over_links = [(s, t) for s in rr_cluster_peers for t in rr_cluster_peers if s != t]
-            over_links += [(s, t) for s in rr_cluster_peers for t in rr_cluster_rrs if s != t]
-            over_links += [(t,s) for (s,t) in over_links] # other direction
-            g_bgp.add_edges_from(over_links, type='ibgp', direction='over')
-
-            for hrr_cluster, hrr_cluster_rtrs in ank_utils.groupby("hrr_cluster", rr_cluster_rtrs):
-                hrr_cluster_rtrs = list(hrr_cluster_rtrs)
-
-                hrr_cluster_hrrs = [n for n in hrr_cluster_rtrs if n.ibgp_role == "HRR"]
-                hrr_cluster_rrcs = [n for n in hrr_cluster_rtrs if n.ibgp_role == "RRC"]
-
-                # peers
-                rr_cluster_peers = [n for n in hrr_cluster_rtrs if n.ibgp_role == "Peer"]
-                # peers <-> peers, and peers <-> RRs
-                over_links = [(s, t) for s in rr_cluster_peers for t in rr_cluster_peers if s != t]
-                over_links += [(s, t) for s in rr_cluster_peers for t in hrr_cluster_hrrs if s != t]
-                over_links += [(t,s) for (s,t) in over_links] # other direction
-                g_bgp.add_edges_from(over_links, type='ibgp', direction='over')
-
-                # Connect RRCs
-                if len(hrr_cluster_hrrs):
-                    # hrr_cluster_hrrs in this hrr_cluster -> connect RRCs to these
-                    up_links = [(s, t) for s in hrr_cluster_rrcs for t in hrr_cluster_hrrs]
-                    g_bgp.add_edges_from(up_links, type='ibgp', direction='up')
-                    down_links = [(t, s) for (s, t) in up_links]
-                    g_bgp.add_edges_from(down_links, type='ibgp', direction='down')
-                elif len(rr_cluster_rrs):
-                    # No HRRs in this cluster, connect RRCs to RRs in the same RR cluster
-                    #TODO: warn here: might not be what the user wanted
-                    up_links = [(s, t) for s in hrr_cluster_rrcs for t in rr_cluster_rrs]
-                    g_bgp.add_edges_from(up_links, type='ibgp', direction='up')
-                    down_links = [(t, s) for (s, t) in up_links]
-                    g_bgp.add_edges_from(down_links, type='ibgp', direction='down')
-                else:
-                    # Full-mesh
-                    over_links = [(s, t) for s in hrr_cluster_rrcs for t in hrr_cluster_rrcs if s!=t]
-                    g_bgp.add_edges_from(over_links, type='ibgp', direction='over')
-                    if (rr_cluster is None) and (hrr_cluster is None):
-                        # Connect to RRs at ASN level
-                        log.debug("RRCs %s in global group, connecting to global RRs" % hrr_cluster_rrcs)
-                        up_links = [(s, t) for s in hrr_cluster_rrcs for t in asn_rrs]
-                        g_bgp.add_edges_from(up_links, type='ibgp', direction='up')
-                        down_links = [(t, s) for (s, t) in up_links]
-                        g_bgp.add_edges_from(down_links, type='ibgp', direction='down')
-
-                    #TODO: Special case: if no hrr or rr cluster set, then connect to global RRs
+        g_bgp.add_edges_from(up_links, type='ibgp', direction='up')
+        g_bgp.add_edges_from(down_links, type='ibgp', direction='down')
 
 @call_log
 def build_bgp(anm):
