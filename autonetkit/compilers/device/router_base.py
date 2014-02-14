@@ -109,14 +109,18 @@ class RouterCompiler(DeviceCompiler):
             self.isis(node)
         if self.anm.has_overlay('eigrp') and node in self.anm['eigrp']:
             self.eigrp(node)
-        #TODO: allow this to work for ibgp and ebgp
-        if (
-            (self.anm.has_overlay('ebgp_v4') and node in self.anm['ebgp_v4'])
-            or (self.anm.has_overlay('ibgp_v4') and node in self.anm['ibgp_v4'])
-            or (self.anm.has_overlay('ebgp_v6') and node in self.anm['ebgp_v6'])
-            or (self.anm.has_overlay('ibgp_v6') and node in self.anm['ibgp_v6'])
-            or
-            (self.anm.has_overlay('bgp') and node in self.anm['bgp'])):
+        #TODO: drop bgp overlay
+        bgp_overlays = ["bgp", "ebgp_v4", "ibgp_v4", "ebgp_v6", "ibgp_v6"]
+        use_bgp = False
+        for overlay in bgp_overlays:
+            if (self.anm.has_overlay(overlay)
+                and node in self.anm[overlay]
+                and self.anm[overlay].node(node).degree() > 0
+                ):
+                use_bgp = True
+                break
+
+        if use_bgp:
             self.bgp(node)
 
     def interfaces(self, node):
