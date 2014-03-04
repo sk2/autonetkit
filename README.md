@@ -7,6 +7,9 @@ AutoNetkit is a configuration engine to quickly and easily build large-scale net
 
 [![PyPi version](https://pypip.in/v/autonetkit/badge.png)](https://crate.io/packages/autonetkit/)
 
+# One Minute Overview
+[![One Minute Overview](http://img.youtube.com/vi/Kyl_WpVJNVs/0.jpg)](http://www.youtube.com/watch?v=Kyl_WpVJNVs)
+
 # Features
 
 ## High-level syntax
