@@ -233,13 +233,14 @@ class RouterCompiler(DeviceCompiler):
 
         g_ospf = self.anm['ospf']
         g_ipv4 = self.anm['ipv4']
+        ospf_node = g_ospf.node(node)
         ospf_stanza = node.add_stanza("ospf")
 
         node.ospf.ipv4_mpls_te = False  # default, inherited enable if necessary
 
         node.ospf.loopback_area = g_ospf.node(node).area or 0
 
-        node.ospf.process_id = 1  # TODO: set this in build_network module
+        node.ospf.process_id = ospf_node.process_id
         node.ospf.lo_interface = self.lo_interface
 
         node.ospf.ospf_links = []
@@ -406,7 +407,7 @@ class RouterCompiler(DeviceCompiler):
         g_eigrp = self.anm['eigrp']
         g_ipv4 = self.anm['ipv4']
         eigrp_node = self.anm['eigrp'].node(node)
-        node.eigrp.name = eigrp_node.name
+        node.eigrp.process_id = eigrp_node.process_id
 
         ipv4_networks = set()
         for interface in node.physical_interfaces:
@@ -428,6 +429,8 @@ class RouterCompiler(DeviceCompiler):
 
     def isis(self, node):
         g_isis = self.anm['isis']
+        isis_node = g_isis.node(node)
+        process_id = isis_node.process_id
 
         node.isis.ipv4_mpls_te = False  # default, inherited enable if necessary
 
@@ -442,7 +445,7 @@ class RouterCompiler(DeviceCompiler):
                 isis_node = g_isis.node(node)
                 interface.isis = {
                     'metric': isis_int.metric,
-                    'process_id': node.isis.process_id,
+                    'process_id': process_id,
                     'use_ipv4': node.ip.use_ipv4,
                     'use_ipv6': node.ip.use_ipv6,
                     'multipoint': isis_int.multipoint,
@@ -456,7 +459,7 @@ class RouterCompiler(DeviceCompiler):
 
         # TODO: generalise loopbacks to allow more than one per device
 
-        node.isis.process_id = isis_node.process_id
+        node.isis.process_id = process_id
         node.isis.lo_interface = self.lo_interface
 
 # set isis on loopback_zero

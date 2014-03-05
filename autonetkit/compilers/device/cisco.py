@@ -601,8 +601,6 @@ class IosXrCompiler(IosBaseCompiler):
     def eigrp(self, node):
         super(IosXrCompiler, self).eigrp(node)
 
-        node.eigrp.name = 1  # TODO: check if this should be ASN
-
         g_eigrp = self.anm['eigrp']
         ipv4_interfaces = []
         ipv6_interfaces = []

@@ -201,7 +201,7 @@ router isis ${node.isis.process_id}
 % endif
 % endif
 % if node.eigrp:
-router eigrp ${node.eigrp.name}
+router eigrp ${node.eigrp.process_id}
  !
 % if node.eigrp.use_ipv4:
  address-family ipv4 unicast autonomous-system ${node.asn}

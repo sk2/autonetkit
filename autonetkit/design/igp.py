@@ -135,6 +135,7 @@ def build_ospf(anm):
     for router in g_ospf:
         router.loopback_zero.area = router.area
         router.loopback_zero.cost = 0
+        router.process_id = router.asn
 
 @call_log
 def ip_to_net_ent_title_ios(ip_addr):
@@ -189,7 +190,7 @@ def build_eigrp(anm):
     for node in g_eigrp:
         ip_node = g_ipv4.node(node)
         node.net = ip_to_net_ent_title_ios(ip_node.loopback)
-        node.name = "one"  # default
+        node.process_id = node.asn
 
     for link in g_eigrp.edges():
         link.metric = 1  # default
@@ -229,7 +230,7 @@ def build_isis(anm):
     for node in g_isis.routers():
         ip_node = g_ipv4.node(node)
         node.net = ip_to_net_ent_title_ios(ip_node.loopback)
-        node.process_id = 1  # default
+        node.process_id = node.asn
 
     for link in g_isis.edges():
         link.metric = 1  # default
