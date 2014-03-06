@@ -50,6 +50,14 @@ def initialise_lookup():
 # and allow users to append to the lookup
 lookup = initialise_lookup()
 
+try:
+    import autonetkit_cisco # test if can import, if not present will fail and not add to template path
+except ImportError:
+    pass
+else:
+    from autonetkit_cisco.template_wrapper import inject_templates
+    inject_templates(lookup)
+
 def format_version_banner():
     version_banner = "autonetkit_dev"
     try:
