@@ -126,14 +126,12 @@ class CiscoCompiler(PlatformCompiler):
         # store autonetkit_cisco version
         log.info("Generating device configurations")
         from pkg_resources import get_distribution
-        ank_cisco_version = get_distribution("autonetkit_cisco").version
 
         for phy_node in g_phy.l3devices(host=self.host):
             loopback_ids = self.loopback_interface_ids()
             # allocate loopbacks to routes (same for all ios variants)
             nidb_node = self.nidb.node(phy_node)
             nidb_node.add_stanza("render")
-            nidb_node.ank_cisco_version = ank_cisco_version
             nidb_node.indices = phy_node.indices
 
             for interface in nidb_node.loopback_interfaces:
