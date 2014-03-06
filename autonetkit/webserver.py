@@ -9,42 +9,6 @@ import pkg_resources
 import tornado
 import tornado.websocket as websocket
 
-
-# based on http://tornadogists.org/2185380/
-from time import sleep
-from tornado.httpserver import HTTPServer
-from tornado.ioloop import IOLoop
-from tornado.web import Application, asynchronous, RequestHandler
-from multiprocessing.pool import ThreadPool
-_workers = ThreadPool(10)
-
-#TODO: add command line option to start the
-# and applying the socket id to pass to the zmq queues
-# Also then start both the zmq device and server as a thread
-def run_background(func, callback, args=(), kwds={}):
-    def _callback(result):
-        IOLoop.instance().add_callback(lambda: callback(result))
-    _workers.apply_async(func, args, kwds, _callback)
-
-# blocking task like querying to MySQL
-def blocking_task(host, uuid, overlay_id):
-    #TODO: try phantom here - warn if not found
-    print host, uuid, overlay_id
-    try:
-        from autonetkit_cisco_webui.screenshot import grab
-    except ImportError:
-            # Don't use
-            pass
-            print "no import"
-    else:
-        result = grab(host, uuid, overlay_id)
-        return result
-
-
-    #TODO: also support autonetkit vis
-
-
-
 class MyWebHandler(tornado.web.RequestHandler):
 
     def initialize(self, ank_accessor, singleuser_mode = False):
@@ -65,7 +29,6 @@ class MyWebHandler(tornado.web.RequestHandler):
 
         # get listeners for this uuid
         uuid_socket_listeners = self.application.socket_listeners[uuid]
-
 
         if data_type == "anm":
             body_parsed = json.loads(data)
@@ -285,24 +248,6 @@ class AnkAccessor():
     def ip_allocations(self):
         return self.ip_allocation
 
-class ScreenShotHandler(tornado.web.RequestHandler):
-    """Used to treat index.html as a template and substitute the uuid parameter for the websocket call
-    """
-
-    def initialize(self ):
-        print "screenshot"
-
-    @asynchronous
-    def get(self, uuid, overlay_id):
-        host = "http://" + self.request.host
-        run_background(blocking_task, self.on_complete, (host, uuid, overlay_id,) )
-
-    def on_complete(self, result):
-        self.set_header('Content-Type', 'image/png')
-        self.write(result)
-        self.finish()
-
-
 class IndexHandler(tornado.web.RequestHandler):
     """Used to treat index.html as a template and substitute the uuid parameter for the websocket call
     """
@@ -405,8 +350,6 @@ def main():
         (r'/publish', MyWebHandler, {"ank_accessor": ank_accessor,
             'singleuser_mode': singleuser_mode,
             }),
-        #(r'_screenshot/(\w+)/((\w+_*)+)', ScreenShotHandler),
-        (r'/_screenshot/((?:\w+\-*)+)/((?:\w+_*)+)', ScreenShotHandler),
 
         #TODO: merge the two below into a single handler that captures both cases
         (r'/', IndexHandler, {"path":settings['static_path']}),
