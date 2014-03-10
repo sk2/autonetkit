@@ -46,8 +46,10 @@ def extract_ipv6_blocks(anm):
         infra_block = sn_preflen_to_network(infra_subnet, infra_prefix)
     except Exception, e:
         infra_block = IPNetwork('%s/%s' % (ipv6_defaults["infra_subnet"], ipv6_defaults["infra_prefix"]))
-        log.warning('Unable to obtain IPv6 infra_subnet from input graph: %s, using default %s'
-            % (e, infra_block))
+        if infra_subnet is None or infra_prefix is None:
+            log.debug('Using default IPv6 infra_subnet %s'% infra_block)
+        else:
+            log.warning('Unable to obtain IPv6 infra_subnet from input graph: %s, using default %s'% (e, infra_block))
 
     try:
         loopback_subnet = g_in.data.ipv6_loopback_subnet
@@ -56,8 +58,10 @@ def extract_ipv6_blocks(anm):
                 loopback_prefix)
     except Exception, e:
         loopback_block = IPNetwork('%s/%s' % (ipv6_defaults["loopback_subnet"], ipv6_defaults["loopback_prefix"]))
-        log.warning('Unable to obtain IPv6 loopback_subnet from input graph: %s, using default %s'
-            % (e, infra_block))
+        if loopback_subnet is None or loopback_prefix is None:
+            log.debug('Using default IPv6 loopback_subnet %s'% loopback_block)
+        else:
+            log.warning('Unable to obtain IPv6 loopback_subnet from input graph: %s, using default %s'% (e, loopback_block))
 
     try:
         vrf_loopback_subnet = g_in.data.ipv6_vrf_loopback_subnet
@@ -66,8 +70,10 @@ def extract_ipv6_blocks(anm):
                 vrf_loopback_prefix)
     except Exception, e:
         vrf_loopback_block = IPNetwork('%s/%s' % (ipv6_defaults["vrf_loopback_subnet"], ipv6_defaults["vrf_loopback_prefix"]))
-        log.warning('Unable to obtain IPv6 vrf_loopback_subnet from input graph: %s, using default %s'
-            % (e, vrf_loopback_block))
+        if vrf_loopback_subnet is None or vrf_loopback_prefix is None:
+            log.debug('Using default IPv6 vrf_loopback_subnet %s'% vrf_loopback_block)
+        else:
+            log.warning('Unable to obtain IPv6 vrf_loopback_subnet from input graph: %s, using default %s'% (e, vrf_loopback_block))
 
     return (infra_block, loopback_block, vrf_loopback_block)
 
@@ -398,14 +404,19 @@ def extract_ipv4_blocks(anm):
     g_in = anm['input']
     ipv4_defaults = SETTINGS["IP Addressing"]["v4"]
 
+
+    #TODO: wrap these in a common function
+
     try:
         infra_subnet = g_in.data.ipv4_infra_subnet
         infra_prefix = g_in.data.ipv4_infra_prefix
         infra_block = sn_preflen_to_network(infra_subnet, infra_prefix)
     except Exception, e:
         infra_block = IPNetwork('%s/%s' % (ipv4_defaults["infra_subnet"], ipv4_defaults["infra_prefix"]))
-        log.warning('Unable to obtain IPv4 infra_subnet from input graph: %s, using default %s'
-            % (e, infra_block))
+        if infra_subnet is None or infra_prefix is None:
+            log.debug('Using default IPv4 infra_subnet %s'% infra_block)
+        else:
+            log.warning('Unable to obtain IPv4 infra_subnet from input graph: %s, using default %s'% (e, infra_block))
 
     try:
         loopback_subnet = g_in.data.ipv4_loopback_subnet
@@ -414,8 +425,10 @@ def extract_ipv4_blocks(anm):
                 loopback_prefix)
     except Exception, e:
         loopback_block = IPNetwork('%s/%s' % (ipv4_defaults["loopback_subnet"], ipv4_defaults["loopback_prefix"]))
-        log.warning('Unable to obtain IPv4 loopback_subnet from input graph: %s, using default %s'
-            % (e, loopback_block))
+        if loopback_subnet is None or loopback_prefix is None:
+            log.debug('Using default IPv4 loopback_subnet %s'% loopback_block)
+        else:
+            log.warning('Unable to obtain IPv4 loopback_subnet from input graph: %s, using default %s'% (e, loopback_block))
 
     try:
         vrf_loopback_subnet = g_in.data.ipv4_vrf_loopback_subnet
@@ -424,8 +437,10 @@ def extract_ipv4_blocks(anm):
                 vrf_loopback_prefix)
     except Exception, e:
         vrf_loopback_block = IPNetwork('%s/%s' % (ipv4_defaults["vrf_loopback_subnet"], ipv4_defaults["vrf_loopback_prefix"]))
-        log.warning('Unable to obtain IPv4 vrf_loopback_subnet from input graph: %s, using default %s'
-            % (e, vrf_loopback_block))
+        if vrf_loopback_subnet is None or vrf_loopback_prefix is None:
+            log.debug('Using default IPv4 vrf_loopback_subnet %s'% vrf_loopback_block)
+        else:
+            log.warning('Unable to obtain IPv4 vrf_loopback_subnet from input graph: %s, using default %s'% (e, vrf_loopback_block))
 
     return (infra_block, loopback_block, vrf_loopback_block)
 
