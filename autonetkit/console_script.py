@@ -321,8 +321,7 @@ def compile_network(anm):
                 import autonetkit_cisco.compilers.platform.cisco as pl_cisco
                 platform_compiler = pl_cisco.CiscoCompiler(nidb, anm, host)
             except ImportError, e:
-                print e
-                log.warning("Unable to load VIRL platform compiler")
+                log.debug("Unable to load VIRL platform compiler")
         elif platform == "dynagen":
             import autonetkit.compilers.platform.dynagen as pl_dynagen
             platform_compiler = pl_dynagen.DynagenCompiler(nidb, anm, host)
