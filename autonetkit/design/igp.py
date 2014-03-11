@@ -189,7 +189,6 @@ def build_eigrp(anm):
 
     for node in g_eigrp:
         ip_node = g_ipv4.node(node)
-        node.net = ip_to_net_ent_title_ios(ip_node.loopback)
         node.process_id = node.asn
 
     for link in g_eigrp.edges():
