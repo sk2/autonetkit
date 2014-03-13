@@ -260,11 +260,15 @@ def manual_ipv4_infrastructure_allocation(anm):
 
     from netaddr import IPNetwork
     for coll_dom in broadcast_domains:
+        #TODO: add neighbor_ints to API?
         connected_interfaces = [edge.dst_int for edge in
                                 coll_dom.edges()]
+
+        connected_interfaces = [i for i in connected_interfaces
+            if i.node.is_l3device()]
+
         cd_subnets = [IPNetwork('%s/%s' % (i.subnet.network,
                       i.prefixlen)) for i in connected_interfaces]
-
 
         if len(cd_subnets) == 0:
             log.warning("Collision domain %s is not connected to any nodes" % coll_dom)
@@ -467,6 +471,7 @@ def build_ipv4(anm, infrastructure=True):
     (infra_block, loopback_block, vrf_loopback_block) = \
         extract_ipv4_blocks(anm)
 
+#TODO: don't present if using manual allocation
     block_message = "IPv4 allocations: Infrastructure: %s, Loopback: %s" % (infra_block, loopback_block)
     if any(i for n in g_ip.nodes() for i in
      n.loopback_interfaces if not i.is_loopback_zero):
@@ -476,7 +481,7 @@ def build_ipv4(anm, infrastructure=True):
 
     # See if IP addresses specified on each interface
 
-    # do we need this still? in ANM?
+    # do we need this still? in ANM? - differnt because input graph.... but can map back to  self overlay first then phy???
     l3_devices = [d for d in g_in if d.device_type in ('router', 'server')]
 
     manual_alloc_devices = set()
