@@ -127,6 +127,13 @@ class CiscoCompiler(PlatformCompiler):
         log.info("Generating device configurations")
         from pkg_resources import get_distribution
 
+        # Copy across indices for external connectors (e.g may want to copy configs)
+        external_connectors = [n for n in g_phy
+            if n.host == self.host and n.device_type == "external_connector"]
+        for phy_node in external_connectors:
+            nidb_node = self.nidb.node(phy_node)
+            nidb_node.indices = phy_node.indices
+
         for phy_node in g_phy.l3devices(host=self.host):
             loopback_ids = self.loopback_interface_ids()
             # allocate loopbacks to routes (same for all ios variants)
