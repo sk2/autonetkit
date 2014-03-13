@@ -266,10 +266,11 @@ class IndexHandler(tornado.web.RequestHandler):
         supported_browsers = ", ".join(["Google Chrome", "Mozilla Firefox"])
         unsupported_browsers = ["MSIE 5.0", "MSIE 6.0", "MSIE 7.0",
         #"Chrome", # testing
+        #"Mozilla",
         "MSIE 8.0", "MSIE 9.0", "MSIE 10.0", "MSIE 11.0"]
         if any(x in user_agent for x in unsupported_browsers):
             # bad browser
-            self.write("""Your browser is not supported.<br />
+            fallback_template = ("""Your browser is not supported.<br />
                 Please try the following link in a supported browser: <br />
                 <a href="%s">%s</a> </br>
                 <p>
@@ -277,8 +278,11 @@ class IndexHandler(tornado.web.RequestHandler):
                 </p>
                 <br />
                 """ % (formatted_url, formatted_url, supported_browsers))
+
+            template = os.path.join(self.content_path, "unsupported_browser.html")
+            self.render(template, formatted_url= formatted_url, supported_browsers = supported_browsers)
             return
-        #TODO: try to import template from autonetkit_cisco messages
+
         logging.info("Rendering template with uuid %s" % uuid)
         template = os.path.join(self.content_path, "index.html")
         self.render(template, uuid = uuid)
