@@ -103,14 +103,28 @@ def highlight(
             return e  # likely already edge (src, dst) id tuple (string)
 
     nodes = [nfilter(n) for n in nodes]
-    edges = [efilter(e) for e in edges]
+    #TODO: allow node annotations also
+
+    filtered_edges = []
+    for edge in edges:
+        if isinstance(edge, dict) and 'edge' in edge:
+           edge_data = dict(edge)  # use as-is (but make copy)
+        else:
+            edge_data = {'edge': edge} # no extra data
+
+        edge_data['src'] = edge_data['edge'].src.id
+        edge_data['dst'] = edge_data['edge'].dst.id
+        del edge_data['edge'] # remove now have extracted the src/dst
+        filtered_edges.append(edge_data)
+
+    #edges = [efilter(e) for e in edges]
     filtered_paths = []
     for path in paths:
 
         # TODO: tidy this logic
 
         if isinstance(path, dict) and 'path' in path:
-            path_data = path  # use as-s
+            path_data = dict(path ) # use as-is (but make copy)
         else:
             import random
             is_verified = bool(random.randint(0, 1))
@@ -125,7 +139,7 @@ def highlight(
     # TODO: remove "highlight" from json, use as url params to distinguish
 
     import json
-    body = json.dumps({'nodes': nodes, 'edges': edges,
+    body = json.dumps({'nodes': nodes, 'edges': filtered_edges,
                       'paths': filtered_paths})
 
     params = urllib.urlencode({'body': body, 'type': 'highlight',
