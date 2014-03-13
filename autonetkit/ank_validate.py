@@ -19,7 +19,7 @@ def validate(anm):
 
 def all_nodes_have_asn(anm):
     g_phy = anm['phy']
-    for node in g_phy:
+    for node in g_phy.l3devices():
         if node.asn is None:
             log.warning("No ASN set for physical device %s" % node)
 
@@ -96,6 +96,7 @@ def validate_ipv4(anm):
     for cd in g_ipv4.nodes("broadcast_domain"):
         cd.log.debug("Verifying subnet and interface IPs")
         neigh_ints = list(cd.neighbor_interfaces())
+        neigh_ints = [i for i in neigh_ints if i.node.is_l3device()]
         neigh_int_subnets = [i.subnet for i in neigh_ints]
         if all_same(neigh_int_subnets):
             # log ok
