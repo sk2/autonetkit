@@ -3,6 +3,8 @@ import autonetkit.ank as ank_utils
 
 from autonetkit.ank_utils import call_log
 
+#TODO: extract the repeated code and use the layer2  and layer3 graphs
+
 @call_log
 def build_ospf(anm):
     """
@@ -38,6 +40,7 @@ def build_ospf(anm):
     ank_utils.copy_attr_from(g_in, g_ospf, "ospf_area", dst_attr="area")
     ank_utils.copy_edge_attr_from(g_in, g_ospf, "ospf_cost",
         dst_attr="cost",  type=int, default = 1)
+    ank_utils.copy_attr_from(g_in, g_ospf, "custom_config_ospf", dst_attr="custom_config")
 
     ank_utils.aggregate_nodes(g_ospf, g_ospf.switches())
     exploded_edges = ank_utils.explode_nodes(g_ospf, g_ospf.switches())
@@ -177,6 +180,9 @@ def build_eigrp(anm):
     g_eigrp.add_nodes_from(g_in.l3devices(igp = "eigrp"), retain=['asn'])
     g_eigrp.add_nodes_from(g_in.switches(), retain=['asn'])
     g_eigrp.add_edges_from(g_in.edges())
+
+    ank_utils.copy_attr_from(g_in, g_eigrp, "custom_config_eigrp", dst_attr="custom_config")
+
 # Merge and explode switches
     ank_utils.aggregate_nodes(g_eigrp, g_eigrp.switches())
     exploded_edges = ank_utils.explode_nodes(g_eigrp,
@@ -217,6 +223,9 @@ def build_isis(anm):
     g_isis.add_nodes_from(g_in.l3devices(igp = "isis"), retain=['asn'])
     g_isis.add_nodes_from(g_in.switches(), retain=['asn'])
     g_isis.add_edges_from(g_in.edges())
+
+    ank_utils.copy_attr_from(g_in, g_isis, "custom_config_isis", dst_attr="custom_config")
+
 # Merge and explode switches
     ank_utils.aggregate_nodes(g_isis, g_isis.switches())
     exploded_edges = ank_utils.explode_nodes(g_isis, g_isis.switches())

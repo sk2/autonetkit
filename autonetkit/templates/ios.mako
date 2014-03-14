@@ -11,6 +11,11 @@ license boot level premium
 !
 !
 % endif
+% if node.global_custom_config:
+!
+${node.global_custom_config}
+!
+% endif
 no aaa new-model
 !
 !
@@ -84,6 +89,9 @@ interface ${interface.id}
   description ${interface.description}
   % if interface.comment:
   ! ${interface.comment}
+  %endif
+  % if interface.custom_config:
+  ${interface.custom_config}
   %endif
   % if interface.vrf:
   vrf forwarding ${interface.vrf}
@@ -164,6 +172,9 @@ interface ${interface.id}
 % if node.ospf:
 % if node.ospf.use_ipv4:
 router ospf ${node.ospf.process_id}
+  % if node.ospf.custom_config:
+  ${node.ospf.custom_config}
+  % endif
   %if node.ospf.ipv4_mpls_te:
   mpls traffic-eng router-id ${node.ospf.mpls_te_router_id}
   mpls traffic-eng area ${node.ospf.loopback_area}
@@ -187,6 +198,9 @@ router ospfv3 ${node.ospf.process_id}
 ## ISIS
 % if node.isis:
 router isis ${node.isis.process_id}
+  % if node.isis.custom_config:
+  ${node.isis.custom_config}
+  % endif
   %if node.isis.ipv4_mpls_te:
   mpls traffic-eng router-id ${node.isis.mpls_te_router_id}
   mpls traffic-eng level-2
@@ -203,6 +217,9 @@ router isis ${node.isis.process_id}
 % if node.eigrp:
 router eigrp ${node.eigrp.process_id}
  !
+ % if node.eigrp.custom_config:
+ ${node.eigrp.custom_config}
+ % endif
 % if node.eigrp.use_ipv4:
  address-family ipv4 unicast autonomous-system ${node.asn}
   !
@@ -233,6 +250,9 @@ mpls ldp router-id ${node.mpls.router_id}
 router bgp ${node.asn}
   bgp router-id ${node.router_id}
   no synchronization
+  % if node.bgp.custom_config:
+  ${node.bgp.custom_config}
+  % endif
 ! ibgp
 ## iBGP Route Reflector Clients
 % for client in node.bgp.ibgp_rr_clients:

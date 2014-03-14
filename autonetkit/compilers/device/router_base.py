@@ -86,6 +86,8 @@ class RouterCompiler(DeviceCompiler):
         phy_node = self.anm['phy'].node(node)
         ipv4_node = self.anm['ipv4'].node(node)
 
+        node.global_custom_config = phy_node.custom_config
+
         node.add_stanza("ip")
         node.ip.use_ipv4 = phy_node.use_ipv4 or False
         node.ip.use_ipv6 = phy_node.use_ipv6 or False
@@ -130,6 +132,8 @@ class RouterCompiler(DeviceCompiler):
 
         node.loopback_zero.id = self.lo_interface
         node.loopback_zero.description = 'Loopback'
+        phy_node = self.anm['phy'].node(node)
+        node.loopback_zero.custom_config = phy_node.loopback_zero.custom_config
 
         if node.ip.use_ipv4:
             ipv4_node = self.anm['ipv4'].node(node)
@@ -149,10 +153,10 @@ class RouterCompiler(DeviceCompiler):
             # TODO: allocate ID in platform compiler
 
             if not phy_int:
-
                 # for instance if added as management interface to nidb in compile
-
                 continue
+
+            interface.custom_config = phy_int.custom_config
 
             interface.description = phy_int.description
             remote_edges = phy_int.edges()
@@ -236,6 +240,8 @@ class RouterCompiler(DeviceCompiler):
         ospf_node = g_ospf.node(node)
         ospf_stanza = node.add_stanza("ospf")
 
+        ospf_stanza.custom_config = ospf_node.custom_config
+
         node.ospf.ipv4_mpls_te = False  # default, inherited enable if necessary
 
         node.ospf.loopback_area = g_ospf.node(node).area or 0
@@ -317,7 +323,8 @@ class RouterCompiler(DeviceCompiler):
             g_ipv6 = self.anm['ipv6']
         asn = phy_node.asn
         node.asn = asn
-        node.add_stanza("bgp")
+        bgp_stanza = node.add_stanza("bgp")
+        bgp_stanza.custom_config = phy_node['bgp'].custom_config
 
         node.bgp.ipv4_advertise_subnets = []
         if node.ip.use_ipv4:
@@ -404,10 +411,12 @@ class RouterCompiler(DeviceCompiler):
         return
 
     def eigrp(self, node):
+
         g_eigrp = self.anm['eigrp']
         g_ipv4 = self.anm['ipv4']
         eigrp_node = self.anm['eigrp'].node(node)
         node.eigrp.process_id = eigrp_node.process_id
+        node.eigrp.custom_config = eigrp_node.custom_config
 
         ipv4_networks = set()
         for interface in node.physical_interfaces:
@@ -431,6 +440,7 @@ class RouterCompiler(DeviceCompiler):
         g_isis = self.anm['isis']
         isis_node = g_isis.node(node)
         process_id = isis_node.process_id
+        node.isis.custom_config = isis_node.custom_config
 
         node.isis.ipv4_mpls_te = False  # default, inherited enable if necessary
 

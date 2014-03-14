@@ -222,6 +222,7 @@ def build_bgp(anm):
         else:
             edge.multipoint = True
     """TODO: remove up to here once compiler updated"""
+    ank_utils.copy_attr_from(g_in, g_bgp, "custom_config_bgp", dst_attr="custom_config")
 
     g_bgp.remove_edges_from(same_asn_edges)
 

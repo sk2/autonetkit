@@ -327,11 +327,17 @@ def build_phy(anm):
         ank_utils.copy_attr_from(g_in, g_phy, "server_ssh_key")
 
     ank_utils.set_node_default(g_phy,  use_ipv4 = False, use_ipv6=False)
+    ank_utils.copy_attr_from(g_in, g_phy, "custom_config_global", dst_attr="custom_config")
 
     g_phy.allocate_interfaces()
 
     for node in g_phy:
+        if node['input'].custom_config_loopback_zero:
+            node.loopback_zero.custom_config = node['input'].custom_config_loopback_zero
+        custom_config_phy_ints = node['input'].custom_config_phy_ints
         for interface in node:
+            if custom_config_phy_ints:
+                interface.custom_config = custom_config_phy_ints
             specified_id = interface['input'].get("specified_id")
             if specified_id:
                 interface.specified_id = specified_id # map across
