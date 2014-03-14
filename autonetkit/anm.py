@@ -461,6 +461,12 @@ class OverlayNode(object):
                             % (key, self))
                 return None
 
+        # try searching for the "id" attribute of the interface eg GigabitEthernet0/0 if set
+        search = list(self.interfaces(id=key))
+        #TODO: warn if more than one match ie len > 1
+        if len(search):
+            return search[0] # first result
+
     def _interface_ids(self):
         """Returns interface ids for this node"""
 
