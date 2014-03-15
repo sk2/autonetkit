@@ -86,7 +86,7 @@ class DevicesModel(DmBase):
         return DmLabTopology(self, key)
 
     def topologies(self):
-        return iter(DmLabTopology(self.nidb, key) for key in self._graph.graph['topologies'].keys())
+        return iter(DmLabTopology(self, key) for key in self._graph.graph['topologies'].keys())
 
     @property
     def timestamp(self):

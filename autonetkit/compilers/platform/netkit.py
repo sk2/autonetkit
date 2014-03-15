@@ -77,7 +77,7 @@ class NetkitCompiler(PlatformCompiler):
     def allocate_tap_ips(self):
         """Allocates TAP IPs"""
         settings = autonetkit.config.settings
-        lab_topology = self.nidb.topology[self.host]
+        lab_topology = self.nidb.topology(self.host)
         from netaddr import IPNetwork
         address_block = IPNetwork(settings.get("tapsn")
             or "172.16.0.0/16").iter_hosts() # added for backwards compatibility
@@ -88,7 +88,7 @@ class NetkitCompiler(PlatformCompiler):
 
     def lab_topology(self):
 # TODO: replace name/label and use attribute from subgraph
-        lab_topology = self.nidb.topology[self.host]
+        lab_topology = self.nidb.topology(self.host)
         lab_topology.render_template = os.path.join("templates",
             "netkit_lab_conf.mako")
         lab_topology.render_dst_folder = os.path.join("rendered",

@@ -386,6 +386,6 @@ class NmGraph(OverlayBase):
         """"""
 
         nbunch = (n.node_id for n in nbunch)  # only store the id in overlay
-        from overlay_subgraph import OverlaySubgraph
+        from autonetkit.anm.subgraph import OverlaySubgraph
         return OverlaySubgraph(self._anm, self._overlay_id,
                                self._graph.subgraph(nbunch), name)
