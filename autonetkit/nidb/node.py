@@ -164,34 +164,45 @@ class DmNode(object):
         object.__setattr__(self, 'node_id', node_id)
 
     def __lt__(self, other):
-# want [r1, r2, ..., r11, r12, ..., r21, r22] not [r1, r11, r12, r2, r21, r22]
-# so need to look at numeric part
-#TODO: make this work with ASN (which isn't always imported to DeviceModel)
-        self_node_id = self.node_id
-        other_node_id = other.node_id
-        try:
-            self_node_string = [x for x in self.node_id if x not in string.digits]
-        except TypeError:
-            self_node_string = self.node_id
+        #TODO: use human sort from StackOverflow
+
+        # sort on label if available
+        if self.label is not None:
+            self_node_id = self.label
+        else:
+            self_node_id = self.node_id
+
+        if other.label is not None:
+            other_node_id = other.label
+        else:
+            other_node_id = other_node_id
 
         try:
-            other_node_string = [x for x in other.node_id if x not in string.digits]
+            self_node_string = [x for x in self_node_id if x
+                                not in string.digits]
+            other_node_string = [x for x in self_node_id if x
+                                 not in string.digits]
         except TypeError:
-            other_node_string = other.node_id
 
-        if self_node_string == other_node_string:
-            self_node_id = "".join([x for x in self.node_id if x in string.digits])
-            other_node_id = "".join([x for x in other.node_id if x in string.digits])
-            try:
-                self_node_id = int(self_node_id)
-            except ValueError:
-                pass # not a number
-            try:
-                other_node_id = int(other_node_id)
-            except ValueError:
-                pass # not a number
+            # e.g. non-iterable type, such as an int node_id
 
-        return ((self.asn, self_node_id) < (other.asn, other_node_id))
+            pass
+        else:
+            if self_node_string == other_node_string:
+                self_node_id = """""".join([x for x in self_node_id
+                                            if x in string.digits])
+                other_node_id = """""".join([x for x in other_node_id
+                                             if x in string.digits])
+                try:
+                    self_node_id = int(self_node_id)
+                except ValueError:
+                    pass  # not a number
+                try:
+                    other_node_id = int(other_node_id)
+                except ValueError:
+                    pass  # not a number
+
+        return (self.asn, self_node_id) < (other.asn, other_node_id)
 
     @property
     def _node_data(self):

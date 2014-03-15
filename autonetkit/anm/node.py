@@ -83,13 +83,23 @@ class NmNode(object):
 # want [r1, r2, ..., r11, r12, ..., r21, r22] not [r1, r11, r12, r2, r21, r22]
 # so need to look at numeric part
         import string
+        #TODO: use human sort from StackOverflow
 
-        self_node_id = self.node_id
-        other_node_id = other.node_id
+        # sort on label if available
+        if self.label is not None:
+            self_node_id = self.label
+        else:
+            self_node_id = self.node_id
+
+        if other.label is not None:
+            other_node_id = other.label
+        else:
+            other_node_id = other_node_id
+
         try:
-            self_node_string = [x for x in self.node_id if x
+            self_node_string = [x for x in self_node_id if x
                                 not in string.digits]
-            other_node_string = [x for x in self.node_id if x
+            other_node_string = [x for x in self_node_id if x
                                  not in string.digits]
         except TypeError:
 
@@ -98,9 +108,9 @@ class NmNode(object):
             pass
         else:
             if self_node_string == other_node_string:
-                self_node_id = """""".join([x for x in self.node_id
+                self_node_id = """""".join([x for x in self_node_id
                                             if x in string.digits])
-                other_node_id = """""".join([x for x in other.node_id
+                other_node_id = """""".join([x for x in other_node_id
                                              if x in string.digits])
                 try:
                     self_node_id = int(self_node_id)
@@ -116,7 +126,7 @@ class NmNode(object):
     def _next_int_id(self):
         """"""
 
-# returns next free interface ID
+# returns next free interface I
 
         for int_id in itertools.count(1):  # start at 1 as 0 is loopback
             if int_id not in self._interfaces:
