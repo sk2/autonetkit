@@ -10,7 +10,7 @@ from autonetkit.ank_utils import call_log
 def mpls_te(anm):
     g_in = anm['input']
     g_phy = anm['phy']
-    g_l3_conn = anm['l3_conn']
+    g_l3 = anm['layer3']
 
     # add regardless, so allows quick check of node in anm['mpls_te'] in compilers
 
@@ -25,12 +25,12 @@ def mpls_te(anm):
 
     # build up edge list sequentially, to provide meaningful messages for multipoint links
 
-    multipoint_edges = [e for e in g_l3_conn.edges() if e.multipoint]
+    multipoint_edges = [e for e in g_l3.edges() if e.multipoint]
     if len(multipoint_edges):
         log.info('Excluding multi-point edges from MPLS TE topology: %s'
            % ', '.join(str(e) for e in multipoint_edges))
 
-    edges_to_add = set(g_l3_conn.edges()) - set(multipoint_edges)
+    edges_to_add = set(g_l3.edges()) - set(multipoint_edges)
     g_mpls_te.add_edges_from(edges_to_add)
 
 

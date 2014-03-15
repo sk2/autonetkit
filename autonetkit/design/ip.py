@@ -329,74 +329,11 @@ def manual_ipv4_loopback_allocation(anm):
 
 @call_log
 def build_ip(anm):
-    #TODO: use the l3_conn graph
     g_ip = anm.add_overlay('ip')
-    g_in = anm['input']
-    g_graphics = anm['graphics']
-    g_phy = anm['phy']
-
-    #TODO: add these from layer2 graph - and scrap g_ip: clone g_layer2 to g_ipv4 and g_ipv6
-    g_ip.add_nodes_from(g_phy)
-    g_ip.add_edges_from(g_phy.edges())
-
-    ank_utils.aggregate_nodes(g_ip, g_ip.switches())
-
-    edges_to_split = [edge for edge in g_ip.edges()
-        if edge.src.is_l3device() and edge.dst.is_l3device()]
-    for edge in edges_to_split:
-        edge.split = True  # mark as split for use in building nidb
-
-    split_created_nodes = list(ank_utils.split(g_ip, edges_to_split,
-                               retain=['split'],
-                               id_prepend='cd_'))
-    for node in split_created_nodes:
-        node['graphics'].x = ank_utils.neigh_average(g_ip, node, 'x',
-                g_graphics) + 0.1
-
-         # temporary fix for gh-90
-
-        node['graphics'].y = ank_utils.neigh_average(g_ip, node, 'y',
-                g_graphics) + 0.1
-
-            # temporary fix for gh-90
-
-        asn = ank_utils.neigh_most_frequent(g_ip, node, 'asn', g_phy)  # arbitrary choice
-        node['graphics'].asn = asn
-        node.asn = asn  # need to use asn in IP overlay for aggregating subnets
-
-    switch_nodes = g_ip.switches()  # regenerate due to aggregated
-    g_ip.update(switch_nodes, broadcast_domain=True)
-
-                 # switches are part of collision domain
-
-    g_ip.update(split_created_nodes, broadcast_domain=True)
-
-# Assign collision domain to a host if all neighbours from same host
-
-    for node in split_created_nodes:
-        if ank_utils.neigh_equal(g_ip, node, 'host', g_phy):
-            node.host = ank_utils.neigh_attr(g_ip, node, 'host',
-                    g_phy).next()  # first attribute
-
-    # set collision domain IPs
-    #TODO; work out why this throws a json exception
-    #autonetkit.ank.set_node_default(g_ip,  broadcast_domain=False)
-
-    for node in g_ip.nodes('broadcast_domain'):
-        graphics_node = g_graphics.node(node)
-        #graphics_node.device_type = 'broadcast_domain'
-        if node.is_switch():
-            node['phy'].broadcast_domain = True
-        if not node.is_switch():
-            # use node sorting, as accomodates for numeric/string names
-            graphics_node.device_type = 'broadcast_domain'
-            neighbors = sorted(neigh for neigh in node.neighbors())
-            label = '_'.join(neigh.label for neigh in neighbors)
-            cd_label = 'cd_%s' % label  # switches keep their names
-            node.label = cd_label
-            node.cd_id = cd_label
-            graphics_node.label = cd_label
-            node.device_type = "broadcast_domain"
+    g_layer2 = anm['layer2_bc']
+    # Retain arbitrary ASN allocation for IP addressing
+    g_ip.add_nodes_from(g_layer2, retain=["asn", "broadcast_domain"])
+    g_ip.add_edges_from(g_layer2.edges())
 
 @call_log
 def extract_ipv4_blocks(anm):

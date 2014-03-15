@@ -27,9 +27,9 @@ class UbuntuCompiler(ServerCompiler):
             log.info('Static routing disabled for server %s' % node)
             return
 
-        l3_conn_node = self.anm['l3_conn'].node(node)
+        l3_node = self.anm['layer3'].node(node)
         phy_node = self.anm['phy'].node(node)
-        gateway_list = [n for n in l3_conn_node.neighbors()
+        gateway_list = [n for n in l3_node.neighbors()
                         if n.is_router()]
         if not len(gateway_list):
             log.warning('Server %s is not directly connected to any routers'
