@@ -134,18 +134,18 @@ def check_server_asns(anm):
         if server.asn not in l3_neighbor_asns:
             neighs_with_asn = ["%s: AS %s" % (n, n.asn)
                                for n in l3_neighbors]  # tuples for warning message
-            server.log.warning("Server does not belong to same ASN ",
+            server.log.warning("Server does not belong to same ASN "
                                "as neighbors %s" % (neighs_with_asn))
 
             if len(l3_neighbors) == 1:
                 # single ASN of neighbor -> auto correct
                 if server['input'].default_asn:
                     neigh_asn = l3_neighbor_asns.pop()
-                    log.warning("Updating server %s AS from %s",
+                    log.warning("Updating server %s AS from %s"
                                 " to %s" % (server, server.asn, neigh_asn))
                     server.asn = neigh_asn
                 else:
-                    log.info("Server %s ASN %s explictly set by user, ",
+                    log.info("Server %s ASN %s explictly set by user, "
                              "not auto-correcting" % (server, server.asn))
 
 
@@ -290,7 +290,7 @@ def remove_parallel_switch_links(anm):
                 interfaces_to_disconnect = ", ".join(sorted(str(edge.dst_int['phy'])
                                                             for edge in edges_to_remove))
                 dst.log.warning(
-                    "Multiple edges exist to same switch cluster: ",
+                    "Multiple edges exist to same switch cluster: "
                     " %s (%s). Removing edges from interfaces %s" % (
                     str(sorted(component)), interfaces, interfaces_to_disconnect))
 
