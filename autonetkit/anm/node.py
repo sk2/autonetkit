@@ -226,6 +226,8 @@ class NmNode(object):
 
     def _interface_ids(self):
         """Returns interface ids for this node"""
+        #TODO: use from this layer, otherwise can get errors iterating when eg vrfs
+        return self._interfaces.keys()
 
         if self.overlay_id != 'phy' and self.phy:
 
@@ -236,7 +238,7 @@ class NmNode(object):
                                                       ].keys()
         else:
             try:
-                return self._graph.node[self.node_id]['_interfaces']
+                return self._interfaces.keys()
             except KeyError:
                 self.log.debug('No interfaces initialised')
                 return []
