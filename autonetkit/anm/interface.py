@@ -18,7 +18,7 @@ class NmInterface(object):
         object.__setattr__(self, 'node_id', node_id)
         object.__setattr__(self, 'interface_id', interface_id)
         logger = logging.getLogger("ANK")
-        logstring = "Node: %s" % str(self)
+        logstring = "Interface: %s" % str(self)
         logger = CustomAdapter(logger, {'item': logstring})
         object.__setattr__(self, 'log', logger)
 
@@ -35,7 +35,16 @@ class NmInterface(object):
         return hash(self.__key())
 
     def __repr__(self):
-        description = self.description or self.interface_id
+        try:
+            description = self.description or self.interface_id
+        except AttributeError:
+            #TODO: work out why get here for some topologies:
+            """
+            interface.py", line 187, in __getattr__
+                return self._interface.get(key)
+            AttributeError: 'NoneType' object has no attribute 'get'
+            """
+            description = self.interface_id
         return '%s.%s' % (description, self.node)
 
     def __eq__(self, other):
