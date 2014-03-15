@@ -140,7 +140,7 @@ class interface_data_dict(collections.MutableMapping):
     def dump(self):
         return self.store
 
-class overlay_interface(object):
+class OverlayInterface(object):
     def __init__(self, nidb, node_id, interface_id):
         object.__setattr__(self, 'nidb', nidb)
         object.__setattr__(self, 'node_id', node_id)
@@ -437,7 +437,7 @@ class nidb_node(object):
         except AttributeError:
             interface_id = key # eg string
 
-        return overlay_interface(self.nidb, self.node_id, interface_id)
+        return OverlayInterface(self.nidb, self.node_id, interface_id)
 
 
     @property
@@ -466,7 +466,7 @@ class nidb_node(object):
         data['description'] = description
         self._interfaces[interface_id] = data
 
-        return overlay_interface(self.nidb, self.node_id, interface_id)
+        return OverlayInterface(self.nidb, self.node_id, interface_id)
 
     @property
     def _interface_ids(self):
@@ -506,7 +506,7 @@ class nidb_node(object):
                     interface, key) == val for key, val in kwargs.items())
             )
 
-        all_interfaces = iter(overlay_interface(self.nidb,
+        all_interfaces = iter(OverlayInterface(self.nidb,
             self.node_id, interface_id)
             for interface_id in self._interface_ids)
         retval = (i for i in all_interfaces if filter_func(i))
@@ -731,7 +731,7 @@ class NIDB_base(object):
 
 
     def interface(self, interface):
-        return overlay_interface(self,
+        return OverlayInterface(self,
                 interface.node_id, interface.interface_id)
 
 

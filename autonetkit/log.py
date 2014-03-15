@@ -2,6 +2,10 @@ import logging
 import logging.handlers
 import autonetkit.config as config
 
+class CustomAdapter(logging.LoggerAdapter):
+    def process(self, msg, kwargs):
+        return '[%s]: %s' % (self.extra['item'], msg), kwargs
+
 
 ank_logger = logging.getLogger("ANK")
 if not ank_logger.handlers:

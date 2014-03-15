@@ -1,5 +1,5 @@
-import autonetkit.log as log
 import autonetkit.ank as ank_utils
+import autonetkit.log as log
 
 """TODO: map the log info/warning/debug to functions here
 # which then map to the appropriate log function, so that can handle either be verbose or not verbose to console with test information.

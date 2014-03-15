@@ -1,10 +1,11 @@
-import networkx as nx
-from anm import OverlayNode, OverlayEdge
-from collections import defaultdict
 import itertools
 import pprint
+from collections import defaultdict
+
 import autonetkit.log as log
-from ank_utils import unwrap_nodes, unwrap_graph, unwrap_edges
+import networkx as nx
+from ank_utils import unwrap_edges, unwrap_graph, unwrap_nodes
+from anm import OverlayEdge, OverlayNode
 
 try:
     import cPickle as pickle

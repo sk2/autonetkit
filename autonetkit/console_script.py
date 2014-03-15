@@ -2,8 +2,8 @@
 
 import os
 import random
-import time
 import sys
+import time
 import traceback
 from datetime import datetime
 
@@ -61,6 +61,8 @@ def manage_network(input_graph_string, timestamp, build_options, reload_build=Fa
                 autonetkit.ank_validate.validate(anm)
             except Exception, e:
                 log.warning("Unable to validate topologies: %s" % e)
+                log.debug("Unable to validate topologies", exc_info=True)
+
 
     if build_options['compile']:
         if build_options['archive']:

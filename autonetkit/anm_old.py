@@ -29,7 +29,13 @@ class AutoNetkitException(Exception):
     pass
 
 
+class OverlayNotFound(AutoNetkitException):
 
+    def __init__(self, errors):
+        self.Errors = errors
+
+    def __str__(self):
+        return 'Overlay %s not found' % self.Errors
 
 # TODO: rename to OverlayInterface
 

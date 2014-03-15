@@ -25,24 +25,13 @@ class AnkEncoder(json.JSONEncoder):
         if isinstance(obj, autonetkit.nidb.nidb_node):
             #TODO: need to unserialize nidb nodes...
             return str(obj)
-        if isinstance(obj, autonetkit.anm.OverlayNode):
-            #TODO: add documentation about serializing anm nodes
-            #TODO: remove now?
-            log.warning("%s is anm overlay_node. Use attribute rather than object in compiler." % obj)
-            return str(obj)
-        if isinstance(obj, autonetkit.plugins.ipv4.TreeNode):
-            #TODO: remove now?
-            #TODO: add documentation about serializing anm nodes
-            return str(obj)
         if isinstance(obj, autonetkit.anm.OverlayEdge):
-            #TODO: add documentation about serializing anm nodes
-            #TODO: remove now?
             log.warning("%s is anm overlay_edge. Use attribute rather than object in compiler." % obj)
             return str(obj)
         if isinstance(obj, autonetkit.nidb.config_stanza):
             retval = obj.to_json()
             return retval
-        if isinstance(obj, autonetkit.nidb.overlay_interface):
+        if isinstance(obj, autonetkit.nidb.OverlayInterface):
             #TODO: check this is consistent with deserialization
             return str(obj)
         if isinstance(obj, nx.classes.Graph):
@@ -199,8 +188,8 @@ def jsonify_anm_with_graphics(anm, nidb = None):
                 'x': graphics_graph.node[n].get('x'),
                 'y': graphics_graph.node[n].get('y'),
                 'asn': graphics_graph.node[n]['asn'],
-                'label': graphics_graph.node[n]['label'],
-                'device_type': graphics_graph.node[n]['device_type'],
+                'label': graphics_graph.node[n].get('label'),
+                'device_type': graphics_graph.node[n].get('device_type'),
                 'device_subtype': graphics_graph.node[n].get('device_subtype'),
                 'pop': graphics_graph.node[n].get('pop'),
                 })
