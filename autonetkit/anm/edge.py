@@ -1,7 +1,6 @@
 import logging
 from functools import total_ordering
 
-import autonetkit.log as log
 from autonetkit.log import CustomAdapter
 from autonetkit.anm.interface import NmInterface
 from autonetkit.anm.node import NmNode

@@ -16,7 +16,6 @@ SETTINGS = autonetkit.config.settings
 __all__ = ['build']
 from autonetkit.ank_utils import call_log
 
-
 @call_log
 def load(input_graph_string):
     # TODO: look at XML header for file type
@@ -357,7 +356,6 @@ def build_phy(anm):
                 interface.specified_id = specified_id  # map across
 
     remove_parallel_switch_links(anm)
-
 
 @call_log
 def build_l3_connectivity(anm):

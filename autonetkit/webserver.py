@@ -152,7 +152,6 @@ class AnkAccessor():
             overlay_keys = [k for k in overlay_keys if k not in keys_to_exclude]
 
             labels = {
-            "l3_conn": "L3 Connectivity",
             "ibgp_v6": "iBGP v6",
             "ibgp_v4": "iBGP v4",
             "ibgp_vpn_v4": "iBGP VPN v4",
