@@ -22,9 +22,9 @@ def build_ospf(anm):
     """
     import netaddr
     g_in = anm['input']
+    g_l3 = anm['layer3']
     # add regardless, so allows quick check of node in anm['ospf'] in compilers
     g_ospf = anm.add_overlay("ospf")
-
     if not anm['phy'].data.enable_routing:
         g_ospf.log.info("Routing disabled, not configuring OSPF")
         return
@@ -33,19 +33,14 @@ def build_ospf(anm):
         g_ospf.log.debug("No OSPF nodes")
         return
 
-    g_ospf.add_nodes_from(g_in.l3devices(igp = "ospf"), retain=['asn'])
-    g_ospf.add_nodes_from(g_in.switches(), retain=['asn'])
-    g_ospf.add_edges_from(g_in.edges())
+    g_ospf.add_nodes_from(g_l3)
+    g_ospf.add_edges_from(g_l3.edges())
+    ank_utils.copy_int_attr_from(g_l3, g_ospf, "multipoint")
 
     ank_utils.copy_attr_from(g_in, g_ospf, "ospf_area", dst_attr="area")
     ank_utils.copy_edge_attr_from(g_in, g_ospf, "ospf_cost",
         dst_attr="cost",  type=int, default = 1)
     ank_utils.copy_attr_from(g_in, g_ospf, "custom_config_ospf", dst_attr="custom_config")
-
-    ank_utils.aggregate_nodes(g_ospf, g_ospf.switches())
-    exploded_edges = ank_utils.explode_nodes(g_ospf, g_ospf.switches())
-    for edge in exploded_edges:
-        edge.multipoint = True
 
     g_ospf.remove_edges_from([link for link in g_ospf.edges(
     ) if link.src.asn != link.dst.asn])  # remove inter-AS links
@@ -167,6 +162,7 @@ def build_eigrp(anm):
     """Build eigrp overlay"""
     g_in = anm['input']
     # add regardless, so allows quick check of node in anm['isis'] in compilers
+    g_l3 = anm['layer3']
     g_eigrp = anm.add_overlay("eigrp")
 
     if not anm['phy'].data.enable_routing:
@@ -176,10 +172,9 @@ def build_eigrp(anm):
     if not any(n.igp == "eigrp" for n in g_in):
         log.debug("No EIGRP nodes")
         return
-    g_ipv4 = anm['ipv4']
-    g_eigrp.add_nodes_from(g_in.l3devices(igp = "eigrp"), retain=['asn'])
-    g_eigrp.add_nodes_from(g_in.switches(), retain=['asn'])
-    g_eigrp.add_edges_from(g_in.edges())
+    g_eigrp.add_nodes_from(g_l3)
+    g_eigrp.add_edges_from(g_l3.edges())
+    ank_utils.copy_int_attr_from(g_l3, g_eigrp, "multipoint")
 
     ank_utils.copy_attr_from(g_in, g_eigrp, "custom_config_eigrp", dst_attr="custom_config")
 
@@ -194,7 +189,6 @@ def build_eigrp(anm):
         [link for link in g_eigrp.edges() if link.src.asn != link.dst.asn])
 
     for node in g_eigrp:
-        ip_node = g_ipv4.node(node)
         node.process_id = node.asn
 
     for link in g_eigrp.edges():
@@ -210,6 +204,7 @@ def build_isis(anm):
     """Build isis overlay"""
     g_in = anm['input']
     # add regardless, so allows quick check of node in anm['isis'] in compilers
+    g_l3 = anm['layer3']
     g_isis = anm.add_overlay("isis")
 
     if not anm['phy'].data.enable_routing:
@@ -219,18 +214,13 @@ def build_isis(anm):
     if not any(n.igp == "isis" for n in g_in):
         g_isis.log.debug("No ISIS nodes")
         return
+
+    g_isis.add_nodes_from(g_l3)
+    g_isis.add_edges_from(g_l3.edges())
+    ank_utils.copy_int_attr_from(g_l3, g_isis, "multipoint")
+
     g_ipv4 = anm['ipv4']
-    g_isis.add_nodes_from(g_in.l3devices(igp = "isis"), retain=['asn'])
-    g_isis.add_nodes_from(g_in.switches(), retain=['asn'])
-    g_isis.add_edges_from(g_in.edges())
-
     ank_utils.copy_attr_from(g_in, g_isis, "custom_config_isis", dst_attr="custom_config")
-
-# Merge and explode switches
-    ank_utils.aggregate_nodes(g_isis, g_isis.switches())
-    exploded_edges = ank_utils.explode_nodes(g_isis, g_isis.switches())
-    for edge in exploded_edges:
-        edge.multipoint = True
 
     g_isis.remove_edges_from(
         [link for link in g_isis.edges() if link.src.asn != link.dst.asn])
