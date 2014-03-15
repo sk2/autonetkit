@@ -41,7 +41,7 @@ def allocate_loopbacks(g_ip, address_block=None):
 
     # consume the first address as it is the network address
 
-    loopback_network = loopback_pool.next()  # network address
+    _ = loopback_pool.next()  # network address
 
     unique_asns = set(n.asn for n in g_ip)
     for asn in sorted(unique_asns):
@@ -66,7 +66,7 @@ def allocate_infra(g_ip, address_block=None):
 
     # consume the first address as it is the network address
 
-    infra_network = infra_pool.next()  # network address
+    _ = infra_pool.next()  # network address
 
     unique_asns = set(n.asn for n in g_ip)
     for asn in sorted(unique_asns):
@@ -135,6 +135,6 @@ def allocate_ips(G_ip, infra_block = None, loopback_block = None, secondary_loop
     #TODO: move the following step to the l3 graph
     assign_asn_to_interasn_cds(G_ip)
 
-    allocate_loopbacks(G_ip, loopback_block)
-    allocate_infra(G_ip, infra_block)
-    allocate_vrf_loopbacks(G_ip, secondary_loopback_block)
+    allocate_loopbacks(sorted(G_ip), loopback_block)
+    allocate_infra(sorted(G_ip), infra_block)
+    allocate_vrf_loopbacks(sorted(G_ip), secondary_loopback_block)

@@ -603,7 +603,7 @@ def allocate_infra(g_ip, address_block=None):
     log.info('Allocating v4 Infrastructure IPs')
     ip_tree = IpTree(address_block)
     assign_asn_to_interasn_cds(g_ip)
-    ip_tree.add_nodes(g_ip.nodes('broadcast_domain'))
+    ip_tree.add_nodes(sorted(g_ip.nodes('broadcast_domain')))
     ip_tree.build()
 
     # cd_tree = ip_tree.json()
@@ -625,7 +625,7 @@ def allocate_loopbacks(g_ip, address_block=None):
         address_block = netaddr.IPNetwork('192.168.0.0/22')
     log.info('Allocating v4 Primary Host loopback IPs')
     ip_tree = IpTree(address_block)
-    ip_tree.add_nodes(g_ip.l3devices())
+    ip_tree.add_nodes(sorted(g_ip.l3devices()))
     ip_tree.build()
 
     # loopback_tree = ip_tree.json()
@@ -650,7 +650,7 @@ def allocate_vrf_loopbacks(g_ip, address_block=None):
     vrf_loopbacks = [i for i in secondary_loopbacks if i['vrf'
                      ].vrf_name]
 
-    ip_tree.add_nodes(vrf_loopbacks)
+    ip_tree.add_nodes(sorted(vrf_loopbacks))
 
     ip_tree.build()
 
