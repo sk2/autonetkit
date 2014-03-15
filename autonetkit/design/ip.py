@@ -348,7 +348,7 @@ def build_ip(anm):
 
     split_created_nodes = list(ank_utils.split(g_ip, edges_to_split,
                                retain=['split'],
-                               id_prepend='cd'))
+                               id_prepend='cd_'))
     for node in split_created_nodes:
         node['graphics'].x = ank_utils.neigh_average(g_ip, node, 'x',
                 g_graphics) + 0.1
