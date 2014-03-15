@@ -1,3 +1,0 @@
-
-Welcome to Quagga configured on 2013-08-13 10:19 by AutoNetkit version autonetkit_0.5.6
-Password is 1234
