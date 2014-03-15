@@ -112,7 +112,7 @@ def build_ibgp(anm):
     if len(non_ibgp_nodes) < 10:
         log.info("Skipping iBGP for iBGP disabled nodes: %s" % non_ibgp_nodes)
     elif len(non_ibgp_nodes) >= 10:
-        log.info("Skipping iBGP for more than  10 iBGP disabled nodes: refer to visualization for resulting topology.")
+        log.info("Skipping iBGP for more than 10 iBGP disabled nodes: refer to visualization for resulting topology.")
 
     for asn, asn_devices in ank_utils.groupby("asn", ibgp_nodes):
         asn_devices = list(asn_devices)
