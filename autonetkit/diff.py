@@ -3,7 +3,7 @@ import os
 
 import nidb
 
-#TODO: make this generalise to two graphs, rather than DevicesModel specifically
+#TODO: make this generalise to two graphs, rather than DeviceModel specifically
 
 def nidb_diff(directory = None, length = 1):
     if not directory:
@@ -15,10 +15,10 @@ def nidb_diff(directory = None, length = 1):
     pairs = pairs[-1*length:]
     diffs = []
     for file_a, file_b in pairs:
-        nidb_a = nidb.DevicesModel()
+        nidb_a = nidb.DeviceModel()
         nidb_a.restore(file_a)
         graph_a = nidb_a._graph
-        nidb_b = nidb.DevicesModel()
+        nidb_b = nidb.DeviceModel()
         nidb_b.restore(file_b)
         graph_b = nidb_b._graph
         diff = compare(graph_a, graph_b)

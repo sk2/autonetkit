@@ -1,4 +1,3 @@
-import collections
 import logging
 from autonetkit.nidb.node import DmNode
 from autonetkit.log import CustomAdapter
@@ -24,6 +23,9 @@ class DmEdge(object):
     def __getnewargs__(self):
         return ()
 
+    def raw_interfaces(self):
+        return self._interfaces
+
     def __setstate__(self, state):
         (nidb, src_id, dst_id) = state
         object.__setattr__(self, 'nidb', nidb)
@@ -45,7 +47,8 @@ class DmEdge(object):
         """Allows for checking if edge exists
         """
         try:
-            self._graph[self.src_id][self.dst_id]
+            #TODO: refactor to be _graph.has_edge(src, dst)
+            _ = self._graph[self.src_id][self.dst_id]
             return True
         except KeyError:
             return False
@@ -53,7 +56,7 @@ class DmEdge(object):
     @property
     def _graph(self):
         """Return graph the node belongs to"""
-        return self.nidb._graph
+        return self.nidb.raw_graph()
 
     def get(self, key):
         """For consistency, edge.get(key) is neater than getattr(edge, key)"""

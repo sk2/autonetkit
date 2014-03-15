@@ -1,20 +1,18 @@
 """Console script entry point for AutoNetkit"""
 
 import os
-import random
 import sys
 import time
 import traceback
 from datetime import datetime
 
 import autonetkit.ank_json as ank_json
-import autonetkit.ank_messaging as ank_messaging
 import autonetkit.config as config
 import autonetkit.log as log
 import autonetkit.render as render
 import pkg_resources
 from autonetkit import update_http
-from autonetkit.nidb import DevicesModel
+from autonetkit.nidb import DeviceModel
 
 # TODO: make if measure set, then not compile - or warn if both set, as
 # don't want to regen topology when measuring
@@ -37,7 +35,8 @@ def file_monitor(filename):
         yield False
 
 
-def manage_network(input_graph_string, timestamp, build_options, reload_build=False, grid=None):
+def manage_network(input_graph_string, timestamp,
+    build_options, reload_build=False, grid=None):
     """Build, compile, render network as appropriate"""
     # import build_network_simple as build_network
     import autonetkit.build_network as build_network
@@ -80,9 +79,9 @@ def manage_network(input_graph_string, timestamp, build_options, reload_build=Fa
     if not(build_options['build'] or build_options['compile']):
         # Load from last run
         import autonetkit.anm
-        anm = autonetkit.anm.AbstractNetworkModel()
+        anm = autonetkit.anm.NetworkModel()
         anm.restore_latest()
-        nidb = DevicesModel()
+        nidb = DeviceModel()
         nidb.restore_latest()
         update_http(anm, nidb)
 
@@ -126,7 +125,7 @@ def parse_options(argument_string=None):
     parser.add_argument('--quiet', action="store_true",
                         default=False, help="Quiet mode (only display warnings and errors)")
     parser.add_argument('--diff', action="store_true", default=False,
-                        help="Diff DevicesModel")
+                        help="Diff DeviceModel")
     parser.add_argument('--compile', action="store_true",
                         default=False, help="Compile")
     parser.add_argument(
@@ -138,7 +137,7 @@ def parse_options(argument_string=None):
     parser.add_argument('--deploy', action="store_true",
                         default=False, help="Deploy")
     parser.add_argument('--archive', action="store_true", default=False,
-                        help="Archive ANM, DevicesModel, and IP allocations")
+                        help="Archive ANM, DeviceModel, and IP allocations")
     parser.add_argument('--measure', action="store_true",
                         default=False, help="Measure")
     parser.add_argument(
@@ -217,7 +216,6 @@ def main(options):
             input_string = fh.read()
         timestamp = os.stat(options.file).st_mtime
     elif options.stdin:
-        import sys
         input_string = sys.stdin
         now = datetime.now()
         timestamp = now.strftime("%Y%m%d_%H%M%S_%f")
@@ -238,7 +236,6 @@ def main(options):
         log.debug("Error generating network configurations", exc_info=True)
         if settings['General']['stack_trace']:
             print traceback.print_exc()
-        import sys
         sys.exit("Unable to build configurations.")
 
 # TODO: work out why build_options is being clobbered for monitor mode
@@ -277,7 +274,7 @@ def main(options):
 
 
 def create_nidb(anm):
-    nidb = DevicesModel()
+    nidb = DeviceModel()
     g_phy = anm['phy']
     g_ip = anm['ip']
     g_graphics = anm['graphics']
@@ -312,7 +309,7 @@ def compile_network(anm):
     nidb = create_nidb(anm)
     g_phy = anm['phy']
 
-    for target, target_data in config.settings['Compile Targets'].items():
+    for target_data in config.settings['Compile Targets'].values():
         host = target_data['host']
         platform = target_data['platform']
         if platform == "netkit":

@@ -1,8 +1,6 @@
 import fnmatch
 import os
-import Queue
 import shutil
-import threading
 import time
 
 import autonetkit.log as log
@@ -25,38 +23,33 @@ template_cache_dir = "cache"
 
 #disable cache for cleaner folder structure
 
-#TODO: Also try for Cisco build here
-
 def initialise_lookup():
-    lookup = TemplateLookup(directories=[resource_path("")],
+    retval = TemplateLookup(directories=[resource_path("")],
                             #module_directory= template_cache_dir,
                             cache_type='memory',
                             cache_enabled=True,
                            )
 
     try:
-        import autonetkit_cisco # test if can import, if not present will fail and not add to template path
         cisco_templates = pkg_resources.resource_filename("autonetkit_cisco", "")
-        lookup.directories.append(cisco_templates)
+        retval.directories.append(cisco_templates)
     except ImportError:
         pass # Cisco ANK not present
 
     # and cwd
-    lookup.directories.append(os.getcwd())
+    retval.directories.append(os.getcwd())
 
-    return lookup
+    return retval
 
 #TODO: make lookup initialised once rather than global for module import
 # and allow users to append to the lookup
-lookup = initialise_lookup()
+TEMPLATE_LOOKUP = initialise_lookup()
 
 try:
-    import autonetkit_cisco # test if can import, if not present will fail and not add to template path
+    from autonetkit_cisco.template_wrapper import inject_templates
+    inject_templates(TEMPLATE_LOOKUP)
 except ImportError:
     pass
-else:
-    from autonetkit_cisco.template_wrapper import inject_templates
-    inject_templates(lookup)
 
 def format_version_banner():
     version_banner = "autonetkit_dev"
@@ -89,49 +82,20 @@ def render_inline(node, render_template_file, to_memory = True,
     """
 
     node.log.debug("Rendering template %s" % (render_template_file))
-    render_template_file #TODO: remove this?
-
-    version_banner= format_version_banner()
+    version_banner = format_version_banner()
 
     date = time.strftime("%Y-%m-%d %H:%M", time.localtime())
 
     if render_template_file:
         try:
-            render_template = lookup.get_template(render_template_file)
+            render_template = TEMPLATE_LOOKUP.get_template(render_template_file)
         except SyntaxException, error:
             log.warning( "Unable to render %s: "
                 "Syntax error in template: %s" % (node, error))
             return
 
-        if node.render.dst_file:
-            dst_file = os.path.join(render_output_dir, node.render.dst_file)
-            with open( dst_file, 'wb') as dst_fh:
-                try:
-                    dst_fh.write(render_template.render(
-                        node = node,
-                        version_banner = version_banner,
-                        date = date,
-                        ))
-                except KeyError, error:
-                    log.warning( "Unable to render %s:"
-                        " %s not set" % (node, error))
-                    from mako import exceptions
-                    log.debug(exceptions.text_error_template().render())
-                except AttributeError, error:
-                    log.warning( "Unable to render %s: %s " % (node, error))
-                    from mako import exceptions
-                    log.warning(exceptions.text_error_template().render())
-                except NameError, error:
-                    log.warning( "Unable to render %s: %s. "
-                        "Check all variables used are defined" % (node, error))
-                except TypeError, error:
-                    log.warning( "Unable to render %s: %s." % (node, error))
-                    from mako import exceptions
-                    log.warning(exceptions.text_error_template().render())
-
-
         if to_memory:
-# Render directly to DevicesModel
+# Render directly to DeviceModel
             render_output = render_template.render(
                         node = node,
                         version_banner = version_banner,
@@ -157,7 +121,7 @@ def render_node(node):
         #TODO: make sure allows case of just custom render
         return
 
-    version_banner= format_version_banner()
+    version_banner = format_version_banner()
 
     date = time.strftime("%Y-%m-%d %H:%M", time.localtime())
     if render_custom:
@@ -176,7 +140,7 @@ def render_node(node):
 
     if render_template_file:
         try:
-            render_template = lookup.get_template(render_template_file)
+            render_template = TEMPLATE_LOOKUP.get_template(render_template_file)
         except SyntaxException, error:
             log.warning( "Unable to render %s: "
                 "Syntax error in template: %s" % (node, error))
@@ -210,7 +174,7 @@ def render_node(node):
 
 
         if node.render.to_memory:
-# Render directly to DevicesModel
+# Render directly to DeviceModel
             node.render.render_output = render_template.render(
                         node = node,
                         version_banner = version_banner,
@@ -218,18 +182,14 @@ def render_node(node):
                         )
 
     if render_base:
-        #TODO: remove the folder cache for simplicity: doesn't sufficiently improve speed to warrant complexity
         #TODO: revert to shutil copy
         if render_base:
             render_base = resource_path(render_base)
             fs_mako_templates = []
-            for root, dirnames, filenames in os.walk(render_base):
+            for root, _, filenames in os.walk(render_base):
                 for filename in fnmatch.filter(filenames, '*.mako'):
                     rel_root = os.path.relpath(root, render_base) # relative to fs root
                     fs_mako_templates.append(os.path.join(rel_root, filename))
-
-            mako_tmp_dir = "cache"
-
 
             try:
                 shutil.rmtree(render_base_output_dir)
@@ -266,13 +226,11 @@ def render_topologies(nidb):
         render_topology(topology)
 
 def render_topology(topology):
-    version_banner= format_version_banner()
+    version_banner = format_version_banner()
 
     date = time.strftime("%Y-%m-%d %H:%M", time.localtime())
     try:
         render_output_dir = topology.render_dst_folder
-        render_base = topology.render_base
-        render_base_output_dir = topology.render_base_dst_folder
         render_template_file = topology.render_template
     except KeyError, error:
         return
@@ -283,7 +241,7 @@ def render_topology(topology):
         return
 
     try:
-        render_template = lookup.get_template(render_template_file)
+        render_template = TEMPLATE_LOOKUP.get_template(render_template_file)
     except SyntaxException, error:
         log.warning("Unable to render %s: Syntax error in template: %s" % (topology, error))
         return

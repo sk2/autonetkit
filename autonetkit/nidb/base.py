@@ -1,37 +1,16 @@
-import collections
-
-import functools
-import pprint
-import string
-import time
-from functools import total_ordering
-
-import autonetkit.ank_json
 import autonetkit.log as log
-import networkx as nx
-from autonetkit.nidb.config_stanza import ConfigStanza
-
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
-
-from collections import OrderedDict
-import logging
-from autonetkit.ank_utils import call_log
-
-from autonetkit.log import CustomAdapter
 
 from autonetkit.nidb.interface import DmInterface
 from autonetkit.nidb.edge import DmEdge
 from autonetkit.nidb.node import DmNode
+from autonetkit import ank_json
 
 class DmBase(object):
     #TODO: inherit common methods from same base as overlay
     def __init__(self):
+        #TODO: make optional for restore serialized file on init
+        self._graph = None
         pass
-
-#TODO: make optional argument to take serialized file on init, and restore from this
 
     def __getstate__(self):
         return self._graph
@@ -39,19 +18,10 @@ class DmBase(object):
     def __setstate__(self, state):
         self._graph = state
 
-    def __getnewargs__(self):
-        return ()
-
     def __repr__(self):
         return "nidb"
 
-    def dump(self):
-        #TODO: adapt the json version?
-        return "%s %s %s" % (
-                pprint.pformat(self._graph.graph),
-                pprint.pformat(self._graph.nodes(data=True)),
-                pprint.pformat(self._graph.edges(data=True))
-                )
+    # Model-level functions
 
     def save(self, timestamp = True, use_gzip = True):
         import os
@@ -61,7 +31,6 @@ class DmBase(object):
             os.makedirs(archive_dir)
 
         data = ank_json.ank_json_dumps(self._graph)
-#TODO: should this use the ank_json.jsonify_nidb() ?
         if timestamp:
             json_file = "nidb_%s.json.gz" % self.timestamp
         else:
@@ -80,7 +49,6 @@ class DmBase(object):
         return DmInterface(self,
                 interface.node_id, interface.interface_id)
 
-
     def restore_latest(self, directory = None):
         import os
         import glob
@@ -94,8 +62,8 @@ class DmBase(object):
         try:
             latest_file = pickle_files[-1]
         except IndexError:
-# No files loaded
-            log.warning("No previous DevicesModel saved. Please compile new DevicesModel")
+            # No files loaded
+            log.warning("No previous DeviceModel saved. Please compile new DeviceModel")
             return
         self.restore(latest_file)
         ank_json.rebind_nidb_interfaces(self)
@@ -114,6 +82,10 @@ class DmBase(object):
     def name(self):
         return self.__repr__()
 
+    def raw_graph(self):
+        """Returns the underlying NetworkX graph"""
+        return self._graph
+
     def copy_graphics(self, G_graphics):
         """Transfers graphics data from anm to nidb"""
         for node in self:
@@ -129,37 +101,25 @@ class DmBase(object):
     def __len__(self):
         return len(self._graph)
 
-    def edges(self, nbunch = None, *args, **kwargs):
-# nbunch may be single node
-#TODO: Apply edge filters
-        if nbunch:
-            try:
-                nbunch = nbunch.node_id
-            except AttributeError:
-                nbunch = (n.node_id for n in nbunch) # only store the id in overlay
+    @property
+    def data(self):
+        from autonetkit.nidb.device_model import DmGraphData
+        return DmGraphData(self)
 
-        def filter_func(edge):
-            return (
-                    all(getattr(edge, key) for key in args) and
-                    all(getattr(edge, key) == val for key, val in kwargs.items())
-                    )
+    # Nodes
 
-        #TODO: See if more efficient way to access underlying data structure rather than create overlay to throw away
-        all_edges = iter(DmEdge(self, src, dst)
-                for src, dst in self._graph.edges(nbunch)
-                )
-        return (edge for edge in all_edges if filter_func(edge))
+    def __iter__(self):
+        return iter(DmNode(self, node)
+                for node in self._graph)
 
     def node(self, key):
         """Returns node based on name
         This is currently O(N). Could use a lookup table"""
-#TODO: check if node.node_id in graph, if so return wrapped node for this...
-# returns node based on name
         try:
             if key.node_id in self._graph:
                 return DmNode(self, key.node_id)
         except AttributeError:
-            # doesn't have node_id, likely a label string, search based on this label
+            # doesn't have node_id, likely a label string, search on label
             for node in self:
                 if str(node) == key:
                     return node
@@ -170,24 +130,9 @@ class DmBase(object):
             print "Unable to find node", key, "in", self
             return None
 
-    def edge(self, edge_to_find):
-        """returns edge in this graph with same src and dst"""
-        #TODO: check if this even needed - will be if searching nidb specifically
-        # but that's so rare (that's a design stage if anywhere)
-        src_id = edge_to_find.src
-        dst_id = edge_to_find.dst
-        for (src, dst) in self._graph.edges_iter(src_id):
-            if dst == dst_id:
-                return DmEdge(self._anm, self._overlay_id,
-                    src, dst)
-
-    @property
-    def data(self):
-        return DmGraphData(self)
-
     def update(self, nbunch, **kwargs):
         for node in nbunch:
-            for (category, key), value in kwargs.items():
+            for (_, key), value in kwargs.items():
                 node.category.set(key, value)
 
     def nodes(self, *args, **kwargs):
@@ -209,10 +154,10 @@ class DmBase(object):
         return [r for r in result if r.is_switch()]
 
     def servers(self, *args, **kwargs):
-            """Shortcut for nodes(), sets device_type to be server"""
+        """Shortcut for nodes(), sets device_type to be server"""
 
-            result = self.nodes(*args, **kwargs)
-            return [r for r in result if r.is_server()]
+        result = self.nodes(*args, **kwargs)
+        return [r for r in result if r.is_server()]
 
     def l3devices(self, *args, **kwargs):
         """Shortcut for nodes(), sets device_type to be server"""
@@ -233,7 +178,9 @@ class DmBase(object):
 
         return (n for n in nbunch if filter_func(n))
 
-    def add_nodes_from(self, nbunch, retain=[], **kwargs):
+    def add_nodes_from(self, nbunch, retain=None, **kwargs):
+        if retain is None:
+            retain = []
         try:
             retain.lower()
             retain = [retain] # was a string, put into list
@@ -250,7 +197,7 @@ class DmBase(object):
                 add_nodes.append( (n.node_id, data) )
             nbunch = add_nodes
         else:
-            log.warn("Cannot add node ids directly to DevicesModel: must add overlay nodes")
+            log.warning("Cannot add node ids directly to DeviceModel: must add overlay nodes")
         self._graph.add_nodes_from(nbunch, **kwargs)
 
         for node in nodes_to_add:
@@ -263,10 +210,48 @@ class DmBase(object):
                 } for i in node.interfaces()}
             self._graph.node[node.node_id]["_interfaces"] = int_dict
 
-    def add_edge(self, src, dst, retain=[], **kwargs):
+    # Edges
+
+    def edges(self, nbunch = None, *args, **kwargs):
+        # nbunch may be single node
+        #TODO: Apply edge filters
+        if nbunch:
+            try:
+                nbunch = nbunch.node_id
+            except AttributeError:
+                nbunch = (n.node_id for n in nbunch) # only store the id in overlay
+
+        def filter_func(edge):
+            return (
+                    all(getattr(edge, key) for key in args) and
+                    all(getattr(edge, key) == val for key, val in kwargs.items())
+                    )
+
+        #TODO: See if more efficient way to access underlying data structure rather than create overlay to throw away
+        all_edges = iter(DmEdge(self, src, dst)
+                for src, dst in self._graph.edges(nbunch)
+                )
+        return (edge for edge in all_edges if filter_func(edge))
+
+    def edge(self, edge_to_find):
+        """returns edge in this graph with same src and dst"""
+        #TODO: check if this even needed - will be if searching nidb specifically
+        # but that's so rare (that's a design stage if anywhere)
+        src_id = edge_to_find.src
+        dst_id = edge_to_find.dst
+        for (src, dst) in self._graph.edges_iter(src_id):
+            if dst == dst_id:
+                return DmEdge(self._anm, self._overlay_id,
+                    src, dst)
+
+    def add_edge(self, src, dst, retain=None, **kwargs):
+        if retain is None:
+            retain = []
         self.add_edges_from([(src, dst)], retain, **kwargs)
 
-    def add_edges_from(self, ebunch, retain=[], **kwargs):
+    def add_edges_from(self, ebunch, retain=None, **kwargs):
+        if retain is None:
+            retain = []
         #TODO: need to retain interface references
         try:
             retain.lower()
@@ -276,7 +261,6 @@ class DmBase(object):
 
         edges_to_add = ebunch # retain for interface copying
 
-        #TODO: need to test if given a (id, id) or an edge overlay pair... use try/except for speed
         try:
             if len(retain):
                 add_edges = []
@@ -289,12 +273,6 @@ class DmBase(object):
         except AttributeError:
             ebunch = [(src.node_id, dst.node_id) for src, dst in ebunch]
 
-        #TODO: decide if want to allow nodes to be created when adding edge if not already in graph
         self._graph.add_edges_from(ebunch, **kwargs)
         for edge in edges_to_add:
-            # copy across interface bindings
-            self._graph[edge.src.node_id][edge.dst.node_id]['_interfaces'] = edge._interfaces
-
-    def __iter__(self):
-        return iter(DmNode(self, node)
-                for node in self._graph)
+            self._graph[edge.src.node_id][edge.dst.node_id]['_interfaces'] = edge.raw_interfaces()

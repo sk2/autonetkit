@@ -42,7 +42,7 @@ class DmInterface(object):
     @property
     def _graph(self):
         """Return graph the node belongs to"""
-        return self.nidb._graph
+        return self.nidb.raw_graph()
 
     @property
     def _node(self):

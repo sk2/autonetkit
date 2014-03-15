@@ -73,7 +73,7 @@ def restore_anm_nidb_from_json(data):
 
     d = ank_json_custom_loads(data)
     anm = autonetkit.anm.AbstractNetworkModel()
-    nidb = autonetkit.nidb.DevicesModel()
+    nidb = autonetkit.nidb.DeviceModel()
 
     for overlay_id, overlay_data in d.items():
         if overlay_id == "nidb":
@@ -232,7 +232,7 @@ def jsonify_anm_with_graphics(anm, nidb = None):
                 pass
 
             if nidb:
-                nidb_graph = nidb._graph
+                nidb_graph = nidb.raw_graph()
                 if n in nidb:
                     DmNode_data = nidb_graph.node[n]
                     try:
@@ -286,7 +286,7 @@ def jsonify_anm_with_graphics(anm, nidb = None):
     return result
 
 def prepare_nidb(nidb):
-    graph = nidb._graph
+    graph = nidb.raw_graph()
     for node in graph:
         if graph.node[node].get("graphics"):
             graph.node[node]['x'] = graph.node[node]['graphics']['x']

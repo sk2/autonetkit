@@ -20,8 +20,6 @@ class NmEdge(object):
         dst_id,
     ):
 
-# Set using this method to bypass __setattr__
-
         object.__setattr__(self, 'anm', anm)
         object.__setattr__(self, 'overlay_id', overlay_id)
         object.__setattr__(self, 'src_id', src_id)
@@ -64,6 +62,9 @@ class NmEdge(object):
         overlay = NmGraph(self.anm, key)
         return overlay.edge(self)
 
+    def raw_interfaces(self):
+        return self._interfaces
+
     def __lt__(self, other):
         """"""
 
@@ -93,7 +94,7 @@ class NmEdge(object):
 
         src_int_id = self._interfaces[self.src_id]
         return NmInterface(self.anm, self.overlay_id,
-                                 self.src_id, src_int_id)
+                           self.src_id, src_int_id)
 
     @property
     def dst_int(self):
@@ -101,9 +102,9 @@ class NmEdge(object):
 
         dst_int_id = self._interfaces[self.dst_id]
         return NmInterface(self.anm, self.overlay_id,
-                                 self.dst_id, dst_int_id)
+                           self.dst_id, dst_int_id)
 
-    #TODO: see if these are still used
+    # TODO: see if these are still used
     def attr_equal(self, *args):
         """Return edges which both src and dst have attributes equal"""
 

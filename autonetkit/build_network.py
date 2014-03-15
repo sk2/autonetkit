@@ -1,29 +1,25 @@
 """Module to build overlay graphs for network design"""
-import itertools
 
 import autonetkit
 import autonetkit.ank as ank_utils
-import autonetkit.ank_messaging as ank_messaging
 import autonetkit.anm
 import autonetkit.config
 import autonetkit.exception
 import autonetkit.load.graphml as graphml
 import autonetkit.log as log
 import networkx as nx
-from autonetkit.exception import AutoNetkitException
 
 SETTINGS = autonetkit.config.settings
 
-#TODO: revisit phy_neighbors for eg ASN and use l3_conn instead
-
-#TODO: note that build network now assumes input graph has interface mappings on nodes/edges
+# TODO: revisit phy_neighbors for eg ASN and use l3_conn instead
 
 __all__ = ['build']
 from autonetkit.ank_utils import call_log
 
+
 @call_log
 def load(input_graph_string):
-    #TODO: look at XML header for file type
+    # TODO: look at XML header for file type
     try:
         input_graph = graphml.load_graphml(input_graph_string)
     except autonetkit.exception.AnkIncorrectFileFormat:
@@ -38,12 +34,13 @@ def load(input_graph_string):
             # add local deployment host
             SETTINGS['General']['deploy'] = True
             SETTINGS['Deploy Hosts']['internal'] = {
-                        'VIRL': {
-                        'deploy': True,
-                        },
-                        }
+                'VIRL': {
+                'deploy': True,
+                },
+            }
 
     return input_graph
+
 
 @call_log
 def grid_2d(dim):
@@ -63,7 +60,7 @@ def grid_2d(dim):
     mapping = {node: "%s_%s" % (node[0], node[1]) for node in graph}
     # Networkx wipes data if remap with same labels
     nx.relabel_nodes(graph, mapping, copy=False)
-    for index, (src, dst) in enumerate(graph.edges()):
+    for src, dst in graph.edges():
         graph[src][dst]['type'] = "physical"
         # add global index for sorting
 
@@ -75,6 +72,7 @@ def grid_2d(dim):
     }
 
     return graph
+
 
 @call_log
 def initialise(input_graph):
@@ -90,7 +88,7 @@ def initialise(input_graph):
         g_in.data.specified_int_names = False
 
     #import autonetkit.plugins.graph_product as graph_product
-    #graph_product.expand(g_in)  # apply graph products if relevant
+    # graph_product.expand(g_in)  # apply graph products if relevant
 
     expand_fqdn = False
     # TODO: make this set from config and also in the input file
@@ -101,51 +99,54 @@ def initialise(input_graph):
     g_in.update(g_in.routers(platform="junosphere"), syntax="junos")
     g_in.update(g_in.routers(platform="dynagen"), syntax="ios")
     g_in.update(g_in.routers(platform="netkit"), syntax="quagga")
-    #TODO: is this used?
+    # TODO: is this used?
     g_in.update(g_in.servers(platform="netkit"), syntax="quagga")
 
     autonetkit.ank.set_node_default(g_in,  specified_int_names=None)
 
     g_graphics = anm.add_overlay("graphics")  # plotting data
     g_graphics.add_nodes_from(g_in, retain=['x', 'y', 'device_type',
-        'label', 'device_subtype', 'asn'])
+                                            'label', 'device_subtype', 'asn'])
 
     if g_in.data.Creator == "VIRL":
-        #TODO: move this to other module
+        # TODO: move this to other module
         # Multiple ASNs set, use label format device.asn
         #anm.set_node_label(".", ['label_full'])
         pass
 
     return anm
 
+
 @call_log
 def check_server_asns(anm):
     """Checks that servers have appropriate ASN allocated.
-    Warns and auto-corrects servers which are connected to routers of a difference AS.
+    Warns and auto-corrects servers connected to routers of a different AS
     #TODO: provide manual over-ride for this auto-correct.
     """
-    #TODO: Move to validate module?
+    # TODO: Move to validate module?
     g_phy = anm['phy']
 
     for server in g_phy.servers():
         if server.device_subtype in ("SNAT", "FLAT"):
-            continue # Don't warn on ASN for NAT elements
+            continue  # Don't warn on ASN for NAT elements
         l3_neighbors = list(server['l3_conn'].neighbors())
         l3_neighbor_asns = set(n.asn for n in l3_neighbors)
         if server.asn not in l3_neighbor_asns:
             neighs_with_asn = ["%s: AS %s" % (n, n.asn)
-                for n in l3_neighbors] # tuples for warning message
-            server.log.warning("Server does not belong to same ASN as neighbors %s" % (neighs_with_asn))
+                               for n in l3_neighbors]  # tuples for warning message
+            server.log.warning("Server does not belong to same ASN ",
+                               "as neighbors %s" % (neighs_with_asn))
 
             if len(l3_neighbors) == 1:
                 # single ASN of neighbor -> auto correct
                 if server['input'].default_asn:
                     neigh_asn = l3_neighbor_asns.pop()
-                    log.warning("Updating server %s AS from %s to %s" % (server, server.asn, neigh_asn))
+                    log.warning("Updating server %s AS from %s",
+                                " to %s" % (server, server.asn, neigh_asn))
                     server.asn = neigh_asn
                 else:
-                    log.info("Server %s ASN %s explictly set by user, not auto-correcting" %
-                        (server, server.asn))
+                    log.info("Server %s ASN %s explictly set by user, ",
+                             "not auto-correcting" % (server, server.asn))
 
 
 @call_log
@@ -160,41 +161,40 @@ def apply_design_rules(anm):
     check_server_asns(anm)
 
     from autonetkit.design.mpls import build_vrf
-    build_vrf(anm) # need to do before to add loopbacks before ip allocations
+    build_vrf(anm)  # do before to add loopbacks before ip allocations
     from autonetkit.design.ip import build_ip, build_ipv4, build_ipv6
-    #TODO: replace this with layer2 overlay topology creation
-    build_ip(anm) # ip infrastructure topology
+    # TODO: replace this with layer2 overlay topology creation
+    build_ip(anm)  # ip infrastructure topology
 
-#TODO: set defaults at the start, rather than inline, ie set g_in.data.address_family then use later
-
-    address_family = g_in.data.address_family or "v4" # default is v4
-#TODO: can remove the infrastructure now create g_ip seperately
+    address_family = g_in.data.address_family or "v4"  # default is v4
+# TODO: can remove the infrastructure now create g_ip seperately
     if address_family == "None":
-        log.info("IP addressing disabled, disabling routing protocol configuration")
+        log.info("IP addressing disabled, disabling routing protocol ",
+                 "configuration")
         anm['phy'].data.enable_routing = False
 
     if address_family == "None":
         log.info("IP addressing disabled, skipping IPv4")
-        anm.add_overlay("ipv4") # create empty so rest of code follows through
-        g_phy.update(g_phy, use_ipv4 = False)
+        anm.add_overlay("ipv4")  # create empty so rest of code follows
+        g_phy.update(g_phy, use_ipv4=False)
     elif address_family in ("v4", "dual_stack"):
-        build_ipv4(anm, infrastructure = True)
-        g_phy.update(g_phy, use_ipv4 = True)
+        build_ipv4(anm, infrastructure=True)
+        g_phy.update(g_phy, use_ipv4=True)
     elif address_family == "v6":
         # Allocate v4 loopbacks for router ids
-        build_ipv4(anm, infrastructure = False)
-        g_phy.update(g_phy, use_ipv4 = False)
+        build_ipv4(anm, infrastructure=False)
+        g_phy.update(g_phy, use_ipv4=False)
 
-    #TODO: Create a collision domain overlay for ip addressing - l2 overlay?
+    # TODO: Create collision domain overlay for ip addressing - l2 overlay?
     if address_family == "None":
         log.info("IP addressing disabled, not allocating IPv6")
-        anm.add_overlay("ipv6") # create empty so rest of code follows through
-        g_phy.update(g_phy, use_ipv6 = False)
+        anm.add_overlay("ipv6")  # create empty so rest of code follows
+        g_phy.update(g_phy, use_ipv6=False)
     elif address_family in ("v6", "dual_stack"):
         build_ipv6(anm)
-        g_phy.update(g_phy, use_ipv6 = True)
+        g_phy.update(g_phy, use_ipv6=True)
     else:
-        anm.add_overlay("ipv6") # placeholder for compiler logic
+        anm.add_overlay("ipv6")  # placeholder for compiler logic
 
     default_igp = g_in.data.igp or "ospf"
     ank_utils.set_node_default(g_in,  igp=default_igp)
@@ -215,7 +215,7 @@ def apply_design_rules(anm):
 
     from autonetkit.design.bgp import build_bgp
     build_bgp(anm)
-    #autonetkit.update_http(anm)
+    # autonetkit.update_http(anm)
 
     from autonetkit.design.mpls import mpls_te, mpls_oam
     mpls_te(anm)
@@ -223,10 +223,11 @@ def apply_design_rules(anm):
 
 # post-processing
     if anm['phy'].data.enable_routing:
-        from autonetkit.design.mpls import mark_ebgp_vrf, build_ibgp_vpn_v4
+        from autonetkit.design.mpls import (mark_ebgp_vrf,
+            build_ibgp_vpn_v4)
         mark_ebgp_vrf(anm)
-        build_ibgp_vpn_v4(anm) # build after bgp as is based on
-    #autonetkit.update_http(anm)
+        build_ibgp_vpn_v4(anm)  # build after bgp as is based on
+    # autonetkit.update_http(anm)
 
     try:
         from autonetkit_cisco import build_network as cisco_build_network
@@ -245,18 +246,18 @@ def build(input_graph):
     try:
         anm = initialise(input_graph)
         anm = apply_design_rules(anm)
-        #print {str(node): {'x': node.x, 'y': node.y} for node in anm['input']}
-        import autonetkit
+        # print {str(node): {'x': node.x, 'y': node.y} for node in
+        # anm['input']}
         autonetkit.update_http(anm)
     except Exception, e:
         # Send the visualisation to help debugging
-        import autonetkit
         try:
             autonetkit.update_http(anm)
         except Exception, e:
-            # problem with vis -> could be coupled with original exception - raise original
+            # problem with vis -> could be coupled with original exception -
+            # raise original
             log.warning("Unable to visualise: %s" % e)
-        raise # raise the original exception
+        raise  # raise the original exception
     return anm
 
 
@@ -264,7 +265,8 @@ def remove_parallel_switch_links(anm):
     g_phy = anm['phy']
     subs = ank_utils.connected_subgraphs(g_phy, g_phy.switches())
     for component in subs:
-        log.debug("Checking for multiple links to switch cluster %s" % str(sorted(component)))
+        log.debug("Checking for multiple links to switch cluster %s"
+                  % str(sorted(component)))
 
         # Collect all links into this cluster
         external_edges = []
@@ -282,13 +284,18 @@ def remove_parallel_switch_links(anm):
         # Check to see if any nodes have more than one link into this aggregate
         for dst, edges in check_dict.items():
             if len(edges) > 1:
-                edges_to_remove = sorted(edges)[1:] # remove all but first
-                interfaces = ", ".join(sorted(str(edge.dst_int['phy']) for edge in edges))
-                interfaces_to_disconnect = ", ".join(sorted(str(edge.dst_int['phy']) for edge in edges_to_remove))
-                dst.log.warning("Multiple edges exist to same switch cluster: %s (%s). Removing edges from interfaces %s" % (
+                edges_to_remove = sorted(edges)[1:]  # remove all but first
+                interfaces = ", ".join(
+                    sorted(str(edge.dst_int['phy']) for edge in edges))
+                interfaces_to_disconnect = ", ".join(sorted(str(edge.dst_int['phy'])
+                                                            for edge in edges_to_remove))
+                dst.log.warning(
+                    "Multiple edges exist to same switch cluster: ",
+                    " %s (%s). Removing edges from interfaces %s" % (
                     str(sorted(component)), interfaces, interfaces_to_disconnect))
 
                 g_phy.remove_edges_from(edges_to_remove)
+
 
 @call_log
 def build_phy(anm):
@@ -298,11 +305,11 @@ def build_phy(anm):
 
     g_phy.data.enable_routing = g_in.data.enable_routing
     if g_phy.data.enable_routing is None:
-        g_in.data.enable_routing = True # default if not set
+        g_in.data.enable_routing = True  # default if not set
 
     g_phy.add_nodes_from(g_in, retain=['label', 'update', 'device_type', 'asn',
-        'specified_int_names',
-        'device_subtype', 'platform', 'host', 'syntax'])
+                                       'specified_int_names',
+                                       'device_subtype', 'platform', 'host', 'syntax'])
     if g_in.data.Creator == "Topology Zoo Toolset":
         ank_utils.copy_attr_from(g_in, g_phy, "Network")
 
@@ -312,7 +319,7 @@ def build_phy(anm):
 
     if g_in.data.Creator == "VIRL":
         g_phy.data.mgmt_interfaces_enabled = g_in.data.mgmt_interfaces_enabled
-        #TODO: remove this code now allocated externally
+        # TODO: remove this code now allocated externally
         g_phy.data.mgmt_address_start = g_in.data.mgmt_address_start
         g_phy.data.mgmt_address_end = g_in.data.mgmt_address_end
         g_phy.data.mgmt_prefixlen = g_in.data.mgmt_prefixlen
@@ -326,43 +333,47 @@ def build_phy(anm):
         ank_utils.copy_attr_from(g_in, g_phy, "server_username")
         ank_utils.copy_attr_from(g_in, g_phy, "server_ssh_key")
 
-    ank_utils.set_node_default(g_phy,  use_ipv4 = False, use_ipv6=False)
-    ank_utils.copy_attr_from(g_in, g_phy, "custom_config_global", dst_attr="custom_config")
+    ank_utils.set_node_default(g_phy,  use_ipv4=False, use_ipv6=False)
+    ank_utils.copy_attr_from(g_in, g_phy, "custom_config_global",
+                             dst_attr="custom_config")
 
     g_phy.allocate_interfaces()
 
     for node in g_phy:
         if node['input'].custom_config_loopback_zero:
-            node.loopback_zero.custom_config = node['input'].custom_config_loopback_zero
+            lo_zero_config = node['input'].custom_config_loopback_zero
+            node.loopback_zero.custom_config = lo_zero_config
         custom_config_phy_ints = node['input'].custom_config_phy_ints
         for interface in node:
             if custom_config_phy_ints:
                 interface.custom_config = custom_config_phy_ints
             specified_id = interface['input'].get("specified_id")
             if specified_id:
-                interface.specified_id = specified_id # map across
+                interface.specified_id = specified_id  # map across
 
     remove_parallel_switch_links(anm)
 
+
 @call_log
 def build_l3_connectivity(anm):
-    """ creates l3_connectivity graph, which is switch nodes aggregated and exploded"""
-    #TODO: use this as base for ospf, ebgp, ip, etc rather than exploding in each
+    """ l3_connectivity graph: switch nodes aggregated and exploded"""
     g_in = anm['input']
     g_l3conn = anm.add_overlay("l3_conn")
-    g_l3conn.add_nodes_from(g_in, retain=['label', 'update', 'device_type', 'asn',
-        'specified_int_names',
-        'device_subtype', 'platform', 'host', 'syntax'])
+    g_l3conn.add_nodes_from(
+        g_in, retain=['label', 'update', 'device_type', 'asn',
+                      'specified_int_names',
+                      'device_subtype', 'platform', 'host', 'syntax'])
     g_l3conn.add_nodes_from(g_in.switches(), retain=['asn'])
     g_l3conn.add_edges_from(g_in.edges())
 
     ank_utils.aggregate_nodes(g_l3conn, g_l3conn.switches())
     exploded_edges = ank_utils.explode_nodes(g_l3conn,
-        g_l3conn.switches())
+                                             g_l3conn.switches())
     for edge in exploded_edges:
         edge.multipoint = True
         edge.src_int.multipoint = True
         edge.dst_int.multipoint = True
+
 
 @call_log
 def build_conn(anm):

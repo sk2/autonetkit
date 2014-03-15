@@ -2,6 +2,7 @@ import functools
 import logging
 import string
 
+import autonetkit.log as log
 from autonetkit.log import CustomAdapter
 from autonetkit.nidb.config_stanza import ConfigStanza
 from autonetkit.nidb.interface import DmInterface
@@ -126,7 +127,7 @@ class DmNode(object):
     def get_interfaces(self, *args, **kwargs):
         """Public function to view interfaces
 
-        Temporary function name until Compiler/DevicesModel/Templates
+        Temporary function name until Compiler/DeviceModel/Templates
         move to using "proper" interfaces"""
         def filter_func(interface):
             """Filter based on args and kwargs"""
@@ -148,7 +149,7 @@ class DmNode(object):
 
     @property
     def _graph(self):
-        return self.nidb._graph
+        return self.nidb.raw_graph()
 
     def degree(self):
         return self._graph.degree(self.node_id)
@@ -165,7 +166,7 @@ class DmNode(object):
     def __lt__(self, other):
 # want [r1, r2, ..., r11, r12, ..., r21, r22] not [r1, r11, r12, r2, r21, r22]
 # so need to look at numeric part
-#TODO: make this work with ASN (which isn't always imported to DevicesModel)
+#TODO: make this work with ASN (which isn't always imported to DeviceModel)
         self_node_id = self.node_id
         other_node_id = other.node_id
         try:
@@ -194,7 +195,7 @@ class DmNode(object):
 
     @property
     def _node_data(self):
-        return self.nidb._graph.node[self.node_id]
+        return self.nidb.raw_graph().node[self.node_id]
 
     def dump(self):
         #return str(self._node_data)
@@ -202,7 +203,7 @@ class DmNode(object):
         pprint.pprint(self._node_data)
 
     def __nonzero__(self):
-        return self.node_id in self.nidb._graph
+        return self.node_id in self.nidb.raw_graph()
 
     def is_router(self):
         return self.device_type == "router"

@@ -11,24 +11,24 @@ import os.path
 ank_user_dir = os.path.join(os.path.expanduser("~"),  ".autonetkit")
 
 def load_config():
-    settings = ConfigParser.RawConfigParser()
+    retval = ConfigParser.RawConfigParser()
     spec_file = pkg_resources.resource_filename(__name__,"/config/configspec.cfg")
-    settings = ConfigObj(configspec=spec_file, encoding='UTF8')
-# User's ANK settings
+    retval = ConfigObj(configspec=spec_file, encoding='UTF8')
+# User's ANK retval
     user_config_file = os.path.join(ank_user_dir, "autonetkit.cfg")
-    settings.merge(ConfigObj(user_config_file))
-# ANK settings in current directory
-    settings.merge(ConfigObj("autonetkit.cfg"))
-# ANK settings specified by environment variable
+    retval.merge(ConfigObj(user_config_file))
+# ANK retval in current directory
+    retval.merge(ConfigObj("autonetkit.cfg"))
+# ANK retval specified by environment variable
     try:
         ankcfg = os.environ['AUTONETKIT_CFG']
-        settings.merge(ConfigObj(ankcfg))
+        retval.merge(ConfigObj(ankcfg))
     except KeyError:
         pass
 
-    results = settings.validate(validator)
+    results = retval.validate(validator)
     if results != True:
-        for (section_list, key, _) in flatten_errors(settings, results):
+        for (section_list, key, _) in flatten_errors(retval, results):
             if key is not None:
                 print "Error loading configuration file:"
                 print 'Invalid key "%s" in section "%s"' % (key, ', '.join(section_list))
@@ -37,7 +37,7 @@ def load_config():
 # ignore missing sections - use defaults
                 #print 'The following section was missing:%s ' % ', '.join(section_list)
                 pass
-    return settings
+    return retval
 
 #NOTE: this only gets loaded once package-wide if imported as import autonetkit.config
 settings = load_config()
