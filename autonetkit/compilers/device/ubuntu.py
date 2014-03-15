@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import autonetkit.log as log
 from autonetkit.compilers.device.server_base import ServerCompiler
-from autonetkit.nidb import config_stanza
+from autonetkit.nidb import ConfigStanza
 
 class UbuntuCompiler(ServerCompiler):
 
@@ -79,7 +79,7 @@ class UbuntuCompiler(ServerCompiler):
                 'description': 'Route to infra subnet in AS %s via %s' \
                 % (asn, gateway),
                 }
-                route_entry = config_stanza(**route_entry)
+                route_entry = ConfigStanza(**route_entry)
                 if infra_route.prefixlen == 32:
                     host_routes_v4.append(route_entry)
                 else:
@@ -98,7 +98,7 @@ class UbuntuCompiler(ServerCompiler):
                     'description': 'Route to loopback subnet in AS %s via %s' \
                         % (asn, gateway),
                     }
-                route_entry = config_stanza(**route_entry)
+                route_entry = ConfigStanza(**route_entry)
                 if asn_route.prefixlen == 32:
                     host_routes_v4.append(route_entry)
                 else:

@@ -3,14 +3,14 @@ import logging
 from functools import total_ordering
 
 import autonetkit.log as log
-from autonetkit.anm.overlay_interface import OverlayInterface
+from autonetkit.anm.interface import NmInterface
 from autonetkit.log import CustomAdapter
 
 
 @total_ordering
-class OverlayNode(object):
+class NmNode(object):
 
-    """OverlayNode"""
+    """NmNode"""
 
     def __init__(
         self,
@@ -156,14 +156,14 @@ class OverlayNode(object):
 
         interface_id = self._add_interface(type='loopback', *args,
                                            **kwargs)
-        return OverlayInterface(self.anm, self.overlay_id,
+        return NmInterface(self.anm, self.overlay_id,
                                  self.node_id, interface_id)
 
     def add_interface(self, *args, **kwargs):
         """Public function to add interface"""
 
         interface_id = self._add_interface(*args, **kwargs)
-        return OverlayInterface(self.anm, self.overlay_id,
+        return NmInterface(self.anm, self.overlay_id,
                                  self.node_id, interface_id)
 
     def interfaces(self, *args, **kwargs):
@@ -176,7 +176,7 @@ class OverlayNode(object):
                 and all(getattr(interface, key) == val for (key,
                         val) in kwargs.items())
 
-        all_interfaces = iter(OverlayInterface(self.anm,
+        all_interfaces = iter(NmInterface(self.anm,
                               self.overlay_id, self.node_id,
                               interface_id) for interface_id in
                               self._interface_ids())
@@ -189,7 +189,7 @@ class OverlayNode(object):
 
         try:
             if key.interface_id in self._interface_ids():
-                return OverlayInterface(self.anm, self.overlay_id,
+                return NmInterface(self.anm, self.overlay_id,
                                          self.node_id, key.interface_id)
         except AttributeError:
 
@@ -197,7 +197,7 @@ class OverlayNode(object):
 
             try:
                 if key in self._interface_ids():
-                    return OverlayInterface(self.anm, self.overlay_id,
+                    return NmInterface(self.anm, self.overlay_id,
                                              self.node_id, key)
             except AttributeError:
 
@@ -281,7 +281,7 @@ class OverlayNode(object):
     def __getitem__(self, key):
         """Get item key"""
 
-        return OverlayNode(self.anm, key, self.node_id)
+        return NmNode(self.anm, key, self.node_id)
 
     @property
     def asn(self):
@@ -337,8 +337,8 @@ class OverlayNode(object):
     def _overlay(self):
         """Access overlay graph for this node"""
 
-        from autonetkit.anm.overlay_graph import OverlayGraph
-        return OverlayGraph(self.anm, self.overlay_id)
+        from autonetkit.anm.graph import NmGraph
+        return NmGraph(self.anm, self.overlay_id)
 
     def degree(self):
         """Returns degree of node"""
@@ -371,7 +371,7 @@ class OverlayNode(object):
 
     @property
     def phy(self):
-        """Shortcut back to physical OverlayNode
+        """Shortcut back to physical NmNode
         Same as node.overlay.phy
         ie node.phy.x is same as node.overlay.phy.x
         """
@@ -379,7 +379,7 @@ class OverlayNode(object):
 
 # refer back to the physical node, to access attributes such as name
 
-        return OverlayNode(self.anm, 'phy', self.node_id)
+        return NmNode(self.anm, 'phy', self.node_id)
 
     def dump(self):
         """Dump attributes of this node"""

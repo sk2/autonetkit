@@ -1,12 +1,12 @@
 import autonetkit.log as log
 from autonetkit.ank_utils import unwrap_edges, unwrap_nodes
-from overlay_base import OverlayBase
-from overlay_edge import OverlayEdge
-from overlay_interface import OverlayInterface
-from overlay_node import OverlayNode
+from autonetkit.anm.base import OverlayBase
+from autonetkit.anm.edge import NmEdge
+from autonetkit.anm.interface import NmInterface
+from autonetkit.anm.node import NmNode
 
 
-class OverlayGraph(OverlayBase):
+class NmGraph(OverlayBase):
 
     """API to interact with an overlay graph in ANM"""
 
@@ -18,7 +18,7 @@ class OverlayGraph(OverlayBase):
 
     @property
     def _graph(self):
-        """Access underlying graph for this OverlayNode"""
+        """Access underlying graph for this NmNode"""
 
         return self._anm.overlay_nx_graphs[self._overlay_id]
 
@@ -176,7 +176,7 @@ class OverlayGraph(OverlayBase):
                     initialised_nodes.append(node)
 
         if len(initialised_nodes):
-            initialised_nodes = [OverlayNode(self.anm, self._overlay_id, n) for n in initialised_nodes]
+            initialised_nodes = [NmNode(self.anm, self._overlay_id, n) for n in initialised_nodes]
             initialised_nodes = sorted([str(n) for n in initialised_nodes])
             self.log.debug("Initialised interfaces for %s" % ", ".join(initialised_nodes))
 
@@ -330,8 +330,8 @@ class OverlayGraph(OverlayBase):
 
                 # TODO: check this works across nodes, etc
 
-                if isinstance(src, OverlayInterface) \
-                    and isinstance(dst, OverlayInterface):
+                if isinstance(src, NmInterface) \
+                    and isinstance(dst, NmInterface):
                     _interfaces = {src.node_id: src.interface_id,
                                    dst.node_id: dst.interface_id}
                     ebunch_out.append((src.node_id, dst.node_id,

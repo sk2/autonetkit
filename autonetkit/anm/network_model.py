@@ -2,9 +2,9 @@ import time
 
 import autonetkit.log as log
 import networkx as nx
-from autonetkit.anm.overlay_graph import OverlayGraph
+from autonetkit.anm.graph import NmGraph
 
-class AbstractNetworkModel(object):
+class NetworkModel(object):
 
     """"""
 
@@ -109,7 +109,7 @@ class AbstractNetworkModel(object):
     def _phy(self):
         """"""
 
-        return OverlayGraph(self, 'phy')
+        return NmGraph(self, 'phy')
 
     def initialise_graph(self, graph):
         """Sets input graph. Converts to undirected.
@@ -157,7 +157,7 @@ class AbstractNetworkModel(object):
                 graph = nx.Graph()
 
         self._overlays[name] = graph
-        overlay = OverlayGraph(self, name)
+        overlay = NmGraph(self, name)
         overlay.allocate_interfaces()
         if nodes:
             retain = retain or []  # default is an empty list
@@ -178,7 +178,7 @@ class AbstractNetworkModel(object):
     def __getitem__(self, key):
         """"""
 
-        return OverlayGraph(self, key)
+        return NmGraph(self, key)
 
     def node_label(self, node):
         """Returns node label from physical graph"""

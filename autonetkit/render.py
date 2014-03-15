@@ -131,7 +131,7 @@ def render_inline(node, render_template_file, to_memory = True,
 
 
         if to_memory:
-# Render directly to NIDB
+# Render directly to DevicesModel
             render_output = render_template.render(
                         node = node,
                         version_banner = version_banner,
@@ -210,7 +210,7 @@ def render_node(node):
 
 
         if node.render.to_memory:
-# Render directly to NIDB
+# Render directly to DevicesModel
             node.render.render_output = render_template.render(
                         node = node,
                         version_banner = version_banner,
@@ -262,7 +262,7 @@ def render_single(nidb):
         render_node(node)
 
 def render_topologies(nidb):
-    for topology in nidb.topology:
+    for topology in nidb.topologies():
         render_topology(topology)
 
 def render_topology(topology):

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from autonetkit.compiler import sort_sessions
 from autonetkit.compilers.device.device_base import DeviceCompiler
-from autonetkit.nidb import config_stanza
+from autonetkit.nidb import ConfigStanza
 
 import autonetkit.plugins.naming as naming
 import autonetkit.log as log
@@ -35,7 +35,7 @@ class RouterCompiler(DeviceCompiler):
             use_ipv4 = False
             use_ipv6 = True
 
-        #TODO: return config_stanza rather than a dict
+        #TODO: return ConfigStanza rather than a dict
         data = {  # TODO: this is platform dependent???
             'neighbor': neigh.label,
             'use_ipv4': use_ipv4,
@@ -62,7 +62,7 @@ class RouterCompiler(DeviceCompiler):
             use_ipv4 = False
             use_ipv6 = True
 
-        #TODO: return config_stanza rather than a dict
+        #TODO: return ConfigStanza rather than a dict
         data = {  # TODO: change templates to access from node.bgp.lo_int
             'neighbor': neigh.label,
             'use_ipv4': use_ipv4,
@@ -265,7 +265,7 @@ class RouterCompiler(DeviceCompiler):
                 #TODO: can we remove the next line?
                 area = str(area)  # can't serialize IPAddress object to JSON
                 #TODO: put in interface rather than interface.id for consistency
-                stanza = config_stanza(id = interface.id,
+                stanza = ConfigStanza(id = interface.id,
                         cost = int(ospf_int.cost), passive = False)
 
                 if node.ip.use_ipv4:
@@ -281,11 +281,11 @@ class RouterCompiler(DeviceCompiler):
         ospf_loopback_zero = g_ospf.interface(loopback_zero)
         router_area = ospf_loopback_zero.area  # area assigned to router
         router_area = str(router_area)  # can't serialize IPAddress object to JSON
-        stanza = config_stanza(id = node.loopback_zero.id,
+        stanza = ConfigStanza(id = node.loopback_zero.id,
             cost = 0, passive = True)
         interfaces_by_area[router_area].append(stanza)
 
-        node.ospf.interfaces_by_area = config_stanza(**interfaces_by_area)
+        node.ospf.interfaces_by_area = ConfigStanza(**interfaces_by_area)
 
         added_networks = set()
         for interface in node.physical_interfaces:
@@ -310,7 +310,7 @@ class RouterCompiler(DeviceCompiler):
             if ospf_int and ospf_int.is_bound and network \
                 not in added_networks:  # don't add more than once
                 added_networks.add(network)
-                link_stanza = config_stanza(network = network, interface = interface, area = ospf_int.area)
+                link_stanza = ConfigStanza(network = network, interface = interface, area = ospf_int.area)
                 node.ospf.ospf_links.append(link_stanza)
 
             # also add networks for subnets to servers in the same AS
@@ -347,7 +347,7 @@ class RouterCompiler(DeviceCompiler):
                 continue  # exclude from regular ibgp config (eg VRF, VPLS, etc)
 
             data = self.ibgp_session_data(session, ip_version=4)
-            bgp_stanza = config_stanza(**data)
+            bgp_stanza = ConfigStanza(**data)
 
             direction = session.direction
             if direction == 'down':
@@ -366,7 +366,7 @@ class RouterCompiler(DeviceCompiler):
                     log.debug('Skipping excluded ibgp session %s' % session)
                     continue  # exclude from regular ibgp config (eg VRF, VPLS, etc)
                 data = self.ibgp_session_data(session, ip_version=6)
-                bgp_stanza = config_stanza(**data)
+                bgp_stanza = ConfigStanza(**data)
 
                 direction = session.direction
                 if direction == 'down':
@@ -391,7 +391,7 @@ class RouterCompiler(DeviceCompiler):
                 log.debug('Skipping excluded ebgp session %s' % session)
                 continue  # exclude from regular ibgp config (eg VRF, VPLS, etc)
             data = self.ebgp_session_data(session, ip_version=4)
-            bgp_stanza = config_stanza(**data)
+            bgp_stanza = ConfigStanza(**data)
             ebgp_neighbors.append(bgp_stanza)
 
         if node.ip.use_ipv6:
@@ -402,7 +402,7 @@ class RouterCompiler(DeviceCompiler):
                     log.debug('Skipping excluded ebgp session %s' % session)
                     continue  # exclude from regular ibgp config (eg VRF, VPLS, etc)
                 data = self.ebgp_session_data(session, ip_version=6)
-                bgp_stanza = config_stanza(**data)
+                bgp_stanza = ConfigStanza(**data)
                 ebgp_neighbors.append(bgp_stanza)
 
         ebgp_neighbors = sorted(ebgp_neighbors, key = lambda x: x.asn)

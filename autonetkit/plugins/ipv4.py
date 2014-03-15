@@ -69,7 +69,7 @@ class TreeNode(object):
         return self.loopback_group
 
     def is_interface(self):
-        return isinstance(self.host, autonetkit.anm.OverlayInterface)
+        return isinstance(self.host, autonetkit.anm.NmInterface)
 
     def is_host(self):
         return bool(self.host)
@@ -193,7 +193,7 @@ class IpTree(object):
 
         unallocated_nodes = self.unallocated_nodes
         key_func = lambda x: x.get(group_attr)
-        if all(isinstance(item, autonetkit.anm.OverlayInterface)
+        if all(isinstance(item, autonetkit.anm.NmInterface)
                and item.is_loopback for item in unallocated_nodes):
             key_func = lambda x: x.node.get(group_attr)  # interface, map key function to be the interface's node
 
@@ -208,7 +208,7 @@ class IpTree(object):
             items = sorted(list(items))
             subgraph = nx.DiGraph()
 
-            if all(isinstance(item, autonetkit.anm.OverlayInterface)
+            if all(isinstance(item, autonetkit.anm.NmInterface)
                    for item in items):
 
                 # interface
@@ -550,7 +550,7 @@ class IpTree(object):
         # don't look at host nodes now - use loopback_groups
         #TODO: make check for interface and loopback zero now
         host_tree_nodes = [n for n in self if n.is_host()
-                            and isinstance(n.host, autonetkit.anm.OverlayNode)
+                            and isinstance(n.host, autonetkit.anm.NmNode)
                            and n.host.is_l3device()]
 
         # for host_tree_node in host_tree_nodes:

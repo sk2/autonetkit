@@ -1,7 +1,7 @@
 import autonetkit.log as log
 
 def build_reverse_mappings_from_nidb(nidb):
-    """Builds IP reverse mappings from NIDB"""
+    """Builds IP reverse mappings from DevicesModel"""
     rev_map = {
             "subnets": {},
             "loopbacks": {},

@@ -13,7 +13,7 @@ parse_template = pkg_resources.resource_filename("autonetkit", "textfsm/quagga/s
 anm = autonetkit.ANM()
 anm.restore_latest()
 
-nidb = autonetkit.NIDB()
+nidb = autonetkit.DevicesModel()
 nidb.restore_latest()
 print list(nidb.nodes())
 

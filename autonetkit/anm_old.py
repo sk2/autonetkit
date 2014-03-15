@@ -37,6 +37,6 @@ class OverlayNotFound(AutoNetkitException):
     def __str__(self):
         return 'Overlay %s not found' % self.Errors
 
-# TODO: rename to OverlayInterface
+# TODO: rename to NmInterface
 
 

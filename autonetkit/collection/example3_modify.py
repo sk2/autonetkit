@@ -17,7 +17,7 @@ emulation_server = "115.146.93.18"
 anm = autonetkit.ANM()
 anm.restore_latest()
 
-nidb = autonetkit.NIDB()
+nidb = autonetkit.DevicesModel()
 nidb.restore_latest()
 print list(nidb.nodes())
 

@@ -79,7 +79,7 @@ def grid_2d(dim):
 @call_log
 def initialise(input_graph):
     """Initialises the input graph with from a NetworkX graph"""
-    anm = autonetkit.anm.AbstractNetworkModel()
+    anm = autonetkit.anm.NetworkModel()
 
     input_undirected = nx.Graph(input_graph)
     g_in = anm.add_overlay("input", graph=input_undirected)

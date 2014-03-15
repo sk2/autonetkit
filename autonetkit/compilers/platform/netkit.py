@@ -9,7 +9,7 @@ import string
 import itertools
 from autonetkit.ank_utils import alphabetical_sort as alpha_sort
 from autonetkit.compilers.device.quagga import QuaggaCompiler
-from autonetkit.nidb import config_stanza
+from autonetkit.nidb import ConfigStanza
 
 class NetkitCompiler(PlatformCompiler):
     """Netkit Platform Compiler"""
@@ -25,50 +25,50 @@ class NetkitCompiler(PlatformCompiler):
 # TODO: this should be all l3 devices not just routers
         for phy_node in g_phy.l3devices(host=self.host, syntax='quagga'):
             folder_name = naming.network_hostname(phy_node)
-            nidb_node = self.nidb.node(phy_node)
-            nidb_node.add_stanza("render")
+            DmNode = self.nidb.node(phy_node)
+            DmNode.add_stanza("render")
             #TODO: order by folder and file template src/dst
-            nidb_node.render.base = os.path.join("templates","quagga")
-            nidb_node.render.template = os.path.join("templates",
+            DmNode.render.base = os.path.join("templates","quagga")
+            DmNode.render.template = os.path.join("templates",
                 "netkit_startup.mako")
-            nidb_node.render.dst_folder = os.path.join("rendered",
+            DmNode.render.dst_folder = os.path.join("rendered",
                 self.host, "netkit")
-            nidb_node.render.base_dst_folder = os.path.join("rendered",
+            DmNode.render.base_dst_folder = os.path.join("rendered",
                 self.host, "netkit", folder_name)
-            nidb_node.render.dst_file = "%s.startup" % folder_name
+            DmNode.render.dst_file = "%s.startup" % folder_name
 
-            nidb_node.render.custom = {
+            DmNode.render.custom = {
                     'abc': 'def.txt'
                     }
 
 # allocate zebra information
-            nidb_node.add_stanza("zebra")
-            if nidb_node.is_router():
-                nidb_node.zebra.password = "1234"
+            DmNode.add_stanza("zebra")
+            if DmNode.is_router():
+                DmNode.zebra.password = "1234"
             hostname = folder_name
             if hostname[0] in string.digits:
                 hostname = "r" + hostname
-            nidb_node.hostname = hostname  # can't have . in quagga hostnames
-            nidb_node.add_stanza("ssh")
-            nidb_node.ssh.use_key = True  # TODO: make this set based on presence of key
+            DmNode.hostname = hostname  # can't have . in quagga hostnames
+            DmNode.add_stanza("ssh")
+            DmNode.ssh.use_key = True  # TODO: make this set based on presence of key
 
             # Note this could take external data
             int_ids = itertools.count(0)
-            for interface in nidb_node.physical_interfaces:
+            for interface in DmNode.physical_interfaces:
                 numeric_id = int_ids.next()
                 interface.numeric_id = numeric_id
                 interface.id = self.index_to_int_id(numeric_id)
 
 # and allocate tap interface
-            nidb_node.add_stanza("tap")
-            nidb_node.tap.id = self.index_to_int_id(int_ids.next())
+            DmNode.add_stanza("tap")
+            DmNode.tap.id = self.index_to_int_id(int_ids.next())
 
-            quagga_compiler.compile(nidb_node)
+            quagga_compiler.compile(DmNode)
 
-            if nidb_node.bgp:
-                nidb_node.bgp.debug = True
+            if DmNode.bgp:
+                DmNode.bgp.debug = True
                 static_routes = []
-                nidb_node.zebra.static_routes = static_routes
+                DmNode.zebra.static_routes = static_routes
 
         # and lab.conf
         self.allocate_tap_ips()
@@ -115,7 +115,7 @@ class NetkitCompiler(PlatformCompiler):
                 broadcast_domain = str(interface.ipv4_subnet).replace("/", ".")
                 #netkit lab.conf uses 1 instead of eth1
                 numeric_id = interface.numeric_id
-                stanza = config_stanza(
+                stanza = ConfigStanza(
                     device=naming.network_hostname(node),
                     key=numeric_id,
                     value=broadcast_domain,
@@ -125,7 +125,7 @@ class NetkitCompiler(PlatformCompiler):
         lab_topology.tap_ips = []
         for node in subgraph:
             if node.tap:
-                stanza = config_stanza(
+                stanza = ConfigStanza(
                     device=naming.network_hostname(node),
                     id=node.tap.id.replace("eth", ""),  # strip ethx -> x
                     ip=node.tap.ip,

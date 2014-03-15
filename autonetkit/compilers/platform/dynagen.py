@@ -4,7 +4,7 @@ from autonetkit.compilers.platform.platform_base import PlatformCompiler
 import itertools
 import autonetkit.ank as ank
 from autonetkit.compilers.device.cisco import IosClassicCompiler
-from autonetkit.nidb import config_stanza
+from autonetkit.nidb import ConfigStanza
 
 class DynagenCompiler(PlatformCompiler):
     """Dynagen Platform Compiler"""
@@ -30,26 +30,26 @@ class DynagenCompiler(PlatformCompiler):
         G_graphics = self.anm['graphics']
         ios_compiler = IosClassicCompiler(self.nidb, self.anm)
         for phy_node in g_phy.routers(host=self.host, syntax='ios'):
-            nidb_node = self.nidb.node(phy_node)
+            DmNode = self.nidb.node(phy_node)
             graphics_node = G_graphics.node(phy_node)
-            nidb_node.render.template = os.path.join("templates", "ios.mako")
-            nidb_node.render.dst_folder = os.path.join(
+            DmNode.render.template = os.path.join("templates", "ios.mako")
+            DmNode.render.dst_folder = os.path.join(
                 "rendered", self.host, "dynagen", self.config_dir)
-            nidb_node.render.dst_file = "%s.cfg" % ank.name_folder_safe(
+            DmNode.render.dst_file = "%s.cfg" % ank.name_folder_safe(
                 phy_node.label)
 
             # TODO: may want to normalise x/y
-            nidb_node.x = graphics_node.x
-            nidb_node.y = graphics_node.y
+            DmNode.x = graphics_node.x
+            DmNode.y = graphics_node.y
 
             # Allocate edges
             # assign interfaces
             # Note this could take external data
             int_ids = self.interface_ids()
-            for interface in nidb_node.physical_interfaces:
+            for interface in DmNode.physical_interfaces:
                 interface.id = int_ids.next()
 
-            ios_compiler.compile(nidb_node)
+            ios_compiler.compile(DmNode)
 
         self.allocate_ports()
         self.lab_topology()

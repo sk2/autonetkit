@@ -31,6 +31,6 @@ class AutoNetkitException(Exception):
 
 
 
-# TODO: rename to OverlayInterface
+# TODO: rename to NmInterface
 
 

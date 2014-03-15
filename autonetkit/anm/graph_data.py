@@ -1,4 +1,4 @@
-class OverlayGraphData(object):
+class NmGraphData(object):
 
     """API to access link in network"""
 
@@ -22,7 +22,7 @@ class OverlayGraphData(object):
     @property
     def _graph(self):
 
-        # access underlying graph for this OverlayNode
+        # access underlying graph for this NmNode
 
         return self.anm.overlay_nx_graphs[self.overlay_id]
 

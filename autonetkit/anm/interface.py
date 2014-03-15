@@ -4,7 +4,7 @@ import autonetkit.log as log
 from autonetkit.log import CustomAdapter
 
 
-class OverlayInterface(object):
+class NmInterface(object):
 
     def __init__(
         self,
@@ -99,7 +99,7 @@ class OverlayInterface(object):
 
         if self.overlay_id == 'phy':
             return self
-        return OverlayInterface(self.anm, 'phy', self.node_id,
+        return NmInterface(self.anm, 'phy', self.node_id,
                                  self.interface_id)
 
     def __getitem__(self, overlay_id):
@@ -116,7 +116,7 @@ class OverlayInterface(object):
             return None
 
         try:
-            return OverlayInterface(self.anm, overlay_id,
+            return NmInterface(self.anm, overlay_id,
                                      self.node_id, self.interface_id)
         except KeyError:
             return
@@ -174,8 +174,8 @@ class OverlayInterface(object):
     def node(self):
         """Returns parent node of this interface"""
 
-        from autonetkit.anm.overlay_node import OverlayNode
-        return OverlayNode(self.anm, self.overlay_id, self.node_id)
+        from autonetkit.anm.node import NmNode
+        return NmNode(self.anm, self.overlay_id, self.node_id)
 
     def dump(self):
         return str(self._interface.items())

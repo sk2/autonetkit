@@ -14,7 +14,7 @@ import autonetkit.log as log
 import autonetkit.render as render
 import pkg_resources
 from autonetkit import update_http
-from autonetkit.nidb import NIDB
+from autonetkit.nidb import DevicesModel
 
 # TODO: make if measure set, then not compile - or warn if both set, as
 # don't want to regen topology when measuring
@@ -82,7 +82,7 @@ def manage_network(input_graph_string, timestamp, build_options, reload_build=Fa
         import autonetkit.anm
         anm = autonetkit.anm.AbstractNetworkModel()
         anm.restore_latest()
-        nidb = NIDB()
+        nidb = DevicesModel()
         nidb.restore_latest()
         update_http(anm, nidb)
 
@@ -126,7 +126,7 @@ def parse_options(argument_string=None):
     parser.add_argument('--quiet', action="store_true",
                         default=False, help="Quiet mode (only display warnings and errors)")
     parser.add_argument('--diff', action="store_true", default=False,
-                        help="Diff NIDB")
+                        help="Diff DevicesModel")
     parser.add_argument('--compile', action="store_true",
                         default=False, help="Compile")
     parser.add_argument(
@@ -138,7 +138,7 @@ def parse_options(argument_string=None):
     parser.add_argument('--deploy', action="store_true",
                         default=False, help="Deploy")
     parser.add_argument('--archive', action="store_true", default=False,
-                        help="Archive ANM, NIDB, and IP allocations")
+                        help="Archive ANM, DevicesModel, and IP allocations")
     parser.add_argument('--measure', action="store_true",
                         default=False, help="Measure")
     parser.add_argument(
@@ -277,7 +277,7 @@ def main(options):
 
 
 def create_nidb(anm):
-    nidb = NIDB()
+    nidb = DevicesModel()
     g_phy = anm['phy']
     g_ip = anm['ip']
     g_graphics = anm['graphics']

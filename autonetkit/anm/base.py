@@ -2,13 +2,14 @@ import itertools
 import logging
 
 import autonetkit.log as log
-from autonetkit.anm.overlay_edge import OverlayEdge
-from autonetkit.anm.overlay_graph_data import OverlayGraphData
-from autonetkit.anm.overlay_interface import OverlayInterface
-from autonetkit.anm.overlay_node import OverlayNode
+from autonetkit.anm.edge import NmEdge
+from autonetkit.anm.graph_data import NmGraphData
+from autonetkit.anm.interface import NmInterface
+from autonetkit.anm.node import NmNode
 from autonetkit.exception import OverlayNotFound
 from autonetkit.log import CustomAdapter
 
+from abc import abstractproperty
 
 class OverlayBase(object):
 
@@ -20,10 +21,8 @@ class OverlayBase(object):
         if overlay_id not in anm.overlay_nx_graphs:
             raise OverlayNotFound(overlay_id)
             #TODO: return False instead?
-        self._anm = anm
-        self._graph = None # implemented in inheritors
-        self.anm = None # implemented in inheritors
         self._overlay_id = overlay_id
+        self._anm = anm
         logger = logging.getLogger("ANK")
         logstring = "Overlay: %s" % str(overlay_id)
         logger = CustomAdapter(logger, {'item': logstring})
@@ -38,7 +37,7 @@ class OverlayBase(object):
     def data(self):
         """Returns data stored on this overlay graph"""
 
-        return OverlayGraphData(self._anm, self._overlay_id)
+        return NmGraphData(self._anm, self._overlay_id)
 
     def __contains__(self, n):
         """"""
@@ -54,14 +53,14 @@ class OverlayBase(object):
     def interface(self, interface):
         """"""
 
-        return OverlayInterface(self._anm, self._overlay_id,
+        return NmInterface(self._anm, self._overlay_id,
                                  interface.node_id,
                                  interface.interface_id)
 
     def edge(self, edge_to_find, dst_to_find=None):
         '''returns edge in this graph with same src and dst'''
 
-        if isinstance(edge_to_find, OverlayEdge):
+        if isinstance(edge_to_find, NmEdge):
             src_id = edge_to_find.src
             dst_id = edge_to_find.dst
 
@@ -69,7 +68,7 @@ class OverlayBase(object):
 
             for (src, dst) in self._graph.edges_iter(src_id):
                 if dst == dst_id:
-                    return OverlayEdge(self._anm, self._overlay_id,
+                    return NmEdge(self._anm, self._overlay_id,
                                        src, dst)
 
         # TODO: tidy this logic up
@@ -80,7 +79,7 @@ class OverlayBase(object):
             src.lower()
             dst.lower()
             if self._graph.has_edge(src, dst):
-                return OverlayEdge(self._anm, self._overlay_id, src,
+                return NmEdge(self._anm, self._overlay_id, src,
                                    dst)
         except AttributeError:
             pass  # not strings
@@ -103,7 +102,7 @@ class OverlayBase(object):
 
                     # searching by nodes
 
-                    return OverlayEdge(self._anm, self._overlay_id,
+                    return NmEdge(self._anm, self._overlay_id,
                                        src, dst)
             except KeyError:
                 pass  #
@@ -119,7 +118,7 @@ class OverlayBase(object):
 
         try:
             if key.node_id in self._graph:
-                return OverlayNode(self._anm, self._overlay_id,
+                return NmNode(self._anm, self._overlay_id,
                                    key.node_id)
         except AttributeError:
 
@@ -138,15 +137,15 @@ class OverlayBase(object):
         return node.degree()
 
     def neighbors(self, node):
-        return iter(OverlayNode(self._anm, self._overlay_id, node)
+        return iter(NmNode(self._anm, self._overlay_id, node)
                     for node in self._graph.neighbors(node.node_id))
 
     def overlay(self, key):
         """Get to other overlay graphs in functions"""
 
         #TODO: refactor: shouldn't be returning concrete instantiation from abstract parent!
-        from overlay_graph import OverlayGraph
-        return OverlayGraph(self._anm, key)
+        from autonetkit.anm.graph import NmGraph
+        return NmGraph(self._anm, key)
 
     @property
     def name(self):
@@ -160,7 +159,7 @@ class OverlayBase(object):
     def node_label(self, node):
         """"""
 
-        return repr(OverlayNode(self._anm, self._overlay_id, node))
+        return repr(NmNode(self._anm, self._overlay_id, node))
 
     def dump(self):
         """"""
@@ -175,7 +174,7 @@ class OverlayBase(object):
     def __iter__(self):
         """"""
 
-        return iter(OverlayNode(self._anm, self._overlay_id, node)
+        return iter(NmNode(self._anm, self._overlay_id, node)
                     for node in self._graph)
 
     def __len__(self):
@@ -217,7 +216,7 @@ class OverlayBase(object):
     def device(self, key):
         """To access programatically"""
 
-        return OverlayNode(self._anm, self._overlay_id, key)
+        return NmNode(self._anm, self._overlay_id, key)
 
     def groupby(self, attribute, nodes=None):
         """Returns a dictionary sorted by attribute
@@ -297,7 +296,7 @@ class OverlayBase(object):
 
                 dst_nbunch = (n.node_id for n in dst_nbunch)
 
-                              # only store the id in OverlayEdge
+                              # only store the id in NmEdge
 
                 # faster membership test than other sequences
                 dst_nbunch = set(dst_nbunch)
@@ -306,10 +305,10 @@ class OverlayBase(object):
                            if dst in dst_nbunch)
 
         if len(args) or len(kwargs):
-            all_edges = iter(OverlayEdge(self._anm, self._overlay_id,
+            all_edges = iter(NmEdge(self._anm, self._overlay_id,
                              src, dst) for (src, dst) in valid_edges)
             result = (edge for edge in all_edges if filter_func(edge))
         else:
-            result = (OverlayEdge(self._anm, self._overlay_id, src,
+            result = (NmEdge(self._anm, self._overlay_id, src,
                                   dst) for (src, dst) in valid_edges)
         return list(result)

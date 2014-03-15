@@ -3,12 +3,12 @@ from functools import total_ordering
 
 import autonetkit.log as log
 from autonetkit.log import CustomAdapter
-from autonetkit.anm.overlay_interface import OverlayInterface
-from autonetkit.anm.overlay_node import OverlayNode
+from autonetkit.anm.interface import NmInterface
+from autonetkit.anm.node import NmNode
 
 
 @total_ordering
-class OverlayEdge(object):
+class NmEdge(object):
 
     """API to access link in network"""
 
@@ -60,8 +60,8 @@ class OverlayEdge(object):
     def __getitem__(self, key):
         """"""
 
-        from autonetkit.anm.overlay_graph import OverlayGraph
-        overlay = OverlayGraph(self.anm, key)
+        from autonetkit.anm.graph import NmGraph
+        overlay = NmGraph(self.anm, key)
         return overlay.edge(self)
 
     def __lt__(self, other):
@@ -74,13 +74,13 @@ class OverlayEdge(object):
     def src(self):
         """Source node of edge"""
 
-        return OverlayNode(self.anm, self.overlay_id, self.src_id)
+        return NmNode(self.anm, self.overlay_id, self.src_id)
 
     @property
     def dst(self):
         """Destination node of edge"""
 
-        return OverlayNode(self.anm, self.overlay_id, self.dst_id)
+        return NmNode(self.anm, self.overlay_id, self.dst_id)
 
     def apply_to_interfaces(self, attribute):
         val = self.__getattr__(attribute)
@@ -92,7 +92,7 @@ class OverlayEdge(object):
         """Interface bound to source node of edge"""
 
         src_int_id = self._interfaces[self.src_id]
-        return OverlayInterface(self.anm, self.overlay_id,
+        return NmInterface(self.anm, self.overlay_id,
                                  self.src_id, src_int_id)
 
     @property
@@ -100,7 +100,7 @@ class OverlayEdge(object):
         """Interface bound to destination node of edge"""
 
         dst_int_id = self._interfaces[self.dst_id]
-        return OverlayInterface(self.anm, self.overlay_id,
+        return NmInterface(self.anm, self.overlay_id,
                                  self.dst_id, dst_int_id)
 
     #TODO: see if these are still used
@@ -140,7 +140,7 @@ class OverlayEdge(object):
 
         # TODO: warn if interface doesn't exist on node
 
-        return iter(OverlayInterface(self.anm, self.overlay_id,
+        return iter(NmInterface(self.anm, self.overlay_id,
                     node_id, interface_id) for (node_id,
                     interface_id) in self._interfaces.items())
 
