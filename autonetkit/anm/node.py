@@ -257,7 +257,22 @@ class NmNode(object):
     def _graph(self):
         """Return graph the node belongs to"""
 
-        return self.anm.overlay_nx_graphs[self.overlay_id]
+        try:
+            return self.anm.overlay_nx_graphs[self.overlay_id]
+        except Exception, e:
+            log.warning("Error accessing overlay %s for node %s: %s" %
+                (self.overlay_id, self.node_id, e))
+            raise SystemExit
+
+    @property
+    def _nx_node_data(self):
+        """Return NetworkX node data for the node"""
+        try:
+            return self._graph.node[self.node_id]
+        except Exception, e:
+            log.warning("Error accessing node data %s for node %s: %s" %
+                (self.overlay_id, self.node_id, e))
+            raise SystemExit
 
     def is_router(self):
         """Either from this graph or the physical graph"""
