@@ -78,6 +78,9 @@ class NmEdge(object):
 
     def __repr__(self):
         """String of node"""
+        if self.is_multigraph():
+            return '%s: (%s, %s, %s)' % (self.overlay_id, self.src,
+                self.dst, self.ekey)
 
         return '%s: (%s, %s)' % (self.overlay_id, self.src, self.dst)
 
@@ -92,7 +95,7 @@ class NmEdge(object):
         """"""
         if self.is_multigraph() and other.is_multigraph():
             return (self.src.node_id, self.dst.node_id, self.ekey) \
-                < (other.src.node_id, other.dst.node_id, self.ekey)
+                < (other.src.node_id, other.dst.node_id, other.ekey)
 
 
         return (self.src.node_id, self.dst.node_id) \
@@ -102,6 +105,9 @@ class NmEdge(object):
     def __nonzero__(self):
         """Allows for checking if edge exists
         """
+        if self.is_multigraph():
+            return self._graph.has_edge(self.src_id, self.dst_id,
+                key=self.ekey)
 
         return self._graph.has_edge(self.src_id, self.dst_id)
 

@@ -10,6 +10,9 @@ g_me.add_nodes_from(["r1", "r2", "r3"])
 # add two edges
 g_me.add_edges_from(([("r1", "r2")]))
 g_me.add_edges_from(([("r1", "r2")]))
+g_me.add_edges_from(([("r1", "r2")]))
+g_me.add_edges_from(([("r1", "r2")]))
+g_me.add_edges_from(([("r1", "r2")]))
 
 r1 = g_me.node("r1")
 
@@ -30,6 +33,12 @@ assert(e1 != e2)
 
 print g_me.edge("r1", "r2", 0).index
 print g_me.edge("r1", "r2", 1).index
+
+out_of_order = [g_me.edge("r1", "r2", x) for x in [4, 1, 3, 2, 0]]
+print [e.index for e in out_of_order]
+in_order = sorted(out_of_order)
+print in_order
+print [e.index for e in in_order]
 
 graph = g_me._graph
 
