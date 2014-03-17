@@ -174,70 +174,71 @@ def jsonify_anm_with_graphics(anm, nidb = None):
     test_anm_data = {}
     graphics_graph = anm["graphics"]._graph.copy()
     phy_graph = anm["phy"]._graph  # to access ASNs
+
+    import random
+    from collections import defaultdict
+    attribute_cache = defaultdict(dict)
+    # the attributes to copy
+    # TODO: check behaviour for None if explicitly set
+    #TODO: need to check if attribute is set in overlay..... using API
+    copy_attrs =  ["x", "y", "asn", "label", "device_type", "device_subtype"]
+    for node, in_data in phy_graph.nodes(data=True):
+      out_data = {key: in_data.get(key) for key in copy_attrs
+      if key in in_data}
+      attribute_cache[node].update(out_data)
+
+    # Update for graphics (over-rides phy)
+    for node, in_data in graphics_graph.nodes(data=True):
+      out_data = {key: in_data.get(key) for key in copy_attrs
+      if key in in_data}
+      attribute_cache[node].update(out_data)
+
     for overlay_id in anm.overlays():
         NmGraph = anm[overlay_id]._graph.copy()
 
-    #TODO: don't regen x,y for each overlay - persist (possibly across all layers?)
-    # for speed/clarity, get the graphics data to a dict and then set x,y if not set
-    # then read from this
+        for node in NmGraph:
+            node_data = dict(attribute_cache.get(node, {}))
+            # update with node data from this overlay
+            #TODO: check is not None won't clobber specifically set in overlay...
+            graph_node_data = NmGraph.node[node]
+            overlay_node_data = {key: graph_node_data.get(key)
+                for key in copy_attrs if key in graph_node_data}
+            node_data.update(overlay_node_data)
 
-#TODO: only update, don't over write if already set
-        for n in NmGraph:
-            if n in graphics_graph:
-                NmGraph.node[n].update( {
-                'x': graphics_graph.node[n].get('x'),
-                'y': graphics_graph.node[n].get('y'),
-                'asn': graphics_graph.node[n]['asn'],
-                'label': graphics_graph.node[n].get('label'),
-                'device_type': graphics_graph.node[n].get('device_type'),
-                'device_subtype': graphics_graph.node[n].get('device_subtype'),
-                'pop': graphics_graph.node[n].get('pop'),
-                })
+            # check for any non-set properties
+            if node_data.get("x") is None:
+                new_x = random.randint(0,800)
+                node_data['x'] = new_x
+                # store for other graphs to use
+                log.debug("Allocated random x %s to node %s in overlay %s" %
+                    (new_x, node, overlay_id))
+                attribute_cache[node]['x'] = new_x
+            if node_data.get("y") is None:
+                new_y = random.randint(0,800)
+                node_data['y'] =new_y
+                # store for other graphs to use
+                attribute_cache[node]['y'] =new_y
+                log.debug("Allocated random y %s to node %s in overlay %s" %
+                    (new_y, node, overlay_id))
 
-                #TODO: if no label set, then use node if
-            elif n in phy_graph:
-                #TODO: if in phy but x/y not set, then fall through to setting random
-                #TODO: tidy by moving x/y to higher up before each overlay
-                # try to copy x/y from phy
-                NmGraph.node[n].update( {
-                        'x': phy_graph.node[n].get('x'),
-                        'y': phy_graph.node[n].get('y'),
-                        'asn': phy_graph.node[n].get('asn'),
-                        'label': phy_graph.node[n].get('label'),
-                        'device_type': phy_graph.node[n].get('device_type'),
-                        'device_subtype': phy_graph.node[n].get('device_subtype'),
-                        'pop': phy_graph.node[n].get('pop'),
-                })
-            else:
-                import random
-                log.debug("Converting to graphics JSON format: node %s not in graphics overlay" % n)
-                #TODO: see if can key off node hash - so doesn't move nodes around
-                if NmGraph.node[n].get("x") is None:
-                    NmGraph.node[n]['x'] = random.randint(0,800)
-                if NmGraph.node[n].get("y") is None:
-                    NmGraph.node[n]['y'] =random.randint(0,800)
-                if NmGraph.node[n].get("label") is None:
-                    NmGraph.node[n]['label'] = n # set to node ID
-                if NmGraph.node[n].get("device_type") is None:
-                    NmGraph.node[n]['device_type'] = None # set to node ID
+            if node_data.get("label") is None:
+                node_data['label'] = str(node) # don't need to cache
 
-
-            if n in phy_graph:
-                # use ASN from physical graph
-                NmGraph.node[n]['asn'] = phy_graph.node[n].get("asn")
+            # store on graph
+            NmGraph.node[node] = node_data
 
             try:
-                del NmGraph.node[n]['id']
+                del NmGraph.node[node]['id']
             except KeyError:
                 pass
 
             if nidb:
                 nidb_graph = nidb.raw_graph()
-                if n in nidb:
-                    DmNode_data = nidb_graph.node[n]
+                if node in nidb:
+                    DmNode_data = nidb_graph.node[node]
                     try:
                         #TODO: check why not all nodes have _interfaces initialised
-                        overlay_interfaces = NmGraph.node[n]["_interfaces"]
+                        overlay_interfaces = NmGraph.node[node]["_interfaces"]
                     except KeyError:
                         continue # skip copying interface data for this node
 
@@ -247,33 +248,9 @@ def jsonify_anm_with_graphics(anm, nidb = None):
                         except KeyError:
                             #TODO: check why arrive here - something not initialised?
                             continue
-                        NmGraph.node[n]['_interfaces'][interface_id]['id'] = nidb_interface_id
+                        NmGraph.node[node]['_interfaces'][interface_id]['id'] = nidb_interface_id
                         id_brief = shortened_interface(nidb_interface_id)
-                        NmGraph.node[n]['_interfaces'][interface_id]['id_brief'] = id_brief
-
-#TODO: combine these, and round as necessary
-        x = (NmGraph.node[n].get('x', 0) for n in NmGraph)
-        y = (NmGraph.node[n].get('y', 0) for n in NmGraph)
-        try:
-            x_min = min(x)
-        except ValueError:
-            x_min = 0
-        try:
-            y_min = min(y)
-        except ValueError:
-            y_min = 0
-
-        border_offset = 20 # so don't plot right at edge
-        for n in NmGraph:
-            #TODO: do this once per node, rather than each time
-            NmGraph.node[n]['x'] += - x_min + border_offset
-            NmGraph.node[n]['y'] += - y_min + border_offset
-            #TODO: make scale to graph size: if size is <100 dont apply
-            #NmGraph.node[n]['x'] = round(NmGraph.node[n]['x']/25) * 25
-            #NmGraph.node[n]['y'] = round(NmGraph.node[n]['y']/25) * 25
-
-            # and round to the nearest grid size
-            # for now round to nearest 10
+                        NmGraph.node[node]['_interfaces'][interface_id]['id_brief'] = id_brief
 
         anm_json[overlay_id] = ank_json_dumps(NmGraph)
         test_anm_data[overlay_id] = NmGraph
