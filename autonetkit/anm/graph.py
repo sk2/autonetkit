@@ -330,6 +330,10 @@ class NmGraph(OverlayBase):
 
                 # TODO: check this works across nodes, etc
 
+                # adding an edge explictly from interface to interface
+                # Note: can't add an edge from node <-> interface in API
+                # if no interface is set, will bind to interface 0 (loopback zero)
+
                 if isinstance(src, NmInterface) \
                     and isinstance(dst, NmInterface):
                     _interfaces = {src.node_id: src.interface_id,
@@ -356,6 +360,7 @@ class NmGraph(OverlayBase):
                        if src in self._graph and dst in self._graph]
 
         self._graph.add_edges_from(ebunch, **kwargs)
+        #TODO: return edges added?
 
     def update(self, nbunch=None, **kwargs):
         """Sets property defined in kwargs to all nodes in nbunch"""
@@ -371,16 +376,6 @@ class NmGraph(OverlayBase):
         for node in nbunch:
             for (key, value) in kwargs.items():
                 node.set(key, value)
-
-    def update_edges(self, ebunch=None, **kwargs):
-        """Sets property defined in kwargs to all edges in ebunch"""
-        # TODO: also allow (src_id, dst_id) and single overlay edge
-
-        if not ebunch:
-            ebunch = self.edges()
-        for edge in ebunch:
-            for (key, value) in kwargs.items():
-                edge.set(key, value)
 
     def subgraph(self, nbunch, name=None):
         """"""

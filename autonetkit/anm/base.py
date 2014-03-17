@@ -131,15 +131,6 @@ class OverlayBase(object):
             log.warning('Unable to find node %s in %s ' % (key, self))
             return None
 
-    def degree(self, node):
-        """"""
-
-        return node.degree()
-
-    def neighbors(self, node):
-        return iter(NmNode(self._anm, self._overlay_id, node)
-                    for node in self._graph.neighbors(node.node_id))
-
     def overlay(self, key):
         """Get to other overlay graphs in functions"""
 
@@ -161,11 +152,6 @@ class OverlayBase(object):
 
         return repr(NmNode(self._anm, self._overlay_id, node))
 
-    def dump(self):
-        """"""
-
-        self._anm.dump_graph(self)
-
     def has_edge(self, edge):
         """Tests if edge in graph"""
 
@@ -174,8 +160,7 @@ class OverlayBase(object):
     def __iter__(self):
         """"""
 
-        return iter(NmNode(self._anm, self._overlay_id, node)
-                    for node in self._graph)
+        return self.nodes()
 
     def __len__(self):
         """"""
@@ -185,10 +170,12 @@ class OverlayBase(object):
     def nodes(self, *args, **kwargs):
         """"""
 
-        result = self.__iter__()
+        result = iter(NmNode(self._anm, self._overlay_id, node)
+                    for node in self._graph)
+
         if len(args) or len(kwargs):
             result = self.filter(result, *args, **kwargs)
-        return list(result)
+        return result
 
     def routers(self, *args, **kwargs):
         """Shortcut for nodes(), sets device_type to be router"""

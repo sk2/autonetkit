@@ -66,3 +66,24 @@ def merge_quagga_conf():
     with open(ospfd_conf, "w") as fh:
         fh.write("\n".join(data))
 
+
+"""Potential edge utils:
+# TODO: see if these are still used
+def attr_equal(self, *args):
+   ""Return edges which both src and dst have attributes equal""
+
+    return all(getattr(self.src, key) == getattr(self.dst, key)
+               for key in args)
+
+def attr_both(self, *args):
+    ""Return edges which both src and dst have attributes set""
+
+    return all(getattr(self.src, key) and getattr(self.dst, key)
+               for key in args)
+
+def attr_any(self, *args):
+    ""Return edges which either src and dst have attributes set""
+
+    return all(getattr(self.src, key) or getattr(self.dst, key)
+               for key in args)
+"""

@@ -58,7 +58,7 @@ def build_ebgp(anm):
     g_phy = anm['phy']
     g_ebgp = anm.add_overlay("ebgp", directed=True)
     g_ebgp.add_nodes_from(g_in.routers())
-    ebgp_edges = [e for e in g_in.edges() if not e.attr_equal("asn")]
+    ebgp_edges = [e for e in g_in.edges() if e.src.asn != e.dst.asn]
     g_ebgp.add_edges_from(ebgp_edges, bidirectional=True, type='ebgp')
 
     ebgp_switches = [n for n in g_in.switches()
@@ -201,7 +201,8 @@ def build_bgp(anm):
     """TODO: remove from here once compiler updated"""
     g_bgp = anm.add_overlay("bgp", directed=True)
     g_bgp.add_nodes_from(g_in.routers())
-    ebgp_edges = [edge for edge in g_in.edges() if not edge.attr_equal("asn")]
+    ebgp_edges = [edge for edge in g_in.edges()
+        if edge.src.asn != edge.dst.asn]
     g_bgp.add_edges_from(ebgp_edges, bidirectional=True, type='ebgp')
 
     ebgp_switches = [n for n in g_in.switches()
