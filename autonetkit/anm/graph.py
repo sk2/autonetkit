@@ -106,6 +106,8 @@ class NmGraph(OverlayBase):
         self._graph.add_node(node_id, kwargs)
         self._init_interfaces([node_id])
 
+        return NmNode(self.anm, self._overlay_id, node_id)
+
     def _init_interfaces(self, nbunch=None):
         """Initialises interfaces"""
         # TODO: this needs a major refactor!
@@ -244,16 +246,14 @@ class NmGraph(OverlayBase):
         """Alias for remove_node. Allows
         >>> del overlay[node]
         """
-
+        #TODO: needs to support node types
         self.remove_node(key)
 
-    def remove_node(self, node):
+    def remove_node(self, node_id):
         """Removes a node from the overlay"""
+        if isinstance(node_id, NmNode):
+            node_id = node_id.node_id
 
-        try:
-            node_id = node.node_id
-        except AttributeError:
-            node_id = node
         self._graph.remove_node(node_id)
 
     def add_edge(

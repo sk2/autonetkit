@@ -202,9 +202,9 @@ def jsonify_anm_with_graphics(anm, nidb = None):
                 NmGraph.node[n].update( {
                         'x': phy_graph.node[n].get('x'),
                         'y': phy_graph.node[n].get('y'),
-                        'asn': phy_graph.node[n]['asn'],
-                        'label': phy_graph.node[n]['label'],
-                        'device_type': phy_graph.node[n]['device_type'],
+                        'asn': phy_graph.node[n].get('asn'),
+                        'label': phy_graph.node[n].get('label'),
+                        'device_type': phy_graph.node[n].get('device_type'),
                         'device_subtype': phy_graph.node[n].get('device_subtype'),
                         'pop': phy_graph.node[n].get('pop'),
                 })
@@ -252,8 +252,8 @@ def jsonify_anm_with_graphics(anm, nidb = None):
                         NmGraph.node[n]['_interfaces'][interface_id]['id_brief'] = id_brief
 
 #TODO: combine these, and round as necessary
-        x = (NmGraph.node[n]['x'] for n in NmGraph)
-        y = (NmGraph.node[n]['y'] for n in NmGraph)
+        x = (NmGraph.node[n].get('x', 0) for n in NmGraph)
+        y = (NmGraph.node[n].get('y', 0) for n in NmGraph)
         try:
             x_min = min(x)
         except ValueError:

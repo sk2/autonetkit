@@ -159,6 +159,38 @@ g_phy.add_edges_from([(src_int, dst_int)])
 edge = g_phy.edge("r1", "r5")
 assert((edge.src_int, edge.dst_int) == (src_int, dst_int))
 
+
+edge_a1 = g_phy.edge("r1", "r2")
+edge_a2 = g_phy.edge("r1", "r2")
+assert(edge_a1 == edge_a2)
+edge_b = g_phy.edge("r1", "r2")
+assert(edge_a1 != edge_b)
+
+# compare to string
+assert(edge_a1 == ("r1", "r2"))
+assert(edge_a1 != ("r1", "r3"))
+
+assert(bool(edge_a1) is True) #exists
+edge_non_existent = g_phy.edge("r1", "r8")
+#TODO: need to document API to check exists/doesn't exist for nodes, edges, interfaces, graphs,....
+assert(bool(edge_non_existent) is False) #doesn't exist
+
+
+
+# add node
+#TODO: better handling of nodes with no x,y, asn, etc in jsonify
+r6 = g_phy.add_node("r6")
+assert(r6 in g_phy)
+del g_phy[r6]
+assert(r6 not in g_phy)
+
+
+# graph data
+g_phy.data.test = 123
+assert(g_phy.data.test == 123)
+assert(g_phy.data['test'] == 123)
+
+
 #TODO: test for directed graph
 
 autonetkit.update_http(anm)

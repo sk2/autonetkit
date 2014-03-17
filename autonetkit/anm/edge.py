@@ -47,7 +47,8 @@ class NmEdge(object):
             return (self.src_id, self.dst_id) == (other.src_id,
                                                   other.dst_id)
         except AttributeError:
-            return self.node_id == other
+            #compare to strings
+            return (self.src_id, self.dst_id) == other
 
     def __repr__(self):
         """String of node"""
