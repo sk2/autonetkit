@@ -3,7 +3,7 @@ import autonetkit.log as log
 
 log.info("Testing ANM")
 
-anm = autonetkit.ANM()
+anm = autonetkit.anm.NetworkModel()
 
 g_in = anm.add_overlay("input")
 
@@ -96,6 +96,9 @@ test_overlay_interface['phy']
 
 
 # Test edges
+autonetkit.update_http(anm)
+test_edge = g_in.edge("r1", "r2")
+assert(test_edge is not None)
 
 # test overlays
 
@@ -123,6 +126,39 @@ g_in.update("r4", asn = 2)
 g_in.update(["r1", "r2", "r3"], asn = 1)
 
 test = g_in.node("r5")
+
 """
+# More graph level tests
+#TODO: need to allow searching for interface by .interface("eth1", "r1")
+
+#TODO: need to provide remove_nodes_from
+
+test_node = g_phy.node("r1")
+search_int = list(test_node.interfaces())[0]
+result_int = g_phy.interface(search_int)
+assert(search_int == result_int)
+
+search_int = list(test_node.interfaces())[1]
+result_int = g_phy.interface(search_int)
+assert(search_int == result_int)
+
+assert(g_phy.node("r1").degree() == 2)
+assert(g_phy.node("r3").degree() == 3)
+
+g_phy.add_edge("r1", "r4")
+assert(g_phy.edge("r1", "r4") is not None)
+
+edges_to_remove = g_phy.edge("r1", "r4")
+#TODO: remove_edges_from needs to support single/list
+g_phy.remove_edges_from([edges_to_remove])
+assert(g_phy.edge("r1", "r4") is None)
+
+src_int =  g_phy.node("r1").add_interface("eth1")
+dst_int =  g_phy.node("r5").add_interface("eth1")
+g_phy.add_edges_from([(src_int, dst_int)])
+edge = g_phy.edge("r1", "r5")
+assert((edge.src_int, edge.dst_int) == (src_int, dst_int))
+
+#TODO: test for directed graph
 
 autonetkit.update_http(anm)
