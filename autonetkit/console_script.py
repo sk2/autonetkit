@@ -274,9 +274,12 @@ def main(options):
 
 
 def create_nidb(anm):
+    #TODO: refactor this now with the layer2/layer2_bc graphs - what does NIDB need?
+    # probably just layer2, and then allow compiled to access layer2_bc if need (eg netkit?)
     nidb = DeviceModel()
     g_phy = anm['phy']
     g_ip = anm['ip']
+    g_layer2_bc = anm['layer2_bc']
     g_graphics = anm['graphics']
     nidb.add_nodes_from(
         g_phy, retain=['label', 'host', 'platform', 'Network', 'update', 'asn'])
@@ -297,7 +300,7 @@ def create_nidb(anm):
     edges_to_add = [edge for edge in g_phy.edges()
                     if edge.src.is_switch() or edge.dst.is_switch()]
     # cd edges from split
-    edges_to_add += [edge for edge in g_ip.edges() if edge.split]
+    edges_to_add += [edge for edge in g_layer2_bc.edges()]
     nidb.add_edges_from(edges_to_add)
 
     nidb.copy_graphics(g_graphics)
