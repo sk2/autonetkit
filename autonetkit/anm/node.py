@@ -357,10 +357,14 @@ class NmNode(object):
 
         return self._graph.degree(self.node_id)
 
+
+
     def neighbors(self, *args, **kwargs):
         """Returns neighbors of node"""
 
-        neighs = self._overlay.neighbors(self)
+        neighs = list(NmNode(self.anm, self.overlay_id, node)
+                    for node in self._graph.neighbors(self.node_id))
+
         return self._overlay.filter(neighs, *args, **kwargs)
 
     def neighbor_interfaces(self, *args, **kwargs):
@@ -396,8 +400,11 @@ class NmNode(object):
     def dump(self):
         """Dump attributes of this node"""
 
-        data = dict(self._graph.node[self.node_id])
-        del data['_interfaces']
+        data = dict(self._nx_node_data)
+        try:
+            del data['_interfaces']
+        except KeyError:
+            pass # no interfaces set
         return str(data)
 
     def edges(self, *args, **kwargs):
@@ -419,6 +426,8 @@ class NmNode(object):
                 return self._graph.node[self.node_id]['label']
             except KeyError:
                 return self.node_id  # node not in physical graph
+        except AttributeError:
+            return self.node_id
 
     def __getattr__(self, key):
         """Returns node property
