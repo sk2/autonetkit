@@ -77,6 +77,9 @@ class NmNode(object):
 
         return self.interfaces(type='loopback')
 
+    def is_multigraph(self):
+        return self._graph.is_multigraph()
+
     def __lt__(self, other):
         """"""
 

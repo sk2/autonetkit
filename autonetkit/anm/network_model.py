@@ -114,6 +114,7 @@ class NetworkModel(object):
     def initialise_graph(self, graph):
         """Sets input graph. Converts to undirected.
         Initialises graphics overlay."""
+        #TODO: remove this dependency from workflow
 
         graph = nx.Graph(graph)
         g_graphics = self['graphics']
