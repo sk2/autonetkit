@@ -175,8 +175,6 @@ edge_non_existent = g_phy.edge("r1", "r8")
 #TODO: need to document API to check exists/doesn't exist for nodes, edges, interfaces, graphs,....
 assert(bool(edge_non_existent) is False) #doesn't exist
 
-
-
 # add node
 #TODO: better handling of nodes with no x,y, asn, etc in jsonify
 r6 = g_phy.add_node("r6")
@@ -190,6 +188,7 @@ g_phy.data.test = 123
 assert(g_phy.data.test == 123)
 assert(g_phy.data['test'] == 123)
 
+# test adding a node with not attributes for jsonify
 
 #TODO: test for directed graph
 
