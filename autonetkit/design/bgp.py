@@ -1,8 +1,7 @@
 import autonetkit.ank as ank_utils
 import autonetkit.log as log
-
-
 from autonetkit.ank_utils import call_log
+
 
 @call_log
 def build_ibgp_v4(anm):
@@ -47,6 +46,7 @@ def build_ebgp_v4(anm):
     g_ebgpv4.add_nodes_from(n for n in g_ebgp if n in ipv4_nodes)
     g_ebgpv4.add_edges_from(g_ebgp.edges(), retain="direction")
 
+@call_log
 def build_ebgp_v6(anm):
     #TODO: remove the bgp layer and have just ibgp and ebgp
     # TODO: build from design rules, currently just builds from ibgp links in bgp layer
@@ -196,7 +196,6 @@ def build_bgp(anm):
     """Build iBGP end eBGP overlays"""
     # eBGP
     g_in = anm['input']
-    g_phy = anm['phy']
     g_l3 = anm['layer3']
 
     if not anm['phy'].data.enable_routing:

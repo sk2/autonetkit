@@ -1,6 +1,4 @@
 import itertools
-import pprint
-from collections import defaultdict
 
 import autonetkit.log as log
 import networkx as nx
@@ -244,7 +242,6 @@ def connected_subgraphs(NmGraph, nodes):
     if not len(subgraph.edges()):
         #print "Nothing to aggregate for %s: no edges in subgraph"
         pass
-    total_added_edges = []
     if graph.is_directed():
         component_nodes_list = nx.strongly_connected_components(subgraph)
     else:

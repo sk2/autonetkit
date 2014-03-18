@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 import itertools
 import math
-import os
 import string
 from collections import defaultdict
 from cStringIO import StringIO
