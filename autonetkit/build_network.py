@@ -11,7 +11,7 @@ import networkx as nx
 
 SETTINGS = autonetkit.config.settings
 
-# TODO: revisit phy_neighbors for eg ASN and use l3_conn instead
+# TODO: revisit phy_neighbors for eg ASN and use layer3 instead
 
 __all__ = ['build']
 from autonetkit.ank_utils import call_log
@@ -128,7 +128,7 @@ def check_server_asns(anm):
     for server in g_phy.servers():
         if server.device_subtype in ("SNAT", "FLAT"):
             continue  # Don't warn on ASN for NAT elements
-        l3_neighbors = list(server['l3_conn'].neighbors())
+        l3_neighbors = list(server['layer3'].neighbors())
         l3_neighbor_asns = set(n.asn for n in l3_neighbors)
         if server.asn not in l3_neighbor_asns:
             neighs_with_asn = ["%s: AS %s" % (n, n.asn)
@@ -361,7 +361,7 @@ def build_phy(anm):
 def build_l3_connectivity(anm):
     """ l3_connectivity graph: switch nodes aggregated and exploded"""
     g_in = anm['input']
-    g_l3conn = anm.add_overlay("l3_conn")
+    g_l3conn = anm.add_overlay("layer3")
     g_l3conn.add_nodes_from(
         g_in, retain=['label', 'update', 'device_type', 'asn',
                       'specified_int_names',

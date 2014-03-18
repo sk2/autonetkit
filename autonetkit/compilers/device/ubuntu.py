@@ -28,7 +28,6 @@ class UbuntuCompiler(ServerCompiler):
             return
 
         l3_node = self.anm['layer3'].node(node)
-        phy_node = self.anm['phy'].node(node)
         gateway_list = [n for n in l3_node.neighbors()
                         if n.is_router()]
         if not len(gateway_list):
@@ -44,7 +43,7 @@ class UbuntuCompiler(ServerCompiler):
         # TODO: warn if server has no neighbors in same ASN (either in design or verification steps)
         # TODO: need to check that servers don't have any direct ebgp connections
 
-        gateway_edge_l3 = self.anm['l3_conn'].edge(node, gateway)
+        gateway_edge_l3 = self.anm['layer3'].edge(node, gateway)
         server_interface = gateway_edge_l3.src_int
         server_interface_id = self.nidb.interface(server_interface).id
 
