@@ -129,19 +129,19 @@ def rebind_interfaces(anm):
             #interfaces = {overlay.node(key): val for key, val in unbound_interfaces.items()}
             #edge._interfaces = interfaces # store with remapped node
         for node in overlay.nodes():
-            unbound_interfaces = node._interfaces
+            unbound_interfaces = node.raw_interfaces
             if len(unbound_interfaces): # is list if none set
                 interfaces = {int(key): val for key, val in unbound_interfaces.items()}
-                node._interfaces = interfaces
+                node.raw_interfaces = interfaces
 
 #TODO: need to also rebind_interfaces for nidb
 
 def rebind_nidb_interfaces(nidb):
     for node in nidb.nodes():
-        unbound_interfaces = node._interfaces
+        unbound_interfaces = node.raw_interfaces
         if len(unbound_interfaces): # is list if none set
             interfaces = {int(key): val for key, val in unbound_interfaces.items()}
-            node._interfaces = interfaces
+            node.raw_interfaces = interfaces
 
 
 def ank_json_loads(data):

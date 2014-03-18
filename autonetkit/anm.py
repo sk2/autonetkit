@@ -31,6 +31,6 @@ class AutoNetkitException(Exception):
 
 
 
-# TODO: rename to NmInterface
+# TODO: rename to NmPort
 
 

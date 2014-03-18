@@ -4,7 +4,7 @@ import autonetkit.log as log
 from autonetkit.log import CustomAdapter
 
 
-class NmInterface(object):
+class NmPort(object):
 
     def __init__(
         self,
@@ -95,7 +95,7 @@ class NmInterface(object):
         """Return data dict for the interface"""
 
         try:
-            return self._node['_interfaces'][self.interface_id]
+            return self.node.raw_interfaces[self.interface_id]
         except KeyError:
             log.warning('Unable to find interface %s in %s'
                         % (self.interface_id, self.node))
@@ -108,7 +108,7 @@ class NmInterface(object):
 
         if self.overlay_id == 'phy':
             return self
-        return NmInterface(self.anm, 'phy', self.node_id,
+        return NmPort(self.anm, 'phy', self.node_id,
                                  self.interface_id)
 
     def __getitem__(self, overlay_id):
@@ -125,7 +125,7 @@ class NmInterface(object):
             return None
 
         try:
-            return NmInterface(self.anm, overlay_id,
+            return NmPort(self.anm, overlay_id,
                                      self.node_id, self.interface_id)
         except KeyError:
             return
@@ -226,7 +226,7 @@ class NmInterface(object):
         # edges have _interfaces stored as a dict of {node_id: interface_id, }
 
         valid_edges = [e for e in self.node.edges() if self.node_id
-                       in e._interfaces and e._interfaces[self.node_id]
+                       in e.raw_interfaces and e.raw_interfaces[self.node_id]
                        == self.interface_id]
         return list(valid_edges)
 

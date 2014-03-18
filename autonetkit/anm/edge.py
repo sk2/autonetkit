@@ -2,7 +2,7 @@ import logging
 from functools import total_ordering
 
 from autonetkit.log import CustomAdapter
-from autonetkit.anm.interface import NmInterface
+from autonetkit.anm.interface import NmPort
 from autonetkit.anm.node import NmNode
 
 
@@ -112,6 +112,15 @@ class NmEdge(object):
         return self._graph.has_edge(self.src_id, self.dst_id)
 
     @property
+    def raw_interfaces(self):
+        """Direct access to the interfaces dictionary, used by ANK modules"""
+        return self._interfaces
+
+    @raw_interfaces.setter
+    def raw_interfaces(self, value):
+       self._interfaces = value
+
+    @property
     def _graph(self):
         """Return graph the edge belongs to"""
 
@@ -142,9 +151,6 @@ class NmEdge(object):
 
     # Interfaces
 
-    def raw_interfaces(self):
-        return self._interfaces
-
     def apply_to_interfaces(self, attribute):
         val = self.__getattr__(attribute)
         self.src_int.__setattr__(attribute, val)
@@ -155,7 +161,7 @@ class NmEdge(object):
         """Interface bound to source node of edge"""
 
         src_int_id = self._interfaces[self.src_id]
-        return NmInterface(self.anm, self.overlay_id,
+        return NmPort(self.anm, self.overlay_id,
                            self.src_id, src_int_id)
 
     @property
@@ -163,7 +169,7 @@ class NmEdge(object):
         """Interface bound to destination node of edge"""
 
         dst_int_id = self._interfaces[self.dst_id]
-        return NmInterface(self.anm, self.overlay_id,
+        return NmPort(self.anm, self.overlay_id,
                            self.dst_id, dst_int_id)
 
     def bind_interface(self, node, interface):
@@ -175,7 +181,7 @@ class NmEdge(object):
 
         # TODO: warn if interface doesn't exist on node
 
-        return iter(NmInterface(self.anm, self.overlay_id,
+        return iter(NmPort(self.anm, self.overlay_id,
                     node_id, interface_id) for (node_id,
                     interface_id) in self._interfaces.items())
 

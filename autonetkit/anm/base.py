@@ -4,7 +4,7 @@ import logging
 import autonetkit.log as log
 from autonetkit.anm.edge import NmEdge
 from autonetkit.anm.graph_data import NmGraphData
-from autonetkit.anm.interface import NmInterface
+from autonetkit.anm.interface import NmPort
 from autonetkit.anm.node import NmNode
 from autonetkit.exception import OverlayNotFound
 from autonetkit.log import CustomAdapter
@@ -56,7 +56,7 @@ class OverlayBase(object):
     def interface(self, interface):
         """"""
 
-        return NmInterface(self._anm, self._overlay_id,
+        return NmPort(self._anm, self._overlay_id,
                                  interface.node_id,
                                  interface.interface_id)
 

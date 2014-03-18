@@ -2,7 +2,7 @@ import autonetkit.log as log
 from autonetkit.ank_utils import unwrap_edges, unwrap_nodes
 from autonetkit.anm.base import OverlayBase
 from autonetkit.anm.edge import NmEdge
-from autonetkit.anm.interface import NmInterface
+from autonetkit.anm.interface import NmPort
 from autonetkit.anm.node import NmNode
 
 
@@ -220,10 +220,10 @@ class NmGraph(OverlayBase):
                             node._interfaces = input_interfaces
 
                     for edge in self.edges():
-                        edge._interfaces = edge['input']._interfaces
-                        input_interfaces = edge['input']._interfaces
+                        edge.raw_interfaces = edge['input'].raw_interfaces
+                        input_interfaces = edge['input'].raw_interfaces
                         if len(input_interfaces):
-                            edge._interfaces = input_interfaces
+                            edge.raw_interfaces = input_interfaces
                     return
 
         self._init_interfaces()
@@ -231,6 +231,7 @@ class NmGraph(OverlayBase):
         ebunch = sorted(self.edges())
 
         for edge in ebunch:
+            print type(edge)
             src = edge.src
             dst = edge.dst
             dst = edge.dst
@@ -238,9 +239,9 @@ class NmGraph(OverlayBase):
                                                           dst.label))
             dst_int_id = dst._add_interface('%s to %s' % (dst.label,
                                                           src.label))
-            edge._interfaces = {}
-            edge._interfaces[src.id] = src_int_id
-            edge._interfaces[dst.id] = dst_int_id
+            edge.raw_interfaces = {}
+            edge.raw_interfaces[src.id] = src_int_id
+            edge.raw_interfaces[dst.id] = dst_int_id
 
     def __delitem__(self, key):
         """Alias for remove_node. Allows
@@ -334,8 +335,8 @@ class NmGraph(OverlayBase):
                 # Note: can't add an edge from node <-> interface in API
                 # if no interface is set, will bind to interface 0 (loopback zero)
 
-                if isinstance(src, NmInterface) \
-                    and isinstance(dst, NmInterface):
+                if isinstance(src, NmPort) \
+                    and isinstance(dst, NmPort):
                     _interfaces = {src.node_id: src.interface_id,
                                    dst.node_id: dst.interface_id}
                     ebunch_out.append((src.node_id, dst.node_id,

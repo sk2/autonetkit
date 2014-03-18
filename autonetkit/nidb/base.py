@@ -275,4 +275,4 @@ class DmBase(object):
 
         self._graph.add_edges_from(ebunch, **kwargs)
         for edge in edges_to_add:
-            self._graph[edge.src.node_id][edge.dst.node_id]['_interfaces'] = edge.raw_interfaces()
+            self._graph[edge.src.node_id][edge.dst.node_id]['_interfaces'] = edge.raw_interfaces

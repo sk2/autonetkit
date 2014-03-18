@@ -3,7 +3,7 @@ import logging
 from functools import total_ordering
 
 import autonetkit.log as log
-from autonetkit.anm.interface import NmInterface
+from autonetkit.anm.interface import NmPort
 from autonetkit.log import CustomAdapter
 
 
@@ -169,14 +169,14 @@ class NmNode(object):
 
         interface_id = self._add_interface(type='loopback', *args,
                                            **kwargs)
-        return NmInterface(self.anm, self.overlay_id,
+        return NmPort(self.anm, self.overlay_id,
                                  self.node_id, interface_id)
 
     def add_interface(self, *args, **kwargs):
         """Public function to add interface"""
 
         interface_id = self._add_interface(*args, **kwargs)
-        return NmInterface(self.anm, self.overlay_id,
+        return NmPort(self.anm, self.overlay_id,
                                  self.node_id, interface_id)
 
     def interfaces(self, *args, **kwargs):
@@ -189,7 +189,7 @@ class NmNode(object):
                 and all(getattr(interface, key) == val for (key,
                         val) in kwargs.items())
 
-        all_interfaces = iter(NmInterface(self.anm,
+        all_interfaces = iter(NmPort(self.anm,
                               self.overlay_id, self.node_id,
                               interface_id) for interface_id in
                               self._interface_ids())
@@ -202,7 +202,7 @@ class NmNode(object):
 
         try:
             if key.interface_id in self._interface_ids():
-                return NmInterface(self.anm, self.overlay_id,
+                return NmPort(self.anm, self.overlay_id,
                                          self.node_id, key.interface_id)
         except AttributeError:
 
@@ -210,7 +210,7 @@ class NmNode(object):
 
             try:
                 if key in self._interface_ids():
-                    return NmInterface(self.anm, self.overlay_id,
+                    return NmPort(self.anm, self.overlay_id,
                                              self.node_id, key)
             except AttributeError:
 
@@ -312,6 +312,15 @@ class NmNode(object):
         """Get item key"""
 
         return NmNode(self.anm, key, self.node_id)
+
+    @property
+    def raw_interfaces(self):
+        """Direct access to the interfaces dictionary, used by ANK modules"""
+        return self._interfaces
+
+    @raw_interfaces.setter
+    def raw_interfaces(self, value):
+       self._interfaces = value
 
     @property
     def asn(self):
