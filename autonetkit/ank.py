@@ -171,17 +171,17 @@ def split(NmGraph, edges, retain = [], id_prepend = ""):
                 (node_a, node_b) = sorted([src, dst]) # use sorted for consistency
             new_id = "%s%s_%s" % (id_prepend, node_a, node_b)
 
-        interfaces = graph[src][dst]["_interfaces"]
+        interfaces = graph[src][dst]["_ports"]
         data = dict( (key, graph[src][dst][key]) for key in retain)
         #TODO: check how this behaves for directed graphs
         src_data = data.copy()
         if src in interfaces:
             src_int_id = interfaces[src]
-            src_data['_interfaces'] = {src: src_int_id}
+            src_data['_ports'] = {src: src_int_id}
         dst_data = data.copy()
         if dst in interfaces:
             dst_int_id = interfaces[dst]
-            dst_data['_interfaces'] = {dst: dst_int_id}
+            dst_data['_ports'] = {dst: dst_int_id}
         edges_to_add.append( (src, new_id, src_data))
         edges_to_add.append( (dst, new_id, dst_data))
         added_nodes.append(new_id)
@@ -220,9 +220,9 @@ def explode_nodes(NmGraph, nodes, retain = []):
             node_to_dst_data = dict( (key, graph[node][dst][key]) for key in retain)
 
             # copy interfaces
-            src_int_id = graph[src][node]["_interfaces"][src]
-            dst_int_id = graph[node][dst]["_interfaces"][dst]
-            src_to_node_data["_interfaces"] = {src: src_int_id, dst: dst_int_id}
+            src_int_id = graph[src][node]["_ports"][src]
+            dst_int_id = graph[node][dst]["_ports"][dst]
+            src_to_node_data["_ports"] = {src: src_int_id, dst: dst_int_id}
 
             src_to_node_data.update(node_to_dst_data)
             #TODO: handle interfaces for explode
@@ -288,29 +288,29 @@ def aggregate_nodes(NmGraph, nodes, retain = []):
                 else:
                     if src in nodes_to_remove:
                         # edge from component to outside
-                        interfaces = graph[src][dst]["_interfaces"]
+                        interfaces = graph[src][dst]["_ports"]
                         dst_int_id = interfaces[dst]
                         data = dict( (key, graph[src][dst][key]) for key in retain)
-                        data['_interfaces'] = {dst: dst_int_id}
+                        data['_ports'] = {dst: dst_int_id}
                         edges_to_add.append((base, dst, data))
                         if graph.is_directed():
                             # other direction
                             #TODO: check which data should be copied
                             dst_data = dict( (key, graph[src][dst][key]) for key in retain)
-                            dst_data['_interfaces'] = {dst: dst_int_id}
+                            dst_data['_ports'] = {dst: dst_int_id}
                             edges_to_add.append((dst, base, dst_data))
                     else:
                         # edge from outside into component
-                        interfaces = graph[dst][src]["_interfaces"]
+                        interfaces = graph[dst][src]["_ports"]
                         src_int_id = interfaces[src]
                         data = dict( (key, graph[dst][src][key]) for key in retain)
-                        data['_interfaces'] = {src: src_int_id}
+                        data['_ports'] = {src: src_int_id}
                         edges_to_add.append((base, src, data))
                         if graph.is_directed():
                             # other direction
                             #TODO: check which data should be copied
                             dst_data = dict( (key, graph[src][dst][key]) for key in retain)
-                            dst_data['_interfaces'] = {src: src_int_id}
+                            dst_data['_ports'] = {src: src_int_id}
                             edges_to_add.append((src, base, dst_data))
 
             graph.add_edges_from(edges_to_add)

@@ -138,7 +138,7 @@ class NmGraph(OverlayBase):
         initialised_nodes = []
         for node in nbunch:
             try:
-                phy_interfaces = phy_graph.node[node]['_interfaces']
+                phy_interfaces = phy_graph.node[node]['_ports']
                 interface_data = {'description': None,
                                   'type': 'physical'}
 
@@ -147,7 +147,7 @@ class NmGraph(OverlayBase):
 
                 data = dict((key, dict(interface_data)) for key in
                             phy_interfaces)
-                self._graph.node[node]['_interfaces'] = data
+                self._graph.node[node]['_ports'] = data
             except KeyError:
                 # TODO: split this off into seperate function
                 # test if adding from input graph
@@ -162,18 +162,18 @@ class NmGraph(OverlayBase):
                             # are doing input->phy
                             # copy the
                             original_interfaces = original_node.get(
-                                "_interfaces")
+                                "_ports")
                             if original_interfaces is not None:
                                 # Initialise with the keys
                                 int_data = {k: {"description": v.get("description"), "type": v.get("type")}
                                             for k, v in original_interfaces.items()}
                                 self._graph.node[node][
-                                    '_interfaces'] = int_data
+                                    '_ports'] = int_data
 
                 else:
                     # no counterpart in physical graph, initialise
                     # Can't do node log becaue node doesn't exist yet
-                    self._graph.node[node]['_interfaces'] = \
+                    self._graph.node[node]['_ports'] = \
                         {0: {'description': 'loopback', 'type': 'loopback'}}
                     initialised_nodes.append(node)
 
@@ -186,8 +186,8 @@ class NmGraph(OverlayBase):
         """allocates edges to interfaces"""
 
         if self._overlay_id in ('input', 'phy'):
-            if all(len(node['input']._interfaces) > 0 for node in self) \
-                and all(len(edge['input']._interfaces) > 0 for edge in
+            if all(len(node['input'].raw_interfaces) > 0 for node in self) \
+                and all(len(edge['input'].raw_interfaces) > 0 for edge in
                         self.edges()):
                 input_interfaces_allocated = True
             else:
@@ -215,9 +215,9 @@ class NmGraph(OverlayBase):
 
                 if input_interfaces_allocated:
                     for node in self:
-                        input_interfaces = node['input']._interfaces
+                        input_interfaces = node['input'].raw_interfaces
                         if len(input_interfaces):
-                            node._interfaces = input_interfaces
+                            node.raw_interfaces = input_interfaces
 
                     for edge in self.edges():
                         edge.raw_interfaces = edge['input'].raw_interfaces
@@ -313,7 +313,7 @@ class NmGraph(OverlayBase):
         except AttributeError:
             pass  # already a list
 
-        retain.append('_interfaces')
+        retain.append('_ports')
         try:
             if len(retain):
                 add_edges = []
@@ -337,10 +337,10 @@ class NmGraph(OverlayBase):
 
                 if isinstance(src, NmPort) \
                     and isinstance(dst, NmPort):
-                    _interfaces = {src.node_id: src.interface_id,
+                    _ports = {src.node_id: src.interface_id,
                                    dst.node_id: dst.interface_id}
                     ebunch_out.append((src.node_id, dst.node_id,
-                                       {'_interfaces': _interfaces}))
+                                       {'_ports': _ports}))
                 else:
                     try:
                         src_id = src.node_id
@@ -350,7 +350,7 @@ class NmGraph(OverlayBase):
                         dst_id = dst.node_id
                     except AttributeError:
                         dst_id = dst  # use directly
-                    ebunch_out.append((src_id, dst_id, {'_interfaces': {}}))
+                    ebunch_out.append((src_id, dst_id, {'_ports': {}}))
 
             ebunch = ebunch_out
 

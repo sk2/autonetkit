@@ -23,8 +23,14 @@ class DmEdge(object):
     def __getnewargs__(self):
         return ()
 
+    @property
     def raw_interfaces(self):
-        return self._interfaces
+        """Direct access to the interfaces dictionary, used by ANK modules"""
+        return self._ports
+
+    @raw_interfaces.setter
+    def raw_interfaces(self, value):
+       self._ports = value
 
     def __setstate__(self, state):
         (nidb, src_id, dst_id) = state

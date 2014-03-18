@@ -124,23 +124,23 @@ def rebind_interfaces(anm):
     for overlay_id in anm.overlays():
         overlay = anm[overlay_id]
         #for edge in overlay.edges():
-            #unbound_interfaces = edge._interfaces
+            #unbound_ports = edge._ports
 ## map nodes -> node objects, values to integers (not strings)
-            #interfaces = {overlay.node(key): val for key, val in unbound_interfaces.items()}
-            #edge._interfaces = interfaces # store with remapped node
+            #interfaces = {overlay.node(key): val for key, val in unbound_ports.items()}
+            #edge._ports = interfaces # store with remapped node
         for node in overlay.nodes():
-            unbound_interfaces = node.raw_interfaces
-            if len(unbound_interfaces): # is list if none set
-                interfaces = {int(key): val for key, val in unbound_interfaces.items()}
+            unbound_ports = node.raw_interfaces
+            if len(unbound_ports): # is list if none set
+                interfaces = {int(key): val for key, val in unbound_ports.items()}
                 node.raw_interfaces = interfaces
 
 #TODO: need to also rebind_interfaces for nidb
 
 def rebind_nidb_interfaces(nidb):
     for node in nidb.nodes():
-        unbound_interfaces = node.raw_interfaces
-        if len(unbound_interfaces): # is list if none set
-            interfaces = {int(key): val for key, val in unbound_interfaces.items()}
+        unbound_ports = node.raw_interfaces
+        if len(unbound_ports): # is list if none set
+            interfaces = {int(key): val for key, val in unbound_ports.items()}
             node.raw_interfaces = interfaces
 
 
@@ -237,20 +237,21 @@ def jsonify_anm_with_graphics(anm, nidb = None):
                 if node in nidb:
                     DmNode_data = nidb_graph.node[node]
                     try:
-                        #TODO: check why not all nodes have _interfaces initialised
-                        overlay_interfaces = NmGraph.node[node]["_interfaces"]
+                        #TODO: check why not all nodes have _ports initialised
+                        overlay_interfaces = NmGraph.node[node]["_ports"]
                     except KeyError:
                         continue # skip copying interface data for this node
 
                     for interface_id in overlay_interfaces.keys():
+                        #TODO: use raw_interfaces here
                         try:
-                            nidb_interface_id = DmNode_data['_interfaces'][interface_id]['id']
+                            nidb_interface_id = DmNode_data['_ports'][interface_id]['id']
                         except KeyError:
                             #TODO: check why arrive here - something not initialised?
                             continue
-                        NmGraph.node[node]['_interfaces'][interface_id]['id'] = nidb_interface_id
+                        NmGraph.node[node]['_ports'][interface_id]['id'] = nidb_interface_id
                         id_brief = shortened_interface(nidb_interface_id)
-                        NmGraph.node[node]['_interfaces'][interface_id]['id_brief'] = id_brief
+                        NmGraph.node[node]['_ports'][interface_id]['id_brief'] = id_brief
 
         anm_json[overlay_id] = ank_json_dumps(NmGraph)
         test_anm_data[overlay_id] = NmGraph
@@ -271,13 +272,13 @@ def prepare_nidb(nidb):
             graph.node[node]['device_type'] = graph.node[node]['graphics']['device_type']
             graph.node[node]['device_subtype'] = graph.node[node]['graphics']['device_subtype']
 
-        for interface_index in graph.node[node]['_interfaces']:
+        for interface_index in graph.node[node]['_ports']:
             try:
-                interface_id = graph.node[node]["_interfaces"][interface_index]['id']
+                interface_id = graph.node[node]["_ports"][interface_index]['id']
             except KeyError: # interface doesn't exist, eg for a lan segment
                 interface_id = ""
             id_brief = shortened_interface(interface_id)
-            graph.node[node]["_interfaces"][interface_index]['id_brief'] = id_brief
+            graph.node[node]["_ports"][interface_index]['id_brief'] = id_brief
 
     x = (graph.node[n]['x'] for n in graph)
     y = (graph.node[n]['y'] for n in graph)

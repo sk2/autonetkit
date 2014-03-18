@@ -208,7 +208,7 @@ class DmBase(object):
             int_dict = {i.interface_id: {'type': i.type,
                 'description': i.description,
                 } for i in node.interfaces()}
-            self._graph.node[node.node_id]["_interfaces"] = int_dict
+            self._graph.node[node.node_id]["_ports"] = int_dict
 
     # Edges
 
@@ -275,4 +275,4 @@ class DmBase(object):
 
         self._graph.add_edges_from(ebunch, **kwargs)
         for edge in edges_to_add:
-            self._graph[edge.src.node_id][edge.dst.node_id]['_interfaces'] = edge.raw_interfaces
+            self._graph[edge.src.node_id][edge.dst.node_id]['_ports'] = edge.raw_interfaces

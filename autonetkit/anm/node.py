@@ -132,7 +132,7 @@ class NmNode(object):
 # returns next free interface I
 
         for int_id in itertools.count(1):  # start at 1 as 0 is loopback
-            if int_id not in self._interfaces:
+            if int_id not in self._ports:
                 return int_id
 
     # TODO: interface function access needs to be cleaned up
@@ -149,7 +149,7 @@ class NmNode(object):
 
         if self.overlay_id != 'phy' and self.phy:
             next_id = self.phy._next_int_id()
-            self.phy._interfaces[next_id] = {'type': type,
+            self.phy._ports[next_id] = {'type': type,
                                              'description': description}
 
             # TODO: fix this workaround for not returning description from phy
@@ -161,7 +161,7 @@ class NmNode(object):
             data['type'] = type  # store type on node
             data['description'] = description
 
-        self._interfaces[next_id] = data
+        self._ports[next_id] = data
         return next_id
 
     def add_loopback(self, *args, **kwargs):
@@ -230,28 +230,28 @@ class NmNode(object):
     def _interface_ids(self):
         """Returns interface ids for this node"""
         #TODO: use from this layer, otherwise can get errors iterating when eg vrfs
-        return self._interfaces.keys()
+        return self._ports.keys()
 
         if self.overlay_id != 'phy' and self.phy:
 
             # graph isn't physical, and node exists in physical graph -> use
             # the interface mappings from phy
 
-            return self.phy._graph.node[self.node_id]['_interfaces'
+            return self.phy._graph.node[self.node_id]['_ports'
                                                       ].keys()
         else:
             try:
-                return self._interfaces.keys()
+                return self._ports.keys()
             except KeyError:
                 self.log.debug('No interfaces initialised')
                 return []
 
     @property
-    def _interfaces(self):
+    def _ports(self):
         """Returns underlying interface dict"""
 
         try:
-            return self._graph.node[self.node_id]['_interfaces']
+            return self._graph.node[self.node_id]['_ports']
         except KeyError:
             self.log.debug('No interfaces initialised for')
             return []
@@ -316,11 +316,11 @@ class NmNode(object):
     @property
     def raw_interfaces(self):
         """Direct access to the interfaces dictionary, used by ANK modules"""
-        return self._interfaces
+        return self._ports
 
     @raw_interfaces.setter
     def raw_interfaces(self, value):
-       self._interfaces = value
+       self._ports = value
 
     @property
     def asn(self):
@@ -429,7 +429,7 @@ class NmNode(object):
 
         data = dict(self._nx_node_data)
         try:
-            del data['_interfaces']
+            del data['_ports']
         except KeyError:
             pass # no interfaces set
         return str(data)

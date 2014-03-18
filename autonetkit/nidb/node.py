@@ -72,10 +72,10 @@ class DmNode(object):
 
 
     @property
-    def _interfaces(self):
+    def _ports(self):
         """Returns underlying interface dict"""
         try:
-            return self._graph.node[self.node_id]["_interfaces"]
+            return self._graph.node[self.node_id]["_ports"]
         except KeyError:
             log.debug("No interfaces initialised for %s" % self)
             return
@@ -86,7 +86,7 @@ class DmNode(object):
 # returns next free interface ID
         import itertools
         for int_id in itertools.count(1):  # start at 1 as 0 is loopback
-            if int_id not in self._interfaces:
+            if int_id not in self._ports:
                 return int_id
 
     def add_interface(self, description = None, type = "physical", *args,  **kwargs):
@@ -95,13 +95,13 @@ class DmNode(object):
         interface_id = self._next_int_id
         data['type'] = type  # store type on node
         data['description'] = description
-        self._interfaces[interface_id] = data
+        self._ports[interface_id] = data
 
         return DmInterface(self.nidb, self.node_id, interface_id)
 
     @property
     def _interface_ids(self):
-        return self._graph.node[self.node_id]["_interfaces"].keys()
+        return self._ports.keys()
 
     @property
     def interfaces(self):
@@ -146,6 +146,15 @@ class DmNode(object):
     @property
     def loopback_zero(self):
         return (i for i in self.interfaces if i.is_loopback_zero).next()
+
+    @property
+    def raw_interfaces(self):
+        """Direct access to the interfaces dictionary, used by ANK modules"""
+        return self._ports
+
+    @raw_interfaces.setter
+    def raw_interfaces(self, value):
+       self._ports = value
 
     @property
     def _graph(self):

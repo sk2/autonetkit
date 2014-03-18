@@ -34,7 +34,7 @@ class DmInterface(object):
     def __nonzero__(self):
         """Allows for checking if node exists
         """
-        return len(self._interface) > 0  # if interface data set
+        return len(self._port) > 0  # if interface data set
 
     def __str__(self):
         return self.__repr__()
@@ -50,9 +50,9 @@ class DmInterface(object):
         return self._graph.node[self.node_id]
 
     @property
-    def _interface(self):
+    def _port(self):
         """Return graph the node belongs to"""
-        return self._node["_interfaces"][self.interface_id]
+        return self._node["_ports"][self.interface_id]
 
     @property
     def is_loopback(self):
@@ -67,7 +67,7 @@ class DmInterface(object):
     @property
     def description(self):
         """"""
-        return self._interface.get("description")
+        return self._port.get("description")
 
     @property
     def is_loopback_zero(self):
@@ -81,17 +81,17 @@ class DmInterface(object):
         return DmNode(self.nidb, self.node_id)
 
     def dump(self):
-        return str(self._interface.items())
+        return str(self._port.items())
 
     def dict(self):
         """Returns shallow copy of dictionary used.
         Note not a deep copy: modifying values may have impact"""
-        return dict(self._interface.items())
+        return dict(self._port.items())
 
     def __getattr__(self, key):
         """Returns interface property"""
         try:
-            data = self._interface.get(key)
+            data = self._port.get(key)
         except KeyError:
             return
 
@@ -109,7 +109,7 @@ class DmInterface(object):
     def __setattr__(self, key, val):
         """Sets interface property"""
         try:
-            self._interface[key] = val
+            self._port[key] = val
         except KeyError:
             self.set(key, val)
 
@@ -121,10 +121,10 @@ class DmInterface(object):
     def edges(self):
         """Returns all edges from node that have this interface ID
         This is the convention for binding an edge to an interface"""
-        # edges have _interfaces stored as a dict of {node_id: interface_id, }
+        # edges have raw_interfaces stored as a dict of {node_id: interface_id, }
         valid_edges = [e for e in self.node.edges()
-                if self.node_id in e._interfaces
-                and e._interfaces[self.node_id] == self.interface_id]
+                if self.node_id in e.raw_interfaces
+                and e.raw_interfaces[self.node_id] == self.interface_id]
         return valid_edges
 
     def neighbors(self):

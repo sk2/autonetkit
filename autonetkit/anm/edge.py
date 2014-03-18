@@ -114,11 +114,11 @@ class NmEdge(object):
     @property
     def raw_interfaces(self):
         """Direct access to the interfaces dictionary, used by ANK modules"""
-        return self._interfaces
+        return self._ports
 
     @raw_interfaces.setter
     def raw_interfaces(self, value):
-       self._interfaces = value
+       self._ports = value
 
     @property
     def _graph(self):
@@ -160,7 +160,7 @@ class NmEdge(object):
     def src_int(self):
         """Interface bound to source node of edge"""
 
-        src_int_id = self._interfaces[self.src_id]
+        src_int_id = self._ports[self.src_id]
         return NmPort(self.anm, self.overlay_id,
                            self.src_id, src_int_id)
 
@@ -168,14 +168,14 @@ class NmEdge(object):
     def dst_int(self):
         """Interface bound to destination node of edge"""
 
-        dst_int_id = self._interfaces[self.dst_id]
+        dst_int_id = self._ports[self.dst_id]
         return NmPort(self.anm, self.overlay_id,
                            self.dst_id, dst_int_id)
 
     def bind_interface(self, node, interface):
         """Bind this edge to specified index"""
 
-        self._interfaces[node.id] = interface
+        self._ports[node.id] = interface
 
     def interfaces(self):
 
@@ -183,7 +183,7 @@ class NmEdge(object):
 
         return iter(NmPort(self.anm, self.overlay_id,
                     node_id, interface_id) for (node_id,
-                    interface_id) in self._interfaces.items())
+                    interface_id) in self._ports.items())
 
     #
 
