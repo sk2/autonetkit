@@ -350,19 +350,18 @@ class NmGraph(OverlayBase):
                 in_a, in_b = in_edge[0], in_edge[1]
 
                 if isinstance(in_a, NmNode) and isinstance(in_b, NmNode):
-                    #data['_ports'] = {in_a: 0, in_b: 0} #TODO: check this binding
                     src = in_a.node_id
                     dst = in_b.node_id
 
-                if isinstance(in_a, NmPort) and isinstance(in_b, NmPort):
+                elif isinstance(in_a, NmPort) and isinstance(in_b, NmPort):
                     src = in_a.node.node_id
                     dst = in_b.node.node_id
                     data['_ports'] = {src: in_a.interface_id,
                         dst: in_b.interface_id}
 
-                if  in_a in self and in_b in self:
-                        src = self.node(in_a)
-                        dst = self.node(in_b)
+                elif  in_a in self and in_b in self:
+                    src = in_a
+                    dst = in_b
 
             #TODO: if edge not set at this point, give error/warn
 

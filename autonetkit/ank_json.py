@@ -194,15 +194,6 @@ def jsonify_anm_with_graphics(anm, nidb = None):
       attribute_cache[node].update(out_data)
 
     for overlay_id in anm.overlays():
-        print overlay_id
-
-        from networkx.readwrite import json_graph
-        import json
-        data =  json_graph.node_link_data(anm[overlay_id]._graph)
-        with open("%s.json" % overlay_id, "w") as fh:
-            result = json.dumps(data, cls=AnkEncoder, indent = 4, sort_keys = True)
-            fh.write(result)
-
         nm_graph = anm[overlay_id]._graph.copy()
 
         for node in nm_graph:

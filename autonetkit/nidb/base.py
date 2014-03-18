@@ -289,10 +289,7 @@ class DmBase(object):
         #TODO: this needs to support parallel links
         for in_edge in ebunch:
             """Edge could be one of:
-            - NmEdge
-            - (NmNode, NmNode)
-            - (NmPort, NmPort)
-            - (string, string)
+            - NmEdge - copied into be returned as a DmEdge
             """
             # This is less efficient than nx add_edges_from, but cleaner logic
             #TODO: could put the interface data into retain?
