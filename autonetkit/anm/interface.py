@@ -146,7 +146,10 @@ class NmPort(object):
     def description(self):
         """"""
 
-        retval = self._interface.get('description')
+        try:
+            retval = self._interface.get('description')
+        except IndexError:
+            retval = self.interface_id
         if retval:
             return retval
 

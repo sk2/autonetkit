@@ -303,6 +303,11 @@ class NmGraph(OverlayBase):
         Bidirectional will add edge in both directions. Useful if going
         from an undirected graph to a
         directed, eg G_in to G_bgp
+        #TODO: explain "retain" and ["retain"] logic
+
+        if user wants to add from another overlay, first go g_x.edges()
+        then add from the result
+        same for parallel links: can't specify key in (src, dst, key) tuple
         """
 
         if not retain:
@@ -313,55 +318,74 @@ class NmGraph(OverlayBase):
         except AttributeError:
             pass  # already a list
 
-        retain.append('_ports')
-        try:
-            if len(retain):
-                add_edges = []
-                for edge in ebunch:
-                    data = dict((key, edge.get(key)) for key in retain)
-                    add_edges.append((edge.src.node_id,
-                                      edge.dst.node_id, data))
-                ebunch = add_edges
+        #TODO: this needs to support parallel links
+        for in_edge in ebunch:
+            """Edge could be one of:
+            - NmEdge
+            - (NmNode, NmNode)
+            - (NmPort, NmPort)
+            - (string, string)
+            """
+            # This is less efficient than nx add_edges_from, but cleaner logic
+            #TODO: could put the interface data into retain?
+            data = {'_ports': {} } # to retain
+            ekey = None # default is None (nx auto-allocates next int)
+
+            # convert input to a NmEdge
+            src = dst = None
+            if isinstance(in_edge, NmEdge):
+                edge = in_edge # simple case
+                ekey = edge.ekey # explictly set ekey
+                src = edge.src.node_id
+                dst = edge.dst.node_id
+
+                # and copy retain data
+                retain.append('_ports')
+                data = dict((key, edge.get(key)) for key in retain)
+
+                # this is the only case where copy across data
+                # but want to copy attributes for all cases
+
+            elif len(in_edge) == 2:
+                in_a, in_b = in_edge[0], in_edge[1]
+
+                if isinstance(in_a, NmNode) and isinstance(in_b, NmNode):
+                    #data['_ports'] = {in_a: 0, in_b: 0} #TODO: check this binding
+                    src = in_a.node_id
+                    dst = in_b.node_id
+
+                if isinstance(in_a, NmPort) and isinstance(in_b, NmPort):
+                    src = in_a.node.node_id
+                    dst = in_b.node.node_id
+                    data['_ports'] = {src: in_a.interface_id,
+                        dst: in_b.interface_id}
+
+                if  in_a in self and in_b in self:
+                        src = self.node(in_a)
+                        dst = self.node(in_b)
+
+            #TODO: if edge not set at this point, give error/warn
+
+            #TODO: add check that edge.src and edge.dst exist
+            if (src is None or dst is None):
+                log.warning("Unsupported edge %s" % str(in_edge))
+            if not(src in self and dst in self):
+                self.log.warning("Not adding edge %s, src/dst not in overlay"
+                    % str(in_edge))
+
+            #TODO: warn if not multigraph and edge already exists - don't add/clobber
+
+            edges_to_add = []
+            if self.is_multigraph():
+                edges_to_add.append((src, dst, ekey, dict(data)))
+                if bidirectional:
+                    edges_to_add.append((dst, src, ekey, dict(data)))
             else:
-                ebunch = [(e.src.node_id, e.dst.node_id, {}) for e in
-                          ebunch]
-        except AttributeError:
-            ebunch_out = []
-            for (src, dst) in ebunch:
+                edges_to_add.append((src, dst, dict(data)))
+                if bidirectional:
+                    edges_to_add.append((dst, src, dict(data)))
 
-                # TODO: check this works across nodes, etc
-
-                # adding an edge explictly from interface to interface
-                # Note: can't add an edge from node <-> interface in API
-                # if no interface is set, will bind to interface 0 (loopback zero)
-
-                if isinstance(src, NmPort) \
-                    and isinstance(dst, NmPort):
-                    _ports = {src.node_id: src.interface_id,
-                                   dst.node_id: dst.interface_id}
-                    ebunch_out.append((src.node_id, dst.node_id,
-                                       {'_ports': _ports}))
-                else:
-                    try:
-                        src_id = src.node_id
-                    except AttributeError:
-                        src_id = src  # use directly
-                    try:
-                        dst_id = dst.node_id
-                    except AttributeError:
-                        dst_id = dst  # use directly
-                    ebunch_out.append((src_id, dst_id, {'_ports': {}}))
-
-            ebunch = ebunch_out
-
-        ebunch = [(src, dst, data) for (src, dst, data) in ebunch
-                  if src in self._graph and dst in self._graph]
-        if bidirectional:
-            ebunch += [(dst, src, data) for (src, dst, data) in ebunch
-                       if src in self._graph and dst in self._graph]
-
-        self._graph.add_edges_from(ebunch, **kwargs)
-        #TODO: return edges added?
+            self._graph.add_edges_from(edges_to_add)
 
     def update(self, nbunch=None, **kwargs):
         """Sets property defined in kwargs to all nodes in nbunch"""

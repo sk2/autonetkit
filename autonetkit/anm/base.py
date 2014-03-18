@@ -9,8 +9,6 @@ from autonetkit.anm.node import NmNode
 from autonetkit.exception import OverlayNotFound
 from autonetkit.log import CustomAdapter
 
-from abc import abstractproperty
-
 class OverlayBase(object):
 
     '''Base class for overlays - overlay graphs, subgraphs, projections, etc'''

@@ -194,13 +194,25 @@ def jsonify_anm_with_graphics(anm, nidb = None):
       attribute_cache[node].update(out_data)
 
     for overlay_id in anm.overlays():
-        NmGraph = anm[overlay_id]._graph.copy()
+        print overlay_id
 
-        for node in NmGraph:
+        from networkx.readwrite import json_graph
+        import json
+        data =  json_graph.node_link_data(anm[overlay_id]._graph)
+        with open("%s.json" % overlay_id, "w") as fh:
+            result = json.dumps(data, cls=AnkEncoder, indent = 4, sort_keys = True)
+            fh.write(result)
+
+        if overlay_id == "bgp":
+            continue
+
+        nm_graph = anm[overlay_id]._graph.copy()
+
+        for node in nm_graph:
             node_data = dict(attribute_cache.get(node, {}))
             # update with node data from this overlay
             #TODO: check is not None won't clobber specifically set in overlay...
-            graph_node_data = NmGraph.node[node]
+            graph_node_data = nm_graph.node[node]
             overlay_node_data = {key: graph_node_data.get(key)
                 for key in copy_attrs if key in graph_node_data}
             node_data.update(overlay_node_data)
@@ -225,10 +237,10 @@ def jsonify_anm_with_graphics(anm, nidb = None):
                 node_data['label'] = str(node) # don't need to cache
 
             # store on graph
-            NmGraph.node[node] = node_data
+            nm_graph.node[node] = node_data
 
             try:
-                del NmGraph.node[node]['id']
+                del nm_graph.node[node]['id']
             except KeyError:
                 pass
 
@@ -238,7 +250,7 @@ def jsonify_anm_with_graphics(anm, nidb = None):
                     DmNode_data = nidb_graph.node[node]
                     try:
                         #TODO: check why not all nodes have _ports initialised
-                        overlay_interfaces = NmGraph.node[node]["_ports"]
+                        overlay_interfaces = nm_graph.node[node]["_ports"]
                     except KeyError:
                         continue # skip copying interface data for this node
 
@@ -249,12 +261,12 @@ def jsonify_anm_with_graphics(anm, nidb = None):
                         except KeyError:
                             #TODO: check why arrive here - something not initialised?
                             continue
-                        NmGraph.node[node]['_ports'][interface_id]['id'] = nidb_interface_id
+                        nm_graph.node[node]['_ports'][interface_id]['id'] = nidb_interface_id
                         id_brief = shortened_interface(nidb_interface_id)
-                        NmGraph.node[node]['_ports'][interface_id]['id_brief'] = id_brief
+                        nm_graph.node[node]['_ports'][interface_id]['id_brief'] = id_brief
 
-        anm_json[overlay_id] = ank_json_dumps(NmGraph)
-        test_anm_data[overlay_id] = NmGraph
+        anm_json[overlay_id] = ank_json_dumps(nm_graph)
+        test_anm_data[overlay_id] = nm_graph
 
 
     if nidb:
