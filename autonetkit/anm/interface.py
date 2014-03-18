@@ -52,7 +52,7 @@ class NmPort(object):
 
     def __nonzero__(self):
 
-        # TODO: work out why description and type being set/copied to each
+        # TODO: work out why description and category being set/copied to each
         # overlay
 
         try:
@@ -134,13 +134,13 @@ class NmPort(object):
     def is_loopback(self):
         """"""
 
-        return self.type == 'loopback' or self.phy.type == 'loopback'
+        return self.category == 'loopback' or self.phy.category == 'loopback'
 
     @property
     def is_physical(self):
         """"""
 
-        return self.type == 'physical' or self.phy.type == 'physical'
+        return self.category == 'physical' or self.phy.category == 'physical'
 
     @property
     def description(self):
@@ -161,7 +161,7 @@ class NmPort(object):
         return self.interface_id == 0 and self.is_loopback
 
     @property
-    def type(self):
+    def category(self):
         """"""
 
 # TODO: make 0 correctly access interface 0 -> copying problem
@@ -171,14 +171,14 @@ class NmPort(object):
             return 'loopback'
 
         if self.overlay_id == 'input':
-            return object.__getattr__(self, 'type')
+            return object.__getattr__(self, 'category')
         elif self.overlay_id != 'phy':
 
                                         # prevent recursion
 
-            return self.phy._interface.get('type')
+            return self.phy._interface.get('category')
 
-        retval = self._interface.get('type')
+        retval = self._interface.get('category')
         if retval:
             return retval
 

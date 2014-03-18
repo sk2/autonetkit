@@ -43,7 +43,7 @@ class NmNode(object):
     def __iter__(self):
         """Shortcut to iterate over the physical interfaces of this node"""
 
-        return self.interfaces(type='physical')
+        return self.interfaces(category='physical')
 
     def __len__(self):
         return len(self.__iter())
@@ -68,12 +68,12 @@ class NmNode(object):
     def physical_interfaces(self):
         """"""
 
-        return self.interfaces(type='physical')
+        return self.interfaces(category='physical')
 
     def loopback_interfaces(self):
         """"""
 
-        return self.interfaces(type='loopback')
+        return self.interfaces(category='loopback')
 
     def is_multigraph(self):
         return self._graph.is_multigraph()
@@ -104,7 +104,7 @@ class NmNode(object):
                                  not in string.digits]
         except TypeError:
 
-            # e.g. non-iterable type, such as an int node_id
+            # e.g. non-iterable category, such as an int node_id
 
             pass
         else:
@@ -138,7 +138,7 @@ class NmNode(object):
     def _add_interface(
         self,
         description=None,
-        type='physical',
+        category='physical',
         **kwargs
     ):
         """"""
@@ -147,7 +147,7 @@ class NmNode(object):
 
         if self.overlay_id != 'phy' and self['phy']:
             next_id = self['phy']._next_int_id()
-            self['phy']._ports[next_id] = {'type': type,
+            self['phy']._ports[next_id] = {'category': category,
                                              'description': description}
 
             # TODO: fix this workaround for not returning description from phy
@@ -156,7 +156,7 @@ class NmNode(object):
             data['description'] = description
         else:
             next_id = self._next_int_id()
-            data['type'] = type  # store type on node
+            data['category'] = category  # store category on node
             data['description'] = description
 
         self._ports[next_id] = data
@@ -165,7 +165,7 @@ class NmNode(object):
     def add_loopback(self, *args, **kwargs):
         '''Public function to add a loopback interface'''
 
-        interface_id = self._add_interface(type='loopback', *args,
+        interface_id = self._add_interface(category='loopback', *args,
                                            **kwargs)
         return NmPort(self.anm, self.overlay_id,
                                  self.node_id, interface_id)

@@ -57,12 +57,12 @@ class DmInterface(object):
     @property
     def is_loopback(self):
         """"""
-        return self.type == "loopback" or self.phy.type == "loopback"
+        return self.category == "loopback" or self.phy.category == "loopback"
 
     @property
     def is_physical(self):
         """"""
-        return self.type == "physical" or self.phy.type == "physical"
+        return self.category == "physical" or self.phy.category == "physical"
 
     @property
     def description(self):

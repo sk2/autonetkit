@@ -140,7 +140,7 @@ class NmGraph(OverlayBase):
             try:
                 phy_interfaces = phy_graph.node[node]['_ports']
                 interface_data = {'description': None,
-                                  'type': 'physical'}
+                                  'category': 'physical'}
 
                 # need to do dict() to copy, otherwise all point to same memory
                 # location -> clobber
@@ -165,7 +165,7 @@ class NmGraph(OverlayBase):
                                 "_ports")
                             if original_interfaces is not None:
                                 # Initialise with the keys
-                                int_data = {k: {"description": v.get("description"), "type": v.get("type")}
+                                int_data = {k: {"description": v.get("description"), "category": v.get("category")}
                                             for k, v in original_interfaces.items()}
                                 self._graph.node[node][
                                     '_ports'] = int_data
@@ -174,7 +174,7 @@ class NmGraph(OverlayBase):
                     # no counterpart in physical graph, initialise
                     # Can't do node log becaue node doesn't exist yet
                     self._graph.node[node]['_ports'] = \
-                        {0: {'description': 'loopback', 'type': 'loopback'}}
+                        {0: {'description': 'loopback', 'category': 'loopback'}}
                     initialised_nodes.append(node)
 
         if len(initialised_nodes):
@@ -231,7 +231,6 @@ class NmGraph(OverlayBase):
         ebunch = sorted(self.edges())
 
         for edge in ebunch:
-            print type(edge)
             src = edge.src
             dst = edge.dst
             dst = edge.dst

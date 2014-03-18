@@ -83,11 +83,11 @@ class DmNode(object):
             if int_id not in self._ports:
                 return int_id
 
-    def add_interface(self, description = None, type = "physical", *args,  **kwargs):
+    def add_interface(self, description = None, category = "physical", *args,  **kwargs):
         """Public function to add interface"""
         data = dict(kwargs)
         interface_id = self._next_int_id
-        data['type'] = type  # store type on node
+        data['category'] = category  # store category on node
         data['description'] = description
         self._ports[interface_id] = data
 
@@ -104,17 +104,17 @@ class DmNode(object):
 
         # Put loopbacks before physical interfaces
         type_index = {"loopback": 0, "physical": 1}
-        #TODO: extend this based on medium type, etc
+        #TODO: extend this based on medium category, etc
 
         int_list = sorted(int_list, key = lambda x: x.id)
-        int_list = sorted(int_list, key = lambda x: type_index[x.type])
+        int_list = sorted(int_list, key = lambda x: type_index[x.category])
         return int_list
 
     def physical_interfaces(self):
-        return self.get_interfaces(type = "physical")
+        return self.get_interfaces(category = "physical")
 
     def loopback_interfaces(self):
-        return self.get_interfaces(type = "loopback")
+        return self.get_interfaces(category = "loopback")
 
     def get_interfaces(self, *args, **kwargs):
         """Public function to view interfaces

@@ -207,10 +207,10 @@ class DmBase(object):
 
         for node in nodes_to_add:
             #TODO: add an interface_retain for attributes also
-            int_dict = {i.interface_id: {'type': i.type,
+            int_dict = {i.interface_id: {'category': i.category,
                 'description': i.description,
                 'layer': i.overlay_id} for i in node.interfaces()}
-            int_dict = {i.interface_id: {'type': i.type,
+            int_dict = {i.interface_id: {'category': i.category,
                 'description': i.description,
                 } for i in node.interfaces()}
             self._graph.node[node.node_id]["_ports"] = int_dict
