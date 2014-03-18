@@ -47,9 +47,6 @@ class NmEdge(object):
 
     def __eq__(self, other):
         """"""
-        #TODO: update for multigraph, also allow for comparison of multi to single,
-        # and multi to two-tuple (src, dst) and three-tuple (src, dst, ekey)
-        # do test if self, other are NmEdges or not...
         if self.is_multigraph():
             try:
                 if other.is_multigraph():

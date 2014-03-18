@@ -17,11 +17,7 @@ class DmEdge(object):
     def __repr__(self):
         return "(%s, %s)" % (self.src, self.dst)
 
-    def __getstate__(self):
-        return (self.nidb, self.src_id, self.dst_id)
-
-    def __getnewargs__(self):
-        return ()
+        return '(%s, %s)' % (self.src, self.dst)
 
     @property
     def raw_interfaces(self):

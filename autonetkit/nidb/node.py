@@ -28,12 +28,6 @@ class DmNode(object):
     def __repr__(self):
         return self._node_data['label']
 
-    def __getnewargs__(self):
-        return ()
-
-    def __getstate__(self):
-        return (self.nidb, self.node_id)
-
     #TODO: add a dump method - needed with str()?
 
     def add_stanza(self, name, **kwargs):
