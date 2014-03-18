@@ -373,6 +373,7 @@ class NmGraph(OverlayBase):
                     % str(in_edge))
 
             #TODO: warn if not multigraph and edge already exists - don't add/clobber
+            data.update(**kwargs)
 
             edges_to_add = []
             if self.is_multigraph():

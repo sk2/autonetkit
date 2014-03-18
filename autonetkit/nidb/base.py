@@ -316,6 +316,7 @@ class DmBase(object):
                 log.warning("Not adding edge, src/dst not in overlay")
 
             #TODO: warn if not multigraph and edge already exists - don't add/clobber
+            data.update(**kwargs)
 
             if self.is_multigraph():
                 self._graph.add_edge(src, dst, key=ekey,
