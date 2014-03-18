@@ -27,7 +27,7 @@ class JunosphereCompiler(PlatformCompiler):
                 phy_node.label)
 
             int_ids = self.interface_ids()
-            for interface in DmNode.physical_interfaces:
+            for interface in DmNode.physical_interfaces():
                 interface.unit = 0
                 interface.id = int_ids.next()
 

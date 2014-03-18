@@ -13,7 +13,7 @@ def build_reverse_mappings_from_nidb(nidb):
             rev_map["subnets"][str(node.ipv4_subnet)] = node
         else:
             rev_map["loopbacks"][str(node.loopback)] = node
-            for interface in node.physical_interfaces:
+            for interface in node.physical_interfaces():
                 rev_map["infra_interfaces"][str(interface.ipv4_address)] = interface
 
     return rev_map
@@ -37,7 +37,7 @@ def build_reverse_mappings_from_anm_input(anm):
 
     for node in g_in:
         rev_map["loopbacks"][str(node.loopback_v4)] = node
-        for interface in node.physical_interfaces:
+        for interface in node.physical_interfaces():
             rev_map["infra_interfaces"][str(interface.ipv4_address)] = interface
 
             prefixlen = interface.ipv4_prefixlen

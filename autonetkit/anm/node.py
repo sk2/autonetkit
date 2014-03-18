@@ -65,7 +65,6 @@ class NmNode(object):
 
         return (i for i in self.interfaces('is_loopback_zero')).next()
 
-    @property
     def physical_interfaces(self):
         """"""
 

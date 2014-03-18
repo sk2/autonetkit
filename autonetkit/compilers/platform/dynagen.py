@@ -46,7 +46,7 @@ class DynagenCompiler(PlatformCompiler):
             # assign interfaces
             # Note this could take external data
             int_ids = self.interface_ids()
-            for interface in DmNode.physical_interfaces:
+            for interface in DmNode.physical_interfaces():
                 interface.id = int_ids.next()
 
             ios_compiler.compile(DmNode)

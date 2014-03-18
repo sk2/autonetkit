@@ -86,7 +86,7 @@ def manual_ipv6_infrastructure_allocation(anm):
     log.info('Using specified IPv6 infrastructure allocation')
 
     for node in g_ipv6.l3devices():
-        for interface in node.physical_interfaces:
+        for interface in node.physical_interfaces():
             if not interface['input'].is_bound:
                 continue  # unbound interface
             ip_address = netaddr.IPAddress(interface['input'
@@ -186,7 +186,7 @@ def build_ipv6(anm):
 
     manual_alloc_devices = set()
     for device in l3_devices:
-        physical_interfaces = list(device.physical_interfaces)
+        physical_interfaces = list(device.physical_interfaces())
         allocated = list(interface.ipv6_address for interface in physical_interfaces if interface.is_bound)
         if all(interface.ipv6_address for interface in
                physical_interfaces if interface.is_bound):
@@ -201,8 +201,8 @@ def build_ipv6(anm):
         allocated = []
         unallocated = []
         for node in l3_devices:
-            allocated += sorted([i for i in node.physical_interfaces if i.is_bound and i.ipv6_address])
-            unallocated += sorted([i for i in node.physical_interfaces if i.is_bound and not i.ipv6_address])
+            allocated += sorted([i for i in node.physical_interfaces() if i.is_bound and i.ipv6_address])
+            unallocated += sorted([i for i in node.physical_interfaces() if i.is_bound and not i.ipv6_address])
 
         #TODO: what if IP is set but not a prefix?
         if len(allocated):
@@ -243,7 +243,7 @@ def manual_ipv4_infrastructure_allocation(anm):
     log.info('Using specified IPv4 infrastructure allocation')
 
     for node in g_ipv4.l3devices():
-        for interface in node.physical_interfaces:
+        for interface in node.physical_interfaces():
             if not interface['input'].is_bound:
                 continue  # unbound interface
             ip_address = netaddr.IPAddress(interface['input'
@@ -423,7 +423,7 @@ def build_ipv4(anm, infrastructure=True):
 
     manual_alloc_devices = set()
     for device in l3_devices:
-        physical_interfaces = list(device.physical_interfaces)
+        physical_interfaces = list(device.physical_interfaces())
         allocated = list(interface.ipv4_address for interface in physical_interfaces if interface.is_bound)
         if all(interface.ipv4_address for interface in
                physical_interfaces if interface.is_bound):
@@ -437,8 +437,8 @@ def build_ipv4(anm, infrastructure=True):
         allocated = []
         unallocated = []
         for node in l3_devices:
-            allocated += sorted([i for i in node.physical_interfaces if i.is_bound and i.ipv4_address])
-            unallocated += sorted([i for i in node.physical_interfaces if i.is_bound and not i.ipv4_address])
+            allocated += sorted([i for i in node.physical_interfaces() if i.is_bound and i.ipv4_address])
+            unallocated += sorted([i for i in node.physical_interfaces() if i.is_bound and not i.ipv4_address])
 
         #TODO: what if IP is set but not a prefix?
         if len(allocated):

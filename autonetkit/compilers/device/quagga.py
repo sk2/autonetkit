@@ -40,7 +40,7 @@ class QuaggaCompiler(RouterCompiler):
 
         node.ospf.passive_interfaces = []
 
-        for interface in node.physical_interfaces:
+        for interface in node.physical_interfaces():
             if interface.exclude_igp:
                 continue  # don't configure IGP for this interface
 

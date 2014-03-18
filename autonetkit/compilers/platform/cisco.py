@@ -147,7 +147,7 @@ class CiscoCompiler(PlatformCompiler):
 
             # numeric ids
             numeric_int_ids = self.numeric_interface_ids()
-            for interface in DmNode.physical_interfaces:
+            for interface in DmNode.physical_interfaces():
                 phy_numeric_id = phy_node.interface(interface).numeric_id
                 if phy_numeric_id is None:
                     #TODO: remove numeric ID code
@@ -169,7 +169,7 @@ class CiscoCompiler(PlatformCompiler):
             DmNode.add_stanza("ip")
 
             #TODO: look at server syntax also, same as for routers
-            for interface in DmNode.physical_interfaces:
+            for interface in DmNode.physical_interfaces():
                 phy_specified_id = phy_node.interface(interface).specified_id
                 if phy_specified_id is not None:
                     interface.id = phy_specified_id
@@ -181,7 +181,7 @@ class CiscoCompiler(PlatformCompiler):
 
                 #TODO: clean up interface handling
             numeric_int_ids = self.numeric_interface_ids()
-            for interface in DmNode.physical_interfaces:
+            for interface in DmNode.physical_interfaces():
                 phy_int = phy_node.interface(interface)
                 phy_numeric_id = phy_node.interface(interface).numeric_id
                 if phy_numeric_id is None:
@@ -255,7 +255,7 @@ class CiscoCompiler(PlatformCompiler):
                 if phy_node.device_subtype == "CSR1000v":
                     mgmt_int_id = "GigabitEthernet1"
 
-            for interface in DmNode.physical_interfaces:
+            for interface in DmNode.physical_interfaces():
                 #TODO: use this code block once for all routers
                 if not interface.id:
                     interface.id = numeric_to_interface_label(interface.numeric_id)
@@ -284,7 +284,7 @@ class CiscoCompiler(PlatformCompiler):
 
             # Assign interfaces
             int_ids = self.interface_ids_ios_xr()
-            for interface in DmNode.physical_interfaces:
+            for interface in DmNode.physical_interfaces():
                 if not interface.id:
                     interface.id = self.numeric_to_interface_label_ios_xr(interface.numeric_id)
 
@@ -309,7 +309,7 @@ class CiscoCompiler(PlatformCompiler):
 
             # Assign interfaces
             int_ids = self.interface_ids_nxos()
-            for interface in DmNode.physical_interfaces:
+            for interface in DmNode.physical_interfaces():
                 if not interface.id:
                     interface.id = self.numeric_to_interface_label_nxos(interface.numeric_id)
 
@@ -337,7 +337,7 @@ class CiscoCompiler(PlatformCompiler):
 
             # Assign interfaces
             int_ids = self.interface_ids_nxos()
-            for interface in DmNode.physical_interfaces:
+            for interface in DmNode.physical_interfaces():
                 if not interface.id:
                     interface.id = self.numeric_to_interface_label_star_os(interface.numeric_id)
 
@@ -363,7 +363,7 @@ class CiscoCompiler(PlatformCompiler):
         dhcp_hosts = [h for h in hosts_to_allocate if h.device_subtype in dhcp_subtypes]
 
         for DmNode in hosts_to_allocate:
-            for interface in DmNode.physical_interfaces:
+            for interface in DmNode.physical_interfaces():
                 if interface.management:
                     interface.description = "OOB Management"
                     interface.physical = True

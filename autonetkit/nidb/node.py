@@ -116,7 +116,6 @@ class DmNode(object):
         int_list = sorted(int_list, key = lambda x: type_index[x.type])
         return int_list
 
-    @property
     def physical_interfaces(self):
         return self.get_interfaces(type = "physical")
 
