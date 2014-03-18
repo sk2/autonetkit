@@ -146,9 +146,9 @@ class NmNode(object):
 
         data = dict(kwargs)
 
-        if self.overlay_id != 'phy' and self.phy:
-            next_id = self.phy._next_int_id()
-            self.phy._ports[next_id] = {'type': type,
+        if self.overlay_id != 'phy' and self['phy']:
+            next_id = self['phy']._next_int_id()
+            self['phy']._ports[next_id] = {'type': type,
                                              'description': description}
 
             # TODO: fix this workaround for not returning description from phy
@@ -231,12 +231,12 @@ class NmNode(object):
         #TODO: use from this layer, otherwise can get errors iterating when eg vrfs
         return self._ports.keys()
 
-        if self.overlay_id != 'phy' and self.phy:
+        if self.overlay_id != 'phy' and self['phy']:
 
             # graph isn't physical, and node exists in physical graph -> use
             # the interface mappings from phy
 
-            return self.phy._graph.node[self.node_id]['_ports'
+            return self['phy']._graph.node[self.node_id]['_ports'
                                                       ].keys()
         else:
             try:
@@ -279,26 +279,26 @@ class NmNode(object):
     def is_router(self):
         """Either from this graph or the physical graph"""
 
-        return self.device_type == 'router' or self.phy.device_type \
+        return self.device_type == 'router' or self['phy'].device_type \
             == 'router'
 
     def is_device_type(self, device_type):
         """Generic user-defined cross-overlay search for device_type
         either from this graph or the physical graph"""
 
-        return self.device_type == device_type or self.phy.device_type \
+        return self.device_type == device_type or self['phy'].device_type \
             == device_type
 
     def is_switch(self):
         """Returns if device is a switch"""
 
-        return self.device_type == 'switch' or self.phy.device_type \
+        return self.device_type == 'switch' or self['phy'].device_type \
             == 'switch'
 
     def is_server(self):
         """Returns if device is a server"""
 
-        return self.device_type == 'server' or self.phy.device_type \
+        return self.device_type == 'server' or self['phy'].device_type \
             == 'server'
 
     def is_l3device(self):
@@ -410,18 +410,6 @@ class NmNode(object):
         """Returns node label (mapped from ANM)"""
 
         return self.__repr__()
-
-    @property
-    def phy(self):
-        """Shortcut back to physical NmNode
-        Same as node.overlay.phy
-        ie node.phy.x is same as node.overlay.phy.x
-        """
-        # TODO: do we need this with node['phy']?
-
-# refer back to the physical node, to access attributes such as name
-
-        return NmNode(self.anm, 'phy', self.node_id)
 
     def dump(self):
         """Dump attributes of this node"""

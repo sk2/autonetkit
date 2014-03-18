@@ -197,7 +197,7 @@ class RouterCompiler(DeviceCompiler):
                     except AttributeError:
                         log.warning("Unable to format interface ")
 
-        for interface in node.loopback_interfaces:
+        for interface in node.loopback_interfaces():
 
             # TODO: check if nonzero is different to __eq__
 
