@@ -62,7 +62,8 @@ class OverlayBase(object):
 
     def edge(self, edge_to_find, dst_to_find=None, key=0):
         '''returns edge in this graph with same src and dst
-        and key for parallel edges (default is to return first edge)'''
+        and key for parallel edges (default is to return first edge)
+        #TODO: explain parameter overloading: strings, edges, nodes...'''
 
         #TODO: handle multigraphs
 
@@ -95,12 +96,35 @@ class OverlayBase(object):
                                        dst, key)
             else:
                  # Single graph
-                if self._graph.has_edge(src, dst):
+                 if self._graph.has_edge(src, dst):
                     return NmEdge(self._anm, self._overlay_id, src, dst)
         except AttributeError:
             pass  # not strings
         except TypeError:
             pass
+
+
+        try:
+            src_id = edge_to_find.node_id
+            dst_id = dst_to_find.node_id
+        except AttributeError:
+            pass # not nodes
+        else:
+            #TODO: combine duplicated logic from above
+            search_key = key
+            if self.is_multigraph():
+                for (src, dst, rkey) in self._graph.edges(src_id, keys = True):
+                    if dst == dst_id and rkey == search_key:
+                        return NmEdge(self._anm, self._overlay_id,
+                         src, dst, search_key)
+
+            for (src, dst) in self._graph.edges(src_id):
+                if dst == dst_id:
+                    return NmEdge(self._anm, self._overlay_id,
+                     src, dst)
+
+
+
 
     def __getitem__(self, key):
         """"""
@@ -270,10 +294,11 @@ class OverlayBase(object):
                         kwargs.items())
 
         if self.is_multigraph():
-            valid_edges = ((src, dst, key) for (src, dst, key) in
+            valid_edges = list((src, dst, key) for (src, dst, key) in
              self._graph.edges(src_nbunch, keys=True))
         else:
-            valid_edges = ((src, dst, 0) for (src, dst) in
+            default_key = 0
+            valid_edges = list((src, dst, default_key) for (src, dst) in
              self._graph.edges(src_nbunch))
 
         if dst_nbunch:
@@ -281,24 +306,18 @@ class OverlayBase(object):
                 dst_nbunch = dst_nbunch.node_id
                 dst_nbunch = set([dst_nbunch])
             except AttributeError:
-
-                                 # faster membership test than other sequences
-
                 dst_nbunch = (n.node_id for n in dst_nbunch)
-
-                              # only store the id in NmEdge
-
-                # faster membership test than other sequences
                 dst_nbunch = set(dst_nbunch)
 
-            valid_edges = ((src, dst, key) for (src, dst, key) in valid_edges
+            valid_edges = list((src, dst, key) for (src, dst, key) in valid_edges
                            if dst in dst_nbunch)
 
         if len(args) or len(kwargs):
-            all_edges = iter(NmEdge(self._anm, self._overlay_id,
-                             src, dst, key) for (src, dst, key) in valid_edges)
-            result = (edge for edge in all_edges if filter_func(edge))
+            all_edges = [NmEdge(self._anm, self._overlay_id,
+                             src, dst, key) for (src, dst, key) in valid_edges]
+            result = list(edge for edge in all_edges if filter_func(edge))
         else:
-            result = (NmEdge(self._anm, self._overlay_id, src,
+            result = list(NmEdge(self._anm, self._overlay_id, src,
                                   dst, key) for (src, dst, key) in valid_edges)
+
         return list(result)
