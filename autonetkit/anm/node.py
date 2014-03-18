@@ -70,7 +70,6 @@ class NmNode(object):
 
         return self.interfaces(type='physical')
 
-    @property
     def loopback_interfaces(self):
         """"""
 

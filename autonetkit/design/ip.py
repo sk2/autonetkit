@@ -163,7 +163,7 @@ def build_ipv6(anm):
 
     block_message = "IPv6 allocations: Infrastructure: %s, Loopback: %s" % (infra_block, loopback_block)
     if any(i for n in g_ip.nodes() for i in
-     n.loopback_interfaces if not i.is_loopback_zero):
+     n.loopback_interfaces() if not i.is_loopback_zero):
         block_message += " Secondary Loopbacks: %s" % secondary_loopback_block
     log.info(block_message)
 
@@ -230,7 +230,7 @@ def build_ipv6(anm):
         #TODO: test this code
         node.loopback_zero.ip_address = node.loopback
         node.loopback_zero.subnet = netaddr.IPNetwork("%s/32" % node.loopback)
-        for interface in node.loopback_interfaces:
+        for interface in node.loopback_interfaces():
             if not interface.is_loopback_zero:
                 interface.ip_address = interface.loopback #TODO: fix this inconsistency elsewhere
 
@@ -411,7 +411,7 @@ def build_ipv4(anm, infrastructure=True):
 #TODO: don't present if using manual allocation
     block_message = "IPv4 allocations: Infrastructure: %s, Loopback: %s" % (infra_block, loopback_block)
     if any(i for n in g_ip.nodes() for i in
-     n.loopback_interfaces if not i.is_loopback_zero):
+     n.loopback_interfaces() if not i.is_loopback_zero):
         block_message += " Secondary Loopbacks: %s" % vrf_loopback_block
 
     log.info(block_message)
@@ -474,6 +474,6 @@ def build_ipv4(anm, infrastructure=True):
     for node in g_ipv4.routers():
         node.loopback_zero.ip_address = node.loopback
         node.loopback_zero.subnet = netaddr.IPNetwork("%s/32" % node.loopback)
-        for interface in node.loopback_interfaces:
+        for interface in node.loopback_interfaces():
             if not interface.is_loopback_zero:
                 interface.ip_address = interface.loopback #TODO: fix this inconsistency elsewhere

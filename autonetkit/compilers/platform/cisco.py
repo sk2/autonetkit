@@ -141,7 +141,7 @@ class CiscoCompiler(PlatformCompiler):
             DmNode.add_stanza("render")
             DmNode.indices = phy_node.indices
 
-            for interface in DmNode.loopback_interfaces:
+            for interface in DmNode.loopback_interfaces():
                 if interface != DmNode.loopback_zero:
                     interface.id = loopback_ids.next()
 

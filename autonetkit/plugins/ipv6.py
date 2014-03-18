@@ -120,7 +120,7 @@ def allocate_vrf_loopbacks(g_ip, address_block=None):
         l3hosts = set(d for d in devices if d.is_l3device())
         routers = [n for n in l3hosts if n.is_router()]  # filter
         secondary_loopbacks = [i for n in routers for i in
-                               n.loopback_interfaces
+                               n.loopback_interfaces()
                                if not i.is_loopback_zero]
 
         secondary_loopback_hosts = \

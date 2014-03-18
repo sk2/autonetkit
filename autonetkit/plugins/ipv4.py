@@ -639,7 +639,7 @@ def allocate_vrf_loopbacks(g_ip, address_block=None):
         address_block = netaddr.IPNetwork('172.16.0.0/24')
 
     secondary_loopbacks = [i for n in g_ip.nodes() for i in
-                           n.loopback_interfaces
+                           n.loopback_interfaces()
                            if not i.is_loopback_zero]
 
     if not len(secondary_loopbacks):

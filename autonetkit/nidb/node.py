@@ -113,7 +113,6 @@ class DmNode(object):
     def physical_interfaces(self):
         return self.get_interfaces(type = "physical")
 
-    @property
     def loopback_interfaces(self):
         return self.get_interfaces(type = "loopback")
 
