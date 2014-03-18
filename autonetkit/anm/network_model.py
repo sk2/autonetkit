@@ -166,6 +166,9 @@ class NetworkModel(object):
 
         return overlay
 
+    def __iter__(self):
+        return iter(NmGraph(self, name) for name in self.overlays())
+
     def overlays(self):
         """"""
 

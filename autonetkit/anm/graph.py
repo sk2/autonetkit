@@ -340,8 +340,8 @@ class NmGraph(OverlayBase):
                 dst = edge.dst.node_id
 
                 # and copy retain data
-                retain.append('_ports')
                 data = dict((key, edge.get(key)) for key in retain)
+                data['_ports'] = edge.raw_interfaces
 
                 # this is the only case where copy across data
                 # but want to copy attributes for all cases

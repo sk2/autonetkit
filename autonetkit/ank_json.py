@@ -203,9 +203,6 @@ def jsonify_anm_with_graphics(anm, nidb = None):
             result = json.dumps(data, cls=AnkEncoder, indent = 4, sort_keys = True)
             fh.write(result)
 
-        if overlay_id == "bgp":
-            continue
-
         nm_graph = anm[overlay_id]._graph.copy()
 
         for node in nm_graph:

@@ -178,8 +178,7 @@ class OverlayBase(object):
 
     def __iter__(self):
         """"""
-
-        return self.nodes()
+        return iter(self.nodes())
 
     def __len__(self):
         """"""
@@ -189,7 +188,7 @@ class OverlayBase(object):
     def nodes(self, *args, **kwargs):
         """"""
 
-        result = iter(NmNode(self._anm, self._overlay_id, node)
+        result = list(NmNode(self._anm, self._overlay_id, node)
                     for node in self._graph)
 
         if len(args) or len(kwargs):
