@@ -84,6 +84,26 @@ class IosBaseCompiler(RouterCompiler):
         for interface in node.physical_interfaces():
             interface.use_cdp = node.use_cdp  # use node value
 
+        for interface in node.interfaces:
+            interface.sub_ints = [] # temporary until full subinterfaces
+
+        for interface in node.physical_interfaces():
+            g_ext_conn = self.anm['ext_conn']
+            if node not in g_ext_conn:
+                continue
+
+            node_ext_conn = g_ext_conn.node(node)
+            ext_int = node_ext_conn.interface(interface)
+            for sub_int in ext_int.sub_int or []:
+                stanza = ConfigStanza(
+                    id =sub_int['id'],
+                    ipv4_address =sub_int['ipv4_address'],
+                    ipv4_prefixlen =sub_int['ipv4_prefixlen'],
+                    ipv4_subnet =sub_int['ipv4_subnet'],
+                    dot1q =sub_int['dot1q'],
+                    )
+                interface.sub_ints.append(stanza)
+
     def mpls_oam(self, node):
         g_mpls_oam = self.anm['mpls_oam']
         node.add_stanza("mpls")
