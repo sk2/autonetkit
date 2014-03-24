@@ -1,8 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import functools
 import itertools
-import json
 import math
 import time
 from collections import defaultdict
