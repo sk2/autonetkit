@@ -76,10 +76,14 @@ def grid_2d(dim):
 @call_log
 def initialise(input_graph):
     """Initialises the input graph with from a NetworkX graph"""
-    anm = autonetkit.anm.NetworkModel()
+    all_multigraph = input_graph.is_multigraph()
+    anm = autonetkit.anm.NetworkModel(all_multigraph = all_multigraph)
 
-    input_undirected = nx.Graph(input_graph)
-    g_in = anm.add_overlay("input", graph=input_undirected)
+    #input_undirected = nx.Graph(input_graph)
+    #g_in = anm.add_overlay("input", graph=input_undirected)
+    g_in = anm.add_overlay("input", graph=input_graph)
+    autonetkit.update_http(anm)
+
 
 # set defaults
     if not g_in.data.specified_int_names:
@@ -266,6 +270,7 @@ def build(input_graph):
 
 
 def remove_parallel_switch_links(anm):
+    return
     g_phy = anm['phy']
     subs = ank_utils.connected_subgraphs(g_phy, g_phy.switches())
     for component in subs:

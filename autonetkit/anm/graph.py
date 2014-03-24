@@ -249,6 +249,16 @@ class NmGraph(OverlayBase):
         #TODO: needs to support node types
         self.remove_node(key)
 
+    def remove_nodes_from(self, nbunch):
+        """Removes set of nodes from nbunch"""
+
+        try:
+            nbunch = unwrap_nodes(nbunch)
+        except AttributeError:
+            pass  # don't need to unwrap
+
+        self._graph.remove_nodes_from(nbunch)
+
     def remove_node(self, node_id):
         """Removes a node from the overlay"""
         if isinstance(node_id, NmNode):
@@ -281,6 +291,7 @@ class NmGraph(OverlayBase):
             ebunch = unwrap_edges(ebunch)
         except AttributeError:
             pass  # don't need to unwrap
+
         self._graph.remove_edges_from(ebunch)
 
     def add_edges(self, *args, **kwargs):
@@ -306,7 +317,8 @@ class NmGraph(OverlayBase):
 
         if user wants to add from another overlay, first go g_x.edges()
         then add from the result
-        same for parallel links: can't specify key in (src, dst, key) tuple
+
+        allow (src, dst, ekey), (src, dst, ekey, data) for the ank utils
         """
 
         if not retain:
@@ -340,7 +352,10 @@ class NmGraph(OverlayBase):
 
                 # and copy retain data
                 data = dict((key, edge.get(key)) for key in retain)
-                data['_ports'] = edge.raw_interfaces
+                ports = {k:v for k,v in edge.raw_interfaces.items()
+                if k in self._graph} # only if exists in this overlay
+                #TODO: debug log if skipping a binding?
+                data['_ports'] = ports
 
                 # this is the only case where copy across data
                 # but want to copy attributes for all cases
@@ -355,12 +370,38 @@ class NmGraph(OverlayBase):
                 elif isinstance(in_a, NmPort) and isinstance(in_b, NmPort):
                     src = in_a.node.node_id
                     dst = in_b.node.node_id
-                    data['_ports'] = {src: in_a.interface_id,
-                        dst: in_b.interface_id}
+                    ports = {}
+                    if src in self:
+                        ports[src] = in_a.interface_id
+                    if dst in self:
+                        ports[dst] = in_a.interface_id
+                    data['_ports'] = ports
 
                 elif  in_a in self and in_b in self:
                     src = in_a
                     dst = in_b
+
+            elif len(in_edge) == 3:
+                # (src, dst, ekey) format
+                # or (src, dst, data) format
+                in_a, in_b, in_c = in_edge[0], in_edge[1], in_edge[2]
+                if  in_a in self and in_b in self:
+                    src = in_a
+                    dst = in_b
+                    #TODO: document the following logic
+                    if self.is_multigraph() and not isinstance(in_c, dict):
+                        ekey = in_c
+                    else:
+                        data = in_c
+
+            elif len(in_edge) == 4:
+                # (src, dst, ekey, data) format
+                in_a, in_b = in_edge[0], in_edge[1]
+                if  in_a in self and in_b in self:
+                    src = in_a
+                    dst = in_b
+                    ekey = in_edge[2]
+                    data = in_edge[3]
 
             #TODO: if edge not set at this point, give error/warn
 
@@ -370,6 +411,7 @@ class NmGraph(OverlayBase):
             if not(src in self and dst in self):
                 self.log.warning("Not adding edge %s, src/dst not in overlay"
                     % str(in_edge))
+                continue
 
             #TODO: warn if not multigraph and edge already exists - don't add/clobber
             data.update(**kwargs)

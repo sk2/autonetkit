@@ -8,9 +8,10 @@ class NetworkModel(object):
 
     """"""
 
-    def __init__(self):
+    def __init__(self, all_multigraph = False):
         """"""
 
+        self.all_multigraph = all_multigraph
         self._overlays = {}
         self.add_overlay('phy')
         self.add_overlay('graphics')
@@ -20,6 +21,8 @@ class NetworkModel(object):
         self._build_node_label()
         self.timestamp = time.strftime('%Y%m%d_%H%M%S',
                                        time.localtime())
+
+        #TODO: make this a proper method
 
     def __repr__(self):
         """"""
@@ -141,10 +144,15 @@ class NetworkModel(object):
     ):
         """Adds overlay graph of name name"""
 
+        multi_edge = multi_edge or self.all_multigraph
+
         if graph:
             if not directed and graph.is_directed():
-                log.info('Converting graph %s to undirected' % name)
-                graph = nx.Graph(graph)
+                if multi_edge:
+                    graph = nx.MultiGraph(graph)
+                else:
+                    log.info('Converting graph %s to undirected' % name)
+                    graph = nx.Graph(graph)
         elif directed:
 
             if multi_edge:
@@ -157,6 +165,8 @@ class NetworkModel(object):
             else:
                 graph = nx.Graph()
 
+        #TODO: revisit this0
+        #TODO: warn if name already in use so don't clobber
         self._overlays[name] = graph
         overlay = NmGraph(self, name)
         overlay.allocate_interfaces()
