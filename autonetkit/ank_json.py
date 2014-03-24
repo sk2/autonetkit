@@ -146,6 +146,7 @@ def rebind_nidb_interfaces(nidb):
 
 def ank_json_loads(data):
     d = ank_json_custom_loads(data)
+    #TODO: map back edge keys for parallel links - or is this automatic?
     return json_graph.node_link_graph(d)
 
 def jsonify_anm(anm):
@@ -193,6 +194,10 @@ def jsonify_anm_with_graphics(anm, nidb = None):
       if key in in_data}
       attribute_cache[node].update(out_data)
 
+      # append label from function
+      for node in anm['phy']:
+        attribute_cache[node.id]['label'] = str(node)
+
     for overlay_id in anm.overlays():
         nm_graph = anm[overlay_id]._graph.copy()
 
@@ -202,7 +207,7 @@ def jsonify_anm_with_graphics(anm, nidb = None):
             #TODO: check is not None won't clobber specifically set in overlay...
             graph_node_data = nm_graph.node[node]
             overlay_node_data = {key: graph_node_data.get(key)
-                for key in copy_attrs if key in graph_node_data}
+                for key in graph_node_data}
             node_data.update(overlay_node_data)
 
             # check for any non-set properties
@@ -221,11 +226,20 @@ def jsonify_anm_with_graphics(anm, nidb = None):
                 log.debug("Allocated random y %s to node %s in overlay %s" %
                     (new_y, node, overlay_id))
 
+            if node_data.get("label") == node:
+                # try from cache
+                node_data['label'] = attribute_cache.get(node, {}).get("label")
             if node_data.get("label") is None:
                 node_data['label'] = str(node) # don't need to cache
 
             # store on graph
             nm_graph.node[node] = node_data
+
+            if nm_graph.is_multigraph():
+                for u, v, k in nm_graph.edges(keys=True):
+                    # Store key: nx node_link_data ignores it
+                    #anm_graph[u][v][k]['_key'] = k
+                    pass # is this needed? as key itself holds no value?
 
             try:
                 del nm_graph.node[node]['id']
