@@ -36,10 +36,14 @@ def build_ospf(anm):
     g_ospf.add_nodes_from(g_l3)
     g_ospf.add_edges_from(g_l3.edges())
     ank_utils.copy_int_attr_from(g_l3, g_ospf, "multipoint")
+    #TODO: work out why this doesnt work
+    #ank_utils.copy_int_attr_from(g_in, g_ospf, "ospf_cost", dst_attr="cost",  type=int, default = 1)
+    for node in g_ospf:
+        for interface in node.physical_interfaces():
+            interface.cost = 1
 
     ank_utils.copy_attr_from(g_in, g_ospf, "ospf_area", dst_attr="area")
-    ank_utils.copy_edge_attr_from(g_in, g_ospf, "ospf_cost",
-        dst_attr="cost",  type=int, default = 1)
+    #ank_utils.copy_edge_attr_from(g_in, g_ospf, "ospf_cost", dst_attr="cost",  type=int, default = 1)
     ank_utils.copy_attr_from(g_in, g_ospf, "custom_config_ospf", dst_attr="custom_config")
 
     g_ospf.remove_edges_from([link for link in g_ospf.edges(

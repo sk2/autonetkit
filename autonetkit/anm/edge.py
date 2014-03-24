@@ -46,6 +46,11 @@ class NmEdge(object):
     def is_multigraph(self):
         return self._graph.is_multigraph()
 
+    def is_parallel(self):
+        """If there is more than one edge between the src, dst of this edge"""
+        #TODO: check this for digraph, multiidigraph
+        return self._overlay.number_of_edges(self.src, self.dst) > 1
+
     def __eq__(self, other):
         """"""
         if self.is_multigraph():
@@ -88,6 +93,10 @@ class NmEdge(object):
         from autonetkit.anm.graph import NmGraph
         overlay = NmGraph(self.anm, key)
         return overlay.edge(self)
+
+    def _overlay(self):
+        return NmGraph(self.anm, self.overlay_id)
+
 
     def __lt__(self, other):
         """"""

@@ -160,8 +160,9 @@ def apply_design_rules(anm):
     build_phy(anm)
     g_phy = anm['phy']
     from autonetkit.design.osi_layers import (build_layer2,
-        build_layer2_broadcast, build_layer3)
+        check_layer2, build_layer2_broadcast, build_layer3)
     build_layer2(anm)
+    check_layer2(anm)
     build_layer2_broadcast(anm)
     build_layer3(anm)
 

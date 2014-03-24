@@ -64,33 +64,15 @@ def build_ebgp_v6(anm):
 def build_ebgp(anm):
     g_in = anm['input']
     g_phy = anm['phy']
+    g_l3 = anm['layer3']
+
     g_ebgp = anm.add_overlay("ebgp", directed=True)
-    g_ebgp.add_nodes_from(g_in.routers())
-    ebgp_edges = [e for e in g_in.edges() if e.src.asn != e.dst.asn]
+
+    g_ebgp.add_nodes_from(g_l3)
+    ank_utils.copy_int_attr_from(g_l3, g_ebgp, "multipoint")
+
+    ebgp_edges = [e for e in g_l3.edges() if e.src.asn != e.dst.asn]
     g_ebgp.add_edges_from(ebgp_edges, bidirectional=True, type='ebgp')
-
-    ebgp_switches = [n for n in g_in.switches()
-            if not ank_utils.neigh_equal(g_phy, n, "asn")]
-    g_ebgp.add_nodes_from(ebgp_switches, retain=['asn'])
-    g_ebgp.log.debug("eBGP switches are %s" % ebgp_switches)
-    g_ebgp.add_edges_from((e for e in g_in.edges()
-            if e.src in ebgp_switches or e.dst in ebgp_switches),
-    bidirectional=True, type='ebgp')
-    ank_utils.aggregate_nodes(g_ebgp, ebgp_switches)
-    # need to recalculate as may have aggregated
-    ebgp_switches = list(g_ebgp.switches())
-    g_ebgp.log.debug("aggregated eBGP switches are %s" % ebgp_switches)
-    exploded_edges = ank_utils.explode_nodes(g_ebgp, ebgp_switches)
-    same_asn_edges = []
-    for edge in exploded_edges:
-        if edge.src.asn == edge.dst.asn:
-            same_asn_edges.append(edge)
-        else:
-            edge.multipoint = True
-    """TODO: remove up to here once compiler updated"""
-
-    g_ebgp.remove_edges_from(same_asn_edges)
-
 
 @call_log
 def build_ibgp(anm):

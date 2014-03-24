@@ -242,6 +242,9 @@ class NmGraph(OverlayBase):
             edge.raw_interfaces[src.id] = src_int_id
             edge.raw_interfaces[dst.id] = dst_int_id
 
+    def number_of_edges(self, node_a, node_b):
+        return self._graph.number_of_edges(node_a, node_b)
+
     def __delitem__(self, key):
         """Alias for remove_node. Allows
         >>> del overlay[node]

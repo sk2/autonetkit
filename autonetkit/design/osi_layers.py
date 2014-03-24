@@ -10,6 +10,34 @@ def build_layer2(anm):
         g_l2.add_edges_from(g_phy.edges())
         ank_utils.aggregate_nodes(g_l2, g_l2.switches())
 
+def check_layer2(anm):
+    """Sanity checks on topology"""
+    from collections import defaultdict
+    g_l2 = anm['layer2']
+
+    # check for igp and ebgp on same switch
+    for switch in sorted(g_l2.switches()):
+        neigh_asns = defaultdict(int)
+        for neigh in switch.neighbors():
+            neigh_asns[neigh.asn] += 1
+
+        # IGP if two or more neighbors share the same ASN
+        is_igp = any(asns > 1 for asns in neigh_asns.values())
+        # eBGP if more than one unique neigh ASN
+        is_ebgp = len(neigh_asns.keys()) > 1
+        if is_igp and is_ebgp:
+            log.warning("Switch %s contains both IGP and eBGP neighbors"
+                % switch)
+
+    # check for multiple links from nodes to switch
+    for switch in sorted(g_l2.switches()):
+        for neighbor in sorted(switch.neighbors()):
+            edges = g_l2.edges(switch, neighbor)
+            if len(edges) > 1:
+                # more than one edge between the (src, dst) pair -> parallel
+                log.warning("Multiple edges (%s) between %s and device %s"
+                    % (len(edges), switch, neighbor))
+
 def build_layer2_broadcast(anm):
         g_l2 = anm['layer2']
         g_phy = anm['phy']
@@ -23,7 +51,8 @@ def build_layer2_broadcast(anm):
 
         edges_to_split = [edge for edge in g_l2_bc.edges()
             if edge.src.is_l3device() and edge.dst.is_l3device()]
-        print "edges to split", edges_to_split
+        #TODO: debug the edges to split
+        #print "edges to split", edges_to_split
         for edge in edges_to_split:
             edge.split = True  # mark as split for use in building nidb
 

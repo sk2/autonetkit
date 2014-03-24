@@ -114,7 +114,10 @@ def copy_edge_attr_from(overlay_src, overlay_dst, src_attr, dst_attr = None, typ
             elif type is int:
                 val = int(val)
 
-            overlay_dst.edge(edge).set(dst_attr, val)
+            try:
+                overlay_dst.edge(edge).set(dst_attr, val)
+            except AttributeError:
+                log.warning("Unable to set edge attribute on %s in %s" % (edge, overlay_dst))
 
 #TODO: make edges own module
 def wrap_edges(NmGraph, edges):
@@ -183,16 +186,10 @@ def split(NmGraph, edges, retain = [], id_prepend = ""):
             dst_data['_ports'] = {dst.node_id: dst_int_id}
 
         #Note: don't retain ekey since adding to a new node
-        if NmGraph.is_multigraph():
-            append = (src.node_id, new_id, src_data)
-            edges_to_add.append(append)
-            append = (dst.node_id, new_id, dst_data)
-            edges_to_add.append(append)
-        else:
-            append = (src.node_id, new_id, src_data)
-            edges_to_add.append(append)
-            append = (dst.node_id, new_id, dst_data)
-            edges_to_add.append(append)
+        append = (src.node_id, new_id, src_data)
+        edges_to_add.append(append)
+        append = (dst.node_id, new_id, dst_data)
+        edges_to_add.append(append)
 
         added_nodes.append(new_id)
 
@@ -209,43 +206,47 @@ def explode_nodes(NmGraph, nodes, retain = []):
     TODO: explain better
     TODO: Add support for digraph - check if NmGraph.is_directed()
     """
-    log.info("Exploding nodes")
+    log.debug("Exploding nodes")
     try:
         retain.lower()
         retain = [retain] # was a string, put into list
     except AttributeError:
         pass # already a list
 
-    graph = unwrap_graph(NmGraph)
-    nodes = unwrap_nodes(nodes)
-    added_edges = []
-    nodes = list(nodes)
-#TODO: if graph is bidirectional, need to explode here too
-#TODO: how do we handle explode for multi graphs?
+    total_added_edges = [] # keep track to return
+
     for node in nodes:
-        log.debug("Exploding from %s" % node)
-        neighbors = graph.neighbors(node)
-        neigh_edge_pairs = ( (s,t) for s in neighbors for t in neighbors if s != t)
-        neigh_edge_pairs = list(neigh_edge_pairs)
-        edges_to_add = []
-        for (src, dst) in neigh_edge_pairs:
-            src_to_node_data = dict( (key, graph[src][node][key]) for key in retain)
-            node_to_dst_data = dict( (key, graph[node][dst][key]) for key in retain)
 
-            # copy interfaces
-            src_int_id = graph[src][node]["_ports"][src]
-            dst_int_id = graph[node][dst]["_ports"][dst]
-            src_to_node_data["_ports"] = {src: src_int_id, dst: dst_int_id}
+        edges = node.edges()
+        edge_pairs = [(e1, e2) for e1 in edges for e2 in edges if e1 != e2]
+        added_pairs = set()
+        for edge_pair in edge_pairs:
+            src_edge, dst_edge = sorted(edge_pair)
+            if (src_edge, dst_edge) in added_pairs:
+                continue # already added this link pair in other direction
+            else:
+                added_pairs.add((src_edge, dst_edge))
 
-            src_to_node_data.update(node_to_dst_data)
-            #TODO: handle interfaces for explode
-            edges_to_add.append((src, dst, src_to_node_data))
+            src = src_edge.dst # src is the exploded node
+            dst = dst_edge.dst # src is the exploded node
 
-        graph.add_edges_from(edges_to_add)
-        added_edges += edges_to_add
+            if src == dst:
+                continue  # don't add self-loop
 
-        graph.remove_node(node)
-    return wrap_edges(NmGraph, added_edges)
+            data = dict( (key, src_edge._data.get(key)) for key in retain)
+            node_to_dst_data = dict( (key, dst_edge._data.get(key)) for key in retain)
+            data.update(node_to_dst_data)
+
+            src_int_id = src_edge.raw_interfaces[src.node_id]
+            dst_int_id = dst_edge.raw_interfaces[dst.node_id]
+            data["_ports"] = {src.node_id: src_int_id, dst.node_id: dst_int_id}
+            new_edge = (src.node_id, dst.node_id, data)
+            #TODO: use add_edge
+            NmGraph.add_edges_from([new_edge])
+            total_added_edges.append(new_edge)
+
+        NmGraph.remove_node(node)
+    return wrap_edges(NmGraph, total_added_edges)
 
 def label(NmGraph, nodes):
     return list(NmGraph._anm.node_label(node) for node in nodes)
@@ -294,30 +295,26 @@ def aggregate_nodes(NmGraph, nodes, retain = []):
             #TODO: refactor so use nodes_to_remove
             nodes_to_remove = list(component_nodes)
             base = nodes_to_remove.pop() # choose one base device to retain
-            log.info("Retaining %s, removing %s" % (base, nodes_to_remove))
+            log.debug("Retaining %s, removing %s" % (base, nodes_to_remove))
 
             external_edges = []
             for node in nodes_to_remove:
                 external_edges += [e for e in node.edges()
-                if e.dst not in nodes_to_remove]
+                # all edges out of the component
+                if e.dst not in component_nodes]
 
-            log.info("External edges %s" % external_edges)
+            log.debug("External edges %s" % external_edges)
             edges_to_add = []
             for edge in external_edges:
                 dst = edge.dst
                 data = dict( (key, edge._data.get(key)) for key in retain)
                 ports = edge.raw_interfaces
                 dst_int_id = ports[dst.node_id]
+                #TODO: bind to (and maybe add) port on the new switch?
                 data['_ports'] = {dst.node_id: dst_int_id}
 
-                #TODO: bind to port on the new switch?
 
-            #TODO: make add_edges_from take (NmNode, NmNode, ekey, data)
-                if NmGraph.is_multigraph():
-                    append = (base.node_id, dst.node_id, data)
-                else:
-                    append = (base.node_id, dst.node_id, data)
-
+                append = (base.node_id, dst.node_id, data)
                 edges_to_add.append(append)
 
             NmGraph.add_edges_from(edges_to_add)
