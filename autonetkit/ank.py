@@ -155,15 +155,10 @@ def split(NmGraph, edges, retain = [], id_prepend = ""):
     edges_to_add = []
     added_nodes = []
     edges = list(edges)
-    print "edges", edges
-
-
-    cd_labels = sorted("cd_%s" % x for x in range(50))
 
     for edge in edges:
         src = edge.src
         dst = edge.dst
-        print "edge is", edge
 
         # Form ID for the new node
         if graph.is_directed():
@@ -206,11 +201,6 @@ def split(NmGraph, edges, retain = [], id_prepend = ""):
 
     # remove the pre-split edges
     NmGraph.remove_edges_from(edges)
-
-    x = wrap_nodes(NmGraph, added_nodes)
-    for n in x:
-        print n, n.edges()
-
 
     return wrap_nodes(NmGraph, added_nodes)
 

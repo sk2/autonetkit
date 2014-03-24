@@ -58,7 +58,6 @@ def build_layer2_broadcast(anm):
         if len(v) > 1} # trim out single node co-ordinates
         import math
         for key, val in coincident_nodes.items():
-            print "coincidence", val
             for index, item in enumerate(val):
                 index = index + 1
                 x_offset = 25*math.floor(index/2) * math.pow(-1, index)
@@ -71,18 +70,11 @@ def build_layer2_broadcast(anm):
         g_l2_bc.update(switch_nodes, broadcast_domain=True)
 
                      # switches are part of collision domain
-
-        for node in split_created_nodes:
-            print "npde is", node
-            for edge in node.edges():
-                print edge
-
         g_l2_bc.update(split_created_nodes, broadcast_domain=True)
 
     # Assign collision domain to a host if all neighbours from same host
 
         for node in split_created_nodes:
-            print node, "conncted to", node.neighbors()
             if ank_utils.neigh_equal(g_l2_bc, node, 'host', g_phy):
                 node.host = ank_utils.neigh_attr(g_l2_bc, node, 'host',
                         g_phy).next()  # first attribute
@@ -108,10 +100,6 @@ def build_layer2_broadcast(anm):
                 node.label = node.id
                 graphics_node.label = node.id
 
-
-        import autonetkit
-        autonetkit.update_http(anm)
-        raise SystemExit
 
 
 def build_layer3(anm):
