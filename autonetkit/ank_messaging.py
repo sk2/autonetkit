@@ -1,7 +1,5 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import socket
-
 import autonetkit.ank_json
 import autonetkit.config as config
 import autonetkit.log as log
@@ -10,7 +8,6 @@ from autonetkit.ank_utils import call_log
 use_http_post = config.settings['Http Post']['active']
 if use_http_post:
     import urllib
-
 
 @call_log
 def format_http_url(host=None, port=None, route='publish'):
