@@ -64,7 +64,7 @@ class NmPort(object):
 
     def __lt__(self, other):
 
-        # TODO: check how is comparing the nodes
+        # TODO: check how is comparing the node
 
         return (self.node, self.interface_id) < (other.node,
                                                  other.interface_id)

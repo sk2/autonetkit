@@ -132,16 +132,18 @@ class OverlayBase(object):
     def node(self, key):
         """Returns node based on name
         This is currently O(N). Could use a lookup table"""
+        #TODO: refactor
 
         try:
             if key.node_id in self._graph:
                 return NmNode(self._anm, self._overlay_id,
                                    key.node_id)
         except AttributeError:
-
-            # doesn't have node_id, likely a label string, search based on this
-            # label
-
+             #try as string id
+            if key in self._graph:
+                return NmNode(self._anm, self._overlay_id,
+                 key)
+            # doesn't have node_id, likely a label string, search based on this # label
             for node in self:
                 if str(node) == key:
                     return node
@@ -261,7 +263,7 @@ class OverlayBase(object):
                 and all(getattr(node, key) == val for (key, val) in
                         kwargs.items())
 
-        return (n for n in nbunch if filter_func(n))
+        return [n for n in nbunch if filter_func(n)]
 
     def edges(
         self,

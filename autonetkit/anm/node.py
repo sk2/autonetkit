@@ -263,7 +263,6 @@ class NmNode(object):
         except Exception, e:
             log.warning("Error accessing overlay %s for node %s: %s" %
                 (self.overlay_id, self.node_id, e))
-            raise SystemExit
 
     @property
     def _nx_node_data(self):
@@ -273,7 +272,6 @@ class NmNode(object):
         except Exception, e:
             log.warning("Error accessing node data %s for node %s: %s" %
                 (self.overlay_id, self.node_id, e))
-            raise SystemExit
 
     def is_router(self):
         """Either from this graph or the physical graph"""
@@ -464,15 +462,17 @@ class NmNode(object):
                 return result
             except KeyError:
                 if key == "device_type":
-                    # TODO: tidy accessors so this doesn't occur, and remove
-                    # the suppress
-                    return
+                    return self['phy'].device_type
+                if key == "device_subtype":
+                    return self['phy'].device_subtype
 
                 # from http://stackoverflow.com/q/2654113
                 self.log.debug(
                     "Accessing unset attribute %s in %s" % (key,
                         self.overlay_id))
                 return
+
+        # map through to phy
 
     def get(self, key):
         """For consistency, node.get(key) is neater than getattr(node, key)"""

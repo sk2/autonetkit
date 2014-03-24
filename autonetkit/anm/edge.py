@@ -1,9 +1,10 @@
 import logging
 from functools import total_ordering
 
-from autonetkit.log import CustomAdapter
+import autonetkit.log as log
 from autonetkit.anm.interface import NmPort
 from autonetkit.anm.node import NmNode
+from autonetkit.log import CustomAdapter
 
 
 @total_ordering
@@ -165,7 +166,10 @@ class NmEdge(object):
     def dst_int(self):
         """Interface bound to destination node of edge"""
 
-        dst_int_id = self._ports[self.dst_id]
+        try:
+            dst_int_id = self._ports[self.dst_id]
+        except KeyError:
+            log.warn("Remove interface not present for %s" % self)
         return NmPort(self.anm, self.overlay_id,
                            self.dst_id, dst_int_id)
 
