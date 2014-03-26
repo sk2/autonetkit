@@ -1,12 +1,14 @@
-import pkg_resources
 import ConfigParser
-from configobj import ConfigObj, flatten_errors
 import os
+import os.path
 
+import pkg_resources
 import validate
+from autonetkit.exception import AutoNetkitException
+from configobj import ConfigObj, flatten_errors
+
 validator = validate.Validator()
 
-import os.path
 # from http://stackoverflow.com/questions/4028904
 ank_user_dir = os.path.join(os.path.expanduser("~"),  ".autonetkit")
 
@@ -32,7 +34,7 @@ def load_config():
             if key is not None:
                 print "Error loading configuration file:"
                 print 'Invalid key "%s" in section "%s"' % (key, ', '.join(section_list))
-                raise SystemExit
+                raise AutoNetkitException
             else:
 # ignore missing sections - use defaults
                 #print 'The following section was missing:%s ' % ', '.join(section_list)

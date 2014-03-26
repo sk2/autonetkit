@@ -225,7 +225,7 @@ def main(options):
         timestamp = now.strftime("%Y%m%d_%H%M%S_%f")
     else:
         log.info("No input file specified. Exiting")
-        raise SystemExit
+        return
 
     try:
         manage_network(input_string, timestamp,
