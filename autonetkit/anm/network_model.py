@@ -15,6 +15,7 @@ class NetworkModel(object):
         self._overlays = {}
         self.add_overlay('phy')
         self.add_overlay('graphics')
+        self.add_overlay('_dependencies', directed=True)
 
         self.label_seperator = '_'
         self.label_attrs = ['label']

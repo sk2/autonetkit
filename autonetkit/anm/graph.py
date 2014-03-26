@@ -48,6 +48,19 @@ class NmGraph(OverlayBase):
         except AttributeError:
             pass  # already a list
 
+#TODO: add this logic to anm so can call when instantiating overlays too
+        g_deps = self.anm['_dependencies']
+        overlays = {n.overlay_id for n in nbunch  if isinstance(n, NmNode)}
+        if len(overlays) and self._overlay_id not in g_deps:
+            g_deps.add_node(self._overlay_id)
+        for overlay_id in overlays:
+            if overlay_id not in g_deps:
+                g_deps.add_node(overlay_id)
+
+            if g_deps.number_of_edges(self._overlay_id, overlay_id) == 0:
+                edge = (overlay_id, self._overlay_id)
+                g_deps.add_edges_from([edge])
+
         if not update:
 
 # filter out existing nodes

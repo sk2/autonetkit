@@ -171,13 +171,56 @@ def shortened_interface(name):
 
 def jsonify_anm_with_graphics(anm, nidb = None):
     """ Returns a dictionary of json-ified overlay graphs, with graphics data appended to each overlay"""
+    from collections import defaultdict
+    import math
     anm_json = {}
     test_anm_data = {}
     graphics_graph = anm["graphics"]._graph.copy()
     phy_graph = anm["phy"]._graph  # to access ASNs
 
+    """simple layout of deps - more advanced layout could
+    export to dot and import to omnigraffle, etc
+    """
+    g_deps = anm['_dependencies']
+    nm_graph = g_deps._graph
+    # build tree
+    layers = defaultdict(list)
+    if len(nm_graph) > 0:
+        topo_sort = nx.topological_sort(nm_graph)
+        # trim out any nodes with no sucessors
+
+        tree_root = topo_sort[0]
+        #Note: topo_sort ensures that once reach node, would have reached its predecessors
+        # start at first element after root
+        for node in topo_sort:
+            preds = nm_graph.predecessors(node)
+            if len(preds):
+                pred_level = max(nm_graph.node[p].get('level') for p in preds)
+            else:
+                # a root node
+                pred_level = -1 # this node becomes level 0
+            level = pred_level +1
+            nm_graph.node[node]['level'] =  level
+            layers[level].append(node)
+
+            data = nm_graph.node[node]
+            data['y'] = 100*data['level']
+            data['device_type'] = "ank_internal"
+
+        MIDPOINT = 50 # assign either side of
+        for nodes in layers.values():
+            #TODO: since sort is stable, first sort by parent x (avoids zig-zags)
+            nodes = sorted(nodes, reverse = True,
+                key = lambda x: nm_graph.degree(x))
+            for index, node in enumerate(nodes):
+                #TODO: work out why weird offset due to the math.pow *
+                #node_x = MIDPOINT  + 125*index * math.pow(-1, index)
+                node_x = MIDPOINT  + 125*index
+                nm_graph.node[node]['x'] = node_x
+
+
+
     import random
-    from collections import defaultdict
     attribute_cache = defaultdict(dict)
     # the attributes to copy
     # TODO: check behaviour for None if explicitly set
@@ -200,6 +243,8 @@ def jsonify_anm_with_graphics(anm, nidb = None):
 
     for overlay_id in anm.overlays():
         nm_graph = anm[overlay_id]._graph.copy()
+        if overlay_id == "_dependencies":
+            nm_graph = nx.Graph(nm_graph) #convert to undirected for visual clarify
 
         for node in nm_graph:
             node_data = dict(attribute_cache.get(node, {}))
