@@ -81,8 +81,28 @@ class IosBaseCompiler(RouterCompiler):
 
         super(IosBaseCompiler, self).interfaces(node)
 
-        for interface in node.physical_interfaces:
+        for interface in node.physical_interfaces():
             interface.use_cdp = node.use_cdp  # use node value
+
+        for interface in node.interfaces:
+            interface.sub_ints = [] # temporary until full subinterfaces
+
+        for interface in node.physical_interfaces():
+            g_ext_conn = self.anm['ext_conn']
+            if node not in g_ext_conn:
+                continue
+
+            node_ext_conn = g_ext_conn.node(node)
+            ext_int = node_ext_conn.interface(interface)
+            for sub_int in ext_int.sub_int or []:
+                stanza = ConfigStanza(
+                    id =sub_int['id'],
+                    ipv4_address =sub_int['ipv4_address'],
+                    ipv4_prefixlen =sub_int['ipv4_prefixlen'],
+                    ipv4_subnet =sub_int['ipv4_subnet'],
+                    dot1q =sub_int['dot1q'],
+                    )
+                interface.sub_ints.append(stanza)
 
     def mpls_oam(self, node):
         g_mpls_oam = self.anm['mpls_oam']
@@ -248,7 +268,7 @@ class IosBaseCompiler(RouterCompiler):
 
         vrf_node = self.anm['vrf'].node(node)
         if vrf_node and vrf_node.vrf_role is 'PE':
-            for interface in node.physical_interfaces:
+            for interface in node.physical_interfaces():
                 vrf_int = self.anm['vrf'].interface(interface)
                 if vrf_int.vrf_name:
                     interface.exclude_igp = True
@@ -284,7 +304,7 @@ class IosBaseCompiler(RouterCompiler):
             # Add PE -> P, PE -> PE interfaces to MPLS LDP
 
             node.mpls.ldp_interfaces = []
-            for interface in node.physical_interfaces:
+            for interface in node.physical_interfaces():
                 mpls_ldp_int = self.anm['mpls_ldp'].interface(interface)
                 if mpls_ldp_int.is_bound:
                     node.mpls.ldp_interfaces.append(interface.id)
@@ -292,7 +312,7 @@ class IosBaseCompiler(RouterCompiler):
 
         if vrf_node and vrf_node.vrf_role is 'P':
             node.mpls.ldp_interfaces = []
-            for interface in node.physical_interfaces:
+            for interface in node.physical_interfaces():
                 node.mpls.ldp_interfaces.append(interface.id)
 
         vrf_node = self.anm['vrf'].node(node)
@@ -308,7 +328,7 @@ class IosBaseCompiler(RouterCompiler):
 
     def ospf(self, node):
         super(IosBaseCompiler, self).ospf(node)
-        for interface in node.physical_interfaces:
+        for interface in node.physical_interfaces():
             phy_int = self.anm['phy'].interface(interface)
 
             ospf_int = phy_int['ospf']
@@ -330,7 +350,7 @@ class IosBaseCompiler(RouterCompiler):
 
     def eigrp(self, node):
         super(IosBaseCompiler, self).eigrp(node)
-        for interface in node.physical_interfaces:
+        for interface in node.physical_interfaces():
             phy_int = self.anm['phy'].interface(interface)
 
             eigrp_int = phy_int['eigrp']
@@ -351,7 +371,7 @@ class IosBaseCompiler(RouterCompiler):
 
     def isis(self, node):
         super(IosBaseCompiler, self).isis(node)
-        for interface in node.physical_interfaces:
+        for interface in node.physical_interfaces():
             isis_int = self.anm['isis'].interface(interface)
             edges = isis_int.edges()
             if not isis_int.is_bound:
@@ -463,7 +483,7 @@ class IosClassicCompiler(IosBaseCompiler):
 
         mpls_te_node = g_mpls_te.node(node)
 
-        for interface in mpls_te_node.physical_interfaces:
+        for interface in mpls_te_node.physical_interfaces():
             nidb_interface = self.nidb.interface(interface)
             if not interface.is_bound:
                 log.debug('Not enable MPLS and RSVP for interface %s on %s '
@@ -583,7 +603,7 @@ class IosXrCompiler(IosBaseCompiler):
         mpls_te_interfaces = []
         mpls_te_node = g_mpls_te.node(node)
 
-        for interface in mpls_te_node.physical_interfaces:
+        for interface in mpls_te_node.physical_interfaces():
             nidb_interface = self.nidb.interface(interface)
             stanza = ConfigStanza(id = nidb_interface.id,
                                    bandwidth_percent = 100)
@@ -605,7 +625,7 @@ class IosXrCompiler(IosBaseCompiler):
         ipv4_interfaces = []
         ipv6_interfaces = []
 
-        for interface in node.physical_interfaces:
+        for interface in node.physical_interfaces():
             if interface.exclude_igp:
                 continue  # don't configure IGP for this interface
 
@@ -634,7 +654,7 @@ class IosXrCompiler(IosBaseCompiler):
         super(IosXrCompiler, self).isis(node)
         node.isis.isis_links = []
 
-        for interface in node.physical_interfaces:
+        for interface in node.physical_interfaces():
             if interface.exclude_igp:
                 continue  # don't configure IGP for this interface
 

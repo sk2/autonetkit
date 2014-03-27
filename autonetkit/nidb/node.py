@@ -28,12 +28,6 @@ class DmNode(object):
     def __repr__(self):
         return self._node_data['label']
 
-    def __getnewargs__(self):
-        return ()
-
-    def __getstate__(self):
-        return (self.nidb, self.node_id)
-
     #TODO: add a dump method - needed with str()?
 
     def add_stanza(self, name, **kwargs):
@@ -72,10 +66,10 @@ class DmNode(object):
 
 
     @property
-    def _interfaces(self):
+    def _ports(self):
         """Returns underlying interface dict"""
         try:
-            return self._graph.node[self.node_id]["_interfaces"]
+            return self._graph.node[self.node_id]["_ports"]
         except KeyError:
             log.debug("No interfaces initialised for %s" % self)
             return
@@ -86,22 +80,22 @@ class DmNode(object):
 # returns next free interface ID
         import itertools
         for int_id in itertools.count(1):  # start at 1 as 0 is loopback
-            if int_id not in self._interfaces:
+            if int_id not in self._ports:
                 return int_id
 
-    def add_interface(self, description = None, type = "physical", *args,  **kwargs):
+    def add_interface(self, description = None, category = "physical", *args,  **kwargs):
         """Public function to add interface"""
         data = dict(kwargs)
         interface_id = self._next_int_id
-        data['type'] = type  # store type on node
+        data['category'] = category  # store category on node
         data['description'] = description
-        self._interfaces[interface_id] = data
+        self._ports[interface_id] = data
 
         return DmInterface(self.nidb, self.node_id, interface_id)
 
     @property
     def _interface_ids(self):
-        return self._graph.node[self.node_id]["_interfaces"].keys()
+        return self._ports.keys()
 
     @property
     def interfaces(self):
@@ -110,19 +104,17 @@ class DmNode(object):
 
         # Put loopbacks before physical interfaces
         type_index = {"loopback": 0, "physical": 1}
-        #TODO: extend this based on medium type, etc
+        #TODO: extend this based on medium category, etc
 
         int_list = sorted(int_list, key = lambda x: x.id)
-        int_list = sorted(int_list, key = lambda x: type_index[x.type])
+        int_list = sorted(int_list, key = lambda x: type_index[x.category])
         return int_list
 
-    @property
     def physical_interfaces(self):
-        return self.get_interfaces(type = "physical")
+        return self.get_interfaces(category = "physical")
 
-    @property
     def loopback_interfaces(self):
-        return self.get_interfaces(type = "loopback")
+        return self.get_interfaces(category = "loopback")
 
     def get_interfaces(self, *args, **kwargs):
         """Public function to view interfaces
@@ -146,6 +138,15 @@ class DmNode(object):
     @property
     def loopback_zero(self):
         return (i for i in self.interfaces if i.is_loopback_zero).next()
+
+    @property
+    def raw_interfaces(self):
+        """Direct access to the interfaces dictionary, used by ANK modules"""
+        return self._ports
+
+    @raw_interfaces.setter
+    def raw_interfaces(self, value):
+       self._ports = value
 
     @property
     def _graph(self):

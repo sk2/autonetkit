@@ -4,7 +4,7 @@ import autonetkit.log as log
 from autonetkit.log import CustomAdapter
 
 
-class NmInterface(object):
+class NmPort(object):
 
     def __init__(
         self,
@@ -52,7 +52,7 @@ class NmInterface(object):
 
     def __nonzero__(self):
 
-        # TODO: work out why description and type being set/copied to each
+        # TODO: work out why description and category being set/copied to each
         # overlay
 
         try:
@@ -64,7 +64,7 @@ class NmInterface(object):
 
     def __lt__(self, other):
 
-        # TODO: check how is comparing the nodes
+        # TODO: check how is comparing the node
 
         return (self.node, self.interface_id) < (other.node,
                                                  other.interface_id)
@@ -95,7 +95,7 @@ class NmInterface(object):
         """Return data dict for the interface"""
 
         try:
-            return self._node['_interfaces'][self.interface_id]
+            return self.node.raw_interfaces[self.interface_id]
         except KeyError:
             log.warning('Unable to find interface %s in %s'
                         % (self.interface_id, self.node))
@@ -108,7 +108,7 @@ class NmInterface(object):
 
         if self.overlay_id == 'phy':
             return self
-        return NmInterface(self.anm, 'phy', self.node_id,
+        return NmPort(self.anm, 'phy', self.node_id,
                                  self.interface_id)
 
     def __getitem__(self, overlay_id):
@@ -125,7 +125,7 @@ class NmInterface(object):
             return None
 
         try:
-            return NmInterface(self.anm, overlay_id,
+            return NmPort(self.anm, overlay_id,
                                      self.node_id, self.interface_id)
         except KeyError:
             return
@@ -134,19 +134,22 @@ class NmInterface(object):
     def is_loopback(self):
         """"""
 
-        return self.type == 'loopback' or self.phy.type == 'loopback'
+        return self.category == 'loopback' or self.phy.category == 'loopback'
 
     @property
     def is_physical(self):
         """"""
 
-        return self.type == 'physical' or self.phy.type == 'physical'
+        return self.category == 'physical' or self.phy.category == 'physical'
 
     @property
     def description(self):
         """"""
 
-        retval = self._interface.get('description')
+        try:
+            retval = self._interface.get('description')
+        except IndexError:
+            retval = self.interface_id
         if retval:
             return retval
 
@@ -158,7 +161,7 @@ class NmInterface(object):
         return self.interface_id == 0 and self.is_loopback
 
     @property
-    def type(self):
+    def category(self):
         """"""
 
 # TODO: make 0 correctly access interface 0 -> copying problem
@@ -168,14 +171,14 @@ class NmInterface(object):
             return 'loopback'
 
         if self.overlay_id == 'input':
-            return object.__getattr__(self, 'type')
+            return object.__getattr__(self, 'category')
         elif self.overlay_id != 'phy':
 
                                         # prevent recursion
 
-            return self.phy._interface.get('type')
+            return self.phy._interface.get('category')
 
-        retval = self._interface.get('type')
+        retval = self._interface.get('category')
         if retval:
             return retval
 
@@ -226,7 +229,7 @@ class NmInterface(object):
         # edges have _interfaces stored as a dict of {node_id: interface_id, }
 
         valid_edges = [e for e in self.node.edges() if self.node_id
-                       in e._interfaces and e._interfaces[self.node_id]
+                       in e.raw_interfaces and e.raw_interfaces[self.node_id]
                        == self.interface_id]
         return list(valid_edges)
 

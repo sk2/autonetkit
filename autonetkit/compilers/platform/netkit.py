@@ -54,7 +54,7 @@ class NetkitCompiler(PlatformCompiler):
 
             # Note this could take external data
             int_ids = itertools.count(0)
-            for interface in DmNode.physical_interfaces:
+            for interface in DmNode.physical_interfaces():
                 numeric_id = int_ids.next()
                 interface.numeric_id = numeric_id
                 interface.id = self.index_to_int_id(numeric_id)
@@ -111,7 +111,7 @@ class NetkitCompiler(PlatformCompiler):
 
         lab_topology.config_items = []
         for node in sorted(subgraph.l3devices()):
-            for interface in node.physical_interfaces:
+            for interface in node.physical_interfaces():
                 broadcast_domain = str(interface.ipv4_subnet).replace("/", ".")
                 #netkit lab.conf uses 1 instead of eth1
                 numeric_id = interface.numeric_id

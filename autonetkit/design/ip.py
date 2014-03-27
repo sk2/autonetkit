@@ -86,7 +86,7 @@ def manual_ipv6_infrastructure_allocation(anm):
     log.info('Using specified IPv6 infrastructure allocation')
 
     for node in g_ipv6.l3devices():
-        for interface in node.physical_interfaces:
+        for interface in node.physical_interfaces():
             if not interface['input'].is_bound:
                 continue  # unbound interface
             ip_address = netaddr.IPAddress(interface['input'
@@ -163,7 +163,7 @@ def build_ipv6(anm):
 
     block_message = "IPv6 allocations: Infrastructure: %s, Loopback: %s" % (infra_block, loopback_block)
     if any(i for n in g_ip.nodes() for i in
-     n.loopback_interfaces if not i.is_loopback_zero):
+     n.loopback_interfaces() if not i.is_loopback_zero):
         block_message += " Secondary Loopbacks: %s" % secondary_loopback_block
     log.info(block_message)
 
@@ -186,7 +186,7 @@ def build_ipv6(anm):
 
     manual_alloc_devices = set()
     for device in l3_devices:
-        physical_interfaces = list(device.physical_interfaces)
+        physical_interfaces = list(device.physical_interfaces())
         allocated = list(interface.ipv6_address for interface in physical_interfaces if interface.is_bound)
         if all(interface.ipv6_address for interface in
                physical_interfaces if interface.is_bound):
@@ -201,8 +201,8 @@ def build_ipv6(anm):
         allocated = []
         unallocated = []
         for node in l3_devices:
-            allocated += sorted([i for i in node.physical_interfaces if i.is_bound and i.ipv6_address])
-            unallocated += sorted([i for i in node.physical_interfaces if i.is_bound and not i.ipv6_address])
+            allocated += sorted([i for i in node.physical_interfaces() if i.is_bound and i.ipv6_address])
+            unallocated += sorted([i for i in node.physical_interfaces() if i.is_bound and not i.ipv6_address])
 
         #TODO: what if IP is set but not a prefix?
         if len(allocated):
@@ -230,7 +230,7 @@ def build_ipv6(anm):
         #TODO: test this code
         node.loopback_zero.ip_address = node.loopback
         node.loopback_zero.subnet = netaddr.IPNetwork("%s/32" % node.loopback)
-        for interface in node.loopback_interfaces:
+        for interface in node.loopback_interfaces():
             if not interface.is_loopback_zero:
                 interface.ip_address = interface.loopback #TODO: fix this inconsistency elsewhere
 
@@ -243,7 +243,7 @@ def manual_ipv4_infrastructure_allocation(anm):
     log.info('Using specified IPv4 infrastructure allocation')
 
     for node in g_ipv4.l3devices():
-        for interface in node.physical_interfaces:
+        for interface in node.physical_interfaces():
             if not interface['input'].is_bound:
                 continue  # unbound interface
             ip_address = netaddr.IPAddress(interface['input'
@@ -411,7 +411,7 @@ def build_ipv4(anm, infrastructure=True):
 #TODO: don't present if using manual allocation
     block_message = "IPv4 allocations: Infrastructure: %s, Loopback: %s" % (infra_block, loopback_block)
     if any(i for n in g_ip.nodes() for i in
-     n.loopback_interfaces if not i.is_loopback_zero):
+     n.loopback_interfaces() if not i.is_loopback_zero):
         block_message += " Secondary Loopbacks: %s" % vrf_loopback_block
 
     log.info(block_message)
@@ -423,7 +423,7 @@ def build_ipv4(anm, infrastructure=True):
 
     manual_alloc_devices = set()
     for device in l3_devices:
-        physical_interfaces = list(device.physical_interfaces)
+        physical_interfaces = list(device.physical_interfaces())
         allocated = list(interface.ipv4_address for interface in physical_interfaces if interface.is_bound)
         if all(interface.ipv4_address for interface in
                physical_interfaces if interface.is_bound):
@@ -437,8 +437,8 @@ def build_ipv4(anm, infrastructure=True):
         allocated = []
         unallocated = []
         for node in l3_devices:
-            allocated += sorted([i for i in node.physical_interfaces if i.is_bound and i.ipv4_address])
-            unallocated += sorted([i for i in node.physical_interfaces if i.is_bound and not i.ipv4_address])
+            allocated += sorted([i for i in node.physical_interfaces() if i.is_bound and i.ipv4_address])
+            unallocated += sorted([i for i in node.physical_interfaces() if i.is_bound and not i.ipv4_address])
 
         #TODO: what if IP is set but not a prefix?
         if len(allocated):
@@ -474,6 +474,6 @@ def build_ipv4(anm, infrastructure=True):
     for node in g_ipv4.routers():
         node.loopback_zero.ip_address = node.loopback
         node.loopback_zero.subnet = netaddr.IPNetwork("%s/32" % node.loopback)
-        for interface in node.loopback_interfaces:
+        for interface in node.loopback_interfaces():
             if not interface.is_loopback_zero:
                 interface.ip_address = interface.loopback #TODO: fix this inconsistency elsewhere

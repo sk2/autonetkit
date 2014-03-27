@@ -124,28 +124,29 @@ def rebind_interfaces(anm):
     for overlay_id in anm.overlays():
         overlay = anm[overlay_id]
         #for edge in overlay.edges():
-            #unbound_interfaces = edge._interfaces
+            #unbound_ports = edge._ports
 ## map nodes -> node objects, values to integers (not strings)
-            #interfaces = {overlay.node(key): val for key, val in unbound_interfaces.items()}
-            #edge._interfaces = interfaces # store with remapped node
+            #interfaces = {overlay.node(key): val for key, val in unbound_ports.items()}
+            #edge._ports = interfaces # store with remapped node
         for node in overlay.nodes():
-            unbound_interfaces = node._interfaces
-            if len(unbound_interfaces): # is list if none set
-                interfaces = {int(key): val for key, val in unbound_interfaces.items()}
-                node._interfaces = interfaces
+            unbound_ports = node.raw_interfaces
+            if len(unbound_ports): # is list if none set
+                interfaces = {int(key): val for key, val in unbound_ports.items()}
+                node.raw_interfaces = interfaces
 
 #TODO: need to also rebind_interfaces for nidb
 
 def rebind_nidb_interfaces(nidb):
     for node in nidb.nodes():
-        unbound_interfaces = node._interfaces
-        if len(unbound_interfaces): # is list if none set
-            interfaces = {int(key): val for key, val in unbound_interfaces.items()}
-            node._interfaces = interfaces
+        unbound_ports = node.raw_interfaces
+        if len(unbound_ports): # is list if none set
+            interfaces = {int(key): val for key, val in unbound_ports.items()}
+            node.raw_interfaces = interfaces
 
 
 def ank_json_loads(data):
     d = ank_json_custom_loads(data)
+    #TODO: map back edge keys for parallel links - or is this automatic?
     return json_graph.node_link_graph(d)
 
 def jsonify_anm(anm):
@@ -170,13 +171,56 @@ def shortened_interface(name):
 
 def jsonify_anm_with_graphics(anm, nidb = None):
     """ Returns a dictionary of json-ified overlay graphs, with graphics data appended to each overlay"""
+    from collections import defaultdict
+    import math
     anm_json = {}
     test_anm_data = {}
     graphics_graph = anm["graphics"]._graph.copy()
     phy_graph = anm["phy"]._graph  # to access ASNs
 
+    """simple layout of deps - more advanced layout could
+    export to dot and import to omnigraffle, etc
+    """
+    g_deps = anm['_dependencies']
+    nm_graph = g_deps._graph
+    # build tree
+    layers = defaultdict(list)
+    if len(nm_graph) > 0:
+        topo_sort = nx.topological_sort(nm_graph)
+        # trim out any nodes with no sucessors
+
+        tree_root = topo_sort[0]
+        #Note: topo_sort ensures that once reach node, would have reached its predecessors
+        # start at first element after root
+        for node in topo_sort:
+            preds = nm_graph.predecessors(node)
+            if len(preds):
+                pred_level = max(nm_graph.node[p].get('level') for p in preds)
+            else:
+                # a root node
+                pred_level = -1 # this node becomes level 0
+            level = pred_level +1
+            nm_graph.node[node]['level'] =  level
+            layers[level].append(node)
+
+            data = nm_graph.node[node]
+            data['y'] = 100*data['level']
+            data['device_type'] = "ank_internal"
+
+        MIDPOINT = 50 # assign either side of
+        for nodes in layers.values():
+            #TODO: since sort is stable, first sort by parent x (avoids zig-zags)
+            nodes = sorted(nodes, reverse = True,
+                key = lambda x: nm_graph.degree(x))
+            for index, node in enumerate(nodes):
+                #TODO: work out why weird offset due to the math.pow *
+                #node_x = MIDPOINT  + 125*index * math.pow(-1, index)
+                node_x = MIDPOINT  + 125*index
+                nm_graph.node[node]['x'] = node_x
+
+
+
     import random
-    from collections import defaultdict
     attribute_cache = defaultdict(dict)
     # the attributes to copy
     # TODO: check behaviour for None if explicitly set
@@ -193,16 +237,22 @@ def jsonify_anm_with_graphics(anm, nidb = None):
       if key in in_data}
       attribute_cache[node].update(out_data)
 
-    for overlay_id in anm.overlays():
-        NmGraph = anm[overlay_id]._graph.copy()
+      # append label from function
+      for node in anm['phy']:
+        attribute_cache[node.id]['label'] = str(node)
 
-        for node in NmGraph:
+    for overlay_id in anm.overlays():
+        nm_graph = anm[overlay_id]._graph.copy()
+        if overlay_id == "_dependencies":
+            nm_graph = nx.Graph(nm_graph) #convert to undirected for visual clarify
+
+        for node in nm_graph:
             node_data = dict(attribute_cache.get(node, {}))
             # update with node data from this overlay
             #TODO: check is not None won't clobber specifically set in overlay...
-            graph_node_data = NmGraph.node[node]
+            graph_node_data = nm_graph.node[node]
             overlay_node_data = {key: graph_node_data.get(key)
-                for key in copy_attrs if key in graph_node_data}
+                for key in graph_node_data}
             node_data.update(overlay_node_data)
 
             # check for any non-set properties
@@ -221,14 +271,23 @@ def jsonify_anm_with_graphics(anm, nidb = None):
                 log.debug("Allocated random y %s to node %s in overlay %s" %
                     (new_y, node, overlay_id))
 
+            if node_data.get("label") == node:
+                # try from cache
+                node_data['label'] = attribute_cache.get(node, {}).get("label")
             if node_data.get("label") is None:
                 node_data['label'] = str(node) # don't need to cache
 
             # store on graph
-            NmGraph.node[node] = node_data
+            nm_graph.node[node] = node_data
+
+            if nm_graph.is_multigraph():
+                for u, v, k in nm_graph.edges(keys=True):
+                    # Store key: nx node_link_data ignores it
+                    #anm_graph[u][v][k]['_key'] = k
+                    pass # is this needed? as key itself holds no value?
 
             try:
-                del NmGraph.node[node]['id']
+                del nm_graph.node[node]['id']
             except KeyError:
                 pass
 
@@ -237,23 +296,24 @@ def jsonify_anm_with_graphics(anm, nidb = None):
                 if node in nidb:
                     DmNode_data = nidb_graph.node[node]
                     try:
-                        #TODO: check why not all nodes have _interfaces initialised
-                        overlay_interfaces = NmGraph.node[node]["_interfaces"]
+                        #TODO: check why not all nodes have _ports initialised
+                        overlay_interfaces = nm_graph.node[node]["_ports"]
                     except KeyError:
                         continue # skip copying interface data for this node
 
                     for interface_id in overlay_interfaces.keys():
+                        #TODO: use raw_interfaces here
                         try:
-                            nidb_interface_id = DmNode_data['_interfaces'][interface_id]['id']
+                            nidb_interface_id = DmNode_data['_ports'][interface_id]['id']
                         except KeyError:
                             #TODO: check why arrive here - something not initialised?
                             continue
-                        NmGraph.node[node]['_interfaces'][interface_id]['id'] = nidb_interface_id
+                        nm_graph.node[node]['_ports'][interface_id]['id'] = nidb_interface_id
                         id_brief = shortened_interface(nidb_interface_id)
-                        NmGraph.node[node]['_interfaces'][interface_id]['id_brief'] = id_brief
+                        nm_graph.node[node]['_ports'][interface_id]['id_brief'] = id_brief
 
-        anm_json[overlay_id] = ank_json_dumps(NmGraph)
-        test_anm_data[overlay_id] = NmGraph
+        anm_json[overlay_id] = ank_json_dumps(nm_graph)
+        test_anm_data[overlay_id] = nm_graph
 
 
     if nidb:
@@ -271,13 +331,13 @@ def prepare_nidb(nidb):
             graph.node[node]['device_type'] = graph.node[node]['graphics']['device_type']
             graph.node[node]['device_subtype'] = graph.node[node]['graphics']['device_subtype']
 
-        for interface_index in graph.node[node]['_interfaces']:
+        for interface_index in graph.node[node]['_ports']:
             try:
-                interface_id = graph.node[node]["_interfaces"][interface_index]['id']
+                interface_id = graph.node[node]["_ports"][interface_index]['id']
             except KeyError: # interface doesn't exist, eg for a lan segment
                 interface_id = ""
             id_brief = shortened_interface(interface_id)
-            graph.node[node]["_interfaces"][interface_index]['id_brief'] = id_brief
+            graph.node[node]["_ports"][interface_index]['id_brief'] = id_brief
 
     x = (graph.node[n]['x'] for n in graph)
     y = (graph.node[n]['y'] for n in graph)

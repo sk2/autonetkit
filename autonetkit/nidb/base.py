@@ -5,6 +5,8 @@ from autonetkit.nidb.edge import DmEdge
 from autonetkit.nidb.node import DmNode
 from autonetkit import ank_json
 
+#TODO: add to doc we don't llow bidirectional nidb
+
 class DmBase(object):
     #TODO: inherit common methods from same base as overlay
     def __init__(self):
@@ -20,6 +22,9 @@ class DmBase(object):
 
     def __repr__(self):
         return "nidb"
+
+    def is_multigraph(self):
+        return self._graph.is_multigraph()
 
     # Model-level functions
 
@@ -202,13 +207,13 @@ class DmBase(object):
 
         for node in nodes_to_add:
             #TODO: add an interface_retain for attributes also
-            int_dict = {i.interface_id: {'type': i.type,
+            int_dict = {i.interface_id: {'category': i.category,
                 'description': i.description,
                 'layer': i.overlay_id} for i in node.interfaces()}
-            int_dict = {i.interface_id: {'type': i.type,
+            int_dict = {i.interface_id: {'category': i.category,
                 'description': i.description,
                 } for i in node.interfaces()}
-            self._graph.node[node.node_id]["_interfaces"] = int_dict
+            self._graph.node[node.node_id]["_ports"] = int_dict
 
     # Edges
 
@@ -228,51 +233,94 @@ class DmBase(object):
                     )
 
         #TODO: See if more efficient way to access underlying data structure rather than create overlay to throw away
-        all_edges = iter(DmEdge(self, src, dst)
-                for src, dst in self._graph.edges(nbunch)
-                )
+        if self.is_multigraph():
+            valid_edges = list((src, dst, key) for (src, dst, key) in
+             self._graph.edges(nbunch, keys=True))
+        else:
+            default_key = 0
+            valid_edges = list((src, dst, default_key) for (src, dst) in
+             self._graph.edges(nbunch))
+
+        all_edges = [DmEdge(self, src, dst)
+                for src, dst, key in valid_edges ]
         return (edge for edge in all_edges if filter_func(edge))
 
-    def edge(self, edge_to_find):
+    def edge(self, edge_to_find, key=0):
         """returns edge in this graph with same src and dst"""
         #TODO: check if this even needed - will be if searching nidb specifically
         # but that's so rare (that's a design stage if anywhere)
         src_id = edge_to_find.src
         dst_id = edge_to_find.dst
-        for (src, dst) in self._graph.edges_iter(src_id):
+
+        if self.is_multigraph():
+            for (src, dst, rkey) in self._graph.edges(src_id, keys = True):
+                if dst == dst_id and rkey == search_key:
+                    return DmEdge(self._anm, src, dst, search_key)
+
+        for (src, dst) in self._graph.edges(src_id):
             if dst == dst_id:
-                return DmEdge(self._anm, self._overlay_id,
-                    src, dst)
+                return DmEdge(self._anm, src, dst)
 
     def add_edge(self, src, dst, retain=None, **kwargs):
+        #TODO: support multigraph
         if retain is None:
             retain = []
         self.add_edges_from([(src, dst)], retain, **kwargs)
 
     def add_edges_from(self, ebunch, retain=None, **kwargs):
-        if retain is None:
+        """Used to copy edges from ANM -> NIDB
+        Note: won't support (yet) copying from one NIDB to another
+        #TODO: allow copying from one NIDB to another
+        (check for DmNode as well as NmNode)
+
+        To keep congruency, only allow copying edges from ANM
+        can't add NIDB edges directly (node, node) oor (port, port)
+        workflow: if need this, create a new overlay and copy from there
+        """
+        from autonetkit.anm import NmEdge
+        if not retain:
             retain = []
-        #TODO: need to retain interface references
         try:
             retain.lower()
-            retain = [retain] # was a string, put into list
+            retain = [retain]  # was a string, put into list
         except AttributeError:
-            pass # already a list
+            pass  # already a list
 
-        edges_to_add = ebunch # retain for interface copying
+        #TODO: this needs to support parallel links
+        for in_edge in ebunch:
+            """Edge could be one of:
+            - NmEdge - copied into be returned as a DmEdge
+            """
+            # This is less efficient than nx add_edges_from, but cleaner logic
+            #TODO: could put the interface data into retain?
+            data = {'_ports': {} } # to retain
+            ekey = 0
 
-        try:
-            if len(retain):
-                add_edges = []
-                for e in ebunch:
-                    data = dict( (key, e.get(key)) for key in retain)
-                    add_edges.append( (e.src.node_id, e.dst.node_id, data) )
-                ebunch = add_edges
+            # convert input to a NmEdge
+            if isinstance(in_edge, NmEdge):
+                edge = in_edge # simple case
+                ekey = edge.ekey
+                src = edge.src.node_id
+                dst = edge.dst.node_id
+
+                # and copy retain data
+                retain.append('_ports')
+                #TODO: explicity copy ports as raw_interfaces?
+                data = dict((key, edge.get(key)) for key in retain)
+
+                # this is the only case where copy across data
+                # but want to copy attributes for all cases
+
+            #TODO: add check that edge.src and edge.dst exist
+            if not(src in self and dst in self):
+                log.warning("Not adding edge, src/dst not in overlay")
+                continue
+
+            #TODO: warn if not multigraph and edge already exists - don't add/clobber
+            data.update(**kwargs)
+
+            if self.is_multigraph():
+                self._graph.add_edge(src, dst, key=ekey,
+                    attr_dict = dict(data))
             else:
-                ebunch = [(e.src.node_id, e.dst.node_id) for e in ebunch]
-        except AttributeError:
-            ebunch = [(src.node_id, dst.node_id) for src, dst in ebunch]
-
-        self._graph.add_edges_from(ebunch, **kwargs)
-        for edge in edges_to_add:
-            self._graph[edge.src.node_id][edge.dst.node_id]['_interfaces'] = edge.raw_interfaces()
+                self._graph.add_edge(src, dst, attr_dict = dict(data))

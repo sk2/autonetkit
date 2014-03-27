@@ -162,6 +162,12 @@ interface ${interface.id}
   % if interface.te_tunnels:
   mpls traffic-eng tunnels
   %endif
+  % for sub_int in interface.sub_ints or []:
+  interface ${interface.id}.${sub_int.id}
+    ipv4 address ${sub_int.ipv4_address} ${sub_int.ipv4_subnet.netmask}
+    encapsulation dot1q ${sub_int.dot1q}
+  !
+  %endfor
   % if interface.rsvp_bandwidth_percent:
   ip rsvp bandwidth percent ${interface.rsvp_bandwidth_percent}
   %endif

@@ -14,9 +14,6 @@ import pkg_resources
 from autonetkit import update_http
 from autonetkit.nidb import DeviceModel
 
-# TODO: make if measure set, then not compile - or warn if both set, as
-# don't want to regen topology when measuring
-
 try:
     ANK_VERSION = pkg_resources.get_distribution("autonetkit").version
 except pkg_resources.DistributionNotFound:
@@ -97,9 +94,6 @@ def manage_network(input_graph_string, timestamp,
 
     if build_options['deploy']:
         deploy_network(anm, nidb, input_graph_string)
-
-    if build_options['measure']:
-        measure_network(anm, nidb)
 
     log.info("Finished")
 
@@ -225,7 +219,7 @@ def main(options):
         timestamp = now.strftime("%Y%m%d_%H%M%S_%f")
     else:
         log.info("No input file specified. Exiting")
-        raise SystemExit
+        return
 
     try:
         manage_network(input_string, timestamp,
@@ -322,7 +316,7 @@ def compile_network(anm):
             try:
                 import autonetkit_cisco.compilers.platform.cisco as pl_cisco
                 platform_compiler = pl_cisco.CiscoCompiler(nidb, anm, host)
-            except ImportError, e:
+            except ImportError:
                 log.debug("Unable to load VIRL platform compiler")
         elif platform == "dynagen":
             import autonetkit.compilers.platform.dynagen as pl_dynagen

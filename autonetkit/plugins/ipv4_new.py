@@ -57,14 +57,31 @@ def allocate_loopbacks(g_ip, address_block=None):
     g_ip.data.loopback_blocks = dict((asn, [subnet]) for (asn,
             subnet) in loopback_blocks.items())
 
+def prefix_size(broadcast_domain):
+    """Returns subnet size"""
+    import math
+    #TODO: note this might break on directed graphs?
+    host_count = broadcast_domain.degree()
+    print "host_count", broadcast_domain, host_count
+    print list(broadcast_domain.neighbors())
+    host_count += 2  # network and broadcast
+    return int(math.ceil(math.log(host_count, 2)))
+
 def allocate_infra(g_ip, address_block=None):
     infra_blocks = {}
 
 # TODO: check if need to do network address... possibly only for loopback_pool and infra_pool so maps to asn
 
-    infra_pool = address_block.subnet(80)
+    infra_pool = address_block.subnet(16)
+
+
+    # dict-based from from http://stackoverflow.com/q/3009935
+    from collections import namedtuple, defaultdict
+    TreeNode = namedtuple('TreeNode', ['left', 'right', 'subnet',
+        'prefixlen', 'bc'] )
 
     # consume the first address as it is the network address
+    tree_nodes = []
 
     _ = infra_pool.next()  # network address
 
@@ -72,6 +89,26 @@ def allocate_infra(g_ip, address_block=None):
     for asn in sorted(unique_asns):
         infra_blocks[asn] = infra_pool.next()
 
+    for (asn, devices) in sorted(g_ip.groupby('asn').items()):
+        log.info("Allocating infrastructure for ASN%s" % asn)
+        all_bcs = set(d for d in devices if d.broadcast_domain)
+        print all_bcs
+        tree_nodes = [TreeNode(None, None, None, prefix_size(bc), bc)
+            for bc in all_bcs]
+
+    level_counts = defaultdict(int)
+    nodes_by_level = defaultdict(list)
+    for node in tree_nodes:
+        prefixlen = node.prefixlen
+        nodes_by_level[prefixlen].append(node)
+
+
+    print "by level", nodes_by_level
+
+    raise SystemExit
+
+
+    # first build tree
     for (asn, devices) in sorted(g_ip.groupby('asn').items()):
         subnets = infra_blocks[asn].subnet(96)
         subnets.next()  # network address

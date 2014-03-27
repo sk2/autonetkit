@@ -2,7 +2,7 @@ import autonetkit.log as log
 from autonetkit.ank_utils import unwrap_edges, unwrap_nodes
 from autonetkit.anm.base import OverlayBase
 from autonetkit.anm.edge import NmEdge
-from autonetkit.anm.interface import NmInterface
+from autonetkit.anm.interface import NmPort
 from autonetkit.anm.node import NmNode
 
 
@@ -47,6 +47,19 @@ class NmGraph(OverlayBase):
             retain = [retain]  # was a string, put into list
         except AttributeError:
             pass  # already a list
+
+#TODO: add this logic to anm so can call when instantiating overlays too
+        g_deps = self.anm['_dependencies']
+        overlays = {n.overlay_id for n in nbunch  if isinstance(n, NmNode)}
+        if len(overlays) and self._overlay_id not in g_deps:
+            g_deps.add_node(self._overlay_id)
+        for overlay_id in overlays:
+            if overlay_id not in g_deps:
+                g_deps.add_node(overlay_id)
+
+            if g_deps.number_of_edges(self._overlay_id, overlay_id) == 0:
+                edge = (overlay_id, self._overlay_id)
+                g_deps.add_edges_from([edge])
 
         if not update:
 
@@ -138,16 +151,16 @@ class NmGraph(OverlayBase):
         initialised_nodes = []
         for node in nbunch:
             try:
-                phy_interfaces = phy_graph.node[node]['_interfaces']
+                phy_interfaces = phy_graph.node[node]['_ports']
                 interface_data = {'description': None,
-                                  'type': 'physical'}
+                                  'category': 'physical'}
 
                 # need to do dict() to copy, otherwise all point to same memory
                 # location -> clobber
 
                 data = dict((key, dict(interface_data)) for key in
                             phy_interfaces)
-                self._graph.node[node]['_interfaces'] = data
+                self._graph.node[node]['_ports'] = data
             except KeyError:
                 # TODO: split this off into seperate function
                 # test if adding from input graph
@@ -162,19 +175,19 @@ class NmGraph(OverlayBase):
                             # are doing input->phy
                             # copy the
                             original_interfaces = original_node.get(
-                                "_interfaces")
+                                "_ports")
                             if original_interfaces is not None:
                                 # Initialise with the keys
-                                int_data = {k: {"description": v.get("description"), "type": v.get("type")}
+                                int_data = {k: {"description": v.get("description"), "category": v.get("category")}
                                             for k, v in original_interfaces.items()}
                                 self._graph.node[node][
-                                    '_interfaces'] = int_data
+                                    '_ports'] = int_data
 
                 else:
                     # no counterpart in physical graph, initialise
                     # Can't do node log becaue node doesn't exist yet
-                    self._graph.node[node]['_interfaces'] = \
-                        {0: {'description': 'loopback', 'type': 'loopback'}}
+                    self._graph.node[node]['_ports'] = \
+                        {0: {'description': 'loopback', 'category': 'loopback'}}
                     initialised_nodes.append(node)
 
         if len(initialised_nodes):
@@ -186,8 +199,8 @@ class NmGraph(OverlayBase):
         """allocates edges to interfaces"""
 
         if self._overlay_id in ('input', 'phy'):
-            if all(len(node['input']._interfaces) > 0 for node in self) \
-                and all(len(edge['input']._interfaces) > 0 for edge in
+            if all(len(node['input'].raw_interfaces) > 0 for node in self) \
+                and all(len(edge['input'].raw_interfaces) > 0 for edge in
                         self.edges()):
                 input_interfaces_allocated = True
             else:
@@ -215,15 +228,15 @@ class NmGraph(OverlayBase):
 
                 if input_interfaces_allocated:
                     for node in self:
-                        input_interfaces = node['input']._interfaces
+                        input_interfaces = node['input'].raw_interfaces
                         if len(input_interfaces):
-                            node._interfaces = input_interfaces
+                            node.raw_interfaces = input_interfaces
 
                     for edge in self.edges():
-                        edge._interfaces = edge['input']._interfaces
-                        input_interfaces = edge['input']._interfaces
+                        edge.raw_interfaces = edge['input'].raw_interfaces
+                        input_interfaces = edge['input'].raw_interfaces
                         if len(input_interfaces):
-                            edge._interfaces = input_interfaces
+                            edge.raw_interfaces = input_interfaces
                     return
 
         self._init_interfaces()
@@ -238,9 +251,12 @@ class NmGraph(OverlayBase):
                                                           dst.label))
             dst_int_id = dst._add_interface('%s to %s' % (dst.label,
                                                           src.label))
-            edge._interfaces = {}
-            edge._interfaces[src.id] = src_int_id
-            edge._interfaces[dst.id] = dst_int_id
+            edge.raw_interfaces = {}
+            edge.raw_interfaces[src.id] = src_int_id
+            edge.raw_interfaces[dst.id] = dst_int_id
+
+    def number_of_edges(self, node_a, node_b):
+        return self._graph.number_of_edges(node_a, node_b)
 
     def __delitem__(self, key):
         """Alias for remove_node. Allows
@@ -248,6 +264,16 @@ class NmGraph(OverlayBase):
         """
         #TODO: needs to support node types
         self.remove_node(key)
+
+    def remove_nodes_from(self, nbunch):
+        """Removes set of nodes from nbunch"""
+
+        try:
+            nbunch = unwrap_nodes(nbunch)
+        except AttributeError:
+            pass  # don't need to unwrap
+
+        self._graph.remove_nodes_from(nbunch)
 
     def remove_node(self, node_id):
         """Removes a node from the overlay"""
@@ -281,6 +307,7 @@ class NmGraph(OverlayBase):
             ebunch = unwrap_edges(ebunch)
         except AttributeError:
             pass  # don't need to unwrap
+
         self._graph.remove_edges_from(ebunch)
 
     def add_edges(self, *args, **kwargs):
@@ -302,6 +329,12 @@ class NmGraph(OverlayBase):
         Bidirectional will add edge in both directions. Useful if going
         from an undirected graph to a
         directed, eg G_in to G_bgp
+        #TODO: explain "retain" and ["retain"] logic
+
+        if user wants to add from another overlay, first go g_x.edges()
+        then add from the result
+
+        allow (src, dst, ekey), (src, dst, ekey, data) for the ank utils
         """
 
         if not retain:
@@ -312,55 +345,104 @@ class NmGraph(OverlayBase):
         except AttributeError:
             pass  # already a list
 
-        retain.append('_interfaces')
-        try:
-            if len(retain):
-                add_edges = []
-                for edge in ebunch:
-                    data = dict((key, edge.get(key)) for key in retain)
-                    add_edges.append((edge.src.node_id,
-                                      edge.dst.node_id, data))
-                ebunch = add_edges
+        #TODO: this needs to support parallel links
+        for in_edge in ebunch:
+            """Edge could be one of:
+            - NmEdge
+            - (NmNode, NmNode)
+            - (NmPort, NmPort)
+            - (string, string)
+            """
+            # This is less efficient than nx add_edges_from, but cleaner logic
+            #TODO: could put the interface data into retain?
+            data = {'_ports': {} } # to retain
+            ekey = None # default is None (nx auto-allocates next int)
+
+            # convert input to a NmEdge
+            src = dst = None
+            if isinstance(in_edge, NmEdge):
+                edge = in_edge # simple case
+                ekey = edge.ekey # explictly set ekey
+                src = edge.src.node_id
+                dst = edge.dst.node_id
+
+                # and copy retain data
+                data = dict((key, edge.get(key)) for key in retain)
+                ports = {k:v for k,v in edge.raw_interfaces.items()
+                if k in self._graph} # only if exists in this overlay
+                #TODO: debug log if skipping a binding?
+                data['_ports'] = ports
+
+                # this is the only case where copy across data
+                # but want to copy attributes for all cases
+
+            elif len(in_edge) == 2:
+                in_a, in_b = in_edge[0], in_edge[1]
+
+                if isinstance(in_a, NmNode) and isinstance(in_b, NmNode):
+                    src = in_a.node_id
+                    dst = in_b.node_id
+
+                elif isinstance(in_a, NmPort) and isinstance(in_b, NmPort):
+                    src = in_a.node.node_id
+                    dst = in_b.node.node_id
+                    ports = {}
+                    if src in self:
+                        ports[src] = in_a.interface_id
+                    if dst in self:
+                        ports[dst] = in_a.interface_id
+                    data['_ports'] = ports
+
+                elif  in_a in self and in_b in self:
+                    src = in_a
+                    dst = in_b
+
+            elif len(in_edge) == 3:
+                # (src, dst, ekey) format
+                # or (src, dst, data) format
+                in_a, in_b, in_c = in_edge[0], in_edge[1], in_edge[2]
+                if  in_a in self and in_b in self:
+                    src = in_a
+                    dst = in_b
+                    #TODO: document the following logic
+                    if self.is_multigraph() and not isinstance(in_c, dict):
+                        ekey = in_c
+                    else:
+                        data = in_c
+
+            elif len(in_edge) == 4:
+                # (src, dst, ekey, data) format
+                in_a, in_b = in_edge[0], in_edge[1]
+                if  in_a in self and in_b in self:
+                    src = in_a
+                    dst = in_b
+                    ekey = in_edge[2]
+                    data = in_edge[3]
+
+            #TODO: if edge not set at this point, give error/warn
+
+            #TODO: add check that edge.src and edge.dst exist
+            if (src is None or dst is None):
+                log.warning("Unsupported edge %s" % str(in_edge))
+            if not(src in self and dst in self):
+                self.log.warning("Not adding edge %s, src/dst not in overlay"
+                    % str(in_edge))
+                continue
+
+            #TODO: warn if not multigraph and edge already exists - don't add/clobber
+            data.update(**kwargs)
+
+            edges_to_add = []
+            if self.is_multigraph():
+                edges_to_add.append((src, dst, ekey, dict(data)))
+                if bidirectional:
+                    edges_to_add.append((dst, src, ekey, dict(data)))
             else:
-                ebunch = [(e.src.node_id, e.dst.node_id, {}) for e in
-                          ebunch]
-        except AttributeError:
-            ebunch_out = []
-            for (src, dst) in ebunch:
+                edges_to_add.append((src, dst, dict(data)))
+                if bidirectional:
+                    edges_to_add.append((dst, src, dict(data)))
 
-                # TODO: check this works across nodes, etc
-
-                # adding an edge explictly from interface to interface
-                # Note: can't add an edge from node <-> interface in API
-                # if no interface is set, will bind to interface 0 (loopback zero)
-
-                if isinstance(src, NmInterface) \
-                    and isinstance(dst, NmInterface):
-                    _interfaces = {src.node_id: src.interface_id,
-                                   dst.node_id: dst.interface_id}
-                    ebunch_out.append((src.node_id, dst.node_id,
-                                       {'_interfaces': _interfaces}))
-                else:
-                    try:
-                        src_id = src.node_id
-                    except AttributeError:
-                        src_id = src  # use directly
-                    try:
-                        dst_id = dst.node_id
-                    except AttributeError:
-                        dst_id = dst  # use directly
-                    ebunch_out.append((src_id, dst_id, {'_interfaces': {}}))
-
-            ebunch = ebunch_out
-
-        ebunch = [(src, dst, data) for (src, dst, data) in ebunch
-                  if src in self._graph and dst in self._graph]
-        if bidirectional:
-            ebunch += [(dst, src, data) for (src, dst, data) in ebunch
-                       if src in self._graph and dst in self._graph]
-
-        self._graph.add_edges_from(ebunch, **kwargs)
-        #TODO: return edges added?
+            self._graph.add_edges_from(edges_to_add)
 
     def update(self, nbunch=None, **kwargs):
         """Sets property defined in kwargs to all nodes in nbunch"""

@@ -3,7 +3,7 @@ import logging
 from functools import total_ordering
 
 import autonetkit.log as log
-from autonetkit.anm.interface import NmInterface
+from autonetkit.anm.interface import NmPort
 from autonetkit.log import CustomAdapter
 
 
@@ -43,7 +43,7 @@ class NmNode(object):
     def __iter__(self):
         """Shortcut to iterate over the physical interfaces of this node"""
 
-        return self.interfaces(type='physical')
+        return self.interfaces(category='physical')
 
     def __len__(self):
         return len(self.__iter())
@@ -65,17 +65,18 @@ class NmNode(object):
 
         return (i for i in self.interfaces('is_loopback_zero')).next()
 
-    @property
     def physical_interfaces(self):
         """"""
 
-        return self.interfaces(type='physical')
+        return self.interfaces(category='physical')
 
-    @property
     def loopback_interfaces(self):
         """"""
 
-        return self.interfaces(type='loopback')
+        return self.interfaces(category='loopback')
+
+    def is_multigraph(self):
+        return self._graph.is_multigraph()
 
     def __lt__(self, other):
         """"""
@@ -103,7 +104,7 @@ class NmNode(object):
                                  not in string.digits]
         except TypeError:
 
-            # e.g. non-iterable type, such as an int node_id
+            # e.g. non-iterable category, such as an int node_id
 
             pass
         else:
@@ -129,7 +130,7 @@ class NmNode(object):
 # returns next free interface I
 
         for int_id in itertools.count(1):  # start at 1 as 0 is loopback
-            if int_id not in self._interfaces:
+            if int_id not in self._ports:
                 return int_id
 
     # TODO: interface function access needs to be cleaned up
@@ -137,16 +138,16 @@ class NmNode(object):
     def _add_interface(
         self,
         description=None,
-        type='physical',
+        category='physical',
         **kwargs
     ):
         """"""
 
         data = dict(kwargs)
 
-        if self.overlay_id != 'phy' and self.phy:
-            next_id = self.phy._next_int_id()
-            self.phy._interfaces[next_id] = {'type': type,
+        if self.overlay_id != 'phy' and self['phy']:
+            next_id = self['phy']._next_int_id()
+            self['phy']._ports[next_id] = {'category': category,
                                              'description': description}
 
             # TODO: fix this workaround for not returning description from phy
@@ -155,25 +156,25 @@ class NmNode(object):
             data['description'] = description
         else:
             next_id = self._next_int_id()
-            data['type'] = type  # store type on node
+            data['category'] = category  # store category on node
             data['description'] = description
 
-        self._interfaces[next_id] = data
+        self._ports[next_id] = data
         return next_id
 
     def add_loopback(self, *args, **kwargs):
         '''Public function to add a loopback interface'''
 
-        interface_id = self._add_interface(type='loopback', *args,
+        interface_id = self._add_interface(category='loopback', *args,
                                            **kwargs)
-        return NmInterface(self.anm, self.overlay_id,
+        return NmPort(self.anm, self.overlay_id,
                                  self.node_id, interface_id)
 
     def add_interface(self, *args, **kwargs):
         """Public function to add interface"""
 
         interface_id = self._add_interface(*args, **kwargs)
-        return NmInterface(self.anm, self.overlay_id,
+        return NmPort(self.anm, self.overlay_id,
                                  self.node_id, interface_id)
 
     def interfaces(self, *args, **kwargs):
@@ -186,7 +187,7 @@ class NmNode(object):
                 and all(getattr(interface, key) == val for (key,
                         val) in kwargs.items())
 
-        all_interfaces = iter(NmInterface(self.anm,
+        all_interfaces = iter(NmPort(self.anm,
                               self.overlay_id, self.node_id,
                               interface_id) for interface_id in
                               self._interface_ids())
@@ -199,7 +200,7 @@ class NmNode(object):
 
         try:
             if key.interface_id in self._interface_ids():
-                return NmInterface(self.anm, self.overlay_id,
+                return NmPort(self.anm, self.overlay_id,
                                          self.node_id, key.interface_id)
         except AttributeError:
 
@@ -207,7 +208,7 @@ class NmNode(object):
 
             try:
                 if key in self._interface_ids():
-                    return NmInterface(self.anm, self.overlay_id,
+                    return NmPort(self.anm, self.overlay_id,
                                              self.node_id, key)
             except AttributeError:
 
@@ -227,28 +228,28 @@ class NmNode(object):
     def _interface_ids(self):
         """Returns interface ids for this node"""
         #TODO: use from this layer, otherwise can get errors iterating when eg vrfs
-        return self._interfaces.keys()
+        return self._ports.keys()
 
-        if self.overlay_id != 'phy' and self.phy:
+        if self.overlay_id != 'phy' and self['phy']:
 
             # graph isn't physical, and node exists in physical graph -> use
             # the interface mappings from phy
 
-            return self.phy._graph.node[self.node_id]['_interfaces'
+            return self['phy']._graph.node[self.node_id]['_ports'
                                                       ].keys()
         else:
             try:
-                return self._interfaces.keys()
+                return self._ports.keys()
             except KeyError:
                 self.log.debug('No interfaces initialised')
                 return []
 
     @property
-    def _interfaces(self):
+    def _ports(self):
         """Returns underlying interface dict"""
 
         try:
-            return self._graph.node[self.node_id]['_interfaces']
+            return self._graph.node[self.node_id]['_ports']
         except KeyError:
             self.log.debug('No interfaces initialised for')
             return []
@@ -262,7 +263,6 @@ class NmNode(object):
         except Exception, e:
             log.warning("Error accessing overlay %s for node %s: %s" %
                 (self.overlay_id, self.node_id, e))
-            raise SystemExit
 
     @property
     def _nx_node_data(self):
@@ -272,31 +272,30 @@ class NmNode(object):
         except Exception, e:
             log.warning("Error accessing node data %s for node %s: %s" %
                 (self.overlay_id, self.node_id, e))
-            raise SystemExit
 
     def is_router(self):
         """Either from this graph or the physical graph"""
 
-        return self.device_type == 'router' or self.phy.device_type \
+        return self.device_type == 'router' or self['phy'].device_type \
             == 'router'
 
     def is_device_type(self, device_type):
         """Generic user-defined cross-overlay search for device_type
         either from this graph or the physical graph"""
 
-        return self.device_type == device_type or self.phy.device_type \
+        return self.device_type == device_type or self['phy'].device_type \
             == device_type
 
     def is_switch(self):
         """Returns if device is a switch"""
 
-        return self.device_type == 'switch' or self.phy.device_type \
+        return self.device_type == 'switch' or self['phy'].device_type \
             == 'switch'
 
     def is_server(self):
         """Returns if device is a server"""
 
-        return self.device_type == 'server' or self.phy.device_type \
+        return self.device_type == 'server' or self['phy'].device_type \
             == 'server'
 
     def is_l3device(self):
@@ -309,6 +308,15 @@ class NmNode(object):
         """Get item key"""
 
         return NmNode(self.anm, key, self.node_id)
+
+    @property
+    def raw_interfaces(self):
+        """Direct access to the interfaces dictionary, used by ANK modules"""
+        return self._ports
+
+    @raw_interfaces.setter
+    def raw_interfaces(self, value):
+       self._ports = value
 
     @property
     def asn(self):
@@ -400,24 +408,12 @@ class NmNode(object):
 
         return self.__repr__()
 
-    @property
-    def phy(self):
-        """Shortcut back to physical NmNode
-        Same as node.overlay.phy
-        ie node.phy.x is same as node.overlay.phy.x
-        """
-        # TODO: do we need this with node['phy']?
-
-# refer back to the physical node, to access attributes such as name
-
-        return NmNode(self.anm, 'phy', self.node_id)
-
     def dump(self):
         """Dump attributes of this node"""
 
         data = dict(self._nx_node_data)
         try:
-            del data['_interfaces']
+            del data['_ports']
         except KeyError:
             pass # no interfaces set
         return str(data)
@@ -466,15 +462,17 @@ class NmNode(object):
                 return result
             except KeyError:
                 if key == "device_type":
-                    # TODO: tidy accessors so this doesn't occur, and remove
-                    # the suppress
-                    return
+                    return self['phy'].device_type
+                if key == "device_subtype":
+                    return self['phy'].device_subtype
 
                 # from http://stackoverflow.com/q/2654113
                 self.log.debug(
                     "Accessing unset attribute %s in %s" % (key,
                         self.overlay_id))
                 return
+
+        # map through to phy
 
     def get(self, key):
         """For consistency, node.get(key) is neater than getattr(node, key)"""

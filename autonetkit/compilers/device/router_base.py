@@ -146,7 +146,7 @@ class RouterCompiler(DeviceCompiler):
             #node.loopback_zero.ipv6_address = ipv6_node.loopback
             #node.loopback_zero.ipv6_subnet = node.loopback_subnet
 
-        for interface in node.physical_interfaces:
+        for interface in node.physical_interfaces():
             phy_int = self.anm['phy'].interface(interface)
             interface.physical = True
 
@@ -197,7 +197,7 @@ class RouterCompiler(DeviceCompiler):
                     except AttributeError:
                         log.warning("Unable to format interface ")
 
-        for interface in node.loopback_interfaces:
+        for interface in node.loopback_interfaces():
 
             # TODO: check if nonzero is different to __eq__
 
@@ -255,7 +255,7 @@ class RouterCompiler(DeviceCompiler):
         from collections import defaultdict
         interfaces_by_area = defaultdict(list)
 
-        for interface in node.physical_interfaces:
+        for interface in node.physical_interfaces():
             if interface.exclude_igp:
                 continue  # don't configure IGP for this interface
 
@@ -288,7 +288,7 @@ class RouterCompiler(DeviceCompiler):
         node.ospf.interfaces_by_area = ConfigStanza(**interfaces_by_area)
 
         added_networks = set()
-        for interface in node.physical_interfaces:
+        for interface in node.physical_interfaces():
             if interface.exclude_igp:
                 continue  # don't configure IGP for this interface
             ipv4_int = g_ipv4.interface(interface)
@@ -419,7 +419,7 @@ class RouterCompiler(DeviceCompiler):
         node.eigrp.custom_config = eigrp_node.custom_config
 
         ipv4_networks = set()
-        for interface in node.physical_interfaces:
+        for interface in node.physical_interfaces():
             if interface.exclude_igp:
                 continue  # don't configure IGP for this interface
             ipv4_int = g_ipv4.interface(interface)
@@ -444,7 +444,7 @@ class RouterCompiler(DeviceCompiler):
 
         node.isis.ipv4_mpls_te = False  # default, inherited enable if necessary
 
-        for interface in node.physical_interfaces:
+        for interface in node.physical_interfaces():
             if interface.exclude_igp:
                 continue  # don't configure IGP for this interface
 

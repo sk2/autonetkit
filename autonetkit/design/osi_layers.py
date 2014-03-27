@@ -10,22 +10,58 @@ def build_layer2(anm):
         g_l2.add_edges_from(g_phy.edges())
         ank_utils.aggregate_nodes(g_l2, g_l2.switches())
 
+def check_layer2(anm):
+    """Sanity checks on topology"""
+    from collections import defaultdict
+    g_l2 = anm['layer2']
+
+    # check for igp and ebgp on same switch
+    for switch in sorted(g_l2.switches()):
+        neigh_asns = defaultdict(int)
+        for neigh in switch.neighbors():
+            neigh_asns[neigh.asn] += 1
+
+        # IGP if two or more neighbors share the same ASN
+        is_igp = any(asns > 1 for asns in neigh_asns.values())
+        # eBGP if more than one unique neigh ASN
+        is_ebgp = len(neigh_asns.keys()) > 1
+        if is_igp and is_ebgp:
+            log.warning("Switch %s contains both IGP and eBGP neighbors"
+                % switch)
+
+    # check for multiple links from nodes to switch
+    for switch in sorted(g_l2.switches()):
+        for neighbor in sorted(switch.neighbors()):
+            edges = g_l2.edges(switch, neighbor)
+            if len(edges) > 1:
+                # more than one edge between the (src, dst) pair -> parallel
+                log.warning("Multiple edges (%s) between %s and device %s"
+                    % (len(edges), switch, neighbor))
+
 def build_layer2_broadcast(anm):
         g_l2 = anm['layer2']
         g_phy = anm['phy']
         g_graphics = anm['graphics']
         g_l2_bc = anm.add_overlay('layer2_bc')
-        g_l2_bc.add_nodes_from(g_l2)
+        g_l2_bc.add_nodes_from(g_l2.l3devices())
+        g_l2_bc.add_nodes_from(g_l2.switches())
         g_l2_bc.add_edges_from(g_l2.edges())
+
+        # remove external connectors
 
         edges_to_split = [edge for edge in g_l2_bc.edges()
             if edge.src.is_l3device() and edge.dst.is_l3device()]
+        #TODO: debug the edges to split
+        #print "edges to split", edges_to_split
         for edge in edges_to_split:
             edge.split = True  # mark as split for use in building nidb
 
         split_created_nodes = list(ank_utils.split(g_l2_bc, edges_to_split,
                                    retain=['split'],
                                    id_prepend='cd_'))
+
+        #TODO: if parallel nodes, offset
+        #TODO: remove graphics, assign directly
         for node in split_created_nodes:
             node['graphics'].x = ank_utils.neigh_average(g_l2_bc, node, 'x',
                     g_graphics) + 0.1
@@ -41,11 +77,28 @@ def build_layer2_broadcast(anm):
             node['graphics'].asn = asn
             node.asn = asn  # need to use asn in IP overlay for aggregating subnets
 
+        from collections import defaultdict
+        coincident_nodes = defaultdict(list)
+        for node in split_created_nodes:
+            coincident_nodes[(node['graphics'].x, node['graphics'].y)].append(node)
+
+
+        coincident_nodes = {k: v for k, v in coincident_nodes.items()
+        if len(v) > 1} # trim out single node co-ordinates
+        import math
+        for key, val in coincident_nodes.items():
+            for index, item in enumerate(val):
+                index = index + 1
+                x_offset = 25*math.floor(index/2) * math.pow(-1, index)
+                y_offset = -1 * 25*math.floor(index/2) * math.pow(-1, index)
+                item['graphics'].x  = item['graphics'].x + x_offset
+                item['graphics'].y  = item['graphics'].y + y_offset
+
+
         switch_nodes = g_l2_bc.switches()  # regenerate due to aggregated
         g_l2_bc.update(switch_nodes, broadcast_domain=True)
 
                      # switches are part of collision domain
-
         g_l2_bc.update(split_created_nodes, broadcast_domain=True)
 
     # Assign collision domain to a host if all neighbours from same host
@@ -73,6 +126,9 @@ def build_layer2_broadcast(anm):
                 node.label = cd_label
                 graphics_node.label = cd_label
                 node.device_type = "broadcast_domain"
+                node.label = node.id
+                graphics_node.label = node.id
+
 
 
 def build_layer3(anm):

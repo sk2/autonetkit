@@ -8,18 +8,22 @@ class NetworkModel(object):
 
     """"""
 
-    def __init__(self):
+    def __init__(self, all_multigraph = False):
         """"""
 
+        self.all_multigraph = all_multigraph
         self._overlays = {}
         self.add_overlay('phy')
         self.add_overlay('graphics')
+        self.add_overlay('_dependencies', directed=True)
 
         self.label_seperator = '_'
         self.label_attrs = ['label']
         self._build_node_label()
         self.timestamp = time.strftime('%Y%m%d_%H%M%S',
                                        time.localtime())
+
+        #TODO: make this a proper method
 
     def __repr__(self):
         """"""
@@ -114,6 +118,7 @@ class NetworkModel(object):
     def initialise_graph(self, graph):
         """Sets input graph. Converts to undirected.
         Initialises graphics overlay."""
+        #TODO: remove this dependency from workflow
 
         graph = nx.Graph(graph)
         g_graphics = self['graphics']
@@ -140,10 +145,15 @@ class NetworkModel(object):
     ):
         """Adds overlay graph of name name"""
 
+        multi_edge = multi_edge or self.all_multigraph
+
         if graph:
             if not directed and graph.is_directed():
-                log.info('Converting graph %s to undirected' % name)
-                graph = nx.Graph(graph)
+                if multi_edge:
+                    graph = nx.MultiGraph(graph)
+                else:
+                    log.info('Converting graph %s to undirected' % name)
+                    graph = nx.Graph(graph)
         elif directed:
 
             if multi_edge:
@@ -156,6 +166,8 @@ class NetworkModel(object):
             else:
                 graph = nx.Graph()
 
+        #TODO: revisit this0
+        #TODO: warn if name already in use so don't clobber
         self._overlays[name] = graph
         overlay = NmGraph(self, name)
         overlay.allocate_interfaces()
@@ -164,6 +176,9 @@ class NetworkModel(object):
             overlay.add_nodes_from(nodes, retain)
 
         return overlay
+
+    def __iter__(self):
+        return iter(NmGraph(self, name) for name in self.overlays())
 
     def overlays(self):
         """"""

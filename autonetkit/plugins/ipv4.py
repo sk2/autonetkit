@@ -1,8 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import functools
 import itertools
-import json
 import math
 import time
 from collections import defaultdict
@@ -69,7 +67,7 @@ class TreeNode(object):
         return self.loopback_group
 
     def is_interface(self):
-        return isinstance(self.host, autonetkit.anm.NmInterface)
+        return isinstance(self.host, autonetkit.anm.NmPort)
 
     def is_host(self):
         return bool(self.host)
@@ -193,7 +191,7 @@ class IpTree(object):
 
         unallocated_nodes = self.unallocated_nodes
         key_func = lambda x: x.get(group_attr)
-        if all(isinstance(item, autonetkit.anm.NmInterface)
+        if all(isinstance(item, autonetkit.anm.NmPort)
                and item.is_loopback for item in unallocated_nodes):
             key_func = lambda x: x.node.get(group_attr)  # interface, map key function to be the interface's node
 
@@ -208,7 +206,7 @@ class IpTree(object):
             items = sorted(list(items))
             subgraph = nx.DiGraph()
 
-            if all(isinstance(item, autonetkit.anm.NmInterface)
+            if all(isinstance(item, autonetkit.anm.NmPort)
                    for item in items):
 
                 # interface
@@ -639,7 +637,7 @@ def allocate_vrf_loopbacks(g_ip, address_block=None):
         address_block = netaddr.IPNetwork('172.16.0.0/24')
 
     secondary_loopbacks = [i for n in g_ip.nodes() for i in
-                           n.loopback_interfaces
+                           n.loopback_interfaces()
                            if not i.is_loopback_zero]
 
     if not len(secondary_loopbacks):

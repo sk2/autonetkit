@@ -1,8 +1,7 @@
 import autonetkit.ank as ank_utils
 import autonetkit.log as log
-
-
 from autonetkit.ank_utils import call_log
+
 
 @call_log
 def build_ibgp_v4(anm):
@@ -13,6 +12,8 @@ def build_ibgp_v4(anm):
     g_phy = anm['phy']
     g_ibgpv4 = anm.add_overlay("ibgp_v4", directed=True)
     ipv4_nodes = set(g_phy.routers("use_ipv4"))
+    if len(ipv4_nodes) == 0:
+        return
     g_ibgpv4.add_nodes_from((n for n in g_bgp if n in ipv4_nodes),
             retain = ["ibgp_role", "hrr_cluster", "rr_cluster"] )
     g_ibgpv4.add_edges_from(g_bgp.edges(type="ibgp"), retain="direction")
@@ -26,6 +27,8 @@ def build_ibgp_v6(anm):
     g_phy = anm['phy']
     g_ibgpv6 = anm.add_overlay("ibgp_v6", directed=True)
     ipv6_nodes = set(g_phy.routers("use_ipv6"))
+    if len(ipv6_nodes) == 0:
+        return
     g_ibgpv6.add_nodes_from((n for n in g_bgp if n in ipv6_nodes),
             retain = ["ibgp_role", "hrr_cluster", "rr_cluster"] )
     g_ibgpv6.add_edges_from(g_bgp.edges(type="ibgp"), retain="direction")
@@ -38,9 +41,12 @@ def build_ebgp_v4(anm):
     g_phy = anm['phy']
     g_ebgpv4 = anm.add_overlay("ebgp_v4", directed=True)
     ipv4_nodes = set(g_phy.routers("use_ipv4"))
+    if len(ipv4_nodes) == 0:
+        return
     g_ebgpv4.add_nodes_from(n for n in g_ebgp if n in ipv4_nodes)
     g_ebgpv4.add_edges_from(g_ebgp.edges(), retain="direction")
 
+@call_log
 def build_ebgp_v6(anm):
     #TODO: remove the bgp layer and have just ibgp and ebgp
     # TODO: build from design rules, currently just builds from ibgp links in bgp layer
@@ -48,6 +54,8 @@ def build_ebgp_v6(anm):
     g_phy = anm['phy']
     g_ebgpv6 = anm.add_overlay("ebgp_v6", directed=True)
     ipv6_nodes = set(g_phy.routers("use_ipv6"))
+    if len(ipv6_nodes) == 0:
+        return
     g_ebgpv6.add_nodes_from(n for n in g_ebgp if n in ipv6_nodes)
     g_ebgpv6.add_edges_from(g_ebgp.edges(), retain="direction")
 
@@ -56,33 +64,15 @@ def build_ebgp_v6(anm):
 def build_ebgp(anm):
     g_in = anm['input']
     g_phy = anm['phy']
+    g_l3 = anm['layer3']
+
     g_ebgp = anm.add_overlay("ebgp", directed=True)
-    g_ebgp.add_nodes_from(g_in.routers())
-    ebgp_edges = [e for e in g_in.edges() if e.src.asn != e.dst.asn]
+
+    g_ebgp.add_nodes_from(g_l3)
+    ank_utils.copy_int_attr_from(g_l3, g_ebgp, "multipoint")
+
+    ebgp_edges = [e for e in g_l3.edges() if e.src.asn != e.dst.asn]
     g_ebgp.add_edges_from(ebgp_edges, bidirectional=True, type='ebgp')
-
-    ebgp_switches = [n for n in g_in.switches()
-            if not ank_utils.neigh_equal(g_phy, n, "asn")]
-    g_ebgp.add_nodes_from(ebgp_switches, retain=['asn'])
-    g_ebgp.log.debug("eBGP switches are %s" % ebgp_switches)
-    g_ebgp.add_edges_from((e for e in g_in.edges()
-            if e.src in ebgp_switches or e.dst in ebgp_switches),
-    bidirectional=True, type='ebgp')
-    ank_utils.aggregate_nodes(g_ebgp, ebgp_switches)
-    # need to recalculate as may have aggregated
-    ebgp_switches = list(g_ebgp.switches())
-    g_ebgp.log.debug("aggregated eBGP switches are %s" % ebgp_switches)
-    exploded_edges = ank_utils.explode_nodes(g_ebgp, ebgp_switches)
-    same_asn_edges = []
-    for edge in exploded_edges:
-        if edge.src.asn == edge.dst.asn:
-            same_asn_edges.append(edge)
-        else:
-            edge.multipoint = True
-    """TODO: remove up to here once compiler updated"""
-
-    g_ebgp.remove_edges_from(same_asn_edges)
-
 
 @call_log
 def build_ibgp(anm):
@@ -188,7 +178,7 @@ def build_bgp(anm):
     """Build iBGP end eBGP overlays"""
     # eBGP
     g_in = anm['input']
-    g_phy = anm['phy']
+    g_l3 = anm['layer3']
 
     if not anm['phy'].data.enable_routing:
         log.info("Routing disabled, not configuring BGP")
@@ -200,32 +190,15 @@ def build_bgp(anm):
 
     """TODO: remove from here once compiler updated"""
     g_bgp = anm.add_overlay("bgp", directed=True)
-    g_bgp.add_nodes_from(g_in.routers())
-    ebgp_edges = [edge for edge in g_in.edges()
-        if edge.src.asn != edge.dst.asn]
-    g_bgp.add_edges_from(ebgp_edges, bidirectional=True, type='ebgp')
+    g_bgp.add_nodes_from(g_l3)
+    g_bgp.add_edges_from(g_l3.edges(), bidirectional = True)
+    ank_utils.copy_int_attr_from(g_l3, g_bgp, "multipoint")
 
-    ebgp_switches = [n for n in g_in.switches()
-            if not ank_utils.neigh_equal(g_phy, n, "asn")]
-    g_bgp.add_nodes_from(ebgp_switches, retain=['asn'])
-    log.debug("eBGP switches are %s" % ebgp_switches)
-    g_bgp.add_edges_from((e for e in g_in.edges()
-            if e.src in ebgp_switches or e.dst in ebgp_switches), bidirectional=True, type='ebgp')
-    ank_utils.aggregate_nodes(g_bgp, ebgp_switches)
-    ebgp_switches = list(g_bgp.switches()) # need to recalculate as may have aggregated
-    log.debug("aggregated eBGP switches are %s" % ebgp_switches)
-    exploded_edges = ank_utils.explode_nodes(g_bgp, ebgp_switches)
+    # remove ibgp links
 
-    same_asn_edges = []
-    for edge in exploded_edges:
-        if edge.src.asn == edge.dst.asn:
-            same_asn_edges.append(edge)
-        else:
-            edge.multipoint = True
+
     """TODO: remove up to here once compiler updated"""
     ank_utils.copy_attr_from(g_in, g_bgp, "custom_config_bgp", dst_attr="custom_config")
-
-    g_bgp.remove_edges_from(same_asn_edges)
 
 
     build_ibgp(anm)
@@ -240,9 +213,11 @@ def build_bgp(anm):
 
     for edge in g_bgp.edges(type='ibgp'):
         # TODO: need interface querying/selection. rather than hard-coded ids
+        #TODO: create a new port (once API allows) rarher than binding to loopback zero
         edge.bind_interface(edge.src, 0)
 
     #TODO: need to initialise interface zero to be a loopback rather than physical type
+    #TODO: wat is this for?
     for node in g_bgp:
         for interface in node.interfaces():
             interface.multipoint = any(e.multipoint for e in interface.edges())
