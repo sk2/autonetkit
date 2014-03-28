@@ -12,7 +12,12 @@ class NmGraph(OverlayBase):
 
     @property
     def anm(self):
-        """Returns anm for this overlay"""
+        """Returns anm for this overlay
+
+        >>> anm = autonetkit.example.house()
+        >>> print anm
+
+        """
 
         return self._anm
 
@@ -211,7 +216,7 @@ class NmGraph(OverlayBase):
 
     def __delitem__(self, key):
         """Alias for remove_node. Allows
-        >>> del overlay[node]
+        del overlay[node]
         """
         #TODO: needs to support node types
         self.remove_node(key)
@@ -417,3 +422,7 @@ class NmGraph(OverlayBase):
         from autonetkit.anm.subgraph import OverlaySubgraph
         return OverlaySubgraph(self._anm, self._overlay_id,
                                self._graph.subgraph(nbunch), name)
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
