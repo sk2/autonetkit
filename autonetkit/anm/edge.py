@@ -218,4 +218,10 @@ class NmEdge(object):
 
     def __setattr__(self, key, val):
         """Sets edge property"""
+
+        if key == 'raw_interfaces':
+            #TODO: fix workaround for
+            # http://docs.python.org/2/reference/datamodel.html#customizing-attribute-access
+            object.__setattr__(self, 'raw_interfaces', val)
+
         self._data[key] = val

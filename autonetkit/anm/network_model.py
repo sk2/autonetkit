@@ -1,14 +1,17 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 import time
 
 import autonetkit.log as log
 import networkx as nx
 from autonetkit.anm.graph import NmGraph
 
+
 class NetworkModel(object):
 
     """"""
 
-    def __init__(self, all_multigraph = False):
+    def __init__(self, all_multigraph=False):
         """"""
 
         self.all_multigraph = all_multigraph
@@ -21,9 +24,9 @@ class NetworkModel(object):
         self.label_attrs = ['label']
         self._build_node_label()
         self.timestamp = time.strftime('%Y%m%d_%H%M%S',
-                                       time.localtime())
+                time.localtime())
 
-        #TODO: make this a proper method
+        # TODO: make this a proper method
 
     def __repr__(self):
         """"""
@@ -118,7 +121,8 @@ class NetworkModel(object):
     def initialise_graph(self, graph):
         """Sets input graph. Converts to undirected.
         Initialises graphics overlay."""
-        #TODO: remove this dependency from workflow
+
+        # TODO: remove this dependency from workflow
 
         graph = nx.Graph(graph)
         g_graphics = self['graphics']
@@ -131,12 +135,13 @@ class NetworkModel(object):
             'pop',
             'label',
             'asn',
-        ])
+            ])
         return g_in
 
     def initialise_input(self, graph):
         """Initialises input graph"""
-        overlay = self.add_overlay("input", graph = graph)
+
+        overlay = self.add_overlay('input', graph=graph)
         overlay.allocate_input_interfaces()
         return overlay
 
@@ -148,7 +153,7 @@ class NetworkModel(object):
         directed=False,
         multi_edge=False,
         retain=None,
-    ):
+        ):
         """Adds overlay graph of name name"""
 
         multi_edge = multi_edge or self.all_multigraph
@@ -209,9 +214,9 @@ class NetworkModel(object):
 
         def custom_label(node):
             return self.label_seperator.join(str(self._overlays['phy'
-                ].node[node.node_id].get(val)) for val in
-            self.label_attrs if self._overlays['phy'
-            ].node[node.node_id].get(val) is not None)
+                    ].node[node.node_id].get(val)) for val in
+                    self.label_attrs if self._overlays['phy'
+                    ].node[node.node_id].get(val) is not None)
 
         self.node_label = custom_label
 

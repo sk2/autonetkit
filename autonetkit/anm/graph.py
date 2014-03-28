@@ -214,6 +214,8 @@ class NmGraph(OverlayBase):
             node.raw_interfaces = {0:
             {'description': 'loopback', 'category': 'loopback'}}
 
+        print node, node.raw_interfaces.items()
+
         ebunch = sorted(self.edges())
         for edge in ebunch:
             src = edge.src
@@ -225,6 +227,8 @@ class NmGraph(OverlayBase):
             edge.raw_interfaces = {
             src.id: src_int_id,
             dst.id: dst_int_id}
+
+            print edge.raw_interfaces
 
     def number_of_edges(self, node_a, node_b):
         return self._graph.number_of_edges(node_a, node_b)
