@@ -105,7 +105,7 @@ def allocate_vrf_roles(g_vrf):
 @call_log
 def add_vrf_loopbacks(g_vrf):
     """Adds loopbacks for VRFs, and stores VRFs connected to PE router"""
-    #autonetkit.update_http(anm)
+    #autonetkit.update_vis(anm)
     for node in g_vrf.nodes(vrf_role="PE"):
         node_vrf_names = {n.vrf for n in node.neighbors(vrf_role="CE")}
         node.node_vrf_names = node_vrf_names

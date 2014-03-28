@@ -11,7 +11,7 @@ import autonetkit.config as config
 import autonetkit.log as log
 import autonetkit.render as render
 import pkg_resources
-from autonetkit import update_http
+from autonetkit import update_vis
 from autonetkit.nidb import DeviceModel
 
 try:
@@ -49,7 +49,7 @@ def manage_network(input_graph_string, timestamp,
 
         anm = build_network.build(graph)
         if not build_options['compile']:
-            update_http(anm)
+            update_vis(anm)
 
         if build_options['validate']:
             import autonetkit.ank_validate
@@ -65,7 +65,7 @@ def manage_network(input_graph_string, timestamp,
             anm.save()
         nidb = compile_network(anm)
 
-        update_http(anm, nidb)
+        update_vis(anm, nidb)
         log.debug("Sent ANM to web server")
         if build_options['archive']:
             nidb.save()
@@ -80,7 +80,7 @@ def manage_network(input_graph_string, timestamp,
         anm.restore_latest()
         nidb = DeviceModel()
         nidb.restore_latest()
-        update_http(anm, nidb)
+        update_vis(anm, nidb)
 
     if build_options['diff']:
         import autonetkit.diff

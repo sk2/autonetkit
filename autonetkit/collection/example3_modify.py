@@ -37,7 +37,7 @@ e1_8.cost = 1001
 e1_8.apply_to_interfaces("cost")
 print "after:", e1_8.cost
 
-autonetkit.update_http(anm)
+autonetkit.update_vis(anm)
 
 #nidb_a = nidb # copy original
 
@@ -47,7 +47,7 @@ render_hostname = "localhost"
 platform_compiler = pl_netkit.NetkitCompiler(nidb_b, anm, render_hostname)
 platform_compiler.compile()
 
-autonetkit.update_http(anm, nidb_b)
+autonetkit.update_vis(anm, nidb_b)
 
 
 import autonetkit.diff

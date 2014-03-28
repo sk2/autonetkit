@@ -20,7 +20,7 @@ def format_http_url(host=None, port=None, route='publish'):
 default_http_url = format_http_url()
 
 @call_log
-def update_http(
+def update_vis(
     anm=None,
     nidb=None,
     http_url=None,
