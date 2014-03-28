@@ -5,7 +5,6 @@ from autonetkit.anm.edge import NmEdge
 from autonetkit.anm.interface import NmPort
 from autonetkit.anm.node import NmNode
 
-
 class NmGraph(OverlayBase):
 
     """API to interact with an overlay graph in ANM"""
