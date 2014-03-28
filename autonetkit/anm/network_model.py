@@ -134,6 +134,12 @@ class NetworkModel(object):
         ])
         return g_in
 
+    def initialise_input(self, graph):
+        """Initialises input graph"""
+        overlay = self.add_overlay("input", graph = graph)
+        overlay.allocate_input_interfaces()
+        return overlay
+
     def add_overlay(
         self,
         name,
@@ -150,27 +156,25 @@ class NetworkModel(object):
         if graph:
             if not directed and graph.is_directed():
                 if multi_edge:
-                    graph = nx.MultiGraph(graph)
+                    new_graph = nx.MultiGraph(graph)
                 else:
                     log.info('Converting graph %s to undirected' % name)
-                    graph = nx.Graph(graph)
+                    new_graph = nx.Graph(graph)
         elif directed:
 
             if multi_edge:
-                graph = nx.MultiDiGraph()
+                new_graph = nx.MultiDiGraph()
             else:
-                graph = nx.DiGraph()
+                new_graph = nx.DiGraph()
         else:
             if multi_edge:
-                graph = nx.MultiGraph()
+                new_graph = nx.MultiGraph()
             else:
-                graph = nx.Graph()
+                new_graph = nx.Graph()
 
-        #TODO: revisit this0
-        #TODO: warn if name already in use so don't clobber
-        self._overlays[name] = graph
+        self._overlays[name] = new_graph
         overlay = NmGraph(self, name)
-        overlay.allocate_interfaces()
+
         if nodes:
             retain = retain or []  # default is an empty list
             overlay.add_nodes_from(nodes, retain)
