@@ -159,6 +159,7 @@ class NetworkModel(object):
         retain=None,
         ):
         """Adds overlay graph of name name"""
+        #TODO: refactor this logic
 
         multi_edge = multi_edge or self.all_multigraph
 
@@ -169,6 +170,8 @@ class NetworkModel(object):
                 else:
                     log.info('Converting graph %s to undirected' % name)
                     new_graph = nx.Graph(graph)
+            else:
+                new_graph = nx.Graph(graph)
         elif directed:
 
             if multi_edge:

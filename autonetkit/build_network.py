@@ -5,7 +5,6 @@ import autonetkit.ank as ank_utils
 import autonetkit.anm
 import autonetkit.config
 import autonetkit.exception
-import autonetkit.load.graphml as graphml
 import autonetkit.log as log
 import networkx as nx
 
@@ -19,24 +18,29 @@ from autonetkit.ank_utils import call_log
 @call_log
 def load(input_graph_string):
     # TODO: look at XML header for file type
+    import autonetkit.load.graphml as graphml
+    import autonetkit.load.load_json as load_json
     try:
         input_graph = graphml.load_graphml(input_graph_string)
     except autonetkit.exception.AnkIncorrectFileFormat:
-# try a different reader
         try:
-            from autonetkit_cisco import load as cisco_load
-        except ImportError, e:
-            log.debug("Unable to load autonetkit_cisco %s" % e)
-            return  # module not present (development module)
-        else:
-            input_graph = cisco_load.load(input_graph_string)
-            # add local deployment host
-            SETTINGS['General']['deploy'] = True
-            SETTINGS['Deploy Hosts']['internal'] = {
-                'VIRL': {
-                'deploy': True,
-                },
-            }
+            input_graph = load_json.load_json(input_graph_string)
+        except autonetkit.exception.AnkIncorrectFileFormat:
+# try a different reader
+            try:
+                from autonetkit_cisco import load as cisco_load
+            except ImportError, e:
+                log.debug("Unable to load autonetkit_cisco %s" % e)
+                return  # module not present (development module)
+            else:
+                input_graph = cisco_load.load(input_graph_string)
+                # add local deployment host
+                SETTINGS['General']['deploy'] = True
+                SETTINGS['Deploy Hosts']['internal'] = {
+                    'VIRL': {
+                    'deploy': True,
+                    },
+                }
 
     return input_graph
 
