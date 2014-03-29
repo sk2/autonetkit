@@ -112,18 +112,18 @@ class NmGraph(OverlayBase):
             # or would it be better to just provide a function in ank_utils to
             # wipe interfaces in the rare case it's needed?
             input_graph = self._anm.overlay_nx_graphs['input']
-            nbunch = [n for n in nbunch if n in input_graph]
             for node_id in nbunch:
                 if node_id not in input_graph:
                     log.debug("Not copying interfaces for %s: ",
-                        "not in input graph" % node_id)
-                    #TODO: do we want to inialise loopback here?
+                        "not in input graph %s" % node_id)
+                    self._graph.node[node_id]['_ports'] = {
+                    0: {'description': 'loopback', 'category': 'loopback'}}
                     continue
 
                 try:
                     input_interfaces = input_graph.node[node_id]['_ports']
                 except KeyError:
-                    #Node not in phy (eg broadcast domain)
+                    #Node not in input
                     # Just do base initialisation of loopback zero
                     self._graph.node[node_id]['_ports'] = {
                     0: {'description': 'loopback', 'category': 'loopback'}}
@@ -136,7 +136,15 @@ class NmGraph(OverlayBase):
                     #TODO: should description and category auto fall through?
                     data = dict((key, dict(interface_data)) for key in
                         input_interfaces)
-                    self._graph.node[node_id]['_ports'] = data
+                    ports = {}
+                    for key, vals in input_interfaces.items():
+                        port_data = {}
+                        ports[key] =dict(vals)
+
+                    # force 0 to be loopback
+                    #TODO: could warn if already set
+                    ports[0] = {'description': 'loopback', 'category': 'loopback'}
+                    self._graph.node[node_id]['_ports'] = ports
             return
 
         if self._overlay_id == "graphics":
@@ -171,27 +179,14 @@ class NmGraph(OverlayBase):
         **kwargs
     ):
         """Adds node to overlay"""
-
-        if not retain:
-            retain = []
-        try:
-            retain.lower()
-            retain = [retain]  # was a string, put into list
-        except AttributeError:
-            pass  # already a list
+        nbunch = [node]
+        self.add_nodes_from(nbunch,
+            retain, **kwargs)
 
         try:
             node_id = node.id
         except AttributeError:
             node_id = node  # use the string node id
-
-        data = {}
-        if len(retain):
-            data = dict((key, node.get(key)) for key in retain)
-            kwargs.update(data)  # also use the retained data
-        self._graph.add_node(node_id, kwargs)
-        self._copy_interfaces([node_id])
-
         return NmNode(self.anm, self._overlay_id, node_id)
 
     def allocate_input_interfaces(self):
@@ -214,8 +209,6 @@ class NmGraph(OverlayBase):
             node.raw_interfaces = {0:
             {'description': 'loopback', 'category': 'loopback'}}
 
-        print node, node.raw_interfaces.items()
-
         ebunch = sorted(self.edges())
         for edge in ebunch:
             src = edge.src
@@ -227,8 +220,6 @@ class NmGraph(OverlayBase):
             edge.raw_interfaces = {
             src.id: src_int_id,
             dst.id: dst_int_id}
-
-            print edge.raw_interfaces
 
     def number_of_edges(self, node_a, node_b):
         return self._graph.number_of_edges(node_a, node_b)
@@ -326,6 +317,8 @@ class NmGraph(OverlayBase):
             - NmEdge
             - (NmNode, NmNode)
             - (NmPort, NmPort)
+            - (NmNode, NmPort)
+            - (NmPort, NmNode)
             - (string, string)
             """
             # This is less efficient than nx add_edges_from, but cleaner logic
@@ -365,7 +358,23 @@ class NmGraph(OverlayBase):
                     if src in self:
                         ports[src] = in_a.interface_id
                     if dst in self:
-                        ports[dst] = in_a.interface_id
+                        ports[dst] = in_b.interface_id
+                    data['_ports'] = ports
+
+                elif isinstance(in_a, NmNode) and isinstance(in_b, NmPort):
+                    src = in_a.node_id
+                    dst = in_b.node.node_id
+                    ports = {}
+                    if dst in self:
+                        ports[dst] = in_b.interface_id
+                    data['_ports'] = ports
+
+                elif isinstance(in_a, NmPort) and isinstance(in_b, NmNode):
+                    src = in_a.node.node_id
+                    dst = in_b.node_id
+                    ports = {}
+                    if src in self:
+                        ports[src] = in_a.interface_id
                     data['_ports'] = ports
 
                 elif  in_a in self and in_b in self:

@@ -44,6 +44,12 @@ node_interfaces = list(test_node.interfaces())
 #TODO: check why == uses eq() but != doesn't...
 assert(not node_interfaces[0] == node_interfaces[1])
 
+print list(test_node.interfaces())
+for i in test_node.interfaces():
+    print i, i.dump()
+
+print [i.description for i in sorted(node_interfaces)]
+
 assert ([i.description for i in sorted(node_interfaces)] == ['loopback', 'eth0'])
 
 

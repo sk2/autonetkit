@@ -16,6 +16,7 @@ class NetworkModel(object):
 
         self.all_multigraph = all_multigraph
         self._overlays = {}
+        self.add_overlay('input')
         self.add_overlay('phy')
         self.add_overlay('graphics')
         self.add_overlay('_dependencies', directed=True)
@@ -140,6 +141,9 @@ class NetworkModel(object):
 
     def initialise_input(self, graph):
         """Initialises input graph"""
+
+        # remove current input
+        del self._overlays['input']
 
         overlay = self.add_overlay('input', graph=graph)
         overlay.allocate_input_interfaces()
