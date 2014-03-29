@@ -4,30 +4,6 @@ autonetkit.collection package
 Submodules
 ----------
 
-autonetkit.collection.example module
-------------------------------------
-
-.. automodule:: autonetkit.collection.example
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-autonetkit.collection.example2 module
--------------------------------------
-
-.. automodule:: autonetkit.collection.example2
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-autonetkit.collection.example3_modify module
---------------------------------------------
-
-.. automodule:: autonetkit.collection.example3_modify
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 autonetkit.collection.process module
 ------------------------------------
 
