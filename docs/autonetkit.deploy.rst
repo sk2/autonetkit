@@ -1,11 +1,22 @@
-deploy Package
-==============
+autonetkit.deploy package
+=========================
 
-:mod:`netkit` Module
---------------------
+Submodules
+----------
+
+autonetkit.deploy.netkit module
+-------------------------------
 
 .. automodule:: autonetkit.deploy.netkit
     :members:
     :undoc-members:
     :show-inheritance:
 
+
+Module contents
+---------------
+
+.. automodule:: autonetkit.deploy
+    :members:
+    :undoc-members:
+    :show-inheritance:

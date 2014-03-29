@@ -1,11 +1,22 @@
-load Package
-============
+autonetkit.load package
+=======================
 
-:mod:`graphml` Module
----------------------
+Submodules
+----------
+
+autonetkit.load.graphml module
+------------------------------
 
 .. automodule:: autonetkit.load.graphml
     :members:
     :undoc-members:
     :show-inheritance:
 
+
+Module contents
+---------------
+
+.. automodule:: autonetkit.load
+    :members:
+    :undoc-members:
+    :show-inheritance:

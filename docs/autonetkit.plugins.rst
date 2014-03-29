@@ -1,35 +1,54 @@
-plugins Package
-===============
+autonetkit.plugins package
+==========================
 
-:mod:`graph_product` Module
----------------------------
+Submodules
+----------
+
+autonetkit.plugins.graph_product module
+---------------------------------------
 
 .. automodule:: autonetkit.plugins.graph_product
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`ipv4` Module
-------------------
+autonetkit.plugins.ipv4 module
+------------------------------
 
 .. automodule:: autonetkit.plugins.ipv4
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`ipv6` Module
-------------------
+autonetkit.plugins.ipv4_new module
+----------------------------------
+
+.. automodule:: autonetkit.plugins.ipv4_new
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+autonetkit.plugins.ipv6 module
+------------------------------
 
 .. automodule:: autonetkit.plugins.ipv6
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`naming` Module
---------------------
+autonetkit.plugins.naming module
+--------------------------------
 
 .. automodule:: autonetkit.plugins.naming
     :members:
     :undoc-members:
     :show-inheritance:
 
+
+Module contents
+---------------
+
+.. automodule:: autonetkit.plugins
+    :members:
+    :undoc-members:
+    :show-inheritance:
