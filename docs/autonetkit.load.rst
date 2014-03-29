@@ -12,6 +12,14 @@ autonetkit.load.graphml module
     :undoc-members:
     :show-inheritance:
 
+autonetkit.load.load_json module
+--------------------------------
+
+.. automodule:: autonetkit.load.load_json
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------
