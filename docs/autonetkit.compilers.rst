@@ -1,5 +1,5 @@
-compilers Package
-=================
+autonetkit.compilers package
+============================
 
 Subpackages
 -----------
@@ -9,3 +9,10 @@ Subpackages
     autonetkit.compilers.device
     autonetkit.compilers.platform
 
+Module contents
+---------------
+
+.. automodule:: autonetkit.compilers
+    :members:
+    :undoc-members:
+    :show-inheritance:

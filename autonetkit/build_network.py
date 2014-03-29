@@ -79,11 +79,8 @@ def initialise(input_graph):
     all_multigraph = input_graph.is_multigraph()
     anm = autonetkit.anm.NetworkModel(all_multigraph = all_multigraph)
 
-    #input_undirected = nx.Graph(input_graph)
-    #g_in = anm.add_overlay("input", graph=input_undirected)
-    g_in = anm.add_overlay("input", graph=input_graph)
-    autonetkit.update_http(anm)
-
+    g_in = anm.initialise_input(input_graph)
+    autonetkit.update_vis(anm)
 
 # set defaults
     if not g_in.data.specified_int_names:
@@ -224,7 +221,7 @@ def apply_design_rules(anm):
 
     from autonetkit.design.bgp import build_bgp
     build_bgp(anm)
-    # autonetkit.update_http(anm)
+    # autonetkit.update_vis(anm)
 
     from autonetkit.design.mpls import mpls_te, mpls_oam
     mpls_te(anm)
@@ -236,7 +233,7 @@ def apply_design_rules(anm):
             build_ibgp_vpn_v4)
         mark_ebgp_vrf(anm)
         build_ibgp_vpn_v4(anm)  # build after bgp as is based on
-    # autonetkit.update_http(anm)
+    # autonetkit.update_vis(anm)
 
     try:
         from autonetkit_cisco import build_network as cisco_build_network
@@ -257,11 +254,11 @@ def build(input_graph):
         anm = apply_design_rules(anm)
         # print {str(node): {'x': node.x, 'y': node.y} for node in
         # anm['input']}
-        autonetkit.update_http(anm)
+        autonetkit.update_vis(anm)
     except Exception, e:
         # Send the visualisation to help debugging
         try:
-            autonetkit.update_http(anm)
+            autonetkit.update_vis(anm)
         except Exception, e:
             # problem with vis -> could be coupled with original exception -
             # raise original
@@ -346,8 +343,6 @@ def build_phy(anm):
     ank_utils.set_node_default(g_phy,  use_ipv4=False, use_ipv6=False)
     ank_utils.copy_attr_from(g_in, g_phy, "custom_config_global",
                              dst_attr="custom_config")
-
-    g_phy.allocate_interfaces()
 
     for node in g_phy:
         if node['input'].custom_config_loopback_zero:

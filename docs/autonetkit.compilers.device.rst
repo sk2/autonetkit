@@ -1,51 +1,62 @@
-device Package
-==============
+autonetkit.compilers.device package
+===================================
 
-:mod:`cisco` Module
--------------------
+Submodules
+----------
+
+autonetkit.compilers.device.cisco module
+----------------------------------------
 
 .. automodule:: autonetkit.compilers.device.cisco
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`device_base` Module
--------------------------
+autonetkit.compilers.device.device_base module
+----------------------------------------------
 
 .. automodule:: autonetkit.compilers.device.device_base
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`quagga` Module
---------------------
+autonetkit.compilers.device.quagga module
+-----------------------------------------
 
 .. automodule:: autonetkit.compilers.device.quagga
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`router_base` Module
--------------------------
+autonetkit.compilers.device.router_base module
+----------------------------------------------
 
 .. automodule:: autonetkit.compilers.device.router_base
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`server_base` Module
--------------------------
+autonetkit.compilers.device.server_base module
+----------------------------------------------
 
 .. automodule:: autonetkit.compilers.device.server_base
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`ubuntu` Module
---------------------
+autonetkit.compilers.device.ubuntu module
+-----------------------------------------
 
 .. automodule:: autonetkit.compilers.device.ubuntu
     :members:
     :undoc-members:
     :show-inheritance:
 
+
+Module contents
+---------------
+
+.. automodule:: autonetkit.compilers.device
+    :members:
+    :undoc-members:
+    :show-inheritance:

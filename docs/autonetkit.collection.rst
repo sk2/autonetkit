@@ -1,59 +1,70 @@
-collection Package
-==================
+autonetkit.collection package
+=============================
 
-:mod:`example` Module
----------------------
+Submodules
+----------
+
+autonetkit.collection.example module
+------------------------------------
 
 .. automodule:: autonetkit.collection.example
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`example2` Module
-----------------------
+autonetkit.collection.example2 module
+-------------------------------------
 
 .. automodule:: autonetkit.collection.example2
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`example3_modify` Module
------------------------------
+autonetkit.collection.example3_modify module
+--------------------------------------------
 
 .. automodule:: autonetkit.collection.example3_modify
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`process` Module
----------------------
+autonetkit.collection.process module
+------------------------------------
 
 .. automodule:: autonetkit.collection.process
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`server` Module
---------------------
+autonetkit.collection.server module
+-----------------------------------
 
 .. automodule:: autonetkit.collection.server
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`utils` Module
--------------------
+autonetkit.collection.utils module
+----------------------------------
 
 .. automodule:: autonetkit.collection.utils
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`verify` Module
---------------------
+autonetkit.collection.verify module
+-----------------------------------
 
 .. automodule:: autonetkit.collection.verify
     :members:
     :undoc-members:
     :show-inheritance:
 
+
+Module contents
+---------------
+
+.. automodule:: autonetkit.collection
+    :members:
+    :undoc-members:
+    :show-inheritance:

@@ -316,7 +316,7 @@ class NmNode(object):
 
     @raw_interfaces.setter
     def raw_interfaces(self, value):
-       self._ports = value
+     self._ports = value
 
     @property
     def asn(self):
@@ -493,7 +493,10 @@ class NmNode(object):
         # TODO: fix workaround for asn
 
         if key == 'asn':
-            object.__setattr__(self, 'asn', val)  # calls @asn.setter
+            object.__setattr__(self, 'asn', val)
+
+        if key == 'raw_interfaces':
+            object.__setattr__(self, 'raw_interfaces', val)
 
         try:
             self._graph.node[self.node_id][key] = val

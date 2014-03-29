@@ -17,7 +17,7 @@ nidb = autonetkit.DeviceModel()
 nidb.restore_latest()
 print list(nidb.nodes())
 
-autonetkit.update_http(anm, nidb)
+autonetkit.update_vis(anm, nidb)
 
 emulation_server = "115.146.93.18"
 command_list = []

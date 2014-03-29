@@ -37,7 +37,7 @@ class NmPort(object):
     def __repr__(self):
         try:
             description = self.description or self.interface_id
-        except AttributeError:
+        except (AttributeError, IndexError):
             #TODO: work out why get here for some topologies:
             """
             interface.py", line 187, in __getattr__
@@ -93,10 +93,18 @@ class NmPort(object):
     @property
     def _interface(self):
         """Return data dict for the interface"""
-
         try:
             return self.node.raw_interfaces[self.interface_id]
         except KeyError:
+            if not self.node_id in self._graph:
+                # node not in overlay
+                print "bal"
+                return
+                log.warning("Unable to access interface %s in %s",
+                    "node %s not present in overlay" % (self.interface_id,
+                        self.overlay_id, self.node_id))
+                return
+
             log.warning('Unable to find interface %s in %s'
                         % (self.interface_id, self.node))
             return None
@@ -146,12 +154,14 @@ class NmPort(object):
     def description(self):
         """"""
 
+        return_val = None
         try:
-            retval = self._interface.get('description')
+            return_val = self._interface.get('description')
         except IndexError:
-            retval = self.interface_id
-        if retval:
-            return retval
+            return_val = self.interface_id
+
+        if return_val is not None:
+            return return_val
 
         if self.overlay_id != 'phy':  # prevent recursion
             self.phy._interface.get('description')

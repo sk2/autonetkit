@@ -132,7 +132,7 @@ def manual_ipv6_infrastructure_allocation(anm):
     # also need to form aggregated IP blocks (used for e.g. routing prefix
     # advertisement)
     # import autonetkit
-    # autonetkit.update_http(anm)
+    # autonetkit.update_vis(anm)
 
     infra_blocks = {}
     for (asn, devices) in g_ipv6.groupby('asn').items():
@@ -293,7 +293,7 @@ def manual_ipv4_infrastructure_allocation(anm):
     # also need to form aggregated IP blocks (used for e.g. routing prefix
     # advertisement)
     # import autonetkit
-    # autonetkit.update_http(anm)
+    # autonetkit.update_vis(anm)
 
     infra_blocks = {}
     for (asn, devices) in g_ipv4.groupby('asn').items():

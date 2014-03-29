@@ -1,167 +1,164 @@
-autonetkit Package
+autonetkit package
 ==================
-
-:mod:`autonetkit` Package
--------------------------
-
-.. automodule:: autonetkit.__init__
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ank` Module
------------------
-
-.. automodule:: autonetkit.ank
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ank_json` Module
-----------------------
-
-.. automodule:: autonetkit.ank_json
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ank_messaging` Module
----------------------------
-
-.. automodule:: autonetkit.ank_messaging
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ank_utils` Module
------------------------
-
-.. automodule:: autonetkit.ank_utils
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ank_validate` Module
---------------------------
-
-.. automodule:: autonetkit.ank_validate
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`anm` Module
------------------
-
-.. automodule:: autonetkit.anm
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`bgp_pol` Module
----------------------
-
-.. automodule:: autonetkit.bgp_pol
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`build_network` Module
----------------------------
-
-.. automodule:: autonetkit.build_network
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`compiler` Module
-----------------------
-
-.. automodule:: autonetkit.compiler
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`config` Module
---------------------
-
-.. automodule:: autonetkit.config
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`console_script` Module
-----------------------------
-
-.. automodule:: autonetkit.console_script
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`diff` Module
-------------------
-
-.. automodule:: autonetkit.diff
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`exception` Module
------------------------
-
-.. automodule:: autonetkit.exception
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`log` Module
------------------
-
-.. automodule:: autonetkit.log
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`nidb` Module
-------------------
-
-.. automodule:: autonetkit.nidb
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`push_changes` Module
---------------------------
-
-.. automodule:: autonetkit.push_changes
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`render` Module
---------------------
-
-.. automodule:: autonetkit.render
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`webserver` Module
------------------------
-
-.. automodule:: autonetkit.webserver
-    :members:
-    :undoc-members:
-    :show-inheritance:
 
 Subpackages
 -----------
 
 .. toctree::
 
+    autonetkit.anm
     autonetkit.collection
     autonetkit.compilers
     autonetkit.deploy
     autonetkit.design
     autonetkit.load
+    autonetkit.nidb
     autonetkit.plugins
 
+Submodules
+----------
+
+autonetkit.ank module
+---------------------
+
+.. automodule:: autonetkit.ank
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+autonetkit.ank_json module
+--------------------------
+
+.. automodule:: autonetkit.ank_json
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+autonetkit.ank_messaging module
+-------------------------------
+
+.. automodule:: autonetkit.ank_messaging
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+autonetkit.ank_utils module
+---------------------------
+
+.. automodule:: autonetkit.ank_utils
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+autonetkit.ank_validate module
+------------------------------
+
+.. automodule:: autonetkit.ank_validate
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+autonetkit.anm module
+---------------------
+
+.. automodule:: autonetkit.anm
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+autonetkit.build_network module
+-------------------------------
+
+.. automodule:: autonetkit.build_network
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+autonetkit.compiler module
+--------------------------
+
+.. automodule:: autonetkit.compiler
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+autonetkit.config module
+------------------------
+
+.. automodule:: autonetkit.config
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+autonetkit.console_script module
+--------------------------------
+
+.. automodule:: autonetkit.console_script
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+autonetkit.diff module
+----------------------
+
+.. automodule:: autonetkit.diff
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+autonetkit.example module
+-------------------------
+
+.. automodule:: autonetkit.example
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+autonetkit.exception module
+---------------------------
+
+.. automodule:: autonetkit.exception
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+autonetkit.log module
+---------------------
+
+.. automodule:: autonetkit.log
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+autonetkit.render module
+------------------------
+
+.. automodule:: autonetkit.render
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+autonetkit.webserver module
+---------------------------
+
+.. automodule:: autonetkit.webserver
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+autonetkit.yaml_utils module
+----------------------------
+
+.. automodule:: autonetkit.yaml_utils
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: autonetkit
+    :members:
+    :undoc-members:
+    :show-inheritance:

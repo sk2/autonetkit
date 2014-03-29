@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 import itertools
 import logging
 
@@ -9,6 +12,7 @@ from autonetkit.anm.node import NmNode
 from autonetkit.exception import OverlayNotFound
 from autonetkit.log import CustomAdapter
 
+
 class OverlayBase(object):
 
     '''Base class for overlays - overlay graphs, subgraphs, projections, etc'''
@@ -18,11 +22,13 @@ class OverlayBase(object):
 
         if overlay_id not in anm.overlay_nx_graphs:
             raise OverlayNotFound(overlay_id)
-            #TODO: return False instead?
+
+            # TODO: return False instead?
+
         self._overlay_id = overlay_id
         self._anm = anm
-        logger = logging.getLogger("ANK")
-        logstring = "Overlay: %s" % str(overlay_id)
+        logger = logging.getLogger('ANK')
+        logstring = 'Overlay: %s' % str(overlay_id)
         logger = CustomAdapter(logger, {'item': logstring})
         object.__setattr__(self, 'log', logger)
 
@@ -54,16 +60,20 @@ class OverlayBase(object):
     def interface(self, interface):
         """"""
 
-        return NmPort(self._anm, self._overlay_id,
-                                 interface.node_id,
-                                 interface.interface_id)
+        return NmPort(self._anm, self._overlay_id, interface.node_id,
+                      interface.interface_id)
 
-    def edge(self, edge_to_find, dst_to_find=None, key=0):
+    def edge(
+        self,
+        edge_to_find,
+        dst_to_find=None,
+        key=0,
+        ):
         '''returns edge in this graph with same src and dst
         and key for parallel edges (default is to return first edge)
         #TODO: explain parameter overloading: strings, edges, nodes...'''
 
-        #TODO: handle multigraphs
+        # TODO: handle multigraphs
 
         if isinstance(edge_to_find, NmEdge):
             src_id = edge_to_find.src
@@ -71,15 +81,15 @@ class OverlayBase(object):
             search_key = key
 
             if self.is_multigraph():
-                for (src, dst, rkey) in self._graph.edges(src_id, keys = True):
+                for (src, dst, rkey) in self._graph.edges(src_id,
+                        keys=True):
                     if dst == dst_id and rkey == search_key:
-                        return NmEdge(self._anm, self._overlay_id,
-                                           src, dst, search_key)
+                        return NmEdge(self._anm, self._overlay_id, src,
+                                dst, search_key)
 
             for (src, dst) in self._graph.edges(src_id):
                 if dst == dst_id:
-                    return NmEdge(self._anm, self._overlay_id,
-                                       src, dst)
+                    return NmEdge(self._anm, self._overlay_id, src, dst)
 
         # TODO: tidy this logic up
 
@@ -91,38 +101,38 @@ class OverlayBase(object):
             if self.is_multigraph():
                 if self._graph.has_edge(src, dst, key=key):
                     return NmEdge(self._anm, self._overlay_id, src,
-                                       dst, key)
+                                  dst, key)
             else:
+
                  # Single graph
-                 if self._graph.has_edge(src, dst):
+
+                if self._graph.has_edge(src, dst):
                     return NmEdge(self._anm, self._overlay_id, src, dst)
         except AttributeError:
             pass  # not strings
         except TypeError:
             pass
 
-
         try:
             src_id = edge_to_find.node_id
             dst_id = dst_to_find.node_id
         except AttributeError:
-            pass # not nodes
+            pass  # not nodes
         else:
-            #TODO: combine duplicated logic from above
+
+            # TODO: combine duplicated logic from above
+
             search_key = key
             if self.is_multigraph():
-                for (src, dst, rkey) in self._graph.edges(src_id, keys = True):
+                for (src, dst, rkey) in self._graph.edges(src_id,
+                        keys=True):
                     if dst == dst_id and rkey == search_key:
-                        return NmEdge(self._anm, self._overlay_id,
-                         src, dst, search_key)
+                        return NmEdge(self._anm, self._overlay_id, src,
+                                dst, search_key)
 
             for (src, dst) in self._graph.edges(src_id):
                 if dst == dst_id:
-                    return NmEdge(self._anm, self._overlay_id,
-                     src, dst)
-
-
-
+                    return NmEdge(self._anm, self._overlay_id, src, dst)
 
     def __getitem__(self, key):
         """"""
@@ -132,18 +142,21 @@ class OverlayBase(object):
     def node(self, key):
         """Returns node based on name
         This is currently O(N). Could use a lookup table"""
-        #TODO: refactor
+
+        # TODO: refactor
 
         try:
             if key.node_id in self._graph:
-                return NmNode(self._anm, self._overlay_id,
-                                   key.node_id)
+                return NmNode(self._anm, self._overlay_id, key.node_id)
         except AttributeError:
-             #try as string id
+
+             # try as string id
+
             if key in self._graph:
-                return NmNode(self._anm, self._overlay_id,
-                 key)
+                return NmNode(self._anm, self._overlay_id, key)
+
             # doesn't have node_id, likely a label string, search based on this # label
+
             for node in self:
                 if str(node) == key:
                     return node
@@ -153,7 +166,8 @@ class OverlayBase(object):
     def overlay(self, key):
         """Get to other overlay graphs in functions"""
 
-        #TODO: refactor: shouldn't be returning concrete instantiation from abstract parent!
+        # TODO: refactor: shouldn't be returning concrete instantiation from abstract parent!
+
         from autonetkit.anm.graph import NmGraph
         return NmGraph(self._anm, key)
 
@@ -173,6 +187,7 @@ class OverlayBase(object):
 
     def has_edge(self, edge):
         """Tests if edge in graph"""
+
         if self.is_multigraph():
             return self._graph.has_edge(edge.src, edge.dst, edge.ekey)
 
@@ -180,6 +195,7 @@ class OverlayBase(object):
 
     def __iter__(self):
         """"""
+
         return iter(self.nodes())
 
     def __len__(self):
@@ -191,7 +207,7 @@ class OverlayBase(object):
         """"""
 
         result = list(NmNode(self._anm, self._overlay_id, node)
-                    for node in self._graph)
+                      for node in self._graph)
 
         if len(args) or len(kwargs):
             result = self.filter(result, *args, **kwargs)
@@ -210,13 +226,14 @@ class OverlayBase(object):
         return [r for r in result if r.is_switch()]
 
     def servers(self, *args, **kwargs):
-            """Shortcut for nodes(), sets device_type to be server"""
+        """Shortcut for nodes(), sets device_type to be server"""
 
-            result = self.nodes(*args, **kwargs)
-            return [r for r in result if r.is_server()]
+        result = self.nodes(*args, **kwargs)
+        return [r for r in result if r.is_server()]
 
     def l3devices(self, *args, **kwargs):
         """Shortcut for nodes(), sets device_type to be server"""
+
         result = self.nodes(*args, **kwargs)
         return [r for r in result if r.is_l3device()]
 
@@ -239,8 +256,8 @@ class OverlayBase(object):
         else:
             data = nodes
         data = sorted(data, key=lambda x: x.get(attribute))
-        for (key, grouping) in itertools.groupby(data, key=lambda x:
-                                                 x.get(attribute)):
+        for (key, grouping) in itertools.groupby(data, key=lambda x: \
+                x.get(attribute)):
             result[key] = list(grouping)
 
         return result
@@ -250,7 +267,7 @@ class OverlayBase(object):
         nbunch=None,
         *args,
         **kwargs
-    ):
+        ):
         """"""
 
         if not nbunch:
@@ -271,11 +288,11 @@ class OverlayBase(object):
         dst_nbunch=None,
         *args,
         **kwargs
-    ):
+        ):
         """"""
 
 # src_nbunch or dst_nbunch may be single node
-#TODO: refactor this
+# TODO: refactor this
 
         if src_nbunch:
             try:
@@ -294,11 +311,11 @@ class OverlayBase(object):
 
         if self.is_multigraph():
             valid_edges = list((src, dst, key) for (src, dst, key) in
-             self._graph.edges(src_nbunch, keys=True))
+                               self._graph.edges(src_nbunch, keys=True))
         else:
             default_key = 0
-            valid_edges = list((src, dst, default_key) for (src, dst) in
-             self._graph.edges(src_nbunch))
+            valid_edges = list((src, dst, default_key) for (src,
+                               dst) in self._graph.edges(src_nbunch))
 
         if dst_nbunch:
             try:
@@ -308,15 +325,16 @@ class OverlayBase(object):
                 dst_nbunch = (n.node_id for n in dst_nbunch)
                 dst_nbunch = set(dst_nbunch)
 
-            valid_edges = list((src, dst, key) for (src, dst, key) in valid_edges
-                           if dst in dst_nbunch)
+            valid_edges = list((src, dst, key) for (src, dst, key) in
+                               valid_edges if dst in dst_nbunch)
 
         if len(args) or len(kwargs):
-            all_edges = [NmEdge(self._anm, self._overlay_id,
-                             src, dst, key) for (src, dst, key) in valid_edges]
-            result = list(edge for edge in all_edges if filter_func(edge))
+            all_edges = [NmEdge(self._anm, self._overlay_id, src, dst,
+                         key) for (src, dst, key) in valid_edges]
+            result = list(edge for edge in all_edges
+                          if filter_func(edge))
         else:
-            result = list(NmEdge(self._anm, self._overlay_id, src,
-                                  dst, key) for (src, dst, key) in valid_edges)
+            result = list(NmEdge(self._anm, self._overlay_id, src, dst,
+                          key) for (src, dst, key) in valid_edges)
 
         return list(result)
