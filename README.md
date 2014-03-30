@@ -1,4 +1,3 @@
-
 # AutoNetkit
 
 AutoNetkit is a configuration engine to quickly and easily build large-scale network configurations.
@@ -32,62 +31,64 @@ For the visualization:
 
 AutoNetkit 0.9 allows for JSON input. An example JSON input is:
 
+```JSON
+{
+    "directed": false, "graph": [], "multigraph": false,
+    "links": [
+    {"dst": "r2", "dst_port": "eth0", "src": "r1", "src_port": "eth0"},
+    {"dst": "r3", "dst_port": "eth0", "src": "r1", "src_port": "eth1"},
+    {"dst": "r3", "dst_port": "eth1", "src": "r2", "src_port": "eth1"},
+    {"dst": "r2", "dst_port": "eth2", "src": "r4", "src_port": "eth0"},
+    {"dst": "r5", "dst_port": "eth0", "src": "r4", "src_port": "eth1"},
+    {"dst": "r3", "dst_port": "eth2", "src": "r5", "src_port": "eth1"}
+    ],
+    "nodes": [
     {
-      "directed": false, "graph": [], "multigraph": false,
-      "links": [
-        {"dst": "r2", "dst_port": "eth0", "src": "r1", "src_port": "eth0"},
-        {"dst": "r3", "dst_port": "eth0", "src": "r1", "src_port": "eth1"},
-        {"dst": "r3", "dst_port": "eth1", "src": "r2", "src_port": "eth1"},
-        {"dst": "r2", "dst_port": "eth2", "src": "r4", "src_port": "eth0"},
-        {"dst": "r5", "dst_port": "eth0", "src": "r4", "src_port": "eth1"},
-        {"dst": "r3", "dst_port": "eth2", "src": "r5", "src_port": "eth1"}
-      ],
-      "nodes": [
-        {
-          "asn": 1, "device_type": "router", "id": "r1", "x": 350, "y": 400,
-          "ports": [
-            {"category": "physical", "description": null, "id": "Loopback0"},
-            {"category": "physical", "description": "r1 to r2", "id": "eth0"},
-            {"category": "physical", "description": "r1 to r3", "id": "eth1"}
-          ]
-        },
-        {
-          "asn": 1, "device_type": "router", "id": "r2", "x": 500, "y": 300,
-          "ports": [
-            {"category": "physical", "description": null, "id": "Loopback0"},
-            {"category": "physical", "description": "r2 to r1", "id": "eth0"},
-            {"category": "physical", "description": "r2 to r3", "id": "eth1"},
-            {"category": "physical", "description": "r2 to r4", "id": "eth2"}
-          ]
-        },
-        {
-          "asn": 1, "device_type": "router", "id": "r3", "x": 500, "y": 500,
-          "ports": [
-            {"category": "physical", "description": null, "id": "Loopback0"},
-            {"category": "physical", "description": "r3 to r1", "id": "eth0"},
-            {"category": "physical", "description": "r3 to r2", "id": "eth1"},
-            {"category": "physical", "description": "r3 to r5", "id": "eth2"}
-          ]
-        },
-        {
-          "asn": 2, "device_type": "router", "id": "r4",
-          "x": 675, "y": 300
-          "ports": [
-            {"category": "physical", "description": null, "id": "Loopback0"},
-            {"category": "physical", "description": "r4 to r2", "id": "eth0"},
-            {"category": "physical", "description": "r4 to r5", "id": "eth1"}
-          ],
-        },
-        {
-          "asn": 2, "device_type": "router", "id": "r5", "x": 675, "y": 500,
-          "ports": [
-            {"category": "physical", "description": null, "id": "Loopback0"},
-            {"category": "physical", "description": "r5 to r4", "id": "eth0"},
-            {"category": "physical", "description": "r5 to r3", "id": "eth1"}
-          ]
-        }
-      ]
+        "asn": 1, "device_type": "router", "id": "r1", "x": 350, "y": 400,
+        "ports": [
+        {"category": "physical", "description": null, "id": "Loopback0"},
+        {"category": "physical", "description": "r1 to r2", "id": "eth0"},
+        {"category": "physical", "description": "r1 to r3", "id": "eth1"}
+        ]
+    },
+    {
+        "asn": 1, "device_type": "router", "id": "r2", "x": 500, "y": 300,
+        "ports": [
+        {"category": "physical", "description": null, "id": "Loopback0"},
+        {"category": "physical", "description": "r2 to r1", "id": "eth0"},
+        {"category": "physical", "description": "r2 to r3", "id": "eth1"},
+        {"category": "physical", "description": "r2 to r4", "id": "eth2"}
+        ]
+    },
+    {
+        "asn": 1, "device_type": "router", "id": "r3", "x": 500, "y": 500,
+        "ports": [
+        {"category": "physical", "description": null, "id": "Loopback0"},
+        {"category": "physical", "description": "r3 to r1", "id": "eth0"},
+        {"category": "physical", "description": "r3 to r2", "id": "eth1"},
+        {"category": "physical", "description": "r3 to r5", "id": "eth2"}
+        ]
+    },
+    {
+        "asn": 2, "device_type": "router", "id": "r4",
+        "x": 675, "y": 300
+        "ports": [
+        {"category": "physical", "description": null, "id": "Loopback0"},
+        {"category": "physical", "description": "r4 to r2", "id": "eth0"},
+        {"category": "physical", "description": "r4 to r5", "id": "eth1"}
+        ],
+    },
+    {
+        "asn": 2, "device_type": "router", "id": "r5", "x": 675, "y": 500,
+        "ports": [
+        {"category": "physical", "description": null, "id": "Loopback0"},
+        {"category": "physical", "description": "r5 to r4", "id": "eth0"},
+        {"category": "physical", "description": "r5 to r3", "id": "eth1"}
+        ]
     }
+    ]
+}
+```
 
 Examples of topology files can be found in the example directory.
 
