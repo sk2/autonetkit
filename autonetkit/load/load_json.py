@@ -130,6 +130,15 @@ def load_json(input_data):
         if val == 'False':
             node_defaults[key] = False
 
+    for (key, val) in ank_node_defaults.items():
+        if key not in node_defaults or node_defaults[key] == 'None':
+            node_defaults[key] = val
+
+    for node in graph:
+        for (key, val) in node_defaults.items():
+            if key not in graph.node[node]:
+                graph.node[node][key] = val
+
     ank_edge_defaults = settings['Graphml']['Edge Defaults']
     edge_defaults = graph.graph.get('edge_default', {})
     for (key, val) in ank_edge_defaults.items():
