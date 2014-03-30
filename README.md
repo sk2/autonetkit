@@ -265,18 +265,23 @@ You can start the visualization webserver, and topologies will automatically be 
 An example of the visualization output for the above JSON house example:
 
 Physical topology:
+
 ![phy](http://sk2.github.io/autonetkit/json_house/phy.png)
 
 IPv4 topology:
+
 ![ipv4](http://sk2.github.io/autonetkit/json_house/ipv4.png)
 
 OSPF topology:
+
 ![ospf](http://sk2.github.io/autonetkit/json_house/ospf.png)
 
 iBGP topology:
+
 ![ibgp](http://sk2.github.io/autonetkit/json_house/ibgp.png)
 
 eBGP topology:
+
 ![ebgp](http://sk2.github.io/autonetkit/json_house/ebgp.png)
 
 
