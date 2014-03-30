@@ -31,6 +31,7 @@ For the visualization:
 # Using
 
 AutoNetkit 0.9 allows for JSON input. An example JSON input is:
+
     {
       "directed": false,
       "graph": [],
@@ -276,7 +277,7 @@ iBGP topology:
 ![ibgp](http://sk2.github.io/autonetkit/json_house/ibgp.png)
 
 eBGP topology:
-![ebgp](http://sk2.github.io/autonetkit/json_house/ebgp .png)
+![ebgp](http://sk2.github.io/autonetkit/json_house/ebgp.png)
 
 
 ## Extending
