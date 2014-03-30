@@ -70,13 +70,12 @@ AutoNetkit 0.9 allows for JSON input. An example JSON input is:
         ]
     },
     {
-        "asn": 2, "device_type": "router", "id": "r4",
-        "x": 675, "y": 300
+        "asn": 2, "device_type": "router", "id": "r4", "x": 675, "y": 300,
         "ports": [
         {"category": "physical", "description": null, "id": "Loopback0"},
         {"category": "physical", "description": "r4 to r2", "id": "eth0"},
         {"category": "physical", "description": "r4 to r5", "id": "eth1"}
-        ],
+        ]
     },
     {
         "asn": 2, "device_type": "router", "id": "r5", "x": 675, "y": 500,
