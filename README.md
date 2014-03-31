@@ -166,7 +166,6 @@ Physical topology with interfaces:
 ![phy interfaces](http://sk2.github.io/autonetkit/json_house/phy_int.png)
 
 
-
 IPv4 topology:
 
 ![ipv4](http://sk2.github.io/autonetkit/json_house/ipv4.png)
