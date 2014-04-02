@@ -322,6 +322,7 @@ class NmNode(object):
     def asn(self):
         """Returns ASN of this node"""
         # TODO: make a function (not property)
+        #TODO: refactor, for nodes created such as virtual switches
 
         try:
             return self._graph.node[self.node_id]['asn']  # not in this graph
@@ -344,7 +345,7 @@ class NmNode(object):
 
                         log.debug(message)
                     else:
-                        log.warning(message)
+                        log.debug(message)
                     return
 
     @asn.setter

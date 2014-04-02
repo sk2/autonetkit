@@ -160,6 +160,7 @@ class NetworkModel(object):
         ):
         """Adds overlay graph of name name"""
         #TODO: refactor this logic
+        log.debug("Adding overlay %s" % name)
 
         multi_edge = multi_edge or self.all_multigraph
 

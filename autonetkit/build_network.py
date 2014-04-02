@@ -25,7 +25,7 @@ def load(input_graph_string):
     except autonetkit.exception.AnkIncorrectFileFormat:
         try:
             input_graph = load_json.load_json(input_graph_string)
-        except autonetkit.exception.AnkIncorrectFileFormat:
+        except (ValueError, autonetkit.exception.AnkIncorrectFileFormat):
 # try a different reader
             try:
                 from autonetkit_cisco import load as cisco_load
@@ -112,6 +112,8 @@ def initialise(input_graph):
     g_graphics.add_nodes_from(g_in, retain=['x', 'y', 'device_type',
                                             'label', 'device_subtype', 'asn'])
 
+    # copy to phy too
+
     if g_in.data.Creator == "VIRL":
         # TODO: move this to other module
         # Multiple ASNs set, use label format device.asn
@@ -163,6 +165,15 @@ def apply_design_rules(anm):
     from autonetkit.design.osi_layers import (build_layer2,
         check_layer2, build_layer2_broadcast, build_layer3)
     build_layer2(anm)
+
+    try:
+        from autonetkit_cisco import build_network as cisco_build_network
+    except ImportError, e:
+        pass
+    else:
+        cisco_build_network.apply_vlans(anm)
+
+
     check_layer2(anm)
     build_layer2_broadcast(anm)
     build_layer3(anm)
@@ -319,7 +330,7 @@ def build_phy(anm):
         g_in.data.enable_routing = True  # default if not set
 
     g_phy.add_nodes_from(g_in, retain=['label', 'update', 'device_type', 'asn',
-                                       'specified_int_names',
+                                       'specified_int_names', 'x', 'y',
                                        'device_subtype', 'platform', 'host', 'syntax'])
     if g_in.data.Creator == "Topology Zoo Toolset":
         ank_utils.copy_attr_from(g_in, g_phy, "Network")

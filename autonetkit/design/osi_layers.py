@@ -8,7 +8,10 @@ def build_layer2(anm):
         g_phy = anm['phy']
         g_l2.add_nodes_from(g_phy)
         g_l2.add_edges_from(g_phy.edges())
-        ank_utils.aggregate_nodes(g_l2, g_l2.switches())
+        # Don't aggregate managed switches
+        unmanaged_switches = [n for n in g_l2.switches()
+        if n.device_subtype != "managed"]
+        ank_utils.aggregate_nodes(g_l2, unmanaged_switches)
 
 def check_layer2(anm):
     """Sanity checks on topology"""
@@ -19,6 +22,8 @@ def check_layer2(anm):
     for switch in sorted(g_l2.switches()):
         neigh_asns = defaultdict(int)
         for neigh in switch.neighbors():
+            if neigh.asn is None:
+                continue # don't add if not set
             neigh_asns[neigh.asn] += 1
 
         # IGP if two or more neighbors share the same ASN
@@ -77,11 +82,23 @@ def build_layer2_broadcast(anm):
             node['graphics'].asn = asn
             node.asn = asn  # need to use asn in IP overlay for aggregating subnets
 
+        # also allocate an ASN for virtual switches
+        vswitches = [n for n in g_l2_bc.nodes()
+        if n['layer2'].device_type == "switch"
+        and n['layer2'].device_subtype == "virtual"]
+        for node in vswitches:
+            #TODO: refactor neigh_most_frequent to allow fallthrough attributes
+            #asn = ank_utils.neigh_most_frequent(g_l2_bc, node, 'asn', g_l2)  # arbitrary choice
+            asns = [n['layer2'].asn for n in node.neighbors()]
+            asns = [x for x in asns if x is not None]
+            asn = ank_utils.most_frequent(asns)
+            node.asn = asn  # need to use asn in IP overlay for aggregating subnets
+            # also mark as broadcast domain
+
         from collections import defaultdict
         coincident_nodes = defaultdict(list)
         for node in split_created_nodes:
             coincident_nodes[(node['graphics'].x, node['graphics'].y)].append(node)
-
 
         coincident_nodes = {k: v for k, v in coincident_nodes.items()
         if len(v) > 1} # trim out single node co-ordinates
@@ -93,7 +110,6 @@ def build_layer2_broadcast(anm):
                 y_offset = -1 * 25*math.floor(index/2) * math.pow(-1, index)
                 item['graphics'].x  = item['graphics'].x + x_offset
                 item['graphics'].y  = item['graphics'].y + y_offset
-
 
         switch_nodes = g_l2_bc.switches()  # regenerate due to aggregated
         g_l2_bc.update(switch_nodes, broadcast_domain=True)
@@ -116,6 +132,7 @@ def build_layer2_broadcast(anm):
             graphics_node = g_graphics.node(node)
             #graphics_node.device_type = 'broadcast_domain'
             if node.is_switch():
+                #TODO: check not virtual
                 node['phy'].broadcast_domain = True
             if not node.is_switch():
                 # use node sorting, as accomodates for numeric/string names
@@ -129,7 +146,8 @@ def build_layer2_broadcast(anm):
                 node.label = node.id
                 graphics_node.label = node.id
 
-
+        for node in vswitches:
+            node.broadcast_domain = True
 
 def build_layer3(anm):
     """ l3_connectivity graph: switch nodes aggregated and exploded"""

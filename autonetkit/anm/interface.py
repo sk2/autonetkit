@@ -71,6 +71,7 @@ class NmPort(object):
 
     @property
     def is_bound(self):
+        #TODO: make this a function
         """Returns if this interface is bound to an edge on this layer"""
 
         return len(self.edges()) > 0

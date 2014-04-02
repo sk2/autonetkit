@@ -7,6 +7,8 @@ from autonetkit.ank_utils import call_log
 
 SETTINGS = autonetkit.config.settings
 
+#TODO: refactor to go in chronological workflow order
+
 
 @call_log
 def manual_ipv6_loopback_allocation(anm):
@@ -150,6 +152,9 @@ def build_ipv6(anm):
     import autonetkit.plugins.ipv6 as ipv6
 
     # uses the nodes and edges from ipv4
+
+
+    #TODO: do we also need to copy across the asn for broadcast domains?
 
     g_ipv6 = anm.add_overlay('ipv6')
     g_ip = anm['ip']
@@ -330,10 +335,10 @@ def manual_ipv4_loopback_allocation(anm):
 @call_log
 def build_ip(anm):
     g_ip = anm.add_overlay('ip')
-    g_layer2 = anm['layer2_bc']
+    g_l2_bc = anm['layer2_bc']
     # Retain arbitrary ASN allocation for IP addressing
-    g_ip.add_nodes_from(g_layer2, retain=["asn", "broadcast_domain"])
-    g_ip.add_edges_from(g_layer2.edges())
+    g_ip.add_nodes_from(g_l2_bc, retain=["asn", "broadcast_domain"])
+    g_ip.add_edges_from(g_l2_bc.edges())
 
 @call_log
 def extract_ipv4_blocks(anm):
@@ -399,8 +404,12 @@ def build_ipv4(anm, infrastructure=True):
 
     # Copy ASN attribute chosen for collision domains (used in alloc algorithm)
 
-    ank_utils.copy_attr_from(g_ip, g_ipv4, 'asn',
-                             nbunch=g_ipv4.nodes('broadcast_domain'))
+    ank_utils.copy_attr_from(g_ip, g_ipv4, 'asn', nbunch=g_ipv4.nodes('broadcast_domain'))
+    # work around until fall-through implemented
+    vswitches = [n for n in g_ip.nodes()
+    if n['layer2'].device_type == "switch"
+    and n['layer2'].device_subtype == "virtual"]
+    ank_utils.copy_attr_from(g_ip, g_ipv4, 'asn', nbunch=vswitches)
     g_ipv4.add_edges_from(g_ip.edges())
 
     # check if ip ranges have been specified on g_in

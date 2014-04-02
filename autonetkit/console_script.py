@@ -278,11 +278,12 @@ def create_nidb(anm):
     nidb.add_nodes_from(
         g_phy, retain=['label', 'host', 'platform', 'Network', 'update', 'asn'])
 
-    cd_nodes = [n for n in g_ip.nodes(
-        "broadcast_domain") if not n.is_switch()]  # Only add created cds - otherwise overwrite host of switched
-    nidb.add_nodes_from(
-        cd_nodes, retain=['label', 'host'], broadcast_domain=True)
+    #cd_nodes = [n for n in g_ip.nodes("broadcast_domain") if not n.is_switch()]  # Only add created cds - otherwise overwrite host of switched
+    # also copy virtual switches
+    #TODO: refactor this
+    #nidb.add_nodes_from(cd_nodes, retain=['label', 'host'], broadcast_domain=True)
 
+    """
     for node in nidb.nodes("broadcast_domain"):
         ipv4_node = anm['ipv4'].node(node)
         if ipv4_node:
@@ -296,6 +297,9 @@ def create_nidb(anm):
     # cd edges from split
     edges_to_add += [edge for edge in g_layer2_bc.edges()]
     nidb.add_edges_from(edges_to_add)
+
+    """
+    nidb.add_edges_from(g_phy.edges())
 
     nidb.copy_graphics(g_graphics)
 
