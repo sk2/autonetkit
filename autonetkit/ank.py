@@ -152,6 +152,7 @@ def copy_edge_attr_from(
     type=None,
     default=None,
     ):
+    # note this won't work if merge/aggregate edges
 
     if not dst_attr:
         dst_attr = src_attr
@@ -202,7 +203,7 @@ def wrap_edges(NmGraph, edges):
     except ValueError:
         pass  # already of form (src, dst)
 
-    return (NmEdge(NmGraph._anm, NmGraph._overlay_id, src, dst)
+    return list(NmEdge(NmGraph._anm, NmGraph._overlay_id, src, dst)
         for (src, dst) in edges)
 
 
@@ -328,10 +329,21 @@ def explode_nodes(NmGraph, nodes, retain=[]):
                                     for key in retain)
             data.update(node_to_dst_data)
 
-            src_int_id = src_edge.raw_interfaces[src.node_id]
-            dst_int_id = dst_edge.raw_interfaces[dst.node_id]
-            data['_ports'] = {src.node_id: src_int_id,
-                              dst.node_id: dst_int_id}
+            data['_ports'] = {}
+            try:
+                src_int_id = src_edge.raw_interfaces[src.node_id]
+            except KeyError:
+                pass # not set
+            else:
+                data['_ports'][src.node_id] = src_int_id
+
+            try:
+                dst_int_id = dst_edge.raw_interfaces[dst.node_id]
+            except KeyError:
+                pass # not set
+            else:
+                data['_ports'][dst.node_id] = dst_int_id
+
             new_edge = (src.node_id, dst.node_id, data)
 
             # TODO: use add_edge
