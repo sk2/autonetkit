@@ -35,12 +35,17 @@ class PlatformCompiler(object):
                         continue
                     if interface.is_physical and not interface.is_bound:
                         continue
+
+                    #TODO: also need to skip layer2 virtual interfaces
                     # interface is connected
-                    interface.use_ipv4 = True
-                    interface.ipv4_address = ipv4_int.ip_address
-                    interface.ipv4_subnet = ipv4_int.subnet
-                    interface.ipv4_cidr = sn_preflen_to_network(interface.ipv4_address,
+                    try:
+                        interface.use_ipv4 = True
+                        interface.ipv4_address = ipv4_int.ip_address
+                        interface.ipv4_subnet = ipv4_int.subnet
+                        interface.ipv4_cidr = sn_preflen_to_network(interface.ipv4_address,
                             interface.ipv4_subnet.prefixlen)
+                    except AttributeError:
+                        log.warning("Unable to copy across IPv4 for %s" % interface)
                 if phy_node.use_ipv6:
                     ipv6_int = phy_int['ipv6']
                     if node.is_server() and interface.is_loopback:
