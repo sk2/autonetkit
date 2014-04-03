@@ -178,7 +178,7 @@ def apply_design_rules(anm):
     build_layer2_broadcast(anm)
     build_layer3(anm)
 
-    build_l3_connectivity(anm)
+    #build_l3_connectivity(anm)
     check_server_asns(anm)
 
     from autonetkit.design.mpls import build_vrf
