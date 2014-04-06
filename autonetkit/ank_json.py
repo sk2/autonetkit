@@ -10,6 +10,7 @@ import autonetkit.plugins.ipv4
 import netaddr
 import networkx as nx
 from networkx.readwrite import json_graph
+from autonetkit.render2 import NodeRender, PlatformRender
 
 
 class AnkEncoder(json.JSONEncoder):
@@ -29,6 +30,12 @@ class AnkEncoder(json.JSONEncoder):
             log.warning("%s is anm overlay_edge. Use attribute rather than object in compiler." % obj)
             return str(obj)
         if isinstance(obj, autonetkit.nidb.ConfigStanza):
+            retval = obj.to_json()
+            return retval
+        if isinstance(obj, autonetkit.render2.NodeRender):
+            retval = obj.to_json()
+            return retval
+        if isinstance(obj, autonetkit.render2.PlatformRender):
             retval = obj.to_json()
             return retval
         if isinstance(obj, autonetkit.nidb.DmInterface):

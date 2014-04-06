@@ -67,7 +67,14 @@ def manage_network(
         # render.remove_dirs(["rendered"])
 
         if build_options['render']:
+            import time
+            start = time.clock()
             render.render(nidb)
+            print time.clock() - start
+            import autonetkit.render2
+            start = time.clock()
+            autonetkit.render2.render(nidb)
+            print time.clock() - start
 
     if not (build_options['build'] or build_options['compile']):
 
