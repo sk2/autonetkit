@@ -13,6 +13,7 @@ if not ank_logger.handlers:
     ch = logging.StreamHandler()
     #ch.setLevel(logging.INFO)
     ch.setFormatter(console_formatter)
+    ch.setLevel(logging.INFO)
     ank_logger.addHandler(ch)
 
     file_logging = config.settings['Logging']['file']
@@ -28,7 +29,7 @@ if not ank_logger.handlers:
         fh.setFormatter(formatter)
         ank_logger.addHandler(fh)
 
-ank_logger.setLevel(logging.INFO)
+ank_logger.setLevel(logging.DEBUG)
 # Reference for external access
 logger = ank_logger
 # Use approach of Pika, allows for autonetkit.log.debug("message")
