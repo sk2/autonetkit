@@ -180,7 +180,8 @@ def copy_edge_attr_from(
             try:
                 overlay_dst.edge(edge).set(dst_attr, val)
             except AttributeError:
-                log.warning('Unable to set edge attribute on %s in %s'
+                # fail to debug - as attribute may not have been set
+                log.debug('Unable to set edge attribute on %s in %s'
                             % (edge, overlay_dst))
 
 
