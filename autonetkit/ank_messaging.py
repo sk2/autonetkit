@@ -9,7 +9,7 @@ use_http_post = config.settings['Http Post']['active']
 if use_http_post:
     import urllib
 
-@call_log
+#@call_log
 def format_http_url(host=None, port=None, route='publish'):
     if not host and not port:
         host = config.settings['Http Post']['server']
@@ -19,7 +19,7 @@ def format_http_url(host=None, port=None, route='publish'):
 
 default_http_url = format_http_url()
 
-@call_log
+#@call_log
 def update_vis(
     anm=None,
     nidb=None,
@@ -56,7 +56,7 @@ def update_vis(
 
         log.info('Visualisation server running')
 
-@call_log
+#@call_log
 def get_uuid(anm):
     try:
         return config.settings['Http Post']['uuid']
@@ -65,7 +65,7 @@ def get_uuid(anm):
         return 'singleuser'
 
 
-@call_log
+#@call_log
 def highlight(
     nodes=None,
     edges=None,

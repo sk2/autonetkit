@@ -10,7 +10,7 @@ SETTINGS = autonetkit.config.settings
 #TODO: refactor to go in chronological workflow order
 
 
-@call_log
+#@call_log
 def manual_ipv6_loopback_allocation(anm):
     """Applies manual IPv6 allocation"""
 
@@ -31,7 +31,7 @@ def manual_ipv6_loopback_allocation(anm):
 
     g_ipv6.data.loopback_blocks = loopback_blocks
 
-@call_log
+#@call_log
 def extract_ipv6_blocks(anm):
 
     # TODO: set all these blocks globally in config file, rather than repeated in load, build_network, compile, etc
@@ -79,7 +79,7 @@ def extract_ipv6_blocks(anm):
 
     return (infra_block, loopback_block, vrf_loopback_block)
 
-@call_log
+#@call_log
 def manual_ipv6_infrastructure_allocation(anm):
     """Applies manual IPv6 allocation"""
 
@@ -145,7 +145,7 @@ def manual_ipv6_infrastructure_allocation(anm):
 
     g_ipv6.data.infra_blocks = infra_blocks
 
-@call_log
+#@call_log
 def build_ipv6(anm):
     """Builds IPv6 graph, using nodes and edges from IP graph"""
     import netaddr
@@ -239,7 +239,7 @@ def build_ipv6(anm):
             if not interface.is_loopback_zero:
                 interface.ip_address = interface.loopback #TODO: fix this inconsistency elsewhere
 
-@call_log
+#@call_log
 def manual_ipv4_infrastructure_allocation(anm):
     """Applies manual IPv4 allocation"""
 
@@ -310,7 +310,7 @@ def manual_ipv4_infrastructure_allocation(anm):
     g_ipv4.data.infra_blocks = infra_blocks
 
 
-@call_log
+#@call_log
 def manual_ipv4_loopback_allocation(anm):
     """Applies manual IPv4 allocation"""
 
@@ -332,7 +332,7 @@ def manual_ipv4_loopback_allocation(anm):
     g_ipv4.data.loopback_blocks = loopback_blocks
 
 
-@call_log
+#@call_log
 def build_ip(anm):
     g_ip = anm.add_overlay('ip')
     g_l2_bc = anm['layer2_bc']
@@ -340,7 +340,7 @@ def build_ip(anm):
     g_ip.add_nodes_from(g_l2_bc, retain=["asn", "broadcast_domain"])
     g_ip.add_edges_from(g_l2_bc.edges())
 
-@call_log
+#@call_log
 def extract_ipv4_blocks(anm):
 
     # TODO: set all these blocks globally in config file, rather than repeated in load, build_network, compile, etc
@@ -391,7 +391,7 @@ def extract_ipv4_blocks(anm):
     return (infra_block, loopback_block, vrf_loopback_block)
 
 
-@call_log
+#@call_log
 def build_ipv4(anm, infrastructure=True):
     """Builds IPv4 graph"""
 
