@@ -112,11 +112,31 @@ class MakoRenderer(object):
 
 
     def render(self, template, node, version_banner, date):
-        return template.render(
-                                            node = node,
-                                            version_banner = version_banner,
-                                            date = date,
-                                            )
+        try:
+            return template.render(
+                node = node,
+                version_banner = version_banner,
+                date = date,
+                )
+        except KeyError, error:
+            log.warning( "Unable to render %s:"
+                " %s not set" % (node, error))
+            from mako import exceptions
+            log.debug(exceptions.text_error_template().render())
+        except AttributeError, error:
+            log.warning( "Unable to render %s: %s " % (node, error))
+            from mako import exceptions
+            log.debug(exceptions.text_error_template().render())
+        except NameError, error:
+            log.warning( "Unable to render %s: %s. "
+                "Check all variables used are defined" % (node, error))
+        except TypeError, error:
+            log.warning( "Unable to render %s: %s." % (node, error))
+            from mako import exceptions
+            log.debug(exceptions.text_error_template().render())
+
+        import ipdb
+        ipdb.set_trace()
 
 
 def get_folder_contents(folder):
@@ -274,6 +294,7 @@ def extract_common_paths(nidb):
 
 def render_topology(topology):
     """Pre-caches"""
+    #TODO: also need to render the topology template eg lab.conf
     nidb = topology.nidb
     for node in topology.render2:
         #print node.render2.get_pass()
