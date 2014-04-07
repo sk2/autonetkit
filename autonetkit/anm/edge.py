@@ -26,9 +26,10 @@ class NmEdge(object):
         object.__setattr__(self, 'src_id', src_id)
         object.__setattr__(self, 'dst_id', dst_id)
         object.__setattr__(self, 'ekey', ekey) # for multigraphs
-        logger = logging.getLogger("ANK")
-        logstring = "Interface: %s" % str(self)
-        logger = CustomAdapter(logger, {'item': logstring})
+        #logger = logging.getLogger("ANK")
+        #logstring = "Interface: %s" % str(self)
+        #logger = CustomAdapter(logger, {'item': logstring})
+        logger = log
         object.__setattr__(self, 'log', logger)
 
     def __key(self):
