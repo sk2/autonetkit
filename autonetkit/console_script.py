@@ -38,6 +38,9 @@ def parse_options(argument_string=None):
                         default=False, help="Quiet mode (only display warnings and errors)")
     parser.add_argument('--diff', action="store_true", default=False,
                         help="Diff DeviceModel")
+    parser.add_argument('--no_vis', dest="visualise",
+        action="store_false", default=True,
+        help="Visualise output")
     parser.add_argument('--compile', action="store_true",
                         default=False, help="Compile")
     parser.add_argument(
@@ -64,6 +67,7 @@ def parse_options(argument_string=None):
     else:
         # from command line arguments
         arguments = parser.parse_args()
+
     return arguments
 
 
@@ -118,6 +122,8 @@ def main(options):
         'monitor': options.monitor or settings['General']['monitor'],
         'diff': options.diff or settings['General']['diff'],
         'archive': options.archive or settings['General']['archive'],
+        # use and for visualise as no_vis negates
+        'visualise': options.visualise and settings['General']['visualise'],
     }
 
     if options.webserver:

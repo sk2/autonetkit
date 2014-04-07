@@ -41,9 +41,30 @@ def manage_network(
         elif grid:
             graph = build_network.grid_2d(grid)
 
-        anm = build_network.build(graph)
+
+        #TODO: integrate the code to visualise on error (enable in config)
+        try:
+            anm = build_network.build(graph)
+        except Exception, e:
+            # Send the visualisation to help debugging
+            try:
+                if build_options['visualise']:
+                    import autonetkit
+                    autonetkit.update_vis(anm)
+            except Exception, e:
+                # problem with vis -> could be coupled with original exception -
+                # raise original
+                log.warning("Unable to visualise: %s" % e)
+            raise  # raise the original exception
+        else:
+            if build_options['visualise']:
+                log.info("Visualising network")
+                import autonetkit
+                autonetkit.update_vis(anm)
+
         if not build_options['compile']:
-            autonetkit.update_vis(anm)
+            #autonetkit.update_vis(anm)
+            pass
 
         if build_options['validate']:
             import autonetkit.ank_validate
