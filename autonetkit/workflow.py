@@ -10,6 +10,23 @@ import autonetkit.render as render
 from autonetkit.nidb import DeviceModel
 
 
+import cProfile
+
+# from https://zapier.com/engineering/profiling-python-boss/
+def do_cprofile(func):
+    def profiled_func(*args, **kwargs):
+        profile = cProfile.Profile()
+        try:
+            profile.enable()
+            result = func(*args, **kwargs)
+            profile.disable()
+            return result
+        finally:
+            #profile.print_stats()
+            profile.dump_stats("profile")
+    return profiled_func
+
+
 def file_monitor(filename):
     """Generator based function to check if a file has changed"""
 
@@ -23,6 +40,7 @@ def file_monitor(filename):
         yield False
 
 
+#@do_cprofile
 def manage_network(
     input_graph_string,
     timestamp,
@@ -80,7 +98,7 @@ def manage_network(
             anm.save()
         nidb = compile_network(anm)
 
-        autonetkit.update_vis(anm, nidb)
+        #autonetkit.update_vis(anm, nidb)
         log.debug('Sent ANM to web server')
         if build_options['archive']:
             nidb.save()
@@ -106,7 +124,7 @@ def manage_network(
         anm.restore_latest()
         nidb = DeviceModel()
         nidb.restore_latest()
-        autonetkit.update_vis(anm, nidb)
+        #autonetkit.update_vis(anm, nidb)
 
     if build_options['diff']:
         import autonetkit.diff
@@ -126,9 +144,12 @@ def manage_network(
     log.info('Finished')  # TODO: finished what?
 
 
+#@do_cprofile
 def compile_network(anm):
+    log.info("Creating base network model")
     nidb = create_nidb(anm)
     g_phy = anm['phy']
+    log.info("Compiling to targets")
 
     for target_data in config.settings['Compile Targets'].values():
         host = target_data['host']
