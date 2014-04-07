@@ -29,7 +29,7 @@ if not ank_logger.handlers:
         fh.setFormatter(formatter)
         ank_logger.addHandler(fh)
 
-ank_logger.setLevel(logging.DEBUG)
+ank_logger.setLevel(logging.INFO)
 # Reference for external access
 logger = ank_logger
 # Use approach of Pika, allows for autonetkit.log.debug("message")
