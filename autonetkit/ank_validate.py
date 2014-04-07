@@ -6,16 +6,25 @@ import autonetkit.log as log
 """
 
 def validate(anm):
+    log.info("Validating overlay topologies")
     tests_passed = True
     tests_passed = validate_ipv4(anm) and tests_passed
 
     validate_ibgp(anm)
+    check_for_selfloops(anm)
     all_nodes_have_asn(anm)
 
     if tests_passed:
         log.info("All validation tests passed.")
     else:
         log.warning("Some validation tests failed.")
+
+def check_for_selfloops(anm):
+    # checks each overlay for selfloops
+    for overlay in anm:
+        selfloop_count =  overlay._graph.number_of_selfloops()
+        if selfloop_count > 0:
+            log.warning("%s has %s self-loops" % (overlay, selfloop_count))
 
 def all_nodes_have_asn(anm):
     g_phy = anm['phy']
