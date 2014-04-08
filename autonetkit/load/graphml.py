@@ -18,6 +18,7 @@ settings = autonetkit.config.settings
 
 def load_graphml(input_data):
 
+
     # TODO: allow default properties to be passed in as dicts
 
     try:
@@ -54,7 +55,6 @@ def load_graphml(input_data):
             graph = nx.Graph(graph)
 
     # TODO: need to support edge index keying for multi graphs
-
     graph.remove_edges_from(edge for edge in graph.selfloop_edges())
 
 # TODO: if selfloops then log that are removing
@@ -246,10 +246,19 @@ def load_graphml(input_data):
         # we need to map node ids to contain network to ensure unique labels
         # mapping = dict( (n, "%s__%s" % (d['label'], d['asn'])) for n, d in graph.nodes(data=True))
 
+
     mapping = dict((n, d['label']) for (n, d) in graph.nodes(data=True))  # TODO: use dict comprehension
     if not all(key == val for (key, val) in mapping.items()):
         nx.relabel_nodes(graph, mapping, copy=False)  # Networkx wipes data if remap with same labels
 
     graph.graph['file_type'] = 'graphml'
+
+    selfloop_count = graph.number_of_selfloops()
+    if selfloop_count > 0:
+        log.warning("Self loops present: do multiple nodes have the same label?")
+        selfloops = ", ".join(str(e) for e in graph.selfloop_edges())
+        log.warning("Removing selfloops: %s" % selfloops)
+        graph.remove_edges_from(edge for edge in graph.selfloop_edges())
+
 
     return graph
