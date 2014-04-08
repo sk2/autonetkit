@@ -269,3 +269,8 @@ class DmNode(object):
 
     def __iter__(self):
         return iter(self._node_data)
+
+    def set(self, key, val):
+        """For consistency, node.set(key, value) is neater
+        than setattr(node, key, value)"""
+        return self.__setattr__(key, val)

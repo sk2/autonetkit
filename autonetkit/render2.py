@@ -8,19 +8,6 @@ import autonetkit.log as log
 
 #TODO: need to implement caching for performance
 
-class PlatformRender(object):
-    def __init__(self):
-        self.data = []
-
-    def add_node(self, node):
-        self.data.append(node)
-
-    def to_json(self):
-        return self.data
-
-    def __iter__(self):
-        return iter(self.data)
-
 from collections import namedtuple
 src_dst = namedtuple("src_dst", ['src', 'dst'])
 
@@ -85,6 +72,23 @@ class NodeRender(object):
     def get_folders(self, pass_id =0):
         return self._folders.get(pass_id)
 
+class PlatformRender(NodeRender):
+    def __init__(self):
+        super(PlatformRender, self).__init__()
+        self.nodes = []
+        self.base_folder = ""
+        self.archive = None
+        self.template_data  = {}
+
+    def add_node(self, node):
+        self.nodes.append(node)
+
+    def to_json(self):
+        return self.nodes
+
+    def __iter__(self):
+        return iter(self.nodes)
+
 def setup():
     # any setup steps for renderers
     pass
@@ -99,6 +103,7 @@ def render_topology_basic(topology):
 
 
 #TODO: Put inside class once created
+#TODO: inherit from common base
 
 class MakoRenderer(object):
     def __init__(self):
@@ -111,12 +116,16 @@ class MakoRenderer(object):
         return Template(template_data)
 
 
-    def render(self, template, node, version_banner, date):
+    def render(self, template, node, version_banner, date, template_data = None):
+        if template_data is None:
+            template_data = {}
+
         try:
             return template.render(
                 node = node,
                 version_banner = version_banner,
                 date = date,
+                **template_data
                 )
         except KeyError, error:
             log.warning( "Unable to render %s:"
@@ -140,7 +149,6 @@ class MakoRenderer(object):
 
 
 def get_folder_contents(folder):
-    import os
     retval = []
 
     for base, _, filenames in os.walk(folder):
@@ -155,17 +163,31 @@ def get_folder_contents(folder):
 
     return retval
 
-def extract_common_paths(nidb):
+extension_renderers = {'.mako': MakoRenderer()}
+
+def render_nodes(nodes, base_folder = "",
+    archive = None):
+
+    if archive is None:
+        to_memory = True
+    else:
+        to_memory = False
+
     # extracts common paths from the nodes
     # first build up list of all paths
     common_files = defaultdict(list)
     common_folders = defaultdict(list)
 
+    if isinstance(base_folder, basestring):
+        pass
+    else:
+        base_folder = os.path.join(*base_folder)
+
     # store destinations
     file_dsts = defaultdict(dict)
     folder_dsts = defaultdict(dict)
 
-    for node in nidb:
+    for node in nodes:
         #print node.render2.get_pass()
         #TODO: need to iterate over all passes
         for path in node.render2.get_files():
@@ -184,17 +206,10 @@ def extract_common_paths(nidb):
 
     # load common files into cache
     #TODO: no cache now do file-by-file
-    files_to_cache = {k:v for k,v in common_files.items()
-    if len(v) > 0}
-
     #TODO: do folders first so more specific precedence over less specific
     # in case of a clash (like in routing)
 
     # Prepare static classes for extensions
-    extension_renderers = {'.mako': MakoRenderer()}
-
-    import zipfile
-    zf = zipfile.ZipFile('zipfile/zipfile_write.zip', mode='w')
 
     #TODO: fix up naming
     for src_base, nodes in common_folders.items():
@@ -236,20 +251,26 @@ def extract_common_paths(nidb):
                     node_data = file_data
 
                 # to memory -> store
+
                 dst = folder_dsts[node][src_base]
                 if isinstance(dst, basestring):
                     pass
                 else:
                     dst = os.path.join(*dst)
                 dst = os.path.join(dst, out_filename)
+                dst = os.path.join(base_folder, dst)
 
                 # else to file
-                zf.writestr(dst, node_data)
+                if to_memory:
+                    node.set(dst, node_data)
+                else:
+                    archive.writestr(dst, node_data)
 
-    for src, nodes in files_to_cache.items():
+    for src, nodes in common_files.items():
     #TODO: write this to a separate function
         filename = os.path.join(*src) # "splat" list for os.path.join
         import pkg_resources
+        #TODO: specify the full file path (or provide wrapper for this to specify the package)
         abs_filename = pkg_resources.resource_filename(__name__, filename)
         with open(abs_filename) as fh:
             file_data = fh.read()
@@ -272,12 +293,13 @@ def extract_common_paths(nidb):
 
             # to memory -> store
             dst = file_dsts[node][src]
+            dst = os.path.join(base_folder, dst)
 
             # else to file
-            zf.writestr(dst, node_data)
-
-    zf.close()
-
+            if to_memory:
+                node.set(dst, node_data)
+            else:
+                archive.writestr(dst, node_data)
 
     #TODO: to save memory could process for each node that has this file, etc?
     # then write that to the archive, and continue on
@@ -292,18 +314,98 @@ def extract_common_paths(nidb):
 
 #note: may want "platform render data" and a "platform renderer"
 
+
+#TODO: also create a render_topology(topology)
+# note that we don't have as much need to do caching as much less topologies than node
+
 def render_topology(topology):
     """Pre-caches"""
     #TODO: also need to render the topology template eg lab.conf
-    nidb = topology.nidb
-    for node in topology.render2:
-        #print node.render2.get_pass()
+
+    render_data = topology.render2
+    base_folder = render_data.base_folder
+
+    archive_filename = render_data.archive
+    archive = None
+    to_memory = True
+    if archive_filename:
+        to_memory = False
+        import zipfile
+        archive_filename  = "%s.zip" % archive_filename
+        #TODO: make rendered folder set in config, and check exists
+        archive_path = os.path.join("rendered", archive_filename)
+        #TODO: look at compression levels
+        archive = zipfile.ZipFile(archive_path, mode='w')
+
+
+    nodes = render_data.nodes
+    render_nodes(nodes,
+        archive = archive,
+        base_folder=base_folder)
+
+    if isinstance(base_folder, basestring):
         pass
+    else:
+        base_folder = os.path.join(*base_folder)
+
+
+    for entry in render_data.get_files():
+        src = entry.src
+        dst = entry.dst
+    #TODO: write this to a separate function
+        filename = os.path.join(*src) # "splat" list for os.path.join
+        print filename
+        import pkg_resources
+        #TODO: specify the full file path (or provide wrapper for this to specify the package)
+        abs_filename = pkg_resources.resource_filename(__name__, filename)
+        with open(abs_filename) as fh:
+            file_data = fh.read()
+
+        #TODO: Only do the following for .mako
+        extension = os.path.splitext(filename)[1]
+        template_renderer = extension_renderers[extension]
+
+        import time
+        version_banner = ("autonetkit_%s" %
+            pkg_resources.get_distribution("autonetkit").version)
+        date = time.strftime("%Y-%m-%d %H:%M", time.localtime())
+        render_template = template_renderer.prepare(file_data)
+
+        # get extension
+        # TODO: clean up placeholder for node renderer
+        node  = None
+        template_data = {'topology': topology}
+
+        topology_data = template_renderer.render(render_template,
+            node, date, version_banner, template_data )
+
+        # to memory -> store
+        dst = os.path.join(base_folder, dst)
+        if isinstance(dst, basestring):
+            pass
+        else:
+            dst = os.path.join(*dst)
+
+        # else to file
+        if to_memory:
+            topology.set(dst, topology_data)
+        else:
+            archive.writestr(dst, topology_data)
+
+
+    # render files
+
+    if archive:
+        archive.close()
+
+
+    # warn if any folders that not supported yet for topologies
+
+
 
 def render(nidb):
     log.info("Rendering v2")
     #TODO: should allow render to take list of nodes in case different namespace
     # perhaps allow render to take list of topologies/nodes to render?
-    extract_common_paths(nidb)
     for topology in nidb.topologies():
         render_topology(topology)

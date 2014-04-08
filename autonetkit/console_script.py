@@ -147,7 +147,7 @@ def main(options):
 
     try:
         workflow.manage_network(input_string, timestamp,
-                       build_options=build_options, grid=options.grid)
+                       grid=options.grid, **build_options)
     except Exception, err:
         log.error(
             "Error generating network configurations: %s. More information may be available in the debug log." % err)

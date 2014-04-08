@@ -44,7 +44,16 @@ def file_monitor(filename):
 def manage_network(
     input_graph_string,
     timestamp,
-    build_options,
+    build = True,
+    visualise = True,
+    compile = True,
+    validate = True,
+    render = True,
+    monitor = False,
+    deploy = False,
+    measure = False,
+    diff = False,
+    archive = False,
     grid=None,
     ):
     """Build, compile, render network as appropriate"""
@@ -53,12 +62,11 @@ def manage_network(
 
     import autonetkit.build_network as build_network
 
-    if build_options['build']:
+    if build:
         if input_graph_string:
             graph = build_network.load(input_graph_string)
         elif grid:
             graph = build_network.grid_2d(grid)
-
 
         #TODO: integrate the code to visualise on error (enable in config)
         try:
@@ -66,7 +74,7 @@ def manage_network(
         except Exception, e:
             # Send the visualisation to help debugging
             try:
-                if build_options['visualise']:
+                if visualise:
                     import autonetkit
                     autonetkit.update_vis(anm)
             except Exception, e:
@@ -75,16 +83,16 @@ def manage_network(
                 log.warning("Unable to visualise: %s" % e)
             raise  # raise the original exception
         else:
-            if build_options['visualise']:
+            if visualise:
                 log.info("Visualising network")
                 import autonetkit
                 autonetkit.update_vis(anm)
 
-        if not build_options['compile']:
+        if not compile:
             #autonetkit.update_vis(anm)
             pass
 
-        if build_options['validate']:
+        if validate:
             import autonetkit.ank_validate
             try:
                 autonetkit.ank_validate.validate(anm)
@@ -93,29 +101,29 @@ def manage_network(
                 log.debug('Unable to validate topologies',
                           exc_info=True)
 
-    if build_options['compile']:
-        if build_options['archive']:
+    if compile:
+        if archive:
             anm.save()
         nidb = compile_network(anm)
 
         #autonetkit.update_vis(anm, nidb)
         log.debug('Sent ANM to web server')
-        if build_options['archive']:
+        if archive:
             nidb.save()
 
         # render.remove_dirs(["rendered"])
 
-        if build_options['render']:
+        if render:
             import time
             start = time.clock()
-            render.render(nidb)
+            #autonetkit.render.render(nidb)
             print time.clock() - start
             import autonetkit.render2
             start = time.clock()
             autonetkit.render2.render(nidb)
             print time.clock() - start
 
-    if not (build_options['build'] or build_options['compile']):
+    if not (build or compile):
 
         # Load from last run
 
@@ -126,7 +134,7 @@ def manage_network(
         nidb.restore_latest()
         #autonetkit.update_vis(anm, nidb)
 
-    if build_options['diff']:
+    if diff:
         import autonetkit.diff
         nidb_diff = autonetkit.diff.nidb_diff()
         import json
@@ -138,7 +146,7 @@ def manage_network(
         with open('diff.json', 'w') as fh:
             fh.write(data)
 
-    if build_options['deploy']:
+    if deploy:
         deploy_network(anm, nidb, input_graph_string)
 
     log.info('Finished')  # TODO: finished what?
