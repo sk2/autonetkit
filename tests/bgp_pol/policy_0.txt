@@ -1,0 +1,14 @@
+[
+    {
+        "then": [
+            "reject", 
+            "setLP 100"
+        ], 
+        "match": [
+            "tags contain aaa", 
+            "prefix_list zyx", 
+            "tags contain bbb"
+        ], 
+        "else": null
+    }
+]
