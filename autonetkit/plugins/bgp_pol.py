@@ -7,6 +7,11 @@ import json
 #TODO: add in parse fail handling for more descriptive error messages
 #TODO: drop pol_clause.map, etc and use as children: or have visitor that returns these as children - easier to traverse tree
 
+#TODO: need a way to create prefix lists... perhaps as an object that the user creates, and then this can either return a prefix if specified or else auto create a name
+#TODO: note that community values need to be global across network...
+#TODO: what if user has their own external, how to incorporate these?
+#TODO: define in EBNF grammar format
+
 #TODO: make methods that atoms inherit: key, value eg (setLP, 120), (prefix_list, blah_abc)
 class pol_conditional(object):
     pass
@@ -224,6 +229,8 @@ else_clause = Group(Suppress("else") + Suppress("(") + else_actions
 
 bgp_pol << Group(Group(Suppress("if") + match_clauses + then_clause + Optional(else_clause)) | standlone_then_clause).setParseAction(fn_if)
 
+
+#TODO: see if can sort json output to put match, then, else ordering
 
 class BgpPolEncoder(json.JSONEncoder):
     """Recursive handling and formatting for BGP Policy export in JSON format"""

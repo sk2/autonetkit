@@ -1,4 +1,4 @@
-from autonetkit.bgp_pol import pol_to_json
+from autonetkit.plugins.bgp_pol import pol_to_json
 import os
 
 policies = [
