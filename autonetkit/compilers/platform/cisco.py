@@ -82,7 +82,7 @@ class CiscoCompiler(PlatformCompiler):
         for x in itertools.count(0):
             yield x
 
-    @call_log
+    #@call_log
     def compile(self):
         self.copy_across_ip_addresses()
         self.compile_devices()
@@ -105,7 +105,7 @@ class CiscoCompiler(PlatformCompiler):
         #TODO: use a namedtuple
         return to_memory, use_mgmt_interfaces, dst_folder
 
-    @call_log
+    #@call_log
     def compile_devices(self):
         g_phy = self.anm['phy']
 

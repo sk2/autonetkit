@@ -6,7 +6,7 @@ import autonetkit.ank as ank_utils
 import itertools
 from autonetkit.ank_utils import call_log
 
-@call_log
+#@call_log
 def mpls_te(anm):
     g_in = anm['input']
     g_phy = anm['phy']
@@ -34,7 +34,7 @@ def mpls_te(anm):
     g_mpls_te.add_edges_from(edges_to_add)
 
 
-@call_log
+#@call_log
 def mpls_oam(anm):
     g_in = anm['input']
 
@@ -49,7 +49,7 @@ def mpls_oam(anm):
     if use_mpls_oam:
         g_mpls_oam.add_nodes_from(g_in.routers())
 
-@call_log
+#@call_log
 def vrf_pre_process(anm):
     """Marks nodes in g_in as appropriate based on vrf roles.
     CE nodes -> ibgp_role = Disabled, so not in iBGP (this is allocated later)
@@ -60,7 +60,7 @@ def vrf_pre_process(anm):
         log.debug("Marking CE node %s as non-ibgp" % node)
         node['input'].ibgp_role = "Disabled"
 
-@call_log
+#@call_log
 def allocate_vrf_roles(g_vrf):
     """Allocate VRF roles"""
     g_phy = g_vrf.anm['phy']
@@ -102,7 +102,7 @@ def allocate_vrf_roles(g_vrf):
         message = ", ".join(str(n) for n in sorted(p_set_nodes))
         g_vrf.log.info("VRF role set to P for %s" % message)
 
-@call_log
+#@call_log
 def add_vrf_loopbacks(g_vrf):
     """Adds loopbacks for VRFs, and stores VRFs connected to PE router"""
     #autonetkit.update_vis(anm)
@@ -115,7 +115,7 @@ def add_vrf_loopbacks(g_vrf):
             node.add_loopback(vrf_name=vrf_name,
                               description="loopback for vrf %s" % vrf_name)
 
-@call_log
+#@call_log
 def build_ibgp_vpn_v4(anm):
     """Based on the ibgp_v4 hierarchy rules.
     Exceptions:
@@ -200,7 +200,7 @@ def build_ibgp_vpn_v4(anm):
 
     # also need to modify the ibgp_v4 and ibgp_v6 graphs
 
-@call_log
+#@call_log
 def build_mpls_ldp(anm):
     """Builds MPLS LDP"""
     g_in = anm['input']
@@ -228,7 +228,7 @@ def build_mpls_ldp(anm):
             if e.src in p_nodes and e.dst in p_nodes)
     g_mpls_ldp.add_edges_from(p_to_p_edges)
 
-@call_log
+#@call_log
 def mark_ebgp_vrf(anm):
     g_ebgp = anm['ebgp']
     g_vrf = anm['vrf']
@@ -248,7 +248,7 @@ def mark_ebgp_vrf(anm):
             edge.exclude = True
             edge.vrf = edge.dst['vrf'].vrf
 
-@call_log
+#@call_log
 def build_vrf(anm):
     """Build VRF Overlay"""
     g_in = anm['input']

@@ -5,7 +5,7 @@ from autonetkit.ank_utils import call_log
 
 #TODO: extract the repeated code and use the layer2  and layer3 graphs
 
-@call_log
+#@call_log
 def build_ospf(anm):
     """
     Build OSPF graph.
@@ -139,7 +139,7 @@ def build_ospf(anm):
         router.loopback_zero.cost = 0
         router.process_id = router.asn
 
-@call_log
+#@call_log
 def ip_to_net_ent_title_ios(ip_addr):
     """ Converts an IP address into an OSI Network Entity Title
     suitable for use in IS-IS on IOS.
@@ -161,7 +161,7 @@ def ip_to_net_ent_title_ios(ip_addr):
     return ".".join([area_id, ip_octets[0:4], ip_octets[4:8], ip_octets[8:12],
                      "00"])
 
-@call_log
+#@call_log
 def build_eigrp(anm):
     """Build eigrp overlay"""
     g_in = anm['input']
@@ -203,7 +203,7 @@ def build_eigrp(anm):
             interface.metric = edge.metric
             interface.multipoint = edge.multipoint
 
-@call_log
+#@call_log
 def build_isis(anm):
     """Build isis overlay"""
     g_in = anm['input']

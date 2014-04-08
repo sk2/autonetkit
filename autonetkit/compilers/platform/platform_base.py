@@ -16,6 +16,7 @@ class PlatformCompiler(object):
         pass
 
     def copy_across_ip_addresses(self):
+        log.info("Copying across IP addresses to network model")
         #TODO: try/except and raise SystemError as fatal error if cant copy
         from autonetkit.ank import sn_preflen_to_network
 

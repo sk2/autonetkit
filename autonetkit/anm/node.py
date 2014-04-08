@@ -25,9 +25,10 @@ class NmNode(object):
         object.__setattr__(self, 'overlay_id', overlay_id)
 # should be able to use _graph from here as anm and overlay_id are defined
         object.__setattr__(self, 'node_id', node_id)
-        logger = logging.getLogger("ANK")
-        logstring = "Node: %s" % str(self)
-        logger = CustomAdapter(logger, {'item': logstring})
+        #logger = logging.getLogger("ANK")
+        #logstring = "Node: %s" % str(self)
+        #logger = CustomAdapter(logger, {'item': logstring})
+        logger = log
         object.__setattr__(self, 'log', logger)
 
     def __hash__(self):

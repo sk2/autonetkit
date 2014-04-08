@@ -15,7 +15,7 @@ SETTINGS = autonetkit.config.settings
 __all__ = ['build']
 from autonetkit.ank_utils import call_log
 
-@call_log
+#@call_log
 def load(input_graph_string):
     # TODO: look at XML header for file type
     import autonetkit.load.graphml as graphml
@@ -45,7 +45,7 @@ def load(input_graph_string):
     return input_graph
 
 
-@call_log
+#@call_log
 def grid_2d(dim):
     """Creates a 2d grid of dimension dim"""
     graph = nx.grid_2d_graph(dim, dim)
@@ -77,14 +77,14 @@ def grid_2d(dim):
     return graph
 
 
-@call_log
+#@call_log
 def initialise(input_graph):
     """Initialises the input graph with from a NetworkX graph"""
     all_multigraph = input_graph.is_multigraph()
     anm = autonetkit.anm.NetworkModel(all_multigraph = all_multigraph)
 
     g_in = anm.initialise_input(input_graph)
-    autonetkit.update_vis(anm)
+    #autonetkit.update_vis(anm)
 
 # set defaults
     if not g_in.data.specified_int_names:
@@ -123,7 +123,7 @@ def initialise(input_graph):
     return anm
 
 
-@call_log
+#@call_log
 def check_server_asns(anm):
     """Checks that servers have appropriate ASN allocated.
     Warns and auto-corrects servers connected to routers of a different AS
@@ -155,15 +155,17 @@ def check_server_asns(anm):
                              "not auto-correcting" % (server, server.asn))
 
 
-@call_log
+#@call_log
 def apply_design_rules(anm):
     """Applies appropriate design rules to ANM"""
+    log.info("Building overlay topologies")
     g_in = anm['input']
 
     build_phy(anm)
     g_phy = anm['phy']
     from autonetkit.design.osi_layers import (build_layer2,
         check_layer2, build_layer2_broadcast, build_layer3)
+    log.info("Building layer2")
     build_layer2(anm)
 
     try:
@@ -176,6 +178,7 @@ def apply_design_rules(anm):
 
     check_layer2(anm)
     build_layer2_broadcast(anm)
+    log.info("Building layer3")
     build_layer3(anm)
 
     #build_l3_connectivity(anm)
@@ -185,6 +188,7 @@ def apply_design_rules(anm):
     build_vrf(anm)  # do before to add loopbacks before ip allocations
     from autonetkit.design.ip import build_ip, build_ipv4, build_ipv6
     # TODO: replace this with layer2 overlay topology creation
+    log.info("Allocating IP addresses")
     build_ip(anm)  # ip infrastructure topology
 
     address_family = g_in.data.address_family or "v4"  # default is v4
@@ -229,11 +233,13 @@ def apply_design_rules(anm):
     else:
         cisco_build_network.pre_design(anm)
 
+    log.info("Building IGP")
     from autonetkit.design.igp import build_ospf, build_eigrp, build_isis
     build_ospf(anm)
     build_eigrp(anm)
     build_isis(anm)
 
+    log.info("Building BGP")
     from autonetkit.design.bgp import build_bgp
     build_bgp(anm)
     # autonetkit.update_vis(anm)
@@ -257,30 +263,17 @@ def apply_design_rules(anm):
     else:
         cisco_build_network.post_design(anm)
 
+    log.info("Finished building network")
     return anm
 
 
-@call_log
+#@call_log
 def build(input_graph):
     """Main function to build network overlay topologies"""
     anm = None
-    try:
-        anm = initialise(input_graph)
-        anm = apply_design_rules(anm)
-        # print {str(node): {'x': node.x, 'y': node.y} for node in
-        # anm['input']}
-        autonetkit.update_vis(anm)
-    except Exception, e:
-        # Send the visualisation to help debugging
-        try:
-            autonetkit.update_vis(anm)
-        except Exception, e:
-            # problem with vis -> could be coupled with original exception -
-            # raise original
-            log.warning("Unable to visualise: %s" % e)
-        raise  # raise the original exception
+    anm = initialise(input_graph)
+    anm = apply_design_rules(anm)
     return anm
-
 
 def remove_parallel_switch_links(anm):
     return
@@ -319,7 +312,7 @@ def remove_parallel_switch_links(anm):
                 g_phy.remove_edges_from(edges_to_remove)
 
 
-@call_log
+#@call_log
 def build_phy(anm):
     """Build physical overlay"""
     g_in = anm['input']
@@ -373,7 +366,7 @@ def build_phy(anm):
 
     remove_parallel_switch_links(anm)
 
-@call_log
+#@call_log
 def build_l3_connectivity(anm):
     """ l3_connectivity graph: switch nodes aggregated and exploded"""
     g_in = anm['input']
@@ -394,7 +387,7 @@ def build_l3_connectivity(anm):
         edge.dst_int.multipoint = True
 
 
-@call_log
+#@call_log
 def build_conn(anm):
     """Build connectivity overlay"""
     g_in = anm['input']
