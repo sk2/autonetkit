@@ -2,6 +2,9 @@
 # based on https://learning-0mq-with-pyzmq.readthedocs.org/en/latest/pyzmq/patterns/pushpull.html
 
 
+#TODO: rewrite as callbacks rather than threads
+
+
 import zmq
 import json
 import socket as python_socket
@@ -157,17 +160,20 @@ def worker():
           result = "Pexpect timeout"
        finally:
         try:
-          data = str(data)
           hostname = str(hostname)
           result = str(result)
-          message = json.dumps({'command': work,
-            "success": success,
-            'hostname': hostname,
-            'result': result})
+          send_data = dict(data)
+          send_data.update({'command': work,
+                      "success": success,
+                      'hostname': hostname,
+                      'result': result})
+          del send_data['username']
+          del send_data['password']
+          message = json.dumps(send_data)
         except Exception, e:
           print "cant dump", e
         else:
-          consumer_sender.send("%s %s" % (message_key, message))
+          consumer_sender.send_multipart([message_key, message])
           print "Sent to zmq"
 
 def main():
@@ -184,6 +190,7 @@ def main():
 
 
   # start the streamer device
+  #TODO: double check what these are used for
   streamer_device(5559, 5560)
   forwarder_device(5561, 5562)
 

@@ -306,6 +306,7 @@ class OverlayBase(object):
 # TODO: refactor this
 
         if src_nbunch:
+            nbunch_out = []
             try:
                 src_nbunch = src_nbunch.node_id
             except AttributeError:
