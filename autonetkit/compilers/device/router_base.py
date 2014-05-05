@@ -94,6 +94,9 @@ class RouterCompiler(DeviceCompiler):
         if not (node.ip.use_ipv4 and node.ip.use_ipv6):
             node.log.debug('Neither IPv4 nor IPv6 specified: using default IPv4')
 
+        node.ipv4_static_routes = []
+        node.ipv6_static_routes = []
+
             # node.ip.use_ipv4 = True
 
         node.label = naming.network_hostname(phy_node)

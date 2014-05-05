@@ -394,12 +394,19 @@ router bgp ${node.asn}
   !
 %endfor
 !
-% for route in node.bgp.ipv4_nailed_up_routes:
-ip route ${route.network} ${route.netmask} Null0 254
+% for route in node.ipv4_static_routes:
+% if route.metric:
+ip route ${route.prefix} ${route.netmask} ${route.nexthop} ${route.metric}
+% else:
+ip route ${route.prefix} ${route.netmask} ${route.nexthop}
+%endif
 % endfor
-!
-% for route in node.bgp.ipv6_nailed_up_routes:
-ipv6 route ${route} Null0 254
+% for route in node.ipv6_static_routes:
+% if route.metric:
+ipv6 route ${route.prefix} ${route.nexthop} ${route.metric}
+% else:
+ipv6 route ${route.prefix} ${route.nexthop}
+%endif
 % endfor
 !
 end
