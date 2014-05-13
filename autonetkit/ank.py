@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import itertools
+from collections import namedtuple
 
 import autonetkit.log as log
 import networkx as nx
@@ -12,6 +13,13 @@ try:
     import cPickle as pickle
 except ImportError:
     import pickle
+
+# helper namedtuples - until have a more complete schema (such as from Yang)
+static_route_v4 = namedtuple("static_route_v4",
+    ["prefix", "netmask", "nexthop", "metric"])
+
+static_route_v6 = namedtuple("static_route_v6",
+    ["prefix", "nexthop", "metric"])
 
 
 def sn_preflen_to_network(address, prefixlen):
@@ -138,6 +146,9 @@ def copy_int_attr_from(
                 val = float(val)
             elif type is int:
                 val = int(val)
+
+            if node not in overlay_dst:
+                continue
 
             dst_int = overlay_dst.interface(src_int)
             if dst_int is not None:
