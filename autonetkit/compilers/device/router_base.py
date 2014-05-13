@@ -62,6 +62,9 @@ class RouterCompiler(DeviceCompiler):
             use_ipv4 = False
             use_ipv6 = True
 
+        md5_password = session.md5_password
+        multihop = session.multihop
+
         #TODO: return ConfigStanza rather than a dict
         data = {  # TODO: change templates to access from node.bgp.lo_int
             'neighbor': neigh.label,
@@ -72,6 +75,8 @@ class RouterCompiler(DeviceCompiler):
             'local_int_ip': local_int_ip,
             'dst_int_ip': dst_int_ip,
             'update_source': node.loopback_zero.id,
+            'md5_password': md5_password,
+            'multihop': multihop,
             }
         return data
 
@@ -94,8 +99,8 @@ class RouterCompiler(DeviceCompiler):
         if not (node.ip.use_ipv4 and node.ip.use_ipv6):
             node.log.debug('Neither IPv4 nor IPv6 specified: using default IPv4')
 
-        node.ipv4_static_routes = []
-        node.ipv6_static_routes = []
+
+        self.static_routes(node)
 
             # node.ip.use_ipv4 = True
 
@@ -129,6 +134,30 @@ class RouterCompiler(DeviceCompiler):
 
         if use_bgp:
             self.bgp(node)
+
+    def static_routes(self, node):
+        node.ipv4_static_routes = []
+        ipv4_node = self.anm['ipv4'].node(node)
+        if ipv4_node and ipv4_node.static_routes:
+            for route in ipv4_node.static_routes:
+                stanza = ConfigStanza(
+                    prefix = route.prefix,
+                    netmask = route.netmask,
+                    nexthop = route.nexthop,
+                    metric = route.metric,
+                    )
+                node.ipv4_static_routes.append(stanza)
+
+        node.ipv6_static_routes = []
+        ipv6_node = self.anm['ipv6'].node(node)
+        if ipv6_node and ipv6_node.static_routes:
+            for route in ipv6_node.static_routes:
+                stanza = ConfigStanza(
+                    prefix = route.prefix,
+                    nexthop = route.nexthop,
+                    metric = route.metric,
+                    )
+                node.ipv6_static_routes.append(stanza)
 
     def interfaces(self, node):
         node.interfaces = []
@@ -401,7 +430,6 @@ class RouterCompiler(DeviceCompiler):
             g_ebgp_v6 = self.anm['ebgp_v6']
             for session in sort_sessions(g_ebgp_v6.edges(phy_node)):
                 if session.exclude:
-                    print "Exclude"
                     log.debug('Skipping excluded ebgp session %s' % session)
                     continue  # exclude from regular ibgp config (eg VRF, VPLS, etc)
                 data = self.ebgp_session_data(session, ip_version=6)
