@@ -13,6 +13,13 @@ def build_layer2(anm):
         if n.device_subtype != "managed"]
         ank_utils.aggregate_nodes(g_l2, unmanaged_switches)
 
+        try:
+            from autonetkit_cisco import build_network as cisco_build_network
+        except ImportError, e:
+            pass
+        else:
+            cisco_build_network.post_layer2(anm)
+
 def check_layer2(anm):
     """Sanity checks on topology"""
     from collections import defaultdict
@@ -158,9 +165,11 @@ def build_layer3(anm):
     g_l3.add_nodes_from(g_in.switches(), retain=['asn'])
     g_l3.add_edges_from(g_l2.edges())
 
-    ank_utils.aggregate_nodes(g_l3, g_l3.switches())
+    switches = g_l3.switches()
+
+    ank_utils.aggregate_nodes(g_l3, switches)
     exploded_edges = ank_utils.explode_nodes(g_l3,
-                                             g_l3.switches())
+                                             switches)
 
     # also explode virtual switches
     vswitches = [n for n in g_l3.nodes()
