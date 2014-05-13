@@ -1,6 +1,8 @@
 import logging
 from autonetkit.nidb.node import DmNode
 from autonetkit.log import CustomAdapter
+import autonetkit.log as log
+
 
 
 class DmEdge(object):
@@ -11,9 +13,12 @@ class DmEdge(object):
         object.__setattr__(self, 'src_id', src_id)
         object.__setattr__(self, 'dst_id', dst_id)
         object.__setattr__(self, 'ekey', ekey) # for multigraphs
-        logger = logging.getLogger("ANK")
-        logstring = "Edge: %s" % str(self)
-        self.log = CustomAdapter(logger, {'item': logstring})
+        #logger = logging.getLogger("ANK")
+        #logstring = "Edge: %s" % str(self)
+        #self.log = CustomAdapter(logger, {'item': logstring})
+        logger = log
+        object.__setattr__(self, 'log', logger)
+
 
     def __repr__(self):
         if self.is_multigraph():
