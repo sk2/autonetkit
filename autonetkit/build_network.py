@@ -112,14 +112,6 @@ def initialise(input_graph):
     g_graphics.add_nodes_from(g_in, retain=['x', 'y', 'device_type',
                                             'label', 'device_subtype', 'asn'])
 
-    # copy to phy too
-
-    if g_in.data.Creator == "VIRL":
-        # TODO: move this to other module
-        # Multiple ASNs set, use label format device.asn
-        #anm.set_node_label(".", ['label_full'])
-        pass
-
     return anm
 
 
@@ -162,6 +154,14 @@ def apply_design_rules(anm):
     g_in = anm['input']
 
     build_phy(anm)
+
+    try:
+        from autonetkit_cisco import build_network as cisco_build_network
+    except ImportError, e:
+        log.debug("Unable to load autonetkit_cisco %s" % e)
+    else:
+        cisco_build_network.post_phy(anm)
+
     g_phy = anm['phy']
     from autonetkit.design.osi_layers import (build_layer2,
         check_layer2, build_layer2_broadcast, build_layer3)
@@ -175,13 +175,11 @@ def apply_design_rules(anm):
     else:
         cisco_build_network.apply_vlans(anm)
 
-
     check_layer2(anm)
     build_layer2_broadcast(anm)
     log.info("Building layer3")
     build_layer3(anm)
 
-    #build_l3_connectivity(anm)
     check_server_asns(anm)
 
     from autonetkit.design.mpls import build_vrf
@@ -223,6 +221,7 @@ def apply_design_rules(anm):
 
     default_igp = g_in.data.igp or "ospf"
     ank_utils.set_node_default(g_in,  igp=default_igp)
+    ank_utils.copy_attr_from(g_in, g_phy, "igp")
 
     ank_utils.copy_attr_from(g_in, g_phy, "include_csr")
 
@@ -325,28 +324,13 @@ def build_phy(anm):
     g_phy.add_nodes_from(g_in, retain=['label', 'update', 'device_type', 'asn',
                                        'specified_int_names', 'x', 'y',
                                        'device_subtype', 'platform', 'host', 'syntax'])
+
     if g_in.data.Creator == "Topology Zoo Toolset":
         ank_utils.copy_attr_from(g_in, g_phy, "Network")
 
     ank_utils.set_node_default(g_phy,  Network=None)
     g_phy.add_edges_from(g_in.edges(type="physical"))
     # TODO: make this automatic if adding to the physical graph?
-
-    if g_in.data.Creator == "VIRL":
-        g_phy.data.mgmt_interfaces_enabled = g_in.data.mgmt_interfaces_enabled
-        # TODO: remove this code now allocated externally
-        g_phy.data.mgmt_address_start = g_in.data.mgmt_address_start
-        g_phy.data.mgmt_address_end = g_in.data.mgmt_address_end
-        g_phy.data.mgmt_prefixlen = g_in.data.mgmt_prefixlen
-        g_phy.data.mgmt_prefixlen = g_in.data.mgmt_prefixlen
-
-        ank_utils.copy_attr_from(g_in, g_phy, "use_cdp")
-        ank_utils.copy_attr_from(g_in, g_phy, "use_onepk")
-        ank_utils.copy_attr_from(g_in, g_phy, "label_full")
-        ank_utils.copy_attr_from(g_in, g_phy, "indices")
-        ank_utils.copy_attr_from(g_in, g_phy, "dont_configure_static_routing")
-        ank_utils.copy_attr_from(g_in, g_phy, "server_username")
-        ank_utils.copy_attr_from(g_in, g_phy, "server_ssh_key")
 
     ank_utils.set_node_default(g_phy,  use_ipv4=False, use_ipv6=False)
     ank_utils.copy_attr_from(g_in, g_phy, "custom_config_global",
@@ -365,27 +349,6 @@ def build_phy(anm):
                 interface.specified_id = specified_id  # map across
 
     remove_parallel_switch_links(anm)
-
-#@call_log
-def build_l3_connectivity(anm):
-    """ l3_connectivity graph: switch nodes aggregated and exploded"""
-    g_in = anm['input']
-    g_l3conn = anm.add_overlay("layer3")
-    g_l3conn.add_nodes_from(
-        g_in, retain=['label', 'update', 'device_type', 'asn',
-                      'specified_int_names',
-                      'device_subtype', 'platform', 'host', 'syntax'])
-    g_l3conn.add_nodes_from(g_in.switches(), retain=['asn'])
-    g_l3conn.add_edges_from(g_in.edges())
-
-    ank_utils.aggregate_nodes(g_l3conn, g_l3conn.switches())
-    exploded_edges = ank_utils.explode_nodes(g_l3conn,
-                                             g_l3conn.switches())
-    for edge in exploded_edges:
-        edge.multipoint = True
-        edge.src_int.multipoint = True
-        edge.dst_int.multipoint = True
-
 
 #@call_log
 def build_conn(anm):
