@@ -69,6 +69,7 @@ def manage_network(
             graph = build_network.grid_2d(grid)
 
         #TODO: integrate the code to visualise on error (enable in config)
+        anm = None
         try:
             anm = build_network.build(graph)
         except Exception, e:
@@ -105,6 +106,7 @@ def manage_network(
         if archive:
             anm.save()
         nidb = compile_network(anm)
+        autonetkit.update_vis(anm, nidb)
 
         #autonetkit.update_vis(anm, nidb)
         log.debug('Sent ANM to web server')
@@ -115,13 +117,13 @@ def manage_network(
 
         if render:
             import time
-            start = time.clock()
-            #autonetkit.render.render(nidb)
-            print time.clock() - start
-            import autonetkit.render2
-            start = time.clock()
-            autonetkit.render2.render(nidb)
-            print time.clock() - start
+            #start = time.clock()
+            autonetkit.render.render(nidb)
+            #print time.clock() - start
+            #import autonetkit.render2
+            #start = time.clock()
+            #autonetkit.render2.render(nidb)
+            #print time.clock() - start
 
     if not (build or compile):
 
