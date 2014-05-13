@@ -16,7 +16,7 @@ class PlatformCompiler(object):
         pass
 
     def copy_across_ip_addresses(self):
-        log.info("Copying across IP addresses to network model")
+        log.info("Copying IP addresses to device model")
         #TODO: try/except and raise SystemError as fatal error if cant copy
         from autonetkit.ank import sn_preflen_to_network
 
@@ -40,20 +40,20 @@ class PlatformCompiler(object):
                     #TODO: also need to skip layer2 virtual interfaces
                     # interface is connected
                     try:
-                        interface.use_ipv4 = True
                         interface.ipv4_address = ipv4_int.ip_address
                         interface.ipv4_subnet = ipv4_int.subnet
                         interface.ipv4_cidr = sn_preflen_to_network(interface.ipv4_address,
                             interface.ipv4_subnet.prefixlen)
                     except AttributeError:
                         log.warning("Unable to copy across IPv4 for %s" % interface)
+                    else:
+                        interface.use_ipv4 = True
                 if phy_node.use_ipv6:
                     ipv6_int = phy_int['ipv6']
                     if node.is_server() and interface.is_loopback:
                         continue
                     if interface.is_physical and not interface.is_bound:
                         continue
-                    interface.use_ipv6 = True
                     try:
                         #TODO: copy ip address as well
                         interface.ipv6_subnet = ipv6_int.subnet
@@ -61,4 +61,7 @@ class PlatformCompiler(object):
                             interface.ipv6_subnet.prefixlen)
                     except AttributeError:
                         log.warning("Unable to copy IPv6 subnet for %s" % interface)
+                    else:
+                        interface.use_ipv6 = True
+
 
