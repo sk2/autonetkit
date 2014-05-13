@@ -318,6 +318,9 @@ router bgp ${node.asn}
   !
   neighbor ${neigh.dst_int_ip} remote-as ${neigh.asn}
   neighbor ${neigh.dst_int_ip} description eBGP to ${neigh.neighbor}
+  % if neigh.multihop:
+  neighbor ${neigh.dst_int_ip} ebgp-multihop ${neigh.multihop}
+  %endif
 % if loop.last:
 !
 % endif
