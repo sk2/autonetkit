@@ -2,7 +2,6 @@ import autonetkit.ank as ank_utils
 import autonetkit.log as log
 from autonetkit.ank_utils import call_log
 
-
 #@call_log
 def build_ibgp_v4(anm):
     #TODO: remove the bgp layer and have just ibgp and ebgp
@@ -58,7 +57,6 @@ def build_ebgp_v6(anm):
         return
     g_ebgpv6.add_nodes_from(n for n in g_ebgp if n in ipv6_nodes)
     g_ebgpv6.add_edges_from(g_ebgp.edges(), retain="direction")
-
 
 #@call_log
 def build_ebgp(anm):
