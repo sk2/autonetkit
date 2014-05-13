@@ -230,6 +230,8 @@ def build_ipv6(anm):
                     interface.subnet = edge.dst.subnet  # from collision domain
 
     ipv6.allocate_vrf_loopbacks(g_ipv6, secondary_loopback_block)
+    for node in g_ipv6:
+        node.static_routes = []
 
     for node in g_ipv6.routers():
         #TODO: test this code
@@ -479,6 +481,8 @@ def build_ipv4(anm, infrastructure=True):
 
     # TODO: replace this with direct allocation to interfaces in ip alloc plugin
     #TODO: add option for nonzero interfaces on node - ie node.secondary_loopbacks
+    for node in g_ipv4:
+        node.static_routes = []
 
     for node in g_ipv4.routers():
         node.loopback_zero.ip_address = node.loopback
