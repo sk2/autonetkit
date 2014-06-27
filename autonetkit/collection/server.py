@@ -1,9 +1,7 @@
 """Zmq based measurement server"""
 # based on https://learning-0mq-with-pyzmq.readthedocs.org/en/latest/pyzmq/patterns/pushpull.html
 
-
 #TODO: rewrite as callbacks rather than threads
-
 
 import zmq
 import json
@@ -12,7 +10,6 @@ import telnetlib
 from threading import Thread
 import time
 import sys
-
 
 def streamer_device(port_in, port_out):
     from zmq.devices import ProcessDevice
@@ -148,6 +145,8 @@ def worker():
          hostname, result = do_connect(**data)
          success = True
        except Exception, e:
+        import traceback
+        traceback.print_exc()
         print e
         hostname = ""
         success = False
