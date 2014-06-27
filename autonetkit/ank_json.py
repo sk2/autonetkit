@@ -27,7 +27,10 @@ class AnkEncoder(json.JSONEncoder):
             return str(obj)
         if isinstance(obj, netaddr.IPNetwork):
             return str(obj)
-        if isinstance(obj, autonetkit.nidb.DmNode):
+        if isinstance(obj, autonetkit.nidb.node.DmNode):
+            #TODO: need to unserialize nidb nodes...
+            return str(obj)
+        if isinstance(obj, autonetkit.anm.node.NmNode):
             #TODO: need to unserialize nidb nodes...
             return str(obj)
         if isinstance(obj, autonetkit.anm.NmEdge):
