@@ -21,7 +21,7 @@ def get_results(server, commands, send_port = 5559, receive_port = 5562):
     log.info("Collecting results")
 
     json_results = []
-    log.debug("Expecting %s replies" % len(commands))
+    log.info("Expecting %s replies" % len(commands))
     for index in range(len(commands)):
         reply = results_receiver.recv_multipart()
         data = reply[1]
