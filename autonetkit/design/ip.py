@@ -422,7 +422,7 @@ def build_ipv4(anm, infrastructure=True):
 
 #TODO: don't present if using manual allocation
     if any(i for n in g_ip.nodes() for i in
-     n.loopback_interfaces if not i.is_loopback_zero):
+     n.loopback_interfaces() if not i.is_loopback_zero):
         block_message = "IPv4 Secondary Loopbacks: %s" % vrf_loopback_block
         log.info(block_message)
 
