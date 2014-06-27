@@ -102,6 +102,17 @@ def build_ibgp(anm):
     elif len(non_ibgp_nodes) >= 10:
         log.info("Skipping iBGP for more than 10 iBGP disabled nodes: refer to visualization for resulting topology.")
 
+    # warn for any nodes that have RR set but no rr_cluster, or HRR set and no hrr_cluster
+    rr_mismatch = [n for n in ibgp_nodes if n.ibgp_role == "RR" and n.rr_cluster is None]
+    if len(rr_mismatch):
+        log.warning("Some routers are set as RR but have no rr_cluster: %s. Please specify an rr_cluster for peering."
+            % ", ".join(str(n) for n in rr_mismatch))
+
+    hrr_mismatch = [n for n in ibgp_nodes if n.ibgp_role == "HRR" and n.hrr_cluster is None]
+    if len(hrr_mismatch):
+        log.warning("Some routers are set as HRR but have no hrr_cluster: %s. Please specify an hrr_cluster for peering."
+            % ", ".join(str(n) for n in hrr_mismatch))
+
     for asn, asn_devices in ank_utils.groupby("asn", ibgp_nodes):
         asn_devices = list(asn_devices)
 
