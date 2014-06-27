@@ -281,7 +281,7 @@ class OverlayBase(object):
         ):
         """"""
 
-        if not nbunch:
+        if nbunch is None:
             nbunch = self.nodes()
 
         def filter_func(node):
