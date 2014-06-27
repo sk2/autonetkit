@@ -29,11 +29,11 @@ setup (
      download_url = ("http://pypi.python.org/pypi/autonetkit"),
 
      install_requires = [
-         'netaddr==0.7.10',
-         'mako==0.8',
+         'netaddr>=0.7.10',
+         'mako>=0.8',
          'networkx>=1.7',
-         'configobj==4.7.1',
-         'tornado==3.0.1',
+         'configobj>=4.7.1',
+         'tornado>=3.0.1',
          #'textfsm', 'pika',
          # 'exscript==0.0.1'
          ],
