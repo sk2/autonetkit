@@ -1,79 +1,67 @@
 {
   "links": [
     {
-      "source": 0, 
       "key": 0, 
+      "source": 0, 
+      "_ports": {}, 
       "target": 1, 
-      "index": "i_0", 
-      "_ports": {}
+      "index": "i_0"
     }, 
     {
-      "source": 0, 
       "key": 1, 
+      "source": 0, 
+      "_ports": {}, 
       "target": 1, 
-      "index": "i_1", 
-      "_ports": {}
+      "index": "i_1"
     }, 
     {
+      "key": 0, 
       "source": 0, 
+      "_ports": {}, 
+      "target": 2, 
+      "index": "i_2"
+    }, 
+    {
+      "key": 1, 
+      "source": 0, 
+      "_ports": {}, 
+      "target": 2, 
+      "index": "i_3"
+    }, 
+    {
       "key": 2, 
-      "target": 1, 
-      "index": "i_2", 
-      "_ports": {}
+      "source": 0, 
+      "_ports": {}, 
+      "target": 2, 
+      "index": "i_4"
     }, 
     {
-      "source": 0, 
       "key": 3, 
-      "target": 1, 
-      "index": "i_3", 
-      "_ports": {}
+      "source": 0, 
+      "_ports": {}, 
+      "target": 2, 
+      "index": "i_5"
     }, 
     {
-      "source": 0, 
       "key": 4, 
-      "target": 1, 
-      "index": "i_4", 
-      "_ports": {}
-    }, 
-    {
       "source": 0, 
-      "key": 0, 
+      "_ports": {}, 
       "target": 2, 
-      "index": "i_5", 
-      "_ports": {}
+      "index": "i_6"
     }, 
     {
-      "source": 1, 
       "key": 0, 
-      "target": 2, 
-      "index": "i_6", 
-      "_ports": {}
-    }, 
-    {
       "source": 1, 
-      "key": 1, 
+      "_ports": {}, 
       "target": 2, 
-      "index": "i_7", 
-      "_ports": {}
+      "index": "i_7"
     }
   ], 
   "multigraph": true, 
-  "directed": false, 
-  "graph": [], 
   "nodes": [
     {
-      "id": "r1", 
-      "label": "r1", 
-      "_ports": {
-        "0": {
-          "description": null, 
-          "category": "physical"
-        }
-      }
-    }, 
-    {
-      "id": "r2", 
       "label": "r2", 
+      "id": "r2", 
       "_ports": {
         "0": {
           "description": null, 
@@ -82,8 +70,8 @@
       }
     }, 
     {
-      "id": "r3", 
       "label": "r3", 
+      "id": "r3", 
       "_ports": {
         "0": {
           "description": null, 
@@ -92,8 +80,18 @@
       }
     }, 
     {
-      "id": "r4", 
+      "label": "r1", 
+      "id": "r1", 
+      "_ports": {
+        "0": {
+          "description": null, 
+          "category": "physical"
+        }
+      }
+    }, 
+    {
       "label": "r4", 
+      "id": "r4", 
       "_ports": {
         "0": {
           "description": null, 
@@ -102,8 +100,8 @@
       }
     }, 
     {
-      "id": "r5", 
       "label": "r5", 
+      "id": "r5", 
       "_ports": {
         "0": {
           "description": null, 
@@ -111,5 +109,7 @@
         }
       }
     }
-  ]
+  ], 
+  "directed": false, 
+  "graph": []
 }

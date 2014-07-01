@@ -57,18 +57,19 @@ def build_anm(topology_name):
     anm = build_network.apply_design_rules(anm)
     return anm
 
-anm = build_anm("blank_labels")
-actual_labels = sorted(anm['phy'].nodes())
-expected_labels = ["none___0", "none___1", "none___2"]
-assert(actual_labels == expected_labels)
+def test():
+    anm = build_anm("blank_labels")
+    actual_labels = sorted(anm['phy'].nodes())
+    expected_labels = ["none___0", "none___1", "none___2"]
+    assert(actual_labels == expected_labels)
 
-anm = build_anm("duplicate_labels")
-actual_labels = sorted(anm['phy'].nodes())
-expected_labels = ["none___0", "none___1", "none___2"]
-#TODO: need to log this as a bug
-#assert(actual_labels == expected_labels)
+    anm = build_anm("duplicate_labels")
+    actual_labels = sorted(anm['phy'].nodes())
+    expected_labels = ["none___0", "none___1", "none___2"]
+    #TODO: need to log this as a bug
+    #assert(actual_labels == expected_labels)
 
-anm = build_anm("asn_zero")
-actual_asns = [n.asn for n in anm['phy']]
-expected_asns = [1, 1, 1]
-assert(actual_asns == expected_asns)
+    anm = build_anm("asn_zero")
+    actual_asns = [n.asn for n in anm['phy']]
+    expected_asns = [1, 1, 1]
+    assert(actual_asns == expected_asns)

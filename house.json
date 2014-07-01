@@ -3,16 +3,10 @@
   "graph": [], 
   "links": [
     {
-      "dst": "r2", 
+      "dst": "r1", 
       "dst_port": "eth0", 
-      "src": "r1", 
+      "src": "r2", 
       "src_port": "eth0"
-    }, 
-    {
-      "dst": "r3", 
-      "dst_port": "eth0", 
-      "src": "r1", 
-      "src_port": "eth1"
     }, 
     {
       "dst": "r3", 
@@ -25,6 +19,12 @@
       "dst_port": "eth0", 
       "src": "r2", 
       "src_port": "eth2"
+    }, 
+    {
+      "dst": "r1", 
+      "dst_port": "eth1", 
+      "src": "r3", 
+      "src_port": "eth0"
     }, 
     {
       "dst": "r5", 

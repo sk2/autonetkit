@@ -7,23 +7,18 @@ import shutil
 import autonetkit.log as log
 import autonetkit
 
-# stdio redirect from stackoverflow.com/q/2654834
+def test():
+    # stdio redirect from stackoverflow.com/q/2654834
 
-#TODO: add feature that reports if only IP addresses have changed: match the diff to an IP regex
+    #TODO: add feature that reports if only IP addresses have changed: match the diff to an IP regex
+    dirname, filename = os.path.split(os.path.abspath(__file__))
 
-automated = True # whether to open ksdiff, log to file...
-if __name__ == "__main__":
-    automated = False
+    input_file = os.path.join(dirname, "small_internet.graphml")
+    print input_file
 
-dirname, filename = os.path.split(os.path.abspath(__file__))
+    arg_string = "-f %s --diff --render" % input_file
+    args = console_script.parse_options(arg_string)
 
-anm =  autonetkit.NetworkModel()
-input_file = os.path.join(dirname, "small_internet.graphml")
-print input_file
+    console_script.main(args)
 
-arg_string = "-f %s --diff --render" % input_file
-args = console_script.parse_options(arg_string)
-
-console_script.main(args)
-
-#TODO: test output works
+    #TODO: test output works
