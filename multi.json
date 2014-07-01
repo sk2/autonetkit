@@ -1,0 +1,107 @@
+{
+  "directed": false, 
+  "graph": [], 
+  "nodes": [
+    {
+      "_ports": {
+        "0": {
+          "category": "physical", 
+          "description": null
+        }
+      }, 
+      "id": "r4", 
+      "label": "r4"
+    }, 
+    {
+      "_ports": {
+        "0": {
+          "category": "physical", 
+          "description": null
+        }
+      }, 
+      "id": "r5", 
+      "label": "r5"
+    }, 
+    {
+      "_ports": {
+        "0": {
+          "category": "physical", 
+          "description": null
+        }
+      }, 
+      "id": "r1", 
+      "label": "r1"
+    }, 
+    {
+      "_ports": {
+        "0": {
+          "category": "physical", 
+          "description": null
+        }
+      }, 
+      "id": "r2", 
+      "label": "r2"
+    }, 
+    {
+      "_ports": {
+        "0": {
+          "category": "physical", 
+          "description": null
+        }
+      }, 
+      "id": "r3", 
+      "label": "r3"
+    }
+  ], 
+  "links": [
+    {
+      "index": "i_0", 
+      "_ports": {}, 
+      "target": 3, 
+      "source": 2
+    }, 
+    {
+      "index": "i_1", 
+      "_ports": {}, 
+      "target": 3, 
+      "source": 2
+    }, 
+    {
+      "index": "i_2", 
+      "_ports": {}, 
+      "target": 3, 
+      "source": 2
+    }, 
+    {
+      "index": "i_3", 
+      "_ports": {}, 
+      "target": 3, 
+      "source": 2
+    }, 
+    {
+      "index": "i_4", 
+      "_ports": {}, 
+      "target": 3, 
+      "source": 2
+    }, 
+    {
+      "index": "i_5", 
+      "_ports": {}, 
+      "target": 4, 
+      "source": 2
+    }, 
+    {
+      "index": "i_6", 
+      "_ports": {}, 
+      "target": 4, 
+      "source": 3
+    }, 
+    {
+      "index": "i_7", 
+      "_ports": {}, 
+      "target": 4, 
+      "source": 3
+    }
+  ], 
+  "multigraph": true
+}

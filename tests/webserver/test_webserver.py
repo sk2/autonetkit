@@ -10,7 +10,7 @@ if __name__ == "__main__":
 dirname, filename = os.path.split(os.path.abspath(__file__))
 parent_dir = os.path.abspath(os.path.join(dirname, os.pardir))
 
-anm =  autonetkit.ANM()
+anm =  autonetkit.NetworkModel()
 input_file = os.path.join(parent_dir, "small_internet.graphml")
 input_graph = graphml.load_graphml(input_file)
 

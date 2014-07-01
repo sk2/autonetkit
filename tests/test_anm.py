@@ -3,7 +3,7 @@ import autonetkit.log as log
 
 log.info("Testing ANM")
 
-anm = autonetkit.anm.NetworkModel()
+anm = autonetkit.NetworkModel()
 
 g_in = anm.add_overlay("input")
 

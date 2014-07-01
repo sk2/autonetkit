@@ -21,7 +21,7 @@ if __name__ == "__main__":
 
 dirname, filename = os.path.split(os.path.abspath(__file__))
 
-anm =  autonetkit.ANM()
+anm =  autonetkit.NetworkModel()
 input_file = os.path.join(dirname, "small_internet.graphml")
 input_graph = graphml.load_graphml(input_file)
 

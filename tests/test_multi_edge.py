@@ -3,7 +3,7 @@ import autonetkit.log as log
 
 log.info("Testing ANM")
 
-anm = autonetkit.anm.NetworkModel()
+anm = autonetkit.NetworkModel()
 g_phy = anm['phy']
 g_phy.add_nodes_from(["r1", "r2", "r3", "r4", "r5"])
 for node in g_phy:

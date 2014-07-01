@@ -2,7 +2,7 @@ import autonetkit
 import autonetkit.log as log
 
 
-anm = autonetkit.anm.NetworkModel()
+anm = autonetkit.NetworkModel()
 g_phy = anm.add_overlay("phy")
 for index in range(5):
     node_id = "r_%s" % index

@@ -49,7 +49,7 @@ def build_anm(topology_name):
     dirname, filename = os.path.split(os.path.abspath(__file__))
     input_filename = os.path.join(dirname, "%s.graphml" % topology_name)
 
-    anm =  autonetkit.ANM()
+    anm =  autonetkit.NetworkModel()
     input_graph = graphml.load_graphml(input_filename)
 
     import autonetkit.build_network as build_network
