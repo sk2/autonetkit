@@ -1,115 +1,115 @@
 {
-  "directed": false, 
   "links": [
     {
-      "key": 0, 
       "source": 0, 
-      "_ports": {}, 
+      "key": 0, 
+      "target": 1, 
       "index": "i_0", 
-      "target": 1
+      "_ports": {}
     }, 
     {
-      "key": 1, 
       "source": 0, 
-      "_ports": {}, 
+      "key": 1, 
+      "target": 1, 
       "index": "i_1", 
-      "target": 1
+      "_ports": {}
     }, 
     {
+      "source": 0, 
       "key": 2, 
-      "source": 0, 
-      "_ports": {}, 
+      "target": 1, 
       "index": "i_2", 
-      "target": 1
+      "_ports": {}
     }, 
     {
+      "source": 0, 
       "key": 3, 
-      "source": 0, 
-      "_ports": {}, 
+      "target": 1, 
       "index": "i_3", 
-      "target": 1
+      "_ports": {}
     }, 
     {
+      "source": 0, 
       "key": 4, 
-      "source": 0, 
-      "_ports": {}, 
+      "target": 1, 
       "index": "i_4", 
-      "target": 1
+      "_ports": {}
     }, 
     {
-      "key": 0, 
       "source": 0, 
-      "_ports": {}, 
-      "index": "i_5", 
-      "target": 2
-    }, 
-    {
       "key": 0, 
-      "source": 1, 
-      "_ports": {}, 
-      "index": "i_6", 
-      "target": 2
+      "target": 2, 
+      "index": "i_5", 
+      "_ports": {}
     }, 
     {
-      "key": 1, 
       "source": 1, 
-      "_ports": {}, 
+      "key": 0, 
+      "target": 2, 
+      "index": "i_6", 
+      "_ports": {}
+    }, 
+    {
+      "source": 1, 
+      "key": 1, 
+      "target": 2, 
       "index": "i_7", 
-      "target": 2
+      "_ports": {}
     }
   ], 
   "multigraph": true, 
+  "directed": false, 
+  "graph": [], 
   "nodes": [
     {
-      "_ports": {
-        "0": {
-          "category": "physical", 
-          "description": null
-        }
-      }, 
+      "id": "r1", 
       "label": "r1", 
-      "id": "r1"
-    }, 
-    {
       "_ports": {
         "0": {
-          "category": "physical", 
-          "description": null
+          "description": null, 
+          "category": "physical"
         }
-      }, 
+      }
+    }, 
+    {
+      "id": "r2", 
       "label": "r2", 
-      "id": "r2"
-    }, 
-    {
       "_ports": {
         "0": {
-          "category": "physical", 
-          "description": null
+          "description": null, 
+          "category": "physical"
         }
-      }, 
+      }
+    }, 
+    {
+      "id": "r3", 
       "label": "r3", 
-      "id": "r3"
-    }, 
-    {
       "_ports": {
         "0": {
-          "category": "physical", 
-          "description": null
+          "description": null, 
+          "category": "physical"
         }
-      }, 
+      }
+    }, 
+    {
+      "id": "r4", 
       "label": "r4", 
-      "id": "r4"
-    }, 
-    {
       "_ports": {
         "0": {
-          "category": "physical", 
-          "description": null
+          "description": null, 
+          "category": "physical"
         }
-      }, 
+      }
+    }, 
+    {
+      "id": "r5", 
       "label": "r5", 
-      "id": "r5"
+      "_ports": {
+        "0": {
+          "description": null, 
+          "category": "physical"
+        }
+      }
     }
-  ], 
-  "graph": []
+  ]
 }

@@ -109,3 +109,5 @@ tests/multi.json
 docs/_build/*
 
 tox.ini
+
+cover/*
