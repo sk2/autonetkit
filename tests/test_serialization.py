@@ -25,16 +25,16 @@ assert(all(n in g_phy_restored for n in g_phy_original))
 
 #TODO: do more extensive deep check of parameters
 
-import autonetkit.console_script as console_script
+import autonetkit.workflow as workflow
 render_hostname = "localhost"
 
-nidb = console_script.create_nidb(anm)
+nidb = workflow.create_nidb(anm)
 import autonetkit.compilers.platform.netkit as pl_netkit
 nk_compiler = pl_netkit.NetkitCompiler(nidb, anm, render_hostname)
 nk_compiler.compile()
 
 nidb.save()
-nidb_restored =  autonetkit.NIDB()
+nidb_restored =  autonetkit.DeviceModel()
 nidb_restored.restore_latest()
 assert(all(n in nidb_restored for n in nidb))
 
