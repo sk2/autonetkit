@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import itertools
+from collections import namedtuple
 
 import autonetkit.log as log
 import networkx as nx
@@ -12,6 +13,13 @@ try:
     import cPickle as pickle
 except ImportError:
     import pickle
+
+# helper namedtuples - until have a more complete schema (such as from Yang)
+static_route_v4 = namedtuple("static_route_v4",
+    ["prefix", "netmask", "nexthop", "metric"])
+
+static_route_v6 = namedtuple("static_route_v6",
+    ["prefix", "nexthop", "metric"])
 
 
 def sn_preflen_to_network(address, prefixlen):
@@ -139,6 +147,9 @@ def copy_int_attr_from(
             elif type is int:
                 val = int(val)
 
+            if node not in overlay_dst:
+                continue
+
             dst_int = overlay_dst.interface(src_int)
             if dst_int is not None:
                 dst_int.set(dst_attr, val)
@@ -152,6 +163,7 @@ def copy_edge_attr_from(
     type=None,
     default=None,
     ):
+    # note this won't work if merge/aggregate edges
 
     if not dst_attr:
         dst_attr = src_attr
@@ -179,7 +191,8 @@ def copy_edge_attr_from(
             try:
                 overlay_dst.edge(edge).set(dst_attr, val)
             except AttributeError:
-                log.warning('Unable to set edge attribute on %s in %s'
+                # fail to debug - as attribute may not have been set
+                log.debug('Unable to set edge attribute on %s in %s'
                             % (edge, overlay_dst))
 
 
@@ -202,7 +215,7 @@ def wrap_edges(NmGraph, edges):
     except ValueError:
         pass  # already of form (src, dst)
 
-    return (NmEdge(NmGraph._anm, NmGraph._overlay_id, src, dst)
+    return list(NmEdge(NmGraph._anm, NmGraph._overlay_id, src, dst)
         for (src, dst) in edges)
 
 
@@ -328,10 +341,21 @@ def explode_nodes(NmGraph, nodes, retain=[]):
                                     for key in retain)
             data.update(node_to_dst_data)
 
-            src_int_id = src_edge.raw_interfaces[src.node_id]
-            dst_int_id = dst_edge.raw_interfaces[dst.node_id]
-            data['_ports'] = {src.node_id: src_int_id,
-                              dst.node_id: dst_int_id}
+            data['_ports'] = {}
+            try:
+                src_int_id = src_edge.raw_interfaces[src.node_id]
+            except KeyError:
+                pass # not set
+            else:
+                data['_ports'][src.node_id] = src_int_id
+
+            try:
+                dst_int_id = dst_edge.raw_interfaces[dst.node_id]
+            except KeyError:
+                pass # not set
+            else:
+                data['_ports'][dst.node_id] = dst_int_id
+
             new_edge = (src.node_id, dst.node_id, data)
 
             # TODO: use add_edge

@@ -57,6 +57,11 @@ class DmLabTopology(object):
         """Sets topology property"""
         self._topology_data[key] = val
 
+    def set(self, key, val):
+        """For consistency, topology.set(key, value) is neater
+        than setattr(topology, key, value)"""
+        return self.__setattr__(key, val)
+
 class DeviceModel(DmBase):
     def __init__(self):
         super(DeviceModel, self).__init__()

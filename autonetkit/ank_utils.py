@@ -21,7 +21,14 @@ def unwrap_nodes(nodes):
 
 def unwrap_edges(edges):
     """Unwrap edges"""
-    return ( (edge.src_id, edge.dst_id) for edge in edges)
+    retval = []
+    for edge in edges:
+        if edge.is_multigraph():
+            retval.append((edge.src_id, edge.dst_id, edge.ekey))
+        else:
+            retval.append((edge.src_id, edge.dst_id))
+
+    return retval
 
 def unwrap_graph(nm_graph):
     """Unwrap graph"""

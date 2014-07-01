@@ -7,8 +7,10 @@ from autonetkit.ank_utils import call_log
 
 SETTINGS = autonetkit.config.settings
 
+#TODO: refactor to go in chronological workflow order
 
-@call_log
+
+#@call_log
 def manual_ipv6_loopback_allocation(anm):
     """Applies manual IPv6 allocation"""
 
@@ -29,7 +31,7 @@ def manual_ipv6_loopback_allocation(anm):
 
     g_ipv6.data.loopback_blocks = loopback_blocks
 
-@call_log
+#@call_log
 def extract_ipv6_blocks(anm):
 
     # TODO: set all these blocks globally in config file, rather than repeated in load, build_network, compile, etc
@@ -77,7 +79,7 @@ def extract_ipv6_blocks(anm):
 
     return (infra_block, loopback_block, vrf_loopback_block)
 
-@call_log
+#@call_log
 def manual_ipv6_infrastructure_allocation(anm):
     """Applies manual IPv6 allocation"""
 
@@ -143,13 +145,16 @@ def manual_ipv6_infrastructure_allocation(anm):
 
     g_ipv6.data.infra_blocks = infra_blocks
 
-@call_log
+#@call_log
 def build_ipv6(anm):
     """Builds IPv6 graph, using nodes and edges from IP graph"""
     import netaddr
     import autonetkit.plugins.ipv6 as ipv6
 
     # uses the nodes and edges from ipv4
+
+
+    #TODO: do we also need to copy across the asn for broadcast domains?
 
     g_ipv6 = anm.add_overlay('ipv6')
     g_ip = anm['ip']
@@ -161,11 +166,10 @@ def build_ipv6(anm):
     (infra_block, loopback_block, secondary_loopback_block) = \
         extract_ipv6_blocks(anm)
 
-    block_message = "IPv6 allocations: Infrastructure: %s, Loopback: %s" % (infra_block, loopback_block)
     if any(i for n in g_ip.nodes() for i in
-     n.loopback_interfaces() if not i.is_loopback_zero):
-        block_message += " Secondary Loopbacks: %s" % secondary_loopback_block
-    log.info(block_message)
+     n.loopback_interfaces if not i.is_loopback_zero):
+        block_message = "IPv6 Secondary Loopbacks: %s" % secondary_loopback_block
+        log.info(block_message)
 
     # TODO: replace this with direct allocation to interfaces in ip alloc plugin
     allocated = sorted([n for n in g_ip if n['input'].loopback_v6])
@@ -175,6 +179,7 @@ def build_ipv6(anm):
         log.info("Using user-specified IPv6 loopback addresses")
         manual_ipv6_loopback_allocation(anm)
     else:
+        log.info("Allocating from IPv6 loopback block: %s" % loopback_block)
         if len(allocated):
             log.warning("Using automatic IPv6 loopback allocation. IPv6 loopback addresses specified on nodes %s will be ignored." % allocated)
         else:
@@ -196,6 +201,7 @@ def build_ipv6(anm):
         log.info("Using user-specified IPv6 infrastructure addresses")
         manual_alloc_ipv6_infrastructure = True
     else:
+        log.info("Allocating from IPv6 Infrastructure block: %s" % infra_block)
         manual_alloc_ipv6_infrastructure = False
         # warn if any set
         allocated = []
@@ -225,6 +231,8 @@ def build_ipv6(anm):
                     interface.subnet = edge.dst.subnet  # from collision domain
 
     ipv6.allocate_vrf_loopbacks(g_ipv6, secondary_loopback_block)
+    for node in g_ipv6:
+        node.static_routes = []
 
     for node in g_ipv6.routers():
         #TODO: test this code
@@ -234,7 +242,7 @@ def build_ipv6(anm):
             if not interface.is_loopback_zero:
                 interface.ip_address = interface.loopback #TODO: fix this inconsistency elsewhere
 
-@call_log
+#@call_log
 def manual_ipv4_infrastructure_allocation(anm):
     """Applies manual IPv4 allocation"""
 
@@ -305,7 +313,7 @@ def manual_ipv4_infrastructure_allocation(anm):
     g_ipv4.data.infra_blocks = infra_blocks
 
 
-@call_log
+#@call_log
 def manual_ipv4_loopback_allocation(anm):
     """Applies manual IPv4 allocation"""
 
@@ -327,15 +335,15 @@ def manual_ipv4_loopback_allocation(anm):
     g_ipv4.data.loopback_blocks = loopback_blocks
 
 
-@call_log
+#@call_log
 def build_ip(anm):
     g_ip = anm.add_overlay('ip')
-    g_layer2 = anm['layer2_bc']
+    g_l2_bc = anm['layer2_bc']
     # Retain arbitrary ASN allocation for IP addressing
-    g_ip.add_nodes_from(g_layer2, retain=["asn", "broadcast_domain"])
-    g_ip.add_edges_from(g_layer2.edges())
+    g_ip.add_nodes_from(g_l2_bc, retain=["asn", "broadcast_domain"])
+    g_ip.add_edges_from(g_l2_bc.edges())
 
-@call_log
+#@call_log
 def extract_ipv4_blocks(anm):
 
     # TODO: set all these blocks globally in config file, rather than repeated in load, build_network, compile, etc
@@ -386,7 +394,7 @@ def extract_ipv4_blocks(anm):
     return (infra_block, loopback_block, vrf_loopback_block)
 
 
-@call_log
+#@call_log
 def build_ipv4(anm, infrastructure=True):
     """Builds IPv4 graph"""
 
@@ -399,8 +407,12 @@ def build_ipv4(anm, infrastructure=True):
 
     # Copy ASN attribute chosen for collision domains (used in alloc algorithm)
 
-    ank_utils.copy_attr_from(g_ip, g_ipv4, 'asn',
-                             nbunch=g_ipv4.nodes('broadcast_domain'))
+    ank_utils.copy_attr_from(g_ip, g_ipv4, 'asn', nbunch=g_ipv4.nodes('broadcast_domain'))
+    # work around until fall-through implemented
+    vswitches = [n for n in g_ip.nodes()
+    if n['layer2'].device_type == "switch"
+    and n['layer2'].device_subtype == "virtual"]
+    ank_utils.copy_attr_from(g_ip, g_ipv4, 'asn', nbunch=vswitches)
     g_ipv4.add_edges_from(g_ip.edges())
 
     # check if ip ranges have been specified on g_in
@@ -409,12 +421,10 @@ def build_ipv4(anm, infrastructure=True):
         extract_ipv4_blocks(anm)
 
 #TODO: don't present if using manual allocation
-    block_message = "IPv4 allocations: Infrastructure: %s, Loopback: %s" % (infra_block, loopback_block)
     if any(i for n in g_ip.nodes() for i in
      n.loopback_interfaces() if not i.is_loopback_zero):
-        block_message += " Secondary Loopbacks: %s" % vrf_loopback_block
-
-    log.info(block_message)
+        block_message = "IPv4 Secondary Loopbacks: %s" % vrf_loopback_block
+        log.info(block_message)
 
     # See if IP addresses specified on each interface
 
@@ -432,6 +442,7 @@ def build_ipv4(anm, infrastructure=True):
     if manual_alloc_devices == set(l3_devices):
         manual_alloc_ipv4_infrastructure = True
     else:
+        log.info("Allocating from IPv4 infrastructure block: %s" % infra_block)
         manual_alloc_ipv4_infrastructure = False
         # warn if any set
         allocated = []
@@ -455,6 +466,7 @@ def build_ipv4(anm, infrastructure=True):
     if g_in.data.alloc_ipv4_loopbacks is False:
         manual_ipv4_loopback_allocation(anm)
     else:
+        log.info("Allocating from IPv4 loopback block: %s" % loopback_block)
         # Check if some nodes are allocated
         allocated = sorted([n for n in g_ip if n['input'].loopback_v4])
         unallocated = sorted([n for n in g_ip if not n['input'].loopback_v4])
@@ -470,6 +482,8 @@ def build_ipv4(anm, infrastructure=True):
 
     # TODO: replace this with direct allocation to interfaces in ip alloc plugin
     #TODO: add option for nonzero interfaces on node - ie node.secondary_loopbacks
+    for node in g_ipv4:
+        node.static_routes = []
 
     for node in g_ipv4.routers():
         node.loopback_zero.ip_address = node.loopback

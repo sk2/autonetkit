@@ -313,7 +313,8 @@ class DmBase(object):
 
             #TODO: add check that edge.src and edge.dst exist
             if not(src in self and dst in self):
-                log.warning("Not adding edge, src/dst not in overlay")
+                log.warning("Not adding edge, %s to %s, "
+                    "src and/or dst not in overlay %s" % (src, dst, self))
                 continue
 
             #TODO: warn if not multigraph and edge already exists - don't add/clobber

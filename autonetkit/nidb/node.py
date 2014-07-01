@@ -6,6 +6,8 @@ import autonetkit.log as log
 from autonetkit.log import CustomAdapter
 from autonetkit.nidb.config_stanza import ConfigStanza
 from autonetkit.nidb.interface import DmInterface
+import autonetkit.log as log
+
 
 
 @functools.total_ordering
@@ -16,11 +18,12 @@ class DmNode(object):
 #Set using this method to bypass __setattr__
         object.__setattr__(self, 'nidb', nidb)
         object.__setattr__(self, 'node_id', node_id)
-        logger = logging.getLogger("ANK")
+        #logger = logging.getLogger("ANK")
         #TODO: also pass the node object to the logger for building custom output lists
         # ie create a special handler that just outputs the specific node/link/interface errors
-        logstring = "Node: %s" % str(self)
-        logger = CustomAdapter(logger, {'item': logstring})
+        #logstring = "Node: %s" % str(self)
+        #logger = CustomAdapter(logger, {'item': logstring})
+        logger = log
         object.__setattr__(self, 'log', logger)
 
     #TODO: make a json objct that returns keys that aren't logs, etc - filter out
@@ -269,3 +272,8 @@ class DmNode(object):
 
     def __iter__(self):
         return iter(self._node_data)
+
+    def set(self, key, val):
+        """For consistency, node.set(key, value) is neater
+        than setattr(node, key, value)"""
+        return self.__setattr__(key, val)

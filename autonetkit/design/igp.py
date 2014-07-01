@@ -5,7 +5,7 @@ from autonetkit.ank_utils import call_log
 
 #TODO: extract the repeated code and use the layer2  and layer3 graphs
 
-@call_log
+#@call_log
 def build_ospf(anm):
     """
     Build OSPF graph.
@@ -33,9 +33,11 @@ def build_ospf(anm):
         g_ospf.log.debug("No OSPF nodes")
         return
 
-    g_ospf.add_nodes_from(g_l3)
-    g_ospf.add_edges_from(g_l3.edges())
+    ospf_nodes = [n for n in g_l3 if n['phy'].igp == "ospf"]
+    g_ospf.add_nodes_from(ospf_nodes)
+    g_ospf.add_edges_from(g_l3.edges(), warn = False)
     ank_utils.copy_int_attr_from(g_l3, g_ospf, "multipoint")
+
     #TODO: work out why this doesnt work
     #ank_utils.copy_int_attr_from(g_in, g_ospf, "ospf_cost", dst_attr="cost",  type=int, default = 1)
     for node in g_ospf:
@@ -139,7 +141,7 @@ def build_ospf(anm):
         router.loopback_zero.cost = 0
         router.process_id = router.asn
 
-@call_log
+#@call_log
 def ip_to_net_ent_title_ios(ip_addr):
     """ Converts an IP address into an OSI Network Entity Title
     suitable for use in IS-IS on IOS.
@@ -161,7 +163,7 @@ def ip_to_net_ent_title_ios(ip_addr):
     return ".".join([area_id, ip_octets[0:4], ip_octets[4:8], ip_octets[8:12],
                      "00"])
 
-@call_log
+#@call_log
 def build_eigrp(anm):
     """Build eigrp overlay"""
     g_in = anm['input']
@@ -176,8 +178,9 @@ def build_eigrp(anm):
     if not any(n.igp == "eigrp" for n in g_in):
         log.debug("No EIGRP nodes")
         return
-    g_eigrp.add_nodes_from(g_l3)
-    g_eigrp.add_edges_from(g_l3.edges())
+    eigrp_nodes = [n for n in g_l3 if n['phy'].igp == "eigrp"]
+    g_eigrp.add_nodes_from(eigrp_nodes)
+    g_eigrp.add_edges_from(g_l3.edges(), warn = False)
     ank_utils.copy_int_attr_from(g_l3, g_eigrp, "multipoint")
 
     ank_utils.copy_attr_from(g_in, g_eigrp, "custom_config_eigrp", dst_attr="custom_config")
@@ -203,7 +206,7 @@ def build_eigrp(anm):
             interface.metric = edge.metric
             interface.multipoint = edge.multipoint
 
-@call_log
+#@call_log
 def build_isis(anm):
     """Build isis overlay"""
     g_in = anm['input']
@@ -219,8 +222,9 @@ def build_isis(anm):
         g_isis.log.debug("No ISIS nodes")
         return
 
-    g_isis.add_nodes_from(g_l3)
-    g_isis.add_edges_from(g_l3.edges())
+    isis_nodes = [n for n in g_l3 if n['phy'].igp == "isis"]
+    g_isis.add_nodes_from(isis_nodes)
+    g_isis.add_edges_from(g_l3.edges(), warn = False)
     ank_utils.copy_int_attr_from(g_l3, g_isis, "multipoint")
 
     g_ipv4 = anm['ipv4']

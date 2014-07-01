@@ -318,6 +318,9 @@ router bgp ${node.asn}
   !
   neighbor ${neigh.dst_int_ip} remote-as ${neigh.asn}
   neighbor ${neigh.dst_int_ip} description eBGP to ${neigh.neighbor}
+  % if neigh.multihop:
+  neighbor ${neigh.dst_int_ip} ebgp-multihop ${neigh.multihop}
+  %endif
 % if loop.last:
 !
 % endif
@@ -394,12 +397,19 @@ router bgp ${node.asn}
   !
 %endfor
 !
-% for route in node.bgp.ipv4_nailed_up_routes:
-ip route ${route.network} ${route.netmask} Null0 254
+% for route in node.ipv4_static_routes:
+% if route.metric:
+ip route ${route.prefix} ${route.netmask} ${route.nexthop} ${route.metric}
+% else:
+ip route ${route.prefix} ${route.netmask} ${route.nexthop}
+%endif
 % endfor
-!
-% for route in node.bgp.ipv6_nailed_up_routes:
-ipv6 route ${route} Null0 254
+% for route in node.ipv6_static_routes:
+% if route.metric:
+ipv6 route ${route.prefix} ${route.nexthop} ${route.metric}
+% else:
+ipv6 route ${route.prefix} ${route.nexthop}
+%endif
 % endfor
 !
 end

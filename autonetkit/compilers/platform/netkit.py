@@ -10,6 +10,7 @@ import itertools
 from autonetkit.ank_utils import alphabetical_sort as alpha_sort
 from autonetkit.compilers.device.quagga import QuaggaCompiler
 from autonetkit.nidb import ConfigStanza
+from autonetkit.render2 import NodeRender, PlatformRender
 
 class NetkitCompiler(PlatformCompiler):
     """Netkit Platform Compiler"""
@@ -22,57 +23,71 @@ class NetkitCompiler(PlatformCompiler):
         log.info("Compiling Netkit for %s" % self.host)
         g_phy = self.anm['phy']
         quagga_compiler = QuaggaCompiler(self.nidb, self.anm)
+
+        # todo: set platform render
+        lab_topology = self.nidb.topology(self.host)
+        lab_topology.render2 = PlatformRender()
+
 # TODO: this should be all l3 devices not just routers
         for phy_node in g_phy.l3devices(host=self.host, syntax='quagga'):
             folder_name = naming.network_hostname(phy_node)
-            DmNode = self.nidb.node(phy_node)
-            DmNode.add_stanza("render")
+            dm_node = self.nidb.node(phy_node)
+            dm_node.add_stanza("render")
             #TODO: order by folder and file template src/dst
-            DmNode.render.base = os.path.join("templates","quagga")
-            DmNode.render.template = os.path.join("templates",
+            dm_node.render.base = os.path.join("templates","quagga")
+            dm_node.render.template = os.path.join("templates",
                 "netkit_startup.mako")
-            DmNode.render.dst_folder = os.path.join("rendered",
+            dm_node.render.dst_folder = os.path.join("rendered",
                 self.host, "netkit")
-            DmNode.render.base_dst_folder = os.path.join("rendered",
+            dm_node.render.base_dst_folder = os.path.join("rendered",
                 self.host, "netkit", folder_name)
-            DmNode.render.dst_file = "%s.startup" % folder_name
+            dm_node.render.dst_file = "%s.startup" % folder_name
 
-            DmNode.render.custom = {
+            dm_node.render.custom = {
                     'abc': 'def.txt'
                     }
 
+            render2 = NodeRender()
+            #TODO: dest folder also needs to be able to accept a list
+            #TODO: document that use a list so can do native os.path.join on target platform
+            render2.add_folder(["templates", "quagga"], folder_name)
+            render2.add_file(("templates", "netkit_startup.mako"), "%s.startup" % folder_name)
+            dm_node.render2 = render2
+            lab_topology.render2.add_node(dm_node)
+            #lab_topology.render2_hosts.append(phy_node)
+
 # allocate zebra information
-            DmNode.add_stanza("zebra")
-            if DmNode.is_router():
-                DmNode.zebra.password = "1234"
+            dm_node.add_stanza("zebra")
+            if dm_node.is_router():
+                dm_node.zebra.password = "1234"
             hostname = folder_name
             if hostname[0] in string.digits:
                 hostname = "r" + hostname
-            DmNode.hostname = hostname  # can't have . in quagga hostnames
-            DmNode.add_stanza("ssh")
-            DmNode.ssh.use_key = True  # TODO: make this set based on presence of key
+            dm_node.hostname = hostname  # can't have . in quagga hostnames
+            dm_node.add_stanza("ssh")
+            dm_node.ssh.use_key = True  # TODO: make this set based on presence of key
 
             # Note this could take external data
             int_ids = itertools.count(0)
-            for interface in DmNode.physical_interfaces():
+            for interface in dm_node.physical_interfaces():
                 numeric_id = int_ids.next()
                 interface.numeric_id = numeric_id
                 interface.id = self.index_to_int_id(numeric_id)
 
 # and allocate tap interface
-            DmNode.add_stanza("tap")
-            DmNode.tap.id = self.index_to_int_id(int_ids.next())
+            dm_node.add_stanza("tap")
+            dm_node.tap.id = self.index_to_int_id(int_ids.next())
 
-            quagga_compiler.compile(DmNode)
+            quagga_compiler.compile(dm_node)
 
-            if DmNode.bgp:
-                DmNode.bgp.debug = True
+            if dm_node.bgp:
+                dm_node.bgp.debug = True
                 static_routes = []
-                DmNode.zebra.static_routes = static_routes
+                dm_node.zebra.static_routes = static_routes
 
         # and lab.conf
         self.allocate_tap_ips()
-        self.lab_topology()
+        self.allocate_lab_topology()
 
     def allocate_tap_ips(self):
         """Allocates TAP IPs"""
@@ -86,7 +101,7 @@ class NetkitCompiler(PlatformCompiler):
         for node in sorted(self.nidb.l3devices(host=self.host)):
             node.tap.ip = address_block.next()
 
-    def lab_topology(self):
+    def allocate_lab_topology(self):
 # TODO: replace name/label and use attribute from subgraph
         lab_topology = self.nidb.topology(self.host)
         lab_topology.render_template = os.path.join("templates",
@@ -97,6 +112,20 @@ class NetkitCompiler(PlatformCompiler):
         lab_topology.description = "AutoNetkit Lab"
         lab_topology.author = "AutoNetkit"
         lab_topology.web = "www.autonetkit.org"
+
+        render2  = lab_topology.render2
+        #TODO: test with adding a folder
+        #render2.add_folder(["templates", "quagga"], folder_name)
+        render2.add_file(("templates", "netkit_lab_conf.mako"), "lab.conf")
+        render2.base_folder = [self.host, "netkit"]
+        render2.archive = "%s_%s" % (self.host, "netkit")
+        render2.template_data = {
+        "render_dst_file": "lab.conf",
+        "description": "AutoNetkit Lab",
+        "author": "AutoNetkit",
+        "web": "www.autonetkit.org",
+        }
+
         host_nodes = list(
             self.nidb.nodes(host=self.host, platform="netkit"))
         if not len(host_nodes):

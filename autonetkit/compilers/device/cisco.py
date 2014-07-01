@@ -134,20 +134,30 @@ class IosBaseCompiler(RouterCompiler):
     def nailed_up_routes(self, node):
         log.debug('Configuring nailed up routes')
         phy_node = self.anm['phy'].node(node)
-        node.bgp.ipv4_nailed_up_routes = []
-        node.bgp.ipv6_nailed_up_routes = []
 
         if node.is_ebgp_v4 and node.ip.use_ipv4:
             infra_blocks = self.anm['ipv4'].data['infra_blocks'
                     ].get(phy_node.asn) or []
             for infra_route in infra_blocks:
-                node.bgp.ipv4_nailed_up_routes.append(infra_route)
+                stanza = ConfigStanza(
+                    prefix = str(infra_route.network),
+                    netmask = str(infra_route.netmask),
+                    nexthop  = "Null0",
+                    metric = 254,
+                    )
+                node.ipv4_static_routes.append(stanza)
 
         if node.is_ebgp_v6 and node.ip.use_ipv6:
             infra_blocks = self.anm['ipv6'].data['infra_blocks'
                     ].get(phy_node.asn) or []
+            #TODO: setup schema with defaults
             for infra_route in infra_blocks:
-                node.bgp.ipv6_nailed_up_routes.append(infra_route)
+                stanza = ConfigStanza(
+                    prefix =str(infra_route),
+                    nexthop  = "Null0",
+                    metric = 254,
+                    )
+                node.ipv6_static_routes.append(stanza)
 
     def bgp(self, node):
         node.add_stanza("bgp")
@@ -449,6 +459,7 @@ class IosClassicCompiler(IosBaseCompiler):
 
             # only copy across for certain reference platforms
 
+            node.use_onepk = phy_node.use_onepk
             node.transport_input_ssh_telnet = True
             node.include_csr = True
 

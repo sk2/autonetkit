@@ -107,3 +107,5 @@ example.json
 tests/multi.json
 
 docs/_build/*
+
+tox.ini

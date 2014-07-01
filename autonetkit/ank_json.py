@@ -1,4 +1,8 @@
-import json
+try:
+    import simplejson as json
+except ImportError:
+    import json
+
 import logging
 import string
 
@@ -10,6 +14,7 @@ import autonetkit.plugins.ipv4
 import netaddr
 import networkx as nx
 from networkx.readwrite import json_graph
+from autonetkit.render2 import NodeRender, PlatformRender
 
 
 class AnkEncoder(json.JSONEncoder):
@@ -22,13 +27,22 @@ class AnkEncoder(json.JSONEncoder):
             return str(obj)
         if isinstance(obj, netaddr.IPNetwork):
             return str(obj)
-        if isinstance(obj, autonetkit.nidb.DmNode):
+        if isinstance(obj, autonetkit.nidb.node.DmNode):
+            #TODO: need to unserialize nidb nodes...
+            return str(obj)
+        if isinstance(obj, autonetkit.anm.node.NmNode):
             #TODO: need to unserialize nidb nodes...
             return str(obj)
         if isinstance(obj, autonetkit.anm.NmEdge):
             log.warning("%s is anm overlay_edge. Use attribute rather than object in compiler." % obj)
             return str(obj)
         if isinstance(obj, autonetkit.nidb.ConfigStanza):
+            retval = obj.to_json()
+            return retval
+        if isinstance(obj, autonetkit.render2.NodeRender):
+            retval = obj.to_json()
+            return retval
+        if isinstance(obj, autonetkit.render2.PlatformRender):
             retval = obj.to_json()
             return retval
         if isinstance(obj, autonetkit.nidb.DmInterface):
@@ -185,6 +199,7 @@ def jsonify_anm_with_graphics(anm, nidb = None):
     nm_graph = g_deps._graph
     # build tree
     layers = defaultdict(list)
+    nodes_by_layer = {}
     if len(nm_graph) > 0:
         topo_sort = nx.topological_sort(nm_graph)
         # trim out any nodes with no sucessors
@@ -208,7 +223,7 @@ def jsonify_anm_with_graphics(anm, nidb = None):
             data['device_type'] = "ank_internal"
 
         MIDPOINT = 50 # assign either side of
-        for nodes in layers.values():
+        for layer, nodes in layers.items():
             #TODO: since sort is stable, first sort by parent x (avoids zig-zags)
             nodes = sorted(nodes, reverse = True,
                 key = lambda x: nm_graph.degree(x))
@@ -217,6 +232,7 @@ def jsonify_anm_with_graphics(anm, nidb = None):
                 #node_x = MIDPOINT  + 125*index * math.pow(-1, index)
                 node_x = MIDPOINT  + 125*index
                 nm_graph.node[node]['x'] = node_x
+                nodes_by_layer[node] = layer
 
 
 
@@ -241,7 +257,10 @@ def jsonify_anm_with_graphics(anm, nidb = None):
       for node in anm['phy']:
         attribute_cache[node.id]['label'] = str(node)
 
-    for overlay_id in anm.overlays():
+    overlay_ids = sorted(anm.overlays(),
+        key = lambda x: nodes_by_layer.get(x, 0))
+
+    for overlay_id in overlay_ids:
         nm_graph = anm[overlay_id]._graph.copy()
         if overlay_id == "_dependencies":
             nm_graph = nx.Graph(nm_graph) #convert to undirected for visual clarify
@@ -263,6 +282,9 @@ def jsonify_anm_with_graphics(anm, nidb = None):
                 log.debug("Allocated random x %s to node %s in overlay %s" %
                     (new_x, node, overlay_id))
                 attribute_cache[node]['x'] = new_x
+            else:
+                # cache for next time, such as vswitch in l2 for l2_bc
+                attribute_cache[node]['x'] = node_data['x']
             if node_data.get("y") is None:
                 new_y = random.randint(0,800)
                 node_data['y'] =new_y
@@ -270,6 +292,20 @@ def jsonify_anm_with_graphics(anm, nidb = None):
                 attribute_cache[node]['y'] =new_y
                 log.debug("Allocated random y %s to node %s in overlay %s" %
                     (new_y, node, overlay_id))
+            else:
+                attribute_cache[node]['y'] = node_data['y']
+
+            #TODO: may want to re-introduce graphics to store cross-layer data for virtual nodes
+            # and cache device type and device subtype
+            # TODO: catch for each, if node not in cache
+            try:
+                attribute_cache[node]['device_type'] = node_data['device_type']
+            except KeyError:
+                pass # not set
+            try:
+                attribute_cache[node]['device_subtype'] = node_data['device_subtype']
+            except KeyError:
+                pass # not set
 
             if node_data.get("label") == node:
                 # try from cache

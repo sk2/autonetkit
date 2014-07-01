@@ -2,8 +2,7 @@ import autonetkit.ank as ank_utils
 import autonetkit.log as log
 from autonetkit.ank_utils import call_log
 
-
-@call_log
+#@call_log
 def build_ibgp_v4(anm):
     #TODO: remove the bgp layer and have just ibgp and ebgp
     # TODO: build from design rules, currently just builds from ibgp links in bgp layer
@@ -18,7 +17,7 @@ def build_ibgp_v4(anm):
             retain = ["ibgp_role", "hrr_cluster", "rr_cluster"] )
     g_ibgpv4.add_edges_from(g_bgp.edges(type="ibgp"), retain="direction")
 
-@call_log
+#@call_log
 def build_ibgp_v6(anm):
     #TODO: remove the bgp layer and have just ibgp and ebgp
     # TODO: build from design rules, currently just builds from ibgp links in bgp layer
@@ -33,7 +32,7 @@ def build_ibgp_v6(anm):
             retain = ["ibgp_role", "hrr_cluster", "rr_cluster"] )
     g_ibgpv6.add_edges_from(g_bgp.edges(type="ibgp"), retain="direction")
 
-@call_log
+#@call_log
 def build_ebgp_v4(anm):
     #TODO: remove the bgp layer and have just ibgp and ebgp
     # TODO: build from design rules, currently just builds from ibgp links in bgp layer
@@ -46,7 +45,7 @@ def build_ebgp_v4(anm):
     g_ebgpv4.add_nodes_from(n for n in g_ebgp if n in ipv4_nodes)
     g_ebgpv4.add_edges_from(g_ebgp.edges(), retain="direction")
 
-@call_log
+#@call_log
 def build_ebgp_v6(anm):
     #TODO: remove the bgp layer and have just ibgp and ebgp
     # TODO: build from design rules, currently just builds from ibgp links in bgp layer
@@ -59,8 +58,7 @@ def build_ebgp_v6(anm):
     g_ebgpv6.add_nodes_from(n for n in g_ebgp if n in ipv6_nodes)
     g_ebgpv6.add_edges_from(g_ebgp.edges(), retain="direction")
 
-
-@call_log
+#@call_log
 def build_ebgp(anm):
     g_in = anm['input']
     g_phy = anm['phy']
@@ -74,7 +72,7 @@ def build_ebgp(anm):
     ebgp_edges = [e for e in g_l3.edges() if e.src.asn != e.dst.asn]
     g_ebgp.add_edges_from(ebgp_edges, bidirectional=True, type='ebgp')
 
-@call_log
+#@call_log
 def build_ibgp(anm):
     g_in = anm['input']
     g_phy = anm['phy']
@@ -99,10 +97,21 @@ def build_ibgp(anm):
 
     # Notify user of non-ibgp nodes
     non_ibgp_nodes = [n for n in g_bgp if n.ibgp_role is "Disabled"]
-    if len(non_ibgp_nodes) < 10:
+    if 0 < len(non_ibgp_nodes) < 10:
         log.info("Skipping iBGP for iBGP disabled nodes: %s" % non_ibgp_nodes)
     elif len(non_ibgp_nodes) >= 10:
         log.info("Skipping iBGP for more than 10 iBGP disabled nodes: refer to visualization for resulting topology.")
+
+    # warn for any nodes that have RR set but no rr_cluster, or HRR set and no hrr_cluster
+    rr_mismatch = [n for n in ibgp_nodes if n.ibgp_role == "RR" and n.rr_cluster is None]
+    if len(rr_mismatch):
+        log.warning("Some routers are set as RR but have no rr_cluster: %s. Please specify an rr_cluster for peering."
+            % ", ".join(str(n) for n in rr_mismatch))
+
+    hrr_mismatch = [n for n in ibgp_nodes if n.ibgp_role == "HRR" and n.hrr_cluster is None]
+    if len(hrr_mismatch):
+        log.warning("Some routers are set as HRR but have no hrr_cluster: %s. Please specify an hrr_cluster for peering."
+            % ", ".join(str(n) for n in hrr_mismatch))
 
     for asn, asn_devices in ank_utils.groupby("asn", ibgp_nodes):
         asn_devices = list(asn_devices)
@@ -173,7 +182,7 @@ def build_ibgp(anm):
         g_bgp.add_edges_from(up_links, type='ibgp', direction='up')
         g_bgp.add_edges_from(down_links, type='ibgp', direction='down')
 
-@call_log
+#@call_log
 def build_bgp(anm):
     """Build iBGP end eBGP overlays"""
     # eBGP
@@ -196,13 +205,10 @@ def build_bgp(anm):
 
     # remove ibgp links
 
-
     """TODO: remove up to here once compiler updated"""
     ank_utils.copy_attr_from(g_in, g_bgp, "custom_config_bgp", dst_attr="custom_config")
 
-
-    build_ibgp(anm)
-
+    log.info("Building eBGP")
     ebgp_nodes = [d for d in g_bgp if any(
         edge.type == 'ebgp' for edge in d.edges())]
     g_bgp.update(ebgp_nodes, ebgp=True)
@@ -222,5 +228,7 @@ def build_bgp(anm):
         for interface in node.interfaces():
             interface.multipoint = any(e.multipoint for e in interface.edges())
 
+    log.info("Building iBGP")
+    build_ibgp(anm)
     build_ibgp_v4(anm)
     build_ibgp_v6(anm)

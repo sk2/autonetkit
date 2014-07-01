@@ -113,6 +113,18 @@ class NetworkModel(object):
 
         ank_json.rebind_interfaces(self)
 
+    def restore_from_json(self, in_data):
+        import json
+        import autonetkit.ank_json as ank_json
+        data = json.loads(in_data)
+        for (overlay_id, graph_data) in data.items():
+
+            self._overlays[overlay_id] = \
+            ank_json.ank_json_loads(graph_data)
+
+            ank_json.rebind_interfaces(self)
+
+
     @property
     def _phy(self):
         """"""
@@ -160,6 +172,7 @@ class NetworkModel(object):
         ):
         """Adds overlay graph of name name"""
         #TODO: refactor this logic
+        log.debug("Adding overlay %s" % name)
 
         multi_edge = multi_edge or self.all_multigraph
 

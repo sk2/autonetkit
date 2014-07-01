@@ -1,6 +1,7 @@
 """Zmq based measurement server"""
 # based on https://learning-0mq-with-pyzmq.readthedocs.org/en/latest/pyzmq/patterns/pushpull.html
 
+#TODO: rewrite as callbacks rather than threads
 
 import zmq
 import json
@@ -9,7 +10,6 @@ import telnetlib
 from threading import Thread
 import time
 import sys
-
 
 def streamer_device(port_in, port_out):
     from zmq.devices import ProcessDevice
@@ -145,6 +145,8 @@ def worker():
          hostname, result = do_connect(**data)
          success = True
        except Exception, e:
+        import traceback
+        traceback.print_exc()
         print e
         hostname = ""
         success = False
@@ -157,17 +159,20 @@ def worker():
           result = "Pexpect timeout"
        finally:
         try:
-          data = str(data)
           hostname = str(hostname)
           result = str(result)
-          message = json.dumps({'command': work,
-            "success": success,
-            'hostname': hostname,
-            'result': result})
+          send_data = dict(data)
+          send_data.update({'command': work,
+                      "success": success,
+                      'hostname': hostname,
+                      'result': result})
+          del send_data['username']
+          del send_data['password']
+          message = json.dumps(send_data)
         except Exception, e:
           print "cant dump", e
         else:
-          consumer_sender.send("%s %s" % (message_key, message))
+          consumer_sender.send_multipart([message_key, message])
           print "Sent to zmq"
 
 def main():
@@ -184,6 +189,7 @@ def main():
 
 
   # start the streamer device
+  #TODO: double check what these are used for
   streamer_device(5559, 5560)
   forwarder_device(5561, 5562)
 

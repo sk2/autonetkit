@@ -286,6 +286,7 @@ class NmGraph(OverlayBase):
         ebunch,
         bidirectional=False,
         retain=None,
+        warn = True,
         **kwargs
     ):
         """Add edges. Unlike NetworkX, can only add an edge if both
@@ -406,11 +407,12 @@ class NmGraph(OverlayBase):
             #TODO: if edge not set at this point, give error/warn
 
             #TODO: add check that edge.src and edge.dst exist
-            if (src is None or dst is None):
+            if (src is None or dst is None) and warn:
                 log.warning("Unsupported edge %s" % str(in_edge))
             if not(src in self and dst in self):
-                self.log.warning("Not adding edge %s, src/dst not in overlay"
-                    % str(in_edge))
+                if warn:
+                    self.log.warning("Not adding edge %s, src/dst not in overlay"
+                        % str(in_edge))
                 continue
 
             #TODO: warn if not multigraph and edge already exists - don't add/clobber

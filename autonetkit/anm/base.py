@@ -74,6 +74,17 @@ class OverlayBase(object):
         #TODO: explain parameter overloading: strings, edges, nodes...'''
 
         # TODO: handle multigraphs
+        if isinstance(edge_to_find, NmEdge):
+            # TODO: tidy this logic
+            edge = edge_to_find # alias for neater code
+            if (edge.is_multigraph() and self.is_multigraph()
+                and self._graph.has_edge(edge.src,
+                    edge.dst, key=edge.ekey)):
+                return NmEdge(self._anm, self._overlay_id,
+                    edge.src, edge.dst, edge.ekey)
+            elif (self._graph.has_edge(edge.src, edge.dst)):
+                    return NmEdge(self._anm, self._overlay_id,
+                        edge.src, edge.dst)
 
         if isinstance(edge_to_find, NmEdge):
             src_id = edge_to_find.src
@@ -270,7 +281,7 @@ class OverlayBase(object):
         ):
         """"""
 
-        if not nbunch:
+        if nbunch is None:
             nbunch = self.nodes()
 
         def filter_func(node):
@@ -295,6 +306,7 @@ class OverlayBase(object):
 # TODO: refactor this
 
         if src_nbunch:
+            nbunch_out = []
             try:
                 src_nbunch = src_nbunch.node_id
             except AttributeError:

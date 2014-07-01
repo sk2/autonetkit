@@ -15,7 +15,7 @@ SETTINGS = autonetkit.config.settings
 __all__ = ['build']
 from autonetkit.ank_utils import call_log
 
-@call_log
+#@call_log
 def load(input_graph_string):
     # TODO: look at XML header for file type
     import autonetkit.load.graphml as graphml
@@ -25,7 +25,7 @@ def load(input_graph_string):
     except autonetkit.exception.AnkIncorrectFileFormat:
         try:
             input_graph = load_json.load_json(input_graph_string)
-        except autonetkit.exception.AnkIncorrectFileFormat:
+        except (ValueError, autonetkit.exception.AnkIncorrectFileFormat):
 # try a different reader
             try:
                 from autonetkit_cisco import load as cisco_load
@@ -45,7 +45,7 @@ def load(input_graph_string):
     return input_graph
 
 
-@call_log
+#@call_log
 def grid_2d(dim):
     """Creates a 2d grid of dimension dim"""
     graph = nx.grid_2d_graph(dim, dim)
@@ -77,14 +77,14 @@ def grid_2d(dim):
     return graph
 
 
-@call_log
+#@call_log
 def initialise(input_graph):
     """Initialises the input graph with from a NetworkX graph"""
     all_multigraph = input_graph.is_multigraph()
     anm = autonetkit.anm.NetworkModel(all_multigraph = all_multigraph)
 
     g_in = anm.initialise_input(input_graph)
-    autonetkit.update_vis(anm)
+    #autonetkit.update_vis(anm)
 
 # set defaults
     if not g_in.data.specified_int_names:
@@ -112,16 +112,10 @@ def initialise(input_graph):
     g_graphics.add_nodes_from(g_in, retain=['x', 'y', 'device_type',
                                             'label', 'device_subtype', 'asn'])
 
-    if g_in.data.Creator == "VIRL":
-        # TODO: move this to other module
-        # Multiple ASNs set, use label format device.asn
-        #anm.set_node_label(".", ['label_full'])
-        pass
-
     return anm
 
 
-@call_log
+#@call_log
 def check_server_asns(anm):
     """Checks that servers have appropriate ASN allocated.
     Warns and auto-corrects servers connected to routers of a different AS
@@ -153,27 +147,46 @@ def check_server_asns(anm):
                              "not auto-correcting" % (server, server.asn))
 
 
-@call_log
+#@call_log
 def apply_design_rules(anm):
     """Applies appropriate design rules to ANM"""
+    log.info("Building overlay topologies")
     g_in = anm['input']
 
     build_phy(anm)
+
+    try:
+        from autonetkit_cisco import build_network as cisco_build_network
+    except ImportError, e:
+        log.debug("Unable to load autonetkit_cisco %s" % e)
+    else:
+        cisco_build_network.post_phy(anm)
+
     g_phy = anm['phy']
     from autonetkit.design.osi_layers import (build_layer2,
         check_layer2, build_layer2_broadcast, build_layer3)
+    log.info("Building layer2")
     build_layer2(anm)
+
+    try:
+        from autonetkit_cisco import build_network as cisco_build_network
+    except ImportError, e:
+        pass
+    else:
+        cisco_build_network.apply_vlans(anm)
+
     check_layer2(anm)
     build_layer2_broadcast(anm)
+    log.info("Building layer3")
     build_layer3(anm)
 
-    build_l3_connectivity(anm)
     check_server_asns(anm)
 
     from autonetkit.design.mpls import build_vrf
     build_vrf(anm)  # do before to add loopbacks before ip allocations
     from autonetkit.design.ip import build_ip, build_ipv4, build_ipv6
     # TODO: replace this with layer2 overlay topology creation
+    log.info("Allocating IP addresses")
     build_ip(anm)  # ip infrastructure topology
 
     address_family = g_in.data.address_family or "v4"  # default is v4
@@ -208,6 +221,7 @@ def apply_design_rules(anm):
 
     default_igp = g_in.data.igp or "ospf"
     ank_utils.set_node_default(g_in,  igp=default_igp)
+    ank_utils.copy_attr_from(g_in, g_phy, "igp")
 
     ank_utils.copy_attr_from(g_in, g_phy, "include_csr")
 
@@ -218,11 +232,13 @@ def apply_design_rules(anm):
     else:
         cisco_build_network.pre_design(anm)
 
+    log.info("Building IGP")
     from autonetkit.design.igp import build_ospf, build_eigrp, build_isis
     build_ospf(anm)
     build_eigrp(anm)
     build_isis(anm)
 
+    log.info("Building BGP")
     from autonetkit.design.bgp import build_bgp
     build_bgp(anm)
     # autonetkit.update_vis(anm)
@@ -246,30 +262,17 @@ def apply_design_rules(anm):
     else:
         cisco_build_network.post_design(anm)
 
+    log.info("Finished building network")
     return anm
 
 
-@call_log
+#@call_log
 def build(input_graph):
     """Main function to build network overlay topologies"""
     anm = None
-    try:
-        anm = initialise(input_graph)
-        anm = apply_design_rules(anm)
-        # print {str(node): {'x': node.x, 'y': node.y} for node in
-        # anm['input']}
-        autonetkit.update_vis(anm)
-    except Exception, e:
-        # Send the visualisation to help debugging
-        try:
-            autonetkit.update_vis(anm)
-        except Exception, e:
-            # problem with vis -> could be coupled with original exception -
-            # raise original
-            log.warning("Unable to visualise: %s" % e)
-        raise  # raise the original exception
+    anm = initialise(input_graph)
+    anm = apply_design_rules(anm)
     return anm
-
 
 def remove_parallel_switch_links(anm):
     return
@@ -308,7 +311,7 @@ def remove_parallel_switch_links(anm):
                 g_phy.remove_edges_from(edges_to_remove)
 
 
-@call_log
+#@call_log
 def build_phy(anm):
     """Build physical overlay"""
     g_in = anm['input']
@@ -319,30 +322,15 @@ def build_phy(anm):
         g_in.data.enable_routing = True  # default if not set
 
     g_phy.add_nodes_from(g_in, retain=['label', 'update', 'device_type', 'asn',
-                                       'specified_int_names',
+                                       'specified_int_names', 'x', 'y',
                                        'device_subtype', 'platform', 'host', 'syntax'])
+
     if g_in.data.Creator == "Topology Zoo Toolset":
         ank_utils.copy_attr_from(g_in, g_phy, "Network")
 
     ank_utils.set_node_default(g_phy,  Network=None)
     g_phy.add_edges_from(g_in.edges(type="physical"))
     # TODO: make this automatic if adding to the physical graph?
-
-    if g_in.data.Creator == "VIRL":
-        g_phy.data.mgmt_interfaces_enabled = g_in.data.mgmt_interfaces_enabled
-        # TODO: remove this code now allocated externally
-        g_phy.data.mgmt_address_start = g_in.data.mgmt_address_start
-        g_phy.data.mgmt_address_end = g_in.data.mgmt_address_end
-        g_phy.data.mgmt_prefixlen = g_in.data.mgmt_prefixlen
-        g_phy.data.mgmt_prefixlen = g_in.data.mgmt_prefixlen
-
-        ank_utils.copy_attr_from(g_in, g_phy, "use_cdp")
-        ank_utils.copy_attr_from(g_in, g_phy, "use_onepk")
-        ank_utils.copy_attr_from(g_in, g_phy, "label_full")
-        ank_utils.copy_attr_from(g_in, g_phy, "indices")
-        ank_utils.copy_attr_from(g_in, g_phy, "dont_configure_static_routing")
-        ank_utils.copy_attr_from(g_in, g_phy, "server_username")
-        ank_utils.copy_attr_from(g_in, g_phy, "server_ssh_key")
 
     ank_utils.set_node_default(g_phy,  use_ipv4=False, use_ipv6=False)
     ank_utils.copy_attr_from(g_in, g_phy, "custom_config_global",
@@ -362,28 +350,7 @@ def build_phy(anm):
 
     remove_parallel_switch_links(anm)
 
-@call_log
-def build_l3_connectivity(anm):
-    """ l3_connectivity graph: switch nodes aggregated and exploded"""
-    g_in = anm['input']
-    g_l3conn = anm.add_overlay("layer3")
-    g_l3conn.add_nodes_from(
-        g_in, retain=['label', 'update', 'device_type', 'asn',
-                      'specified_int_names',
-                      'device_subtype', 'platform', 'host', 'syntax'])
-    g_l3conn.add_nodes_from(g_in.switches(), retain=['asn'])
-    g_l3conn.add_edges_from(g_in.edges())
-
-    ank_utils.aggregate_nodes(g_l3conn, g_l3conn.switches())
-    exploded_edges = ank_utils.explode_nodes(g_l3conn,
-                                             g_l3conn.switches())
-    for edge in exploded_edges:
-        edge.multipoint = True
-        edge.src_int.multipoint = True
-        edge.dst_int.multipoint = True
-
-
-@call_log
+#@call_log
 def build_conn(anm):
     """Build connectivity overlay"""
     g_in = anm['input']
