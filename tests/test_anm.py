@@ -86,7 +86,7 @@ assert(eth0.phy == eth0) # should be itself as phy overlay
 #Cross-layer access
 assert(eth0['input'] is not None)
 
-#assert(eth0.neighbors() == [g_phy.node("r2").interface(1), g_phy.node("r3").interface(1)])
+assert(sorted(eth0.neighbors()) == [g_phy.node("r2").interface(1), g_phy.node("r3").interface(1)])
 
 # access non existent overlay
 #TODO: decide if worth trying to assert the logged item
@@ -117,8 +117,8 @@ assert(test_node.is_l3device())
 assert(test_node.is_router())
 assert(not test_node.is_switch())
 assert(not test_node.is_server())
-assert(str(list(test_node.neighbors())) == "[r2, r3]")
-assert(str(list(test_node.neighbor_interfaces())) == "[eth0.r2, eth0.r3]")
+assert(str(sorted(list(test_node.neighbors()))) == "[r2, r3]")
+assert(str(sorted(list(test_node.neighbor_interfaces()))) == "[eth0.r2, eth0.r3]")
 # Test getting from another overlay
 assert(test_node['input'].asn == 1)
 

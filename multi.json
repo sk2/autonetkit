@@ -3,112 +3,112 @@
   "links": [
     {
       "key": 0, 
-      "_ports": {}, 
-      "target": 1, 
       "source": 0, 
-      "index": "i_0"
+      "_ports": {}, 
+      "index": "i_0", 
+      "target": 1
     }, 
     {
       "key": 1, 
-      "_ports": {}, 
-      "target": 1, 
       "source": 0, 
-      "index": "i_1"
+      "_ports": {}, 
+      "index": "i_1", 
+      "target": 1
     }, 
     {
       "key": 2, 
-      "_ports": {}, 
-      "target": 1, 
       "source": 0, 
-      "index": "i_2"
+      "_ports": {}, 
+      "index": "i_2", 
+      "target": 1
     }, 
     {
       "key": 3, 
-      "_ports": {}, 
-      "target": 1, 
       "source": 0, 
-      "index": "i_3"
+      "_ports": {}, 
+      "index": "i_3", 
+      "target": 1
     }, 
     {
       "key": 4, 
-      "_ports": {}, 
-      "target": 1, 
       "source": 0, 
-      "index": "i_4"
+      "_ports": {}, 
+      "index": "i_4", 
+      "target": 1
     }, 
     {
       "key": 0, 
-      "_ports": {}, 
-      "target": 2, 
       "source": 0, 
-      "index": "i_5"
+      "_ports": {}, 
+      "index": "i_5", 
+      "target": 2
     }, 
     {
       "key": 0, 
-      "_ports": {}, 
-      "target": 2, 
       "source": 1, 
-      "index": "i_6"
+      "_ports": {}, 
+      "index": "i_6", 
+      "target": 2
     }, 
     {
       "key": 1, 
-      "_ports": {}, 
-      "target": 2, 
       "source": 1, 
-      "index": "i_7"
+      "_ports": {}, 
+      "index": "i_7", 
+      "target": 2
     }
   ], 
   "multigraph": true, 
   "nodes": [
     {
-      "id": "r1", 
       "_ports": {
         "0": {
           "category": "physical", 
           "description": null
         }
       }, 
-      "label": "r1"
+      "label": "r1", 
+      "id": "r1"
     }, 
     {
-      "id": "r2", 
       "_ports": {
         "0": {
           "category": "physical", 
           "description": null
         }
       }, 
-      "label": "r2"
+      "label": "r2", 
+      "id": "r2"
     }, 
     {
-      "id": "r3", 
       "_ports": {
         "0": {
           "category": "physical", 
           "description": null
         }
       }, 
-      "label": "r3"
+      "label": "r3", 
+      "id": "r3"
     }, 
     {
-      "id": "r4", 
       "_ports": {
         "0": {
           "category": "physical", 
           "description": null
         }
       }, 
-      "label": "r4"
+      "label": "r4", 
+      "id": "r4"
     }, 
     {
-      "id": "r5", 
       "_ports": {
         "0": {
           "category": "physical", 
           "description": null
         }
       }, 
-      "label": "r5"
+      "label": "r5", 
+      "id": "r5"
     }
   ], 
   "graph": []
