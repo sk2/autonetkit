@@ -111,3 +111,4 @@ docs/_build/*
 tox.ini
 
 cover/*
+docs/html/*
