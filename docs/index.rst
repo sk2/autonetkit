@@ -13,8 +13,10 @@ Contents:
 
     modules
 
+Extending tutorial:
 
-
+    :doc:`extending`
+    
 Indices and tables
 ==================
 
