@@ -1,12 +1,427 @@
 Changelog
 =========
 
+Testing release
+---------------
+
+- Merge pull request #242 from sk2/ACLs. [Simon Knight]
+
+  Ac ls
+
+- Add tox. [Simon Knight]
+
+- Merge pull request #241 from sk2/ACLs. [Simon Knight]
+
+  Ac ls
+
+v0.9.2 (2014-06-27)
+-------------------
+
+Changes
+~~~~~~~
+
+- >= rather than == for deps. [Simon Knight]
+
+- Update info on ip blocks. [Simon Knight]
+
+v0.9.1 (2014-05-13)
+-------------------
+
+New
+~~~
+
+- User: record overlay dependencies to new overlay. [Simon Knight]
+
+Changes
+~~~~~~~
+
+- Minor tweaks. [Simon Knight]
+
+- Condense example. [Simon Knight]
+
+- Tidy. [Simon Knight]
+
+- Tidy. [Simon Knight]
+
+- Update docs for json example. [Simon Knight]
+
+- Add Json to doc for gh-222. [Simon Knight]
+
+- User: Initial commit of JSON load code for gh-222. [Simon Knight]
+
+  Example in tests/house.json if using dev build of ank:  ``` $
+  autonetkit -f tests/house.json INFO VIRL Configuration Engine 0.9.0
+  INFO AutoNetkit 0.9.0 INFO IPv4 allocations: Infrastructure:
+  10.0.0.0/8, Loopback: 192.168.0.0/22 INFO Allocating v4 Infrastructure
+  IPs INFO Allocating v4 Primary Host loopback IPs INFO Topology not
+  created for VIRL, skipping Cisco PCE design rules INFO Skipping iBGP
+  for iBGP disabled nodes: [] INFO All validation tests passed. INFO
+  Rendering Configuration Files INFO Finished ```  if run in monitor
+  mode, then changes will be reflected live: ``` $ ank_webserver ```
+  and then ``` $ autonetkit -f tests/house.json —monitor ```
+
+- Updates. [Simon Knight]
+
+- Rebuild doc. [Simon Knight]
+
+- Increment year. [Simon Knight]
+
+- Run sphinx-apidoc. [Simon Knight]
+
+- Adding doctests. [Simon Knight]
+
+- User: update_http -> update_vis. [Simon Knight]
+
+- User: Initial support for multi-homed servers for VIRL-425. [Simon
+  Knight]
+
+- Add initial support to auto-build dependency diagrams. [Simon Knight]
+
+Other
+~~~~~
+
+- Merge pull request #237 from oliviertilmans/patch-1. [Simon Knight]
+
+  The network might not run BGP
+
+- The network might not run BGP. [oliviertilmans]
+
+  This result in a Key Error
+
+- Merge pull request #236 from sk2/parallel. [Simon Knight]
+
+  Parallel
+
+- Merge pull request #235 from sk2/ACLs. [Simon Knight]
+
+  Ac ls
+
+- Revert "chg: dev: add ACL placeholder for gh-234" [Simon Knight]
+
+  This reverts commit 4941b893daf279e5bb24a0b54c10ed490db27716.
+
+- Merge pull request #232 from sk2/render2.0. [Simon Knight]
+
+  Render2.0
+
+- Add: dev: initial work to support vlans for gh-229. [Simon Knight]
+
+- Update README.md. [Simon Knight]
+
+- Merge pull request #228 from sk2/parallel. [Simon Knight]
+
+  chg: doc: minor tweaks
+
+- Merge pull request #227 from sk2/parallel. [Simon Knight]
+
+  Parallel
+
+- Update README.md. [Simon Knight]
+
+- Update README.md. [Simon Knight]
+
+- Merge pull request #226 from sk2/parallel. [Simon Knight]
+
+  Chg: doc: add Json to doc for gh-222
+
+- Merge pull request #225 from sk2/parallel. [Simon Knight]
+
+  Chg: User: Initial commit of JSON load code for gh-222
+
+- Merge pull request #224 from sk2/parallel. [Simon Knight]
+
+  Parallel
+
+- Merge pull request #223 from sk2/parallel. [Simon Knight]
+
+  Parallel
+
+- Merge pull request #221 from sk2/parallel. [Simon Knight]
+
+  Parallel
+
+v0.9.0 (2014-03-24)
+-------------------
+
+New
+~~~
+
+- User: Support layer2 and layer3 overlays for gh-206. [Simon Knight]
+
+Changes
+~~~~~~~
+
+- User: Sort nodes before allocation, closes gh-208. [Simon Knight]
+
+- User: label-based sort if present closes gh-207. [Simon Knight]
+
+- User: add ability to search for interfaces by their "id" string e.g.
+  "GigabitEthernet0/1" [Simon Knight]
+
+v0.8.39 (2014-03-14)
+--------------------
+
+Changes
+~~~~~~~
+
+- User: Allow custom config injection for VIRL-122. [Simon Knight]
+
+v0.8.38 (2014-03-13)
+--------------------
+
+Changes
+~~~~~~~
+
+- User: Handle IP addresses on L3 devices for VIRL-372. [Simon Knight]
+
+- User: support custom unsupported server templates for VIRL-378. [Simon
+  Knight]
+
+- User: add "external_connector" device_type for VIRL-672. [Simon
+  Knight]
+
+- User: only validate IP on Layer 3 devices for VIRL-672. [Simon Knight]
+
+- Allow specifying edge properties (color/width) [Simon Knight]
+
+v0.8.37 (2014-03-11)
+--------------------
+
+Fix
+~~~
+
+- User: Corrects bug with non-routers in EIGRP fixes VIRL-659. [Simon
+  Knight]
+
+  Had extra ISIS NET address line
+
+v0.8.35 (2014-03-10)
+--------------------
+
+Changes
+~~~~~~~
+
+- Update warnings to not warn if no subnet/prefix set. [Simon Knight]
+
+v0.8.33 (2014-03-05)
+--------------------
+
+Changes
+~~~~~~~
+
+- User: Use ASN as process-id for IGP for VIRL-602. [Simon Knight]
+
+  Causes problems if multiple ASes connected across a multi-point
+  network.
+
+Other
+~~~~~
+
+- Add overview video. [Simon Knight]
+
+v0.8.32 (2014-02-14)
+--------------------
+
+New
+~~~
+
+- User: Allow manually specified IPv6 blocks for VIRL-481. [Simon
+  Knight]
+
+Changes
+~~~~~~~
+
+- User: Config driven IP defaults, better logging of problems with
+  manually specified IPs. [Simon Knight]
+
+- User: Swap default IPv6 blocks for infra/loopback to be sequential.
+  [Simon Knight]
+
+v0.8.31 (2014-02-14)
+--------------------
+
+Changes
+~~~~~~~
+
+- User: Tidied up VRF role notification logic to aggregate by role.
+  VIRL-368. [Simon Knight]
+
+- User: Exclude BGP block if no iBGP/eBGP sessions. VIRL-564. [Simon
+  Knight]
+
+v0.8.29 (2014-02-14)
+--------------------
+
+New
+~~~
+
+- User: Warn that IPv6 MPLS VPNs not currently supported for VIRL-56.
+  [Simon Knight]
+
+Changes
+~~~~~~~
+
+- User: update iBGP design rules for VIRL-558. [Simon Knight]
+
+Fix
+~~~
+
+- User: Allow PE RRC nodes to participate in ibgp_vpn_v4. [Simon Knight]
+
+v0.8.26 (2014-02-13)
+--------------------
+
+Changes
+~~~~~~~
+
+- User: Add ibgp "peer" type for VIRL-558. [Simon Knight]
+
+- User: Clarify IPv4 allocation warning message for VIRL-550. [Simon
+  Knight]
+
+- User: list Interfaces as GigabitEthernet0/1.RR_2 instead of
+  (GigabitEthernet0/1, RR_2) [Simon Knight]
+
+v0.8.17 (2014-01-31)
+--------------------
+
+New
+~~~
+
+- User: Allow user-defined IPv6 IPs (infra + loopback) [Simon Knight]
+
+Changes
+~~~~~~~
+
+- User: More descriptive logs for user-defined IPv6 addresses. [Simon
+  Knight]
+
+Fix
+~~~
+
+- User: Bugfix for EIGRP IPv6 for VIRL-493. [Simon Knight]
+
+v0.8.14 (2014-01-24)
+--------------------
+
+New
+~~~
+
+- User: Warn if partial IPs set for VIRL-456. [Simon Knight]
+
+- User: Display human-readable ibgp_role for VIRL-469. [Simon Knight]
+
+v0.8.12 (2014-01-22)
+--------------------
+
+Changes
+~~~~~~~
+
+- User: Update logging. [Simon Knight]
+
+v0.8.11 (2014-01-22)
+--------------------
+
+Changes
+~~~~~~~
+
+- User: Tidy logging. [Simon Knight]
+
+- User: Warn for unsupported device features. [Simon Knight]
+
+- User: Use VIRL platform identifier instead of Cisco. [Simon Knight]
+
+- User: Tidy logging messages. [Simon Knight]
+
+v0.8.10 (2014-01-21)
+--------------------
+
+Fix
+~~~
+
+- Sort values neigh_most_frequent so tie-break chooses lowest. [Simon
+  Knight]
+
+  Addresses issue with stability in IP addressing: inter-asn links had a
+  collision domain that was arbitrarily being allocated to one or the
+  other ASN depending on the arbitarty position. This ensures the lowest
+  is always returned in a tie-break leading to repeatable addressing
+  (especially important for automated tests)
+
+v0.8.9 (2014-01-20)
+-------------------
+
+- Merge branch 'master' of github.com:sk2/autonetkit. [Simon Knight]
+
+  Conflicts:         .bumpversion.cfg         autonetkit/render.py
+  setup.py
+
+- Merge cleanup. [Simon Knight]
+
+v0.8.7 (2014-01-20)
+-------------------
+
+- @chg: dev: renaming. [Simon Knight]
+
+- @chg: dev: renaming. [Simon Knight]
+
+v0.8.6 (2014-01-20)
+-------------------
+
+New
+~~~
+
+- User: Display address blocks to use for VIRL-350. [Simon Knight]
+
+- User: Display address blocks to use for VIRL-350. [Simon Knight]
+
+v0.8.4 (2014-01-16)
+-------------------
+
+New
+~~~
+
+- User: add per-element logging for GH-190. [Simon Knight]
+
+- User: add per-element logging for GH-190. [Simon Knight]
+
+- User: add single config for gh-189. [Simon Knight]
+
+- User: add single config for gh-189. [Simon Knight]
+
+- User: Screenshot capture for GH-188. [Simon Knight]
+
+- User: Screenshot capture for GH-188. [Simon Knight]
+
+Other
+~~~~~
+
+- Change: dev: remove superseded config. [Simon Knight]
+
+- Change: dev: remove superseded config. [Simon Knight]
+
+- Change: dev: refactor XR OSPF by interfaces to common router_base.
+  [Simon Knight]
+
+- Change: dev: refactor XR OSPF by interfaces to common router_base.
+  [Simon Knight]
+
+- Update changelog. [Simon Knight]
+
+- Update changelog. [Simon Knight]
+
 v0.8.3 (2014-01-13)
 -------------------
 
 - Add gitchangelog support. [sk2]
 
+- Add gitchangelog support. [sk2]
+
 - Move indent correctly inside loop. [sk2]
+
+- Move indent correctly inside loop. [sk2]
+
+- Typo fix for ebgp not ibgp. [sk2]
 
 - Typo fix for ebgp not ibgp. [sk2]
 
@@ -14,61 +429,123 @@ v0.8.3 (2014-01-13)
 
 - Tidy. [sk2]
 
+- Tidy. [sk2]
+
+- Tidy. [sk2]
+
 - Add read me. [sk2]
+
+- Add read me. [sk2]
+
+- Update. [sk2]
 
 - Update. [sk2]
 
 - Add img. [sk2]
 
+- Add img. [sk2]
+
 - Examples. [sk2]
+
+- Examples. [sk2]
+
+- Add cwd to templates search dir. [sk2]
 
 - Add cwd to templates search dir. [sk2]
 
 - Add ordering. [sk2]
 
+- Add ordering. [sk2]
+
 - Add note. [sk2]
+
+- Add note. [sk2]
+
+- Support v6 bgp. [sk2]
 
 - Support v6 bgp. [sk2]
 
 - Add note. [sk2]
 
+- Add note. [sk2]
+
 - Add __ne__ and ordering. [sk2]
+
+- Add __ne__ and ordering. [sk2]
+
+- Support nidb nodes. [sk2]
 
 - Support nidb nodes. [sk2]
 
 - Add example. [sk2]
 
+- Add example. [sk2]
+
 - Tidy. [sk2]
+
+- Tidy. [sk2]
+
+- Handle new overlays. [sk2]
 
 - Handle new overlays. [sk2]
 
 - New overlay. [sk2]
 
+- New overlay. [sk2]
+
 - Better json. [sk2]
+
+- Better json. [sk2]
+
+- Tutorial notebook. [sk2]
 
 - Tutorial notebook. [sk2]
 
 - Add new test case notes. [sk2]
 
+- Add new test case notes. [sk2]
+
 - Better debugging for templates. [sk2]
+
+- Better debugging for templates. [sk2]
+
+- More support for gh-186. [sk2]
 
 - More support for gh-186. [sk2]
 
 - Move mpls code to separate module. [sk2]
 
+- Move mpls code to separate module. [sk2]
+
 - More support for gh-186. [sk2]
+
+- More support for gh-186. [sk2]
+
+- Pep8. [sk2]
 
 - Pep8. [sk2]
 
 - Improvements to setting defaults on bunches. [sk2]
 
+- Improvements to setting defaults on bunches. [sk2]
+
 - Remove old demos. [sk2]
+
+- Remove old demos. [sk2]
+
+- Add config_stanza class for gh-186. [sk2]
 
 - Add config_stanza class for gh-186. [sk2]
 
 - Add option for stack_trace (useful for dev) [sk2]
 
+- Add option for stack_trace (useful for dev) [sk2]
+
 - Add browser test. [sk2]
+
+- Add browser test. [sk2]
+
+- Connectors. [sk2]
 
 - Connectors. [sk2]
 
@@ -77,26 +554,48 @@ v0.8.2 (2014-01-10)
 
 - Remove old call to publish data. [sk2]
 
+- Remove old call to publish data. [sk2]
+
 v0.8.1 (2014-01-10)
 -------------------
 
 - Add note. [sk2]
 
+- Add note. [sk2]
+
 - Remove unused messaging functions. [sk2]
+
+- Remove unused messaging functions. [sk2]
+
+- Add log message. [sk2]
 
 - Add log message. [sk2]
 
 - Update anm tests. [sk2]
 
+- Update anm tests. [sk2]
+
 - Testing for anm. [sk2]
+
+- Testing for anm. [sk2]
+
+- Remove directed. [sk2]
 
 - Remove directed. [sk2]
 
 - Improving edge-case handling. [sk2]
 
+- Improving edge-case handling. [sk2]
+
+- Remove state for pickling - use json. [sk2]
+
 - Remove state for pickling - use json. [sk2]
 
 - Improving handling for custom overlays. [sk2]
+
+- Improving handling for custom overlays. [sk2]
+
+- Remove unused code. [sk2]
 
 - Remove unused code. [sk2]
 
@@ -105,9 +604,17 @@ v0.8.0 (2014-01-08)
 
 - Remove old ibgp code. [sk2]
 
+- Remove old ibgp code. [sk2]
+
+- More removal of edge_id for gh-184. [sk2]
+
 - More removal of edge_id for gh-184. [sk2]
 
 - Closes gh-184. [sk2]
+
+- Closes gh-184. [sk2]
+
+- Pylint. [sk2]
 
 - Pylint. [sk2]
 
@@ -116,8 +623,12 @@ v0.7.33 (2014-01-08)
 
 - Update warnings. [sk2]
 
+- Update warnings. [sk2]
+
 v0.7.32 (2014-01-08)
 --------------------
+
+- Add other AS subnets. [sk2]
 
 - Add other AS subnets. [sk2]
 
@@ -126,9 +637,17 @@ v0.7.31 (2014-01-07)
 
 - Tidy. [sk2]
 
+- Tidy. [sk2]
+
+- Handle non-subnet collision domains (i.e. no nodes) [sk2]
+
 - Handle non-subnet collision domains (i.e. no nodes) [sk2]
 
 - Rename subtype. [sk2]
+
+- Rename subtype. [sk2]
+
+- Pass exception up. [sk2]
 
 - Pass exception up. [sk2]
 
@@ -137,13 +656,19 @@ v0.7.29 (2014-01-06)
 
 - Use official subtypes. [sk2]
 
+- Use official subtypes. [sk2]
+
 v0.7.27 (2014-01-04)
 --------------------
 
 - Pep8. [sk2]
 
+- Pep8. [sk2]
+
 v0.7.26 (2014-01-03)
 --------------------
+
+- Add logging. [sk2]
 
 - Add logging. [sk2]
 
@@ -153,22 +678,41 @@ v0.7.25 (2014-01-03)
 - Fix issue with uuids being re-used but discarded, update logging.
   [sk2]
 
+- Fix issue with uuids being re-used but discarded, update logging.
+  [sk2]
+
 v0.7.24 (2014-01-02)
 --------------------
 
 - Catching overlay uuid deletion errors. [sk2]
 
+- Catching overlay uuid deletion errors. [sk2]
+
 - Tidy. [sk2]
+
+- Tidy. [sk2]
+
+- Handling of interfaces in adding edges. [sk2]
 
 - Handling of interfaces in adding edges. [sk2]
 
 - Allow uuid to be specified in call. [sk2]
 
+- Allow uuid to be specified in call. [sk2]
+
+- Update connectors. [sk2]
+
 - Update connectors. [sk2]
 
 - Add comment. [sk2]
 
+- Add comment. [sk2]
+
 - Add script to build wheel. [sk2]
+
+- Add script to build wheel. [sk2]
+
+- Isort imports. [sk2]
 
 - Isort imports. [sk2]
 
@@ -177,10 +721,16 @@ v0.7.23 (2013-12-27)
 
 - Enable telnet and ssh over vty. [sk2]
 
+- Enable telnet and ssh over vty. [sk2]
+
+- Tidying. [sk2]
+
 - Tidying. [sk2]
 
 v0.7.20 (2013-12-23)
 --------------------
+
+- Correct bug in writing static instead of host routes. [sk2]
 
 - Correct bug in writing static instead of host routes. [sk2]
 
@@ -189,10 +739,16 @@ v0.7.19 (2013-12-23)
 
 - Tidy. [sk2]
 
+- Tidy. [sk2]
+
 v0.7.17 (2013-12-23)
 --------------------
 
 - Tidy. [sk2]
+
+- Tidy. [sk2]
+
+- Tidy logging. [sk2]
 
 - Tidy logging. [sk2]
 
@@ -200,7 +756,15 @@ v0.7.17 (2013-12-23)
 
 - Tidy. [sk2]
 
+- Tidy. [sk2]
+
+- Tidy. [sk2]
+
 - Add test. [sk2]
+
+- Add test. [sk2]
+
+- Add tests. [sk2]
 
 - Add tests. [sk2]
 
@@ -210,6 +774,14 @@ v0.7.17 (2013-12-23)
 
 - Add test. [sk2]
 
+- Add test. [sk2]
+
+- Add test. [sk2]
+
+- Add test. [sk2]
+
+- Add test topology. [sk2]
+
 - Add test topology. [sk2]
 
 v0.7.16 (2013-12-20)
@@ -217,8 +789,12 @@ v0.7.16 (2013-12-20)
 
 - Add extra onepk line. [sk2]
 
+- Add extra onepk line. [sk2]
+
 v0.7.15 (2013-12-20)
 --------------------
+
+- Tidy. [sk2]
 
 - Tidy. [sk2]
 
@@ -228,6 +804,11 @@ v0.7.14 (2013-12-20)
 - Return the node label rendered rather than node_id for repr of
   interfaces. [sk2]
 
+- Return the node label rendered rather than node_id for repr of
+  interfaces. [sk2]
+
+- Tidy. [sk2]
+
 - Tidy. [sk2]
 
 v0.7.13 (2013-12-19)
@@ -236,9 +817,18 @@ v0.7.13 (2013-12-19)
 - If exception, send the visualisation that was constructed to help
   debug. [sk2]
 
+- If exception, send the visualisation that was constructed to help
+  debug. [sk2]
+
+- Return nonzero if error. [sk2]
+
 - Return nonzero if error. [sk2]
 
 - Tidy. [sk2]
+
+- Tidy. [sk2]
+
+- Add top-level exception capturing. [sk2]
 
 - Add top-level exception capturing. [sk2]
 
@@ -247,9 +837,17 @@ v0.7.12 (2013-12-19)
 
 - Revert out. [sk2]
 
+- Revert out. [sk2]
+
+- Onepk syntax change. [sk2]
+
 - Onepk syntax change. [sk2]
 
 - Remove todo. [sk2]
+
+- Remove todo. [sk2]
+
+- More descriptive error message for mismatched subnets. [sk2]
 
 - More descriptive error message for mismatched subnets. [sk2]
 
@@ -258,14 +856,24 @@ v0.7.10 (2013-12-18)
 
 - Copy label across to ipv4 and v6 graphs for display. [sk2]
 
+- Copy label across to ipv4 and v6 graphs for display. [sk2]
+
 v0.7.9 (2013-12-18)
 -------------------
 
 - Add yaml helpers for multiline strings. [sk2]
 
+- Add yaml helpers for multiline strings. [sk2]
+
+- Default handler. [sk2]
+
 - Default handler. [sk2]
 
 - Add validate catch. [sk2]
+
+- Add validate catch. [sk2]
+
+- Handle no routing. [sk2]
 
 - Handle no routing. [sk2]
 
@@ -274,11 +882,21 @@ v0.7.8 (2013-12-12)
 
 - Closes gh-183. [sk2]
 
+- Closes gh-183. [sk2]
+
+- Use new vars, tidy. [sk2]
+
 - Use new vars, tidy. [sk2]
 
 - Info -> debug. [sk2]
 
+- Info -> debug. [sk2]
+
 - Lists instead of generators. [sk2]
+
+- Lists instead of generators. [sk2]
+
+- Ignores. [sk2]
 
 - Ignores. [sk2]
 
@@ -287,14 +905,33 @@ v0.7.8 (2013-12-12)
   modification to accept a configuration file from an environment
   variable
 
+- Merge pull request #182 from iainwp/master. [Simon Knight]
+
+  modification to accept a configuration file from an environment
+  variable
+
 - Comment out custom code. [sk2]
+
+- Comment out custom code. [sk2]
+
+- Revert labels. [sk2]
 
 - Revert labels. [sk2]
 
 - 254 on static route. [sk2]
 
+- 254 on static route. [sk2]
+
 - Modification to accept a configuration file from an environment
   variable. [iainwp]
+
+- Modification to accept a configuration file from an environment
+  variable. [iainwp]
+
+- Merge pull request #125 from oliviertilmans/loopback_ids. [Simon
+  Knight]
+
+  Loopback interface needs to have an associated id with them
 
 - Merge pull request #125 from oliviertilmans/loopback_ids. [Simon
   Knight]
@@ -306,6 +943,10 @@ v0.7.4 (2013-12-02)
 
 - Tidy overlay names. [sk2]
 
+- Tidy overlay names. [sk2]
+
+- Handle vis corner case if just input. [sk2]
+
 - Handle vis corner case if just input. [sk2]
 
 v0.7.3 (2013-11-29)
@@ -313,15 +954,29 @@ v0.7.3 (2013-11-29)
 
 - Correct version that bumpversion clobbered. [sk2]
 
+- Correct version that bumpversion clobbered. [sk2]
+
 - Add helper function to return neighbors of an interface. [sk2]
+
+- Add helper function to return neighbors of an interface. [sk2]
+
+- Add is_bound property for nidb interfaces for parity with anm. [sk2]
 
 - Add is_bound property for nidb interfaces for parity with anm. [sk2]
 
 - Set mgmt interface name correctly. [sk2]
 
+- Set mgmt interface name correctly. [sk2]
+
+- Remove extra http postings. [sk2]
+
 - Remove extra http postings. [sk2]
 
 - Add helper function to return neighbors of an interface. [sk2]
+
+- Add helper function to return neighbors of an interface. [sk2]
+
+- Tidy. [sk2]
 
 - Tidy. [sk2]
 
@@ -330,11 +985,21 @@ v0.7.2 (2013-11-27)
 
 - Tidy. [sk2]
 
+- Tidy. [sk2]
+
+- Tidying version string. [sk2]
+
 - Tidying version string. [sk2]
 
 - Tidy. [sk2]
 
+- Tidy. [sk2]
+
 - Fix extra syntax. [sk2]
+
+- Fix extra syntax. [sk2]
+
+- Tidy. [sk2]
 
 - Tidy. [sk2]
 
@@ -343,19 +1008,37 @@ v0.7.1 (2013-11-26)
 
 - More work for cloud-init support. [sk2]
 
+- More work for cloud-init support. [sk2]
+
 - Ignore .yaml. [sk2]
+
+- Ignore .yaml. [sk2]
+
+- Improving render for cloud init output. [sk2]
 
 - Improving render for cloud init output. [sk2]
 
 - Cloud init. [sk2]
 
+- Cloud init. [sk2]
+
 - Move out vis. [sk2]
+
+- Move out vis. [sk2]
+
+- Top-level behaviour. [sk2]
 
 - Top-level behaviour. [sk2]
 
 - Change top level peering behaviour. [sk2]
 
+- Change top level peering behaviour. [sk2]
+
 - Lock deps. [sk2]
+
+- Lock deps. [sk2]
+
+- Tidying. [sk2]
 
 - Tidying. [sk2]
 
@@ -364,21 +1047,41 @@ v0.6.8 (2013-11-19)
 
 - First iteration of simplified RR/HRR iBGP. [sk2]
 
+- First iteration of simplified RR/HRR iBGP. [sk2]
+
 - Refactor out ibgp. [sk2]
+
+- Refactor out ibgp. [sk2]
+
+- Remove extra node. [sk2]
 
 - Remove extra node. [sk2]
 
 - Path colours. [sk2]
 
+- Path colours. [sk2]
+
 - Handle base topo. [sk2]
+
+- Handle base topo. [sk2]
+
+- Update colours. [sk2]
 
 - Update colours. [sk2]
 
 - Error handling. [sk2]
 
+- Error handling. [sk2]
+
+- Logging. [sk2]
+
 - Logging. [sk2]
 
 - Tidy. [sk2]
+
+- Tidy. [sk2]
+
+- Basic ibgp check. [sk2]
 
 - Basic ibgp check. [sk2]
 
@@ -387,10 +1090,16 @@ v0.6.7 (2013-10-30)
 
 - Fix looping issue not assigning server ips. [sk2]
 
+- Fix looping issue not assigning server ips. [sk2]
+
+- Tidy. [sk2]
+
 - Tidy. [sk2]
 
 v0.6.6 (2013-10-29)
 -------------------
+
+- Write IPs onto all server interfaces. [sk2]
 
 - Write IPs onto all server interfaces. [sk2]
 
@@ -399,7 +1108,13 @@ v0.6.5 (2013-10-28)
 
 - Redo bgp peering for ios. [sk2]
 
+- Redo bgp peering for ios. [sk2]
+
 - Revisiting bgp peering. [sk2]
+
+- Revisiting bgp peering. [sk2]
+
+- Adding nailed up routes for eBGP. [sk2]
 
 - Adding nailed up routes for eBGP. [sk2]
 
@@ -408,10 +1123,16 @@ v0.6.4 (2013-10-22)
 
 - Use -host for /32. [sk2]
 
+- Use -host for /32. [sk2]
+
 v0.6.3 (2013-10-22)
 -------------------
 
 - Tidying. [sk2]
+
+- Tidying. [sk2]
+
+- Add config-driven webserver port. [sk2]
 
 - Add config-driven webserver port. [sk2]
 
@@ -420,8 +1141,12 @@ v0.6.2 (2013-10-21)
 
 - Fix server issue. [sk2]
 
+- Fix server issue. [sk2]
+
 v0.6.1 (2013-10-18)
 -------------------
+
+- Toggle routing config. [sk2]
 
 - Toggle routing config. [sk2]
 
@@ -430,62 +1155,123 @@ v0.6.0 (2013-10-18)
 
 - Add mpls oam. [sk2]
 
+- Add mpls oam. [sk2]
+
 - Call mpls oam module. [sk2]
+
+- Call mpls oam module. [sk2]
+
+- Add mpls oam. [sk2]
 
 - Add mpls oam. [sk2]
 
 - Don't auto-correct explicitly set ASNs. [sk2]
 
+- Don't auto-correct explicitly set ASNs. [sk2]
+
 - Fix typo in comment. [sk2]
+
+- Fix typo in comment. [sk2]
+
+- Exclude multipoint edges from mpls te and rsvp. [sk2]
 
 - Exclude multipoint edges from mpls te and rsvp. [sk2]
 
 - Mark multipoint edges. [sk2]
 
+- Mark multipoint edges. [sk2]
+
 - Fallback to category20b colours if > 10 groups. [sk2]
+
+- Fallback to category20b colours if > 10 groups. [sk2]
+
+- Restore cef for ios. [sk2]
 
 - Restore cef for ios. [sk2]
 
 - Update doc. [sk2]
 
+- Update doc. [sk2]
+
 - Interface handling if specified name for servers. [sk2]
+
+- Interface handling if specified name for servers. [sk2]
+
+- Add lo routes. [sk2]
 
 - Add lo routes. [sk2]
 
 - Tidy. [sk2]
 
+- Tidy. [sk2]
+
 - Remove debug, tidy. [sk2]
+
+- Remove debug, tidy. [sk2]
+
+- Include linux in manifest. [sk2]
 
 - Include linux in manifest. [sk2]
 
 - Add linux static routes. [sk2]
 
+- Add linux static routes. [sk2]
+
 - Add mpls te rules. [sk2]
+
+- Add mpls te rules. [sk2]
+
+- Ubuntu server class for static routes. [sk2]
 
 - Ubuntu server class for static routes. [sk2]
 
 - Server base class. [sk2]
 
+- Server base class. [sk2]
+
 - Base device class. [sk2]
+
+- Base device class. [sk2]
+
+- Tidying, add mpls to ios. [sk2]
 
 - Tidying, add mpls to ios. [sk2]
 
 - Fix ebgp session created on switch that has both ebgp and ibgp
   sessions. [sk2]
 
+- Fix ebgp session created on switch that has both ebgp and ibgp
+  sessions. [sk2]
+
 - Adding route config rendering. [sk2]
+
+- Adding route config rendering. [sk2]
+
+- Tidying oo. [sk2]
 
 - Tidying oo. [sk2]
 
 - Add mpls code. [sk2]
 
+- Add mpls code. [sk2]
+
 - Tidy. [sk2]
+
+- Tidy. [sk2]
+
+- Add fn to check server asn. [sk2]
 
 - Add fn to check server asn. [sk2]
 
 - Add mpls callout. [sk2]
 
+- Add mpls callout. [sk2]
+
 - Update asn setting. [sk2]
+
+- Update asn setting. [sk2]
+
+- Update asn handling: copy from phy if present. [sk2]
 
 - Update asn handling: copy from phy if present. [sk2]
 
@@ -494,11 +1280,21 @@ v0.5.21 (2013-09-06)
 
 - Set ipv4 and routing enabled defaults. [sk2]
 
+- Set ipv4 and routing enabled defaults. [sk2]
+
+- Post-collect processing. [sk2]
+
 - Post-collect processing. [sk2]
 
 - Remove uuid from test. [sk2]
 
+- Remove uuid from test. [sk2]
+
 - Reverse map for single ip. [sk2]
+
+- Reverse map for single ip. [sk2]
+
+- Multi-user uuid support. [sk2]
 
 - Multi-user uuid support. [sk2]
 
@@ -507,8 +1303,12 @@ v0.5.20 (2013-08-29)
 
 - Tidying, adding in vrfs. [sk2]
 
+- Tidying, adding in vrfs. [sk2]
+
 v0.5.19 (2013-08-28)
 --------------------
+
+- More collect. [sk2]
 
 - More collect. [sk2]
 
@@ -517,15 +1317,29 @@ v0.5.18 (2013-08-27)
 
 - Rename collect server. [sk2]
 
+- Rename collect server. [sk2]
+
 - Z ordering. [sk2]
+
+- Z ordering. [sk2]
+
+- Node data mapping. [sk2]
 
 - Node data mapping. [sk2]
 
 - Inc default threads to 5. [sk2]
 
+- Inc default threads to 5. [sk2]
+
+- Remove interfaces from node data dump. [sk2]
+
 - Remove interfaces from node data dump. [sk2]
 
 - Reverse mapping ips. [sk2]
+
+- Reverse mapping ips. [sk2]
+
+- Pep8. [sk2]
 
 - Pep8. [sk2]
 
@@ -534,11 +1348,23 @@ v0.5.17 (2013-08-23)
 
 - Allow no ip allocs. [sk2]
 
+- Allow no ip allocs. [sk2]
+
+- Tidy. [sk2]
+
 - Tidy. [sk2]
 
 - Allow no ip allocs. [sk2]
 
+- Allow no ip allocs. [sk2]
+
 - Split out functions from build_network. [sk2]
+
+- Split out functions from build_network. [sk2]
+
+- Allow no ip allocs. [sk2]
+
+- Allow no ip allocs. [sk2]
 
 - Allow no ip allocs. [sk2]
 
@@ -549,13 +1375,25 @@ v0.5.16 (2013-08-22)
 
 - Move endif to end of bgp block to enable bgp to be disabled. [sk2]
 
+- Move endif to end of bgp block to enable bgp to be disabled. [sk2]
+
 - Add todo. [sk2]
+
+- Add todo. [sk2]
+
+- Tidy. [sk2]
 
 - Tidy. [sk2]
 
 - Option to disable routing protocols. [sk2]
 
+- Option to disable routing protocols. [sk2]
+
 - Nonzero function. [sk2]
+
+- Nonzero function. [sk2]
+
+- Include eigrp overlay. [sk2]
 
 - Include eigrp overlay. [sk2]
 
@@ -564,8 +1402,12 @@ v0.5.14 (2013-08-22)
 
 - Remvoe debug. [sk2]
 
+- Remvoe debug. [sk2]
+
 v0.5.13 (2013-08-22)
 --------------------
+
+- Only require specified ip for bound interfaces. [sk2]
 
 - Only require specified ip for bound interfaces. [sk2]
 
@@ -574,9 +1416,17 @@ v0.5.12 (2013-08-21)
 
 - Updates. [sk2]
 
+- Updates. [sk2]
+
+- Add lo to eigrp v6. [sk2]
+
 - Add lo to eigrp v6. [sk2]
 
 - Try seperate packages if possible. [sk2]
+
+- Try seperate packages if possible. [sk2]
+
+- Add eigrp. [sk2]
 
 - Add eigrp. [sk2]
 
@@ -585,8 +1435,12 @@ v0.5.9 (2013-08-16)
 
 - Remove debug. [sk2]
 
+- Remove debug. [sk2]
+
 v0.5.8 (2013-08-16)
 -------------------
+
+- Update. [sk2]
 
 - Update. [sk2]
 

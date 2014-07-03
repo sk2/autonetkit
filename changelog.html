@@ -1,0 +1,4399 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.11: http://docutils.sourceforge.net/" />
+<title>Changelog</title>
+<style type="text/css">
+
+/*
+:Author: David Goodger (goodger@python.org)
+:Id: $Id: html4css1.css 7614 2013-02-21 15:55:51Z milde $
+:Copyright: This stylesheet has been placed in the public domain.
+
+Default cascading style sheet for the HTML output of Docutils.
+
+See http://docutils.sf.net/docs/howto/html-stylesheets.html for how to
+customize this style sheet.
+*/
+
+/* used to remove borders from tables and images */
+.borderless, table.borderless td, table.borderless th {
+  border: 0 }
+
+table.borderless td, table.borderless th {
+  /* Override padding for "table.docutils td" with "! important".
+     The right padding separates the table cells. */
+  padding: 0 0.5em 0 0 ! important }
+
+.first {
+  /* Override more specific margin styles with "! important". */
+  margin-top: 0 ! important }
+
+.last, .with-subtitle {
+  margin-bottom: 0 ! important }
+
+.hidden {
+  display: none }
+
+a.toc-backref {
+  text-decoration: none ;
+  color: black }
+
+blockquote.epigraph {
+  margin: 2em 5em ; }
+
+dl.docutils dd {
+  margin-bottom: 0.5em }
+
+object[type="image/svg+xml"], object[type="application/x-shockwave-flash"] {
+  overflow: hidden;
+}
+
+/* Uncomment (and remove this text!) to get bold-faced definition list terms
+dl.docutils dt {
+  font-weight: bold }
+*/
+
+div.abstract {
+  margin: 2em 5em }
+
+div.abstract p.topic-title {
+  font-weight: bold ;
+  text-align: center }
+
+div.admonition, div.attention, div.caution, div.danger, div.error,
+div.hint, div.important, div.note, div.tip, div.warning {
+  margin: 2em ;
+  border: medium outset ;
+  padding: 1em }
+
+div.admonition p.admonition-title, div.hint p.admonition-title,
+div.important p.admonition-title, div.note p.admonition-title,
+div.tip p.admonition-title {
+  font-weight: bold ;
+  font-family: sans-serif }
+
+div.attention p.admonition-title, div.caution p.admonition-title,
+div.danger p.admonition-title, div.error p.admonition-title,
+div.warning p.admonition-title, .code .error {
+  color: red ;
+  font-weight: bold ;
+  font-family: sans-serif }
+
+/* Uncomment (and remove this text!) to get reduced vertical space in
+   compound paragraphs.
+div.compound .compound-first, div.compound .compound-middle {
+  margin-bottom: 0.5em }
+
+div.compound .compound-last, div.compound .compound-middle {
+  margin-top: 0.5em }
+*/
+
+div.dedication {
+  margin: 2em 5em ;
+  text-align: center ;
+  font-style: italic }
+
+div.dedication p.topic-title {
+  font-weight: bold ;
+  font-style: normal }
+
+div.figure {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+div.footer, div.header {
+  clear: both;
+  font-size: smaller }
+
+div.line-block {
+  display: block ;
+  margin-top: 1em ;
+  margin-bottom: 1em }
+
+div.line-block div.line-block {
+  margin-top: 0 ;
+  margin-bottom: 0 ;
+  margin-left: 1.5em }
+
+div.sidebar {
+  margin: 0 0 0.5em 1em ;
+  border: medium outset ;
+  padding: 1em ;
+  background-color: #ffffee ;
+  width: 40% ;
+  float: right ;
+  clear: right }
+
+div.sidebar p.rubric {
+  font-family: sans-serif ;
+  font-size: medium }
+
+div.system-messages {
+  margin: 5em }
+
+div.system-messages h1 {
+  color: red }
+
+div.system-message {
+  border: medium outset ;
+  padding: 1em }
+
+div.system-message p.system-message-title {
+  color: red ;
+  font-weight: bold }
+
+div.topic {
+  margin: 2em }
+
+h1.section-subtitle, h2.section-subtitle, h3.section-subtitle,
+h4.section-subtitle, h5.section-subtitle, h6.section-subtitle {
+  margin-top: 0.4em }
+
+h1.title {
+  text-align: center }
+
+h2.subtitle {
+  text-align: center }
+
+hr.docutils {
+  width: 75% }
+
+img.align-left, .figure.align-left, object.align-left {
+  clear: left ;
+  float: left ;
+  margin-right: 1em }
+
+img.align-right, .figure.align-right, object.align-right {
+  clear: right ;
+  float: right ;
+  margin-left: 1em }
+
+img.align-center, .figure.align-center, object.align-center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.align-left {
+  text-align: left }
+
+.align-center {
+  clear: both ;
+  text-align: center }
+
+.align-right {
+  text-align: right }
+
+/* reset inner alignment in figures */
+div.align-right {
+  text-align: inherit }
+
+/* div.align-center * { */
+/*   text-align: left } */
+
+ol.simple, ul.simple {
+  margin-bottom: 1em }
+
+ol.arabic {
+  list-style: decimal }
+
+ol.loweralpha {
+  list-style: lower-alpha }
+
+ol.upperalpha {
+  list-style: upper-alpha }
+
+ol.lowerroman {
+  list-style: lower-roman }
+
+ol.upperroman {
+  list-style: upper-roman }
+
+p.attribution {
+  text-align: right ;
+  margin-left: 50% }
+
+p.caption {
+  font-style: italic }
+
+p.credits {
+  font-style: italic ;
+  font-size: smaller }
+
+p.label {
+  white-space: nowrap }
+
+p.rubric {
+  font-weight: bold ;
+  font-size: larger ;
+  color: maroon ;
+  text-align: center }
+
+p.sidebar-title {
+  font-family: sans-serif ;
+  font-weight: bold ;
+  font-size: larger }
+
+p.sidebar-subtitle {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+p.topic-title {
+  font-weight: bold }
+
+pre.address {
+  margin-bottom: 0 ;
+  margin-top: 0 ;
+  font: inherit }
+
+pre.literal-block, pre.doctest-block, pre.math, pre.code {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+pre.code .ln { color: grey; } /* line numbers */
+pre.code, code { background-color: #eeeeee }
+pre.code .comment, code .comment { color: #5C6576 }
+pre.code .keyword, code .keyword { color: #3B0D06; font-weight: bold }
+pre.code .literal.string, code .literal.string { color: #0C5404 }
+pre.code .name.builtin, code .name.builtin { color: #352B84 }
+pre.code .deleted, code .deleted { background-color: #DEB0A1}
+pre.code .inserted, code .inserted { background-color: #A3D289}
+
+span.classifier {
+  font-family: sans-serif ;
+  font-style: oblique }
+
+span.classifier-delimiter {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+span.interpreted {
+  font-family: sans-serif }
+
+span.option {
+  white-space: nowrap }
+
+span.pre {
+  white-space: pre }
+
+span.problematic {
+  color: red }
+
+span.section-subtitle {
+  /* font-size relative to parent (h1..h6 element) */
+  font-size: 80% }
+
+table.citation {
+  border-left: solid 1px gray;
+  margin-left: 1px }
+
+table.docinfo {
+  margin: 2em 4em }
+
+table.docutils {
+  margin-top: 0.5em ;
+  margin-bottom: 0.5em }
+
+table.footnote {
+  border-left: solid 1px black;
+  margin-left: 1px }
+
+table.docutils td, table.docutils th,
+table.docinfo td, table.docinfo th {
+  padding-left: 0.5em ;
+  padding-right: 0.5em ;
+  vertical-align: top }
+
+table.docutils th.field-name, table.docinfo th.docinfo-name {
+  font-weight: bold ;
+  text-align: left ;
+  white-space: nowrap ;
+  padding-left: 0 }
+
+/* "booktabs" style (no vertical lines) */
+table.docutils.booktabs {
+  border: 0px;
+  border-top: 2px solid;
+  border-bottom: 2px solid;
+  border-collapse: collapse;
+}
+table.docutils.booktabs * {
+  border: 0px;
+}
+table.docutils.booktabs th {
+  border-bottom: thin solid;
+  text-align: left;
+}
+
+h1 tt.docutils, h2 tt.docutils, h3 tt.docutils,
+h4 tt.docutils, h5 tt.docutils, h6 tt.docutils {
+  font-size: 100% }
+
+ul.auto-toc {
+  list-style-type: none }
+
+</style>
+</head>
+<body>
+<div class="document" id="changelog">
+<h1 class="title">Changelog</h1>
+
+<div class="section" id="testing-release">
+<h1>Testing release</h1>
+<ul>
+<li><p class="first">Merge pull request #242 from sk2/ACLs. [Simon Knight]</p>
+<p>Ac ls</p>
+</li>
+<li><p class="first">Add tox. [Simon Knight]</p>
+</li>
+<li><p class="first">Merge pull request #241 from sk2/ACLs. [Simon Knight]</p>
+<p>Ac ls</p>
+</li>
+</ul>
+</div>
+<div class="section" id="v0-9-2-2014-06-27">
+<h1>v0.9.2 (2014-06-27)</h1>
+<div class="section" id="changes">
+<h2>Changes</h2>
+<ul class="simple">
+<li>&gt;= rather than == for deps. [Simon Knight]</li>
+<li>Update info on ip blocks. [Simon Knight]</li>
+</ul>
+</div>
+</div>
+<div class="section" id="v0-9-1-2014-05-13">
+<h1>v0.9.1 (2014-05-13)</h1>
+<div class="section" id="new">
+<h2>New</h2>
+<ul class="simple">
+<li>User: record overlay dependencies to new overlay. [Simon Knight]</li>
+</ul>
+</div>
+<div class="section" id="id1">
+<h2>Changes</h2>
+<ul>
+<li><p class="first">Minor tweaks. [Simon Knight]</p>
+</li>
+<li><p class="first">Condense example. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidy. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidy. [Simon Knight]</p>
+</li>
+<li><p class="first">Update docs for json example. [Simon Knight]</p>
+</li>
+<li><p class="first">Add Json to doc for gh-222. [Simon Knight]</p>
+</li>
+<li><p class="first">User: Initial commit of JSON load code for gh-222. [Simon Knight]</p>
+<p>Example in tests/house.json if using dev build of ank:  <tt class="docutils literal">` $
+autonetkit <span class="pre">-f</span> tests/house.json INFO VIRL Configuration Engine 0.9.0
+INFO AutoNetkit 0.9.0 INFO IPv4 allocations: Infrastructure:
+10.0.0.0/8, Loopback: 192.168.0.0/22 INFO Allocating v4 Infrastructure
+IPs INFO Allocating v4 Primary Host loopback IPs INFO Topology not
+created for VIRL, skipping Cisco PCE design rules INFO Skipping iBGP
+for iBGP disabled nodes: [] INFO All validation tests passed. INFO
+Rendering Configuration Files INFO Finished `</tt>  if run in monitor
+mode, then changes will be reflected live: <tt class="docutils literal">` $ ank_webserver `</tt>
+and then <tt class="docutils literal">` $ autonetkit <span class="pre">-f</span> tests/house.json —monitor `</tt></p>
+</li>
+<li><p class="first">Updates. [Simon Knight]</p>
+</li>
+<li><p class="first">Rebuild doc. [Simon Knight]</p>
+</li>
+<li><p class="first">Increment year. [Simon Knight]</p>
+</li>
+<li><p class="first">Run sphinx-apidoc. [Simon Knight]</p>
+</li>
+<li><p class="first">Adding doctests. [Simon Knight]</p>
+</li>
+<li><p class="first">User: update_http -&gt; update_vis. [Simon Knight]</p>
+</li>
+<li><p class="first">User: Initial support for multi-homed servers for VIRL-425. [Simon
+Knight]</p>
+</li>
+<li><p class="first">Add initial support to auto-build dependency diagrams. [Simon Knight]</p>
+</li>
+</ul>
+</div>
+<div class="section" id="other">
+<h2>Other</h2>
+<ul>
+<li><p class="first">Merge pull request #237 from oliviertilmans/patch-1. [Simon Knight]</p>
+<p>The network might not run BGP</p>
+</li>
+<li><p class="first">The network might not run BGP. [oliviertilmans]</p>
+<p>This result in a Key Error</p>
+</li>
+<li><p class="first">Merge pull request #236 from sk2/parallel. [Simon Knight]</p>
+<p>Parallel</p>
+</li>
+<li><p class="first">Merge pull request #235 from sk2/ACLs. [Simon Knight]</p>
+<p>Ac ls</p>
+</li>
+<li><p class="first">Revert &quot;chg: dev: add ACL placeholder for gh-234&quot; [Simon Knight]</p>
+<p>This reverts commit 4941b893daf279e5bb24a0b54c10ed490db27716.</p>
+</li>
+<li><p class="first">Merge pull request #232 from sk2/render2.0. [Simon Knight]</p>
+<p>Render2.0</p>
+</li>
+<li><p class="first">Add: dev: initial work to support vlans for gh-229. [Simon Knight]</p>
+</li>
+<li><p class="first">Update README.md. [Simon Knight]</p>
+</li>
+<li><p class="first">Merge pull request #228 from sk2/parallel. [Simon Knight]</p>
+<p>chg: doc: minor tweaks</p>
+</li>
+<li><p class="first">Merge pull request #227 from sk2/parallel. [Simon Knight]</p>
+<p>Parallel</p>
+</li>
+<li><p class="first">Update README.md. [Simon Knight]</p>
+</li>
+<li><p class="first">Update README.md. [Simon Knight]</p>
+</li>
+<li><p class="first">Merge pull request #226 from sk2/parallel. [Simon Knight]</p>
+<p>Chg: doc: add Json to doc for gh-222</p>
+</li>
+<li><p class="first">Merge pull request #225 from sk2/parallel. [Simon Knight]</p>
+<p>Chg: User: Initial commit of JSON load code for gh-222</p>
+</li>
+<li><p class="first">Merge pull request #224 from sk2/parallel. [Simon Knight]</p>
+<p>Parallel</p>
+</li>
+<li><p class="first">Merge pull request #223 from sk2/parallel. [Simon Knight]</p>
+<p>Parallel</p>
+</li>
+<li><p class="first">Merge pull request #221 from sk2/parallel. [Simon Knight]</p>
+<p>Parallel</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="v0-9-0-2014-03-24">
+<h1>v0.9.0 (2014-03-24)</h1>
+<div class="section" id="id2">
+<h2>New</h2>
+<ul class="simple">
+<li>User: Support layer2 and layer3 overlays for gh-206. [Simon Knight]</li>
+</ul>
+</div>
+<div class="section" id="id3">
+<h2>Changes</h2>
+<ul class="simple">
+<li>User: Sort nodes before allocation, closes gh-208. [Simon Knight]</li>
+<li>User: label-based sort if present closes gh-207. [Simon Knight]</li>
+<li>User: add ability to search for interfaces by their &quot;id&quot; string e.g.
+&quot;GigabitEthernet0/1&quot; [Simon Knight]</li>
+</ul>
+</div>
+</div>
+<div class="section" id="v0-8-39-2014-03-14">
+<h1>v0.8.39 (2014-03-14)</h1>
+<div class="section" id="id4">
+<h2>Changes</h2>
+<ul class="simple">
+<li>User: Allow custom config injection for VIRL-122. [Simon Knight]</li>
+</ul>
+</div>
+</div>
+<div class="section" id="v0-8-38-2014-03-13">
+<h1>v0.8.38 (2014-03-13)</h1>
+<div class="section" id="id5">
+<h2>Changes</h2>
+<ul class="simple">
+<li>User: Handle IP addresses on L3 devices for VIRL-372. [Simon Knight]</li>
+<li>User: support custom unsupported server templates for VIRL-378. [Simon
+Knight]</li>
+<li>User: add &quot;external_connector&quot; device_type for VIRL-672. [Simon
+Knight]</li>
+<li>User: only validate IP on Layer 3 devices for VIRL-672. [Simon Knight]</li>
+<li>Allow specifying edge properties (color/width) [Simon Knight]</li>
+</ul>
+</div>
+</div>
+<div class="section" id="v0-8-37-2014-03-11">
+<h1>v0.8.37 (2014-03-11)</h1>
+<div class="section" id="fix">
+<h2>Fix</h2>
+<ul>
+<li><p class="first">User: Corrects bug with non-routers in EIGRP fixes VIRL-659. [Simon
+Knight]</p>
+<p>Had extra ISIS NET address line</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="v0-8-35-2014-03-10">
+<h1>v0.8.35 (2014-03-10)</h1>
+<div class="section" id="id6">
+<h2>Changes</h2>
+<ul class="simple">
+<li>Update warnings to not warn if no subnet/prefix set. [Simon Knight]</li>
+</ul>
+</div>
+</div>
+<div class="section" id="v0-8-33-2014-03-05">
+<h1>v0.8.33 (2014-03-05)</h1>
+<div class="section" id="id7">
+<h2>Changes</h2>
+<ul>
+<li><p class="first">User: Use ASN as process-id for IGP for VIRL-602. [Simon Knight]</p>
+<p>Causes problems if multiple ASes connected across a multi-point
+network.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="id8">
+<h2>Other</h2>
+<ul class="simple">
+<li>Add overview video. [Simon Knight]</li>
+</ul>
+</div>
+</div>
+<div class="section" id="v0-8-32-2014-02-14">
+<h1>v0.8.32 (2014-02-14)</h1>
+<div class="section" id="id9">
+<h2>New</h2>
+<ul class="simple">
+<li>User: Allow manually specified IPv6 blocks for VIRL-481. [Simon
+Knight]</li>
+</ul>
+</div>
+<div class="section" id="id10">
+<h2>Changes</h2>
+<ul class="simple">
+<li>User: Config driven IP defaults, better logging of problems with
+manually specified IPs. [Simon Knight]</li>
+<li>User: Swap default IPv6 blocks for infra/loopback to be sequential.
+[Simon Knight]</li>
+</ul>
+</div>
+</div>
+<div class="section" id="v0-8-31-2014-02-14">
+<h1>v0.8.31 (2014-02-14)</h1>
+<div class="section" id="id11">
+<h2>Changes</h2>
+<ul class="simple">
+<li>User: Tidied up VRF role notification logic to aggregate by role.
+VIRL-368. [Simon Knight]</li>
+<li>User: Exclude BGP block if no iBGP/eBGP sessions. VIRL-564. [Simon
+Knight]</li>
+</ul>
+</div>
+</div>
+<div class="section" id="v0-8-29-2014-02-14">
+<h1>v0.8.29 (2014-02-14)</h1>
+<div class="section" id="id12">
+<h2>New</h2>
+<ul class="simple">
+<li>User: Warn that IPv6 MPLS VPNs not currently supported for VIRL-56.
+[Simon Knight]</li>
+</ul>
+</div>
+<div class="section" id="id13">
+<h2>Changes</h2>
+<ul class="simple">
+<li>User: update iBGP design rules for VIRL-558. [Simon Knight]</li>
+</ul>
+</div>
+<div class="section" id="id14">
+<h2>Fix</h2>
+<ul class="simple">
+<li>User: Allow PE RRC nodes to participate in ibgp_vpn_v4. [Simon Knight]</li>
+</ul>
+</div>
+</div>
+<div class="section" id="v0-8-26-2014-02-13">
+<h1>v0.8.26 (2014-02-13)</h1>
+<div class="section" id="id15">
+<h2>Changes</h2>
+<ul class="simple">
+<li>User: Add ibgp &quot;peer&quot; type for VIRL-558. [Simon Knight]</li>
+<li>User: Clarify IPv4 allocation warning message for VIRL-550. [Simon
+Knight]</li>
+<li>User: list Interfaces as GigabitEthernet0/1.RR_2 instead of
+(GigabitEthernet0/1, RR_2) [Simon Knight]</li>
+</ul>
+</div>
+</div>
+<div class="section" id="v0-8-17-2014-01-31">
+<h1>v0.8.17 (2014-01-31)</h1>
+<div class="section" id="id16">
+<h2>New</h2>
+<ul class="simple">
+<li>User: Allow user-defined IPv6 IPs (infra + loopback) [Simon Knight]</li>
+</ul>
+</div>
+<div class="section" id="id17">
+<h2>Changes</h2>
+<ul class="simple">
+<li>User: More descriptive logs for user-defined IPv6 addresses. [Simon
+Knight]</li>
+</ul>
+</div>
+<div class="section" id="id18">
+<h2>Fix</h2>
+<ul class="simple">
+<li>User: Bugfix for EIGRP IPv6 for VIRL-493. [Simon Knight]</li>
+</ul>
+</div>
+</div>
+<div class="section" id="v0-8-14-2014-01-24">
+<h1>v0.8.14 (2014-01-24)</h1>
+<div class="section" id="id19">
+<h2>New</h2>
+<ul class="simple">
+<li>User: Warn if partial IPs set for VIRL-456. [Simon Knight]</li>
+<li>User: Display human-readable ibgp_role for VIRL-469. [Simon Knight]</li>
+</ul>
+</div>
+</div>
+<div class="section" id="v0-8-12-2014-01-22">
+<h1>v0.8.12 (2014-01-22)</h1>
+<div class="section" id="id20">
+<h2>Changes</h2>
+<ul class="simple">
+<li>User: Update logging. [Simon Knight]</li>
+</ul>
+</div>
+</div>
+<div class="section" id="v0-8-11-2014-01-22">
+<h1>v0.8.11 (2014-01-22)</h1>
+<div class="section" id="id21">
+<h2>Changes</h2>
+<ul class="simple">
+<li>User: Tidy logging. [Simon Knight]</li>
+<li>User: Warn for unsupported device features. [Simon Knight]</li>
+<li>User: Use VIRL platform identifier instead of Cisco. [Simon Knight]</li>
+<li>User: Tidy logging messages. [Simon Knight]</li>
+</ul>
+</div>
+</div>
+<div class="section" id="v0-8-10-2014-01-21">
+<h1>v0.8.10 (2014-01-21)</h1>
+<div class="section" id="id22">
+<h2>Fix</h2>
+<ul>
+<li><p class="first">Sort values neigh_most_frequent so tie-break chooses lowest. [Simon
+Knight]</p>
+<p>Addresses issue with stability in IP addressing: inter-asn links had a
+collision domain that was arbitrarily being allocated to one or the
+other ASN depending on the arbitarty position. This ensures the lowest
+is always returned in a tie-break leading to repeatable addressing
+(especially important for automated tests)</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="v0-8-9-2014-01-20">
+<h1>v0.8.9 (2014-01-20)</h1>
+<ul>
+<li><p class="first">Merge branch 'master' of github.com:sk2/autonetkit. [Simon Knight]</p>
+<p>Conflicts:         .bumpversion.cfg         autonetkit/render.py
+setup.py</p>
+</li>
+<li><p class="first">Merge cleanup. [Simon Knight]</p>
+</li>
+</ul>
+</div>
+<div class="section" id="v0-8-7-2014-01-20">
+<h1>v0.8.7 (2014-01-20)</h1>
+<ul class="simple">
+<li>&#64;chg: dev: renaming. [Simon Knight]</li>
+<li>&#64;chg: dev: renaming. [Simon Knight]</li>
+</ul>
+</div>
+<div class="section" id="v0-8-6-2014-01-20">
+<h1>v0.8.6 (2014-01-20)</h1>
+<div class="section" id="id23">
+<h2>New</h2>
+<ul class="simple">
+<li>User: Display address blocks to use for VIRL-350. [Simon Knight]</li>
+<li>User: Display address blocks to use for VIRL-350. [Simon Knight]</li>
+</ul>
+</div>
+</div>
+<div class="section" id="v0-8-4-2014-01-16">
+<h1>v0.8.4 (2014-01-16)</h1>
+<div class="section" id="id24">
+<h2>New</h2>
+<ul class="simple">
+<li>User: add per-element logging for GH-190. [Simon Knight]</li>
+<li>User: add per-element logging for GH-190. [Simon Knight]</li>
+<li>User: add single config for gh-189. [Simon Knight]</li>
+<li>User: add single config for gh-189. [Simon Knight]</li>
+<li>User: Screenshot capture for GH-188. [Simon Knight]</li>
+<li>User: Screenshot capture for GH-188. [Simon Knight]</li>
+</ul>
+</div>
+<div class="section" id="id25">
+<h2>Other</h2>
+<ul class="simple">
+<li>Change: dev: remove superseded config. [Simon Knight]</li>
+<li>Change: dev: remove superseded config. [Simon Knight]</li>
+<li>Change: dev: refactor XR OSPF by interfaces to common router_base.
+[Simon Knight]</li>
+<li>Change: dev: refactor XR OSPF by interfaces to common router_base.
+[Simon Knight]</li>
+<li>Update changelog. [Simon Knight]</li>
+<li>Update changelog. [Simon Knight]</li>
+</ul>
+</div>
+</div>
+<div class="section" id="v0-8-3-2014-01-13">
+<h1>v0.8.3 (2014-01-13)</h1>
+<ul class="simple">
+<li>Add gitchangelog support. [sk2]</li>
+<li>Add gitchangelog support. [sk2]</li>
+<li>Move indent correctly inside loop. [sk2]</li>
+<li>Move indent correctly inside loop. [sk2]</li>
+<li>Typo fix for ebgp not ibgp. [sk2]</li>
+<li>Typo fix for ebgp not ibgp. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Add read me. [sk2]</li>
+<li>Add read me. [sk2]</li>
+<li>Update. [sk2]</li>
+<li>Update. [sk2]</li>
+<li>Add img. [sk2]</li>
+<li>Add img. [sk2]</li>
+<li>Examples. [sk2]</li>
+<li>Examples. [sk2]</li>
+<li>Add cwd to templates search dir. [sk2]</li>
+<li>Add cwd to templates search dir. [sk2]</li>
+<li>Add ordering. [sk2]</li>
+<li>Add ordering. [sk2]</li>
+<li>Add note. [sk2]</li>
+<li>Add note. [sk2]</li>
+<li>Support v6 bgp. [sk2]</li>
+<li>Support v6 bgp. [sk2]</li>
+<li>Add note. [sk2]</li>
+<li>Add note. [sk2]</li>
+<li>Add __ne__ and ordering. [sk2]</li>
+<li>Add __ne__ and ordering. [sk2]</li>
+<li>Support nidb nodes. [sk2]</li>
+<li>Support nidb nodes. [sk2]</li>
+<li>Add example. [sk2]</li>
+<li>Add example. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Handle new overlays. [sk2]</li>
+<li>Handle new overlays. [sk2]</li>
+<li>New overlay. [sk2]</li>
+<li>New overlay. [sk2]</li>
+<li>Better json. [sk2]</li>
+<li>Better json. [sk2]</li>
+<li>Tutorial notebook. [sk2]</li>
+<li>Tutorial notebook. [sk2]</li>
+<li>Add new test case notes. [sk2]</li>
+<li>Add new test case notes. [sk2]</li>
+<li>Better debugging for templates. [sk2]</li>
+<li>Better debugging for templates. [sk2]</li>
+<li>More support for gh-186. [sk2]</li>
+<li>More support for gh-186. [sk2]</li>
+<li>Move mpls code to separate module. [sk2]</li>
+<li>Move mpls code to separate module. [sk2]</li>
+<li>More support for gh-186. [sk2]</li>
+<li>More support for gh-186. [sk2]</li>
+<li>Pep8. [sk2]</li>
+<li>Pep8. [sk2]</li>
+<li>Improvements to setting defaults on bunches. [sk2]</li>
+<li>Improvements to setting defaults on bunches. [sk2]</li>
+<li>Remove old demos. [sk2]</li>
+<li>Remove old demos. [sk2]</li>
+<li>Add config_stanza class for gh-186. [sk2]</li>
+<li>Add config_stanza class for gh-186. [sk2]</li>
+<li>Add option for stack_trace (useful for dev) [sk2]</li>
+<li>Add option for stack_trace (useful for dev) [sk2]</li>
+<li>Add browser test. [sk2]</li>
+<li>Add browser test. [sk2]</li>
+<li>Connectors. [sk2]</li>
+<li>Connectors. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-8-2-2014-01-10">
+<h1>v0.8.2 (2014-01-10)</h1>
+<ul class="simple">
+<li>Remove old call to publish data. [sk2]</li>
+<li>Remove old call to publish data. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-8-1-2014-01-10">
+<h1>v0.8.1 (2014-01-10)</h1>
+<ul class="simple">
+<li>Add note. [sk2]</li>
+<li>Add note. [sk2]</li>
+<li>Remove unused messaging functions. [sk2]</li>
+<li>Remove unused messaging functions. [sk2]</li>
+<li>Add log message. [sk2]</li>
+<li>Add log message. [sk2]</li>
+<li>Update anm tests. [sk2]</li>
+<li>Update anm tests. [sk2]</li>
+<li>Testing for anm. [sk2]</li>
+<li>Testing for anm. [sk2]</li>
+<li>Remove directed. [sk2]</li>
+<li>Remove directed. [sk2]</li>
+<li>Improving edge-case handling. [sk2]</li>
+<li>Improving edge-case handling. [sk2]</li>
+<li>Remove state for pickling - use json. [sk2]</li>
+<li>Remove state for pickling - use json. [sk2]</li>
+<li>Improving handling for custom overlays. [sk2]</li>
+<li>Improving handling for custom overlays. [sk2]</li>
+<li>Remove unused code. [sk2]</li>
+<li>Remove unused code. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-8-0-2014-01-08">
+<h1>v0.8.0 (2014-01-08)</h1>
+<ul class="simple">
+<li>Remove old ibgp code. [sk2]</li>
+<li>Remove old ibgp code. [sk2]</li>
+<li>More removal of edge_id for gh-184. [sk2]</li>
+<li>More removal of edge_id for gh-184. [sk2]</li>
+<li>Closes gh-184. [sk2]</li>
+<li>Closes gh-184. [sk2]</li>
+<li>Pylint. [sk2]</li>
+<li>Pylint. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-7-33-2014-01-08">
+<h1>v0.7.33 (2014-01-08)</h1>
+<ul class="simple">
+<li>Update warnings. [sk2]</li>
+<li>Update warnings. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-7-32-2014-01-08">
+<h1>v0.7.32 (2014-01-08)</h1>
+<ul class="simple">
+<li>Add other AS subnets. [sk2]</li>
+<li>Add other AS subnets. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-7-31-2014-01-07">
+<h1>v0.7.31 (2014-01-07)</h1>
+<ul class="simple">
+<li>Tidy. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Handle non-subnet collision domains (i.e. no nodes) [sk2]</li>
+<li>Handle non-subnet collision domains (i.e. no nodes) [sk2]</li>
+<li>Rename subtype. [sk2]</li>
+<li>Rename subtype. [sk2]</li>
+<li>Pass exception up. [sk2]</li>
+<li>Pass exception up. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-7-29-2014-01-06">
+<h1>v0.7.29 (2014-01-06)</h1>
+<ul class="simple">
+<li>Use official subtypes. [sk2]</li>
+<li>Use official subtypes. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-7-27-2014-01-04">
+<h1>v0.7.27 (2014-01-04)</h1>
+<ul class="simple">
+<li>Pep8. [sk2]</li>
+<li>Pep8. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-7-26-2014-01-03">
+<h1>v0.7.26 (2014-01-03)</h1>
+<ul class="simple">
+<li>Add logging. [sk2]</li>
+<li>Add logging. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-7-25-2014-01-03">
+<h1>v0.7.25 (2014-01-03)</h1>
+<ul class="simple">
+<li>Fix issue with uuids being re-used but discarded, update logging.
+[sk2]</li>
+<li>Fix issue with uuids being re-used but discarded, update logging.
+[sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-7-24-2014-01-02">
+<h1>v0.7.24 (2014-01-02)</h1>
+<ul class="simple">
+<li>Catching overlay uuid deletion errors. [sk2]</li>
+<li>Catching overlay uuid deletion errors. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Handling of interfaces in adding edges. [sk2]</li>
+<li>Handling of interfaces in adding edges. [sk2]</li>
+<li>Allow uuid to be specified in call. [sk2]</li>
+<li>Allow uuid to be specified in call. [sk2]</li>
+<li>Update connectors. [sk2]</li>
+<li>Update connectors. [sk2]</li>
+<li>Add comment. [sk2]</li>
+<li>Add comment. [sk2]</li>
+<li>Add script to build wheel. [sk2]</li>
+<li>Add script to build wheel. [sk2]</li>
+<li>Isort imports. [sk2]</li>
+<li>Isort imports. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-7-23-2013-12-27">
+<h1>v0.7.23 (2013-12-27)</h1>
+<ul class="simple">
+<li>Enable telnet and ssh over vty. [sk2]</li>
+<li>Enable telnet and ssh over vty. [sk2]</li>
+<li>Tidying. [sk2]</li>
+<li>Tidying. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-7-20-2013-12-23">
+<h1>v0.7.20 (2013-12-23)</h1>
+<ul class="simple">
+<li>Correct bug in writing static instead of host routes. [sk2]</li>
+<li>Correct bug in writing static instead of host routes. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-7-19-2013-12-23">
+<h1>v0.7.19 (2013-12-23)</h1>
+<ul class="simple">
+<li>Tidy. [sk2]</li>
+<li>Tidy. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-7-17-2013-12-23">
+<h1>v0.7.17 (2013-12-23)</h1>
+<ul class="simple">
+<li>Tidy. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Tidy logging. [sk2]</li>
+<li>Tidy logging. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Add test. [sk2]</li>
+<li>Add test. [sk2]</li>
+<li>Add tests. [sk2]</li>
+<li>Add tests. [sk2]</li>
+<li>Add test. [sk2]</li>
+<li>Add test. [sk2]</li>
+<li>Add test. [sk2]</li>
+<li>Add test. [sk2]</li>
+<li>Add test. [sk2]</li>
+<li>Add test. [sk2]</li>
+<li>Add test topology. [sk2]</li>
+<li>Add test topology. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-7-16-2013-12-20">
+<h1>v0.7.16 (2013-12-20)</h1>
+<ul class="simple">
+<li>Add extra onepk line. [sk2]</li>
+<li>Add extra onepk line. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-7-15-2013-12-20">
+<h1>v0.7.15 (2013-12-20)</h1>
+<ul class="simple">
+<li>Tidy. [sk2]</li>
+<li>Tidy. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-7-14-2013-12-20">
+<h1>v0.7.14 (2013-12-20)</h1>
+<ul class="simple">
+<li>Return the node label rendered rather than node_id for repr of
+interfaces. [sk2]</li>
+<li>Return the node label rendered rather than node_id for repr of
+interfaces. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Tidy. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-7-13-2013-12-19">
+<h1>v0.7.13 (2013-12-19)</h1>
+<ul class="simple">
+<li>If exception, send the visualisation that was constructed to help
+debug. [sk2]</li>
+<li>If exception, send the visualisation that was constructed to help
+debug. [sk2]</li>
+<li>Return nonzero if error. [sk2]</li>
+<li>Return nonzero if error. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Add top-level exception capturing. [sk2]</li>
+<li>Add top-level exception capturing. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-7-12-2013-12-19">
+<h1>v0.7.12 (2013-12-19)</h1>
+<ul class="simple">
+<li>Revert out. [sk2]</li>
+<li>Revert out. [sk2]</li>
+<li>Onepk syntax change. [sk2]</li>
+<li>Onepk syntax change. [sk2]</li>
+<li>Remove todo. [sk2]</li>
+<li>Remove todo. [sk2]</li>
+<li>More descriptive error message for mismatched subnets. [sk2]</li>
+<li>More descriptive error message for mismatched subnets. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-7-10-2013-12-18">
+<h1>v0.7.10 (2013-12-18)</h1>
+<ul class="simple">
+<li>Copy label across to ipv4 and v6 graphs for display. [sk2]</li>
+<li>Copy label across to ipv4 and v6 graphs for display. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-7-9-2013-12-18">
+<h1>v0.7.9 (2013-12-18)</h1>
+<ul class="simple">
+<li>Add yaml helpers for multiline strings. [sk2]</li>
+<li>Add yaml helpers for multiline strings. [sk2]</li>
+<li>Default handler. [sk2]</li>
+<li>Default handler. [sk2]</li>
+<li>Add validate catch. [sk2]</li>
+<li>Add validate catch. [sk2]</li>
+<li>Handle no routing. [sk2]</li>
+<li>Handle no routing. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-7-8-2013-12-12">
+<h1>v0.7.8 (2013-12-12)</h1>
+<ul>
+<li><p class="first">Closes gh-183. [sk2]</p>
+</li>
+<li><p class="first">Closes gh-183. [sk2]</p>
+</li>
+<li><p class="first">Use new vars, tidy. [sk2]</p>
+</li>
+<li><p class="first">Use new vars, tidy. [sk2]</p>
+</li>
+<li><p class="first">Info -&gt; debug. [sk2]</p>
+</li>
+<li><p class="first">Info -&gt; debug. [sk2]</p>
+</li>
+<li><p class="first">Lists instead of generators. [sk2]</p>
+</li>
+<li><p class="first">Lists instead of generators. [sk2]</p>
+</li>
+<li><p class="first">Ignores. [sk2]</p>
+</li>
+<li><p class="first">Ignores. [sk2]</p>
+</li>
+<li><p class="first">Merge pull request #182 from iainwp/master. [Simon Knight]</p>
+<p>modification to accept a configuration file from an environment
+variable</p>
+</li>
+<li><p class="first">Merge pull request #182 from iainwp/master. [Simon Knight]</p>
+<p>modification to accept a configuration file from an environment
+variable</p>
+</li>
+<li><p class="first">Comment out custom code. [sk2]</p>
+</li>
+<li><p class="first">Comment out custom code. [sk2]</p>
+</li>
+<li><p class="first">Revert labels. [sk2]</p>
+</li>
+<li><p class="first">Revert labels. [sk2]</p>
+</li>
+<li><p class="first">254 on static route. [sk2]</p>
+</li>
+<li><p class="first">254 on static route. [sk2]</p>
+</li>
+<li><p class="first">Modification to accept a configuration file from an environment
+variable. [iainwp]</p>
+</li>
+<li><p class="first">Modification to accept a configuration file from an environment
+variable. [iainwp]</p>
+</li>
+<li><p class="first">Merge pull request #125 from oliviertilmans/loopback_ids. [Simon
+Knight]</p>
+<p>Loopback interface needs to have an associated id with them</p>
+</li>
+<li><p class="first">Merge pull request #125 from oliviertilmans/loopback_ids. [Simon
+Knight]</p>
+<p>Loopback interface needs to have an associated id with them</p>
+</li>
+</ul>
+</div>
+<div class="section" id="v0-7-4-2013-12-02">
+<h1>v0.7.4 (2013-12-02)</h1>
+<ul class="simple">
+<li>Tidy overlay names. [sk2]</li>
+<li>Tidy overlay names. [sk2]</li>
+<li>Handle vis corner case if just input. [sk2]</li>
+<li>Handle vis corner case if just input. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-7-3-2013-11-29">
+<h1>v0.7.3 (2013-11-29)</h1>
+<ul class="simple">
+<li>Correct version that bumpversion clobbered. [sk2]</li>
+<li>Correct version that bumpversion clobbered. [sk2]</li>
+<li>Add helper function to return neighbors of an interface. [sk2]</li>
+<li>Add helper function to return neighbors of an interface. [sk2]</li>
+<li>Add is_bound property for nidb interfaces for parity with anm. [sk2]</li>
+<li>Add is_bound property for nidb interfaces for parity with anm. [sk2]</li>
+<li>Set mgmt interface name correctly. [sk2]</li>
+<li>Set mgmt interface name correctly. [sk2]</li>
+<li>Remove extra http postings. [sk2]</li>
+<li>Remove extra http postings. [sk2]</li>
+<li>Add helper function to return neighbors of an interface. [sk2]</li>
+<li>Add helper function to return neighbors of an interface. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Tidy. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-7-2-2013-11-27">
+<h1>v0.7.2 (2013-11-27)</h1>
+<ul class="simple">
+<li>Tidy. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Tidying version string. [sk2]</li>
+<li>Tidying version string. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Fix extra syntax. [sk2]</li>
+<li>Fix extra syntax. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Tidy. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-7-1-2013-11-26">
+<h1>v0.7.1 (2013-11-26)</h1>
+<ul class="simple">
+<li>More work for cloud-init support. [sk2]</li>
+<li>More work for cloud-init support. [sk2]</li>
+<li>Ignore .yaml. [sk2]</li>
+<li>Ignore .yaml. [sk2]</li>
+<li>Improving render for cloud init output. [sk2]</li>
+<li>Improving render for cloud init output. [sk2]</li>
+<li>Cloud init. [sk2]</li>
+<li>Cloud init. [sk2]</li>
+<li>Move out vis. [sk2]</li>
+<li>Move out vis. [sk2]</li>
+<li>Top-level behaviour. [sk2]</li>
+<li>Top-level behaviour. [sk2]</li>
+<li>Change top level peering behaviour. [sk2]</li>
+<li>Change top level peering behaviour. [sk2]</li>
+<li>Lock deps. [sk2]</li>
+<li>Lock deps. [sk2]</li>
+<li>Tidying. [sk2]</li>
+<li>Tidying. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-6-8-2013-11-19">
+<h1>v0.6.8 (2013-11-19)</h1>
+<ul class="simple">
+<li>First iteration of simplified RR/HRR iBGP. [sk2]</li>
+<li>First iteration of simplified RR/HRR iBGP. [sk2]</li>
+<li>Refactor out ibgp. [sk2]</li>
+<li>Refactor out ibgp. [sk2]</li>
+<li>Remove extra node. [sk2]</li>
+<li>Remove extra node. [sk2]</li>
+<li>Path colours. [sk2]</li>
+<li>Path colours. [sk2]</li>
+<li>Handle base topo. [sk2]</li>
+<li>Handle base topo. [sk2]</li>
+<li>Update colours. [sk2]</li>
+<li>Update colours. [sk2]</li>
+<li>Error handling. [sk2]</li>
+<li>Error handling. [sk2]</li>
+<li>Logging. [sk2]</li>
+<li>Logging. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Basic ibgp check. [sk2]</li>
+<li>Basic ibgp check. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-6-7-2013-10-30">
+<h1>v0.6.7 (2013-10-30)</h1>
+<ul class="simple">
+<li>Fix looping issue not assigning server ips. [sk2]</li>
+<li>Fix looping issue not assigning server ips. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Tidy. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-6-6-2013-10-29">
+<h1>v0.6.6 (2013-10-29)</h1>
+<ul class="simple">
+<li>Write IPs onto all server interfaces. [sk2]</li>
+<li>Write IPs onto all server interfaces. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-6-5-2013-10-28">
+<h1>v0.6.5 (2013-10-28)</h1>
+<ul class="simple">
+<li>Redo bgp peering for ios. [sk2]</li>
+<li>Redo bgp peering for ios. [sk2]</li>
+<li>Revisiting bgp peering. [sk2]</li>
+<li>Revisiting bgp peering. [sk2]</li>
+<li>Adding nailed up routes for eBGP. [sk2]</li>
+<li>Adding nailed up routes for eBGP. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-6-4-2013-10-22">
+<h1>v0.6.4 (2013-10-22)</h1>
+<ul class="simple">
+<li>Use -host for /32. [sk2]</li>
+<li>Use -host for /32. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-6-3-2013-10-22">
+<h1>v0.6.3 (2013-10-22)</h1>
+<ul class="simple">
+<li>Tidying. [sk2]</li>
+<li>Tidying. [sk2]</li>
+<li>Add config-driven webserver port. [sk2]</li>
+<li>Add config-driven webserver port. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-6-2-2013-10-21">
+<h1>v0.6.2 (2013-10-21)</h1>
+<ul class="simple">
+<li>Fix server issue. [sk2]</li>
+<li>Fix server issue. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-6-1-2013-10-18">
+<h1>v0.6.1 (2013-10-18)</h1>
+<ul class="simple">
+<li>Toggle routing config. [sk2]</li>
+<li>Toggle routing config. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-6-0-2013-10-18">
+<h1>v0.6.0 (2013-10-18)</h1>
+<ul class="simple">
+<li>Add mpls oam. [sk2]</li>
+<li>Add mpls oam. [sk2]</li>
+<li>Call mpls oam module. [sk2]</li>
+<li>Call mpls oam module. [sk2]</li>
+<li>Add mpls oam. [sk2]</li>
+<li>Add mpls oam. [sk2]</li>
+<li>Don't auto-correct explicitly set ASNs. [sk2]</li>
+<li>Don't auto-correct explicitly set ASNs. [sk2]</li>
+<li>Fix typo in comment. [sk2]</li>
+<li>Fix typo in comment. [sk2]</li>
+<li>Exclude multipoint edges from mpls te and rsvp. [sk2]</li>
+<li>Exclude multipoint edges from mpls te and rsvp. [sk2]</li>
+<li>Mark multipoint edges. [sk2]</li>
+<li>Mark multipoint edges. [sk2]</li>
+<li>Fallback to category20b colours if &gt; 10 groups. [sk2]</li>
+<li>Fallback to category20b colours if &gt; 10 groups. [sk2]</li>
+<li>Restore cef for ios. [sk2]</li>
+<li>Restore cef for ios. [sk2]</li>
+<li>Update doc. [sk2]</li>
+<li>Update doc. [sk2]</li>
+<li>Interface handling if specified name for servers. [sk2]</li>
+<li>Interface handling if specified name for servers. [sk2]</li>
+<li>Add lo routes. [sk2]</li>
+<li>Add lo routes. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Remove debug, tidy. [sk2]</li>
+<li>Remove debug, tidy. [sk2]</li>
+<li>Include linux in manifest. [sk2]</li>
+<li>Include linux in manifest. [sk2]</li>
+<li>Add linux static routes. [sk2]</li>
+<li>Add linux static routes. [sk2]</li>
+<li>Add mpls te rules. [sk2]</li>
+<li>Add mpls te rules. [sk2]</li>
+<li>Ubuntu server class for static routes. [sk2]</li>
+<li>Ubuntu server class for static routes. [sk2]</li>
+<li>Server base class. [sk2]</li>
+<li>Server base class. [sk2]</li>
+<li>Base device class. [sk2]</li>
+<li>Base device class. [sk2]</li>
+<li>Tidying, add mpls to ios. [sk2]</li>
+<li>Tidying, add mpls to ios. [sk2]</li>
+<li>Fix ebgp session created on switch that has both ebgp and ibgp
+sessions. [sk2]</li>
+<li>Fix ebgp session created on switch that has both ebgp and ibgp
+sessions. [sk2]</li>
+<li>Adding route config rendering. [sk2]</li>
+<li>Adding route config rendering. [sk2]</li>
+<li>Tidying oo. [sk2]</li>
+<li>Tidying oo. [sk2]</li>
+<li>Add mpls code. [sk2]</li>
+<li>Add mpls code. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Add fn to check server asn. [sk2]</li>
+<li>Add fn to check server asn. [sk2]</li>
+<li>Add mpls callout. [sk2]</li>
+<li>Add mpls callout. [sk2]</li>
+<li>Update asn setting. [sk2]</li>
+<li>Update asn setting. [sk2]</li>
+<li>Update asn handling: copy from phy if present. [sk2]</li>
+<li>Update asn handling: copy from phy if present. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-5-21-2013-09-06">
+<h1>v0.5.21 (2013-09-06)</h1>
+<ul class="simple">
+<li>Set ipv4 and routing enabled defaults. [sk2]</li>
+<li>Set ipv4 and routing enabled defaults. [sk2]</li>
+<li>Post-collect processing. [sk2]</li>
+<li>Post-collect processing. [sk2]</li>
+<li>Remove uuid from test. [sk2]</li>
+<li>Remove uuid from test. [sk2]</li>
+<li>Reverse map for single ip. [sk2]</li>
+<li>Reverse map for single ip. [sk2]</li>
+<li>Multi-user uuid support. [sk2]</li>
+<li>Multi-user uuid support. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-5-20-2013-08-29">
+<h1>v0.5.20 (2013-08-29)</h1>
+<ul class="simple">
+<li>Tidying, adding in vrfs. [sk2]</li>
+<li>Tidying, adding in vrfs. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-5-19-2013-08-28">
+<h1>v0.5.19 (2013-08-28)</h1>
+<ul class="simple">
+<li>More collect. [sk2]</li>
+<li>More collect. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-5-18-2013-08-27">
+<h1>v0.5.18 (2013-08-27)</h1>
+<ul class="simple">
+<li>Rename collect server. [sk2]</li>
+<li>Rename collect server. [sk2]</li>
+<li>Z ordering. [sk2]</li>
+<li>Z ordering. [sk2]</li>
+<li>Node data mapping. [sk2]</li>
+<li>Node data mapping. [sk2]</li>
+<li>Inc default threads to 5. [sk2]</li>
+<li>Inc default threads to 5. [sk2]</li>
+<li>Remove interfaces from node data dump. [sk2]</li>
+<li>Remove interfaces from node data dump. [sk2]</li>
+<li>Reverse mapping ips. [sk2]</li>
+<li>Reverse mapping ips. [sk2]</li>
+<li>Pep8. [sk2]</li>
+<li>Pep8. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-5-17-2013-08-23">
+<h1>v0.5.17 (2013-08-23)</h1>
+<ul class="simple">
+<li>Allow no ip allocs. [sk2]</li>
+<li>Allow no ip allocs. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Allow no ip allocs. [sk2]</li>
+<li>Allow no ip allocs. [sk2]</li>
+<li>Split out functions from build_network. [sk2]</li>
+<li>Split out functions from build_network. [sk2]</li>
+<li>Allow no ip allocs. [sk2]</li>
+<li>Allow no ip allocs. [sk2]</li>
+<li>Allow no ip allocs. [sk2]</li>
+<li>Allow no ip allocs. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-5-16-2013-08-22">
+<h1>v0.5.16 (2013-08-22)</h1>
+<ul class="simple">
+<li>Move endif to end of bgp block to enable bgp to be disabled. [sk2]</li>
+<li>Move endif to end of bgp block to enable bgp to be disabled. [sk2]</li>
+<li>Add todo. [sk2]</li>
+<li>Add todo. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Option to disable routing protocols. [sk2]</li>
+<li>Option to disable routing protocols. [sk2]</li>
+<li>Nonzero function. [sk2]</li>
+<li>Nonzero function. [sk2]</li>
+<li>Include eigrp overlay. [sk2]</li>
+<li>Include eigrp overlay. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-5-14-2013-08-22">
+<h1>v0.5.14 (2013-08-22)</h1>
+<ul class="simple">
+<li>Remvoe debug. [sk2]</li>
+<li>Remvoe debug. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-5-13-2013-08-22">
+<h1>v0.5.13 (2013-08-22)</h1>
+<ul class="simple">
+<li>Only require specified ip for bound interfaces. [sk2]</li>
+<li>Only require specified ip for bound interfaces. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-5-12-2013-08-21">
+<h1>v0.5.12 (2013-08-21)</h1>
+<ul class="simple">
+<li>Updates. [sk2]</li>
+<li>Updates. [sk2]</li>
+<li>Add lo to eigrp v6. [sk2]</li>
+<li>Add lo to eigrp v6. [sk2]</li>
+<li>Try seperate packages if possible. [sk2]</li>
+<li>Try seperate packages if possible. [sk2]</li>
+<li>Add eigrp. [sk2]</li>
+<li>Add eigrp. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-5-9-2013-08-16">
+<h1>v0.5.9 (2013-08-16)</h1>
+<ul class="simple">
+<li>Remove debug. [sk2]</li>
+<li>Remove debug. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-5-8-2013-08-16">
+<h1>v0.5.8 (2013-08-16)</h1>
+<ul class="simple">
+<li>Update. [sk2]</li>
+<li>Update. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-5-7-2013-08-13">
+<h1>v0.5.7 (2013-08-13)</h1>
+<ul class="simple">
+<li>Misc bugfixes. [sk2]</li>
+<li>Latest. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Measure updates. [sk2]</li>
+<li>More collection. [sk2]</li>
+<li>Measurement -&gt; collection. [sk2]</li>
+<li>More measure. [sk2]</li>
+<li>Update docs. [sk2]</li>
+<li>Remove unused measuremetn. [sk2]</li>
+<li>Measure. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-5-6-2013-08-02">
+<h1>v0.5.6 (2013-08-02)</h1>
+<ul class="simple">
+<li>More measure. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-5-5-2013-08-02">
+<h1>v0.5.5 (2013-08-02)</h1>
+<ul class="simple">
+<li>Add colorbrewer. [sk2]</li>
+<li>Add colorbrewer. [sk2]</li>
+<li>Tidying colours. [sk2]</li>
+<li>Tidying colours. [sk2]</li>
+<li>Add enable secret. [sk2]</li>
+<li>Measurement improvements. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Reorganise, ultra -&gt; csr1000v, add hash. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Add server. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-5-4-2013-08-01">
+<h1>v0.5.4 (2013-08-01)</h1>
+<ul class="simple">
+<li>Rename icon. [sk2]</li>
+<li>Ultra -&gt; CSR1000v. [sk2]</li>
+<li>Change mgmt interface handling. [sk2]</li>
+<li>More measure. [sk2]</li>
+<li>Update measure. [sk2]</li>
+<li>Tidying measurement. [sk2]</li>
+<li>Update user. [sk2]</li>
+<li>Regen autodoc. [sk2]</li>
+<li>Remove old measure code. [sk2]</li>
+<li>Working traceroute measurement. [sk2]</li>
+<li>Rebuild docs. [sk2]</li>
+<li>Change docs theme. [sk2]</li>
+<li>Doc -&gt; docs. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Update ignore. [sk2]</li>
+<li>Tidying. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-5-3-2013-07-31">
+<h1>v0.5.3 (2013-07-31)</h1>
+<ul class="simple">
+<li>Tidying setup.py. [sk2]</li>
+<li>Add new platform. [sk2]</li>
+<li>Tidying tests. [sk2]</li>
+<li>Restore. [sk2]</li>
+<li>Add comment. [sk2]</li>
+<li>Zmq measurement working (needs deserialization) [sk2]</li>
+<li>Zmq measure. [sk2]</li>
+<li>Testing, deployment. [sk2]</li>
+<li>Pep8, fix ibgp 2 layer issues. [sk2]</li>
+<li>Pep8. [sk2]</li>
+<li>Pep8. [sk2]</li>
+<li>Pep8. [sk2]</li>
+<li>Diff testing. [sk2]</li>
+<li>Remove unused code. [sk2]</li>
+<li>Add bgp pol tests. [sk2]</li>
+<li>More testing. [sk2]</li>
+<li>Change lo_interface to a valid linux/netkit name. [Olivier Tilmans]</li>
+<li>Split single compiler into modular platform and device compilers.
+[sk2]</li>
+<li>Tidying. [sk2]</li>
+<li>Loosen path tension. [sk2]</li>
+<li>Add testing to setup.py. [sk2]</li>
+<li>More cleanup. [sk2]</li>
+<li>Update tests. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-5-2-2013-07-24">
+<h1>v0.5.2 (2013-07-24)</h1>
+<ul class="simple">
+<li>Sorting on ipv6 for stability. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-5-1-2013-07-24">
+<h1>v0.5.1 (2013-07-24)</h1>
+<ul class="simple">
+<li>Sort for stability. [sk2]</li>
+<li>Natural sorting for bgp sessions. [sk2]</li>
+<li>Debug. [sk2]</li>
+<li>Sort for repeatability. [sk2]</li>
+<li>Merge onepk. [sk2]</li>
+<li>Allocate interfaces if not allocated on input. closes gh-180. [sk2]</li>
+<li>Apply correct subnet to interfaces. [sk2]</li>
+<li>Report node label rather than node id for string representation of
+interface. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Improvements. [sk2]</li>
+<li>Remove debug. [sk2]</li>
+<li>Fix issue with secondary loopbacks. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Store label on json. [sk2]</li>
+<li>More 3d. [sk2]</li>
+<li>More 3d. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>3d prototype. [sk2]</li>
+<li>More 3d dev. [sk2]</li>
+<li>More 3d dev. [sk2]</li>
+<li>Three js dev. [sk2]</li>
+<li>Tidied. [sk2]</li>
+<li>Ignore dev project. [sk2]</li>
+<li>New icon. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Dont load ip allocs, labels by default. [sk2]</li>
+<li>Tidy logic. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Tidy, rename, add servers. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Add todo. [sk2]</li>
+<li>Dev. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-5-0-2013-07-02">
+<h1>v0.5.0 (2013-07-02)</h1>
+<ul>
+<li><p class="first">Tidy. [sk2]</p>
+</li>
+<li><p class="first">Split out ui. [sk2]</p>
+</li>
+<li><p class="first">Isis handling. [sk2]</p>
+</li>
+<li><p class="first">Setting with setattr for interface dict. [sk2]</p>
+</li>
+<li><p class="first">Isis combinations. [sk2]</p>
+</li>
+<li><p class="first">Better handling of ips. [sk2]</p>
+</li>
+<li><p class="first">Notes. [sk2]</p>
+</li>
+<li><p class="first">Split out webui. [sk2]</p>
+</li>
+<li><p class="first">More work to work with interfaces directly. [sk2]</p>
+</li>
+<li><p class="first">Tidying, check if bound interfaces. [sk2]</p>
+</li>
+<li><p class="first">Work on ip addressing if already set. [sk2]</p>
+</li>
+<li><p class="first">Ignore unbound interfaces. [sk2]</p>
+</li>
+<li><p class="first">Tidying. [sk2]</p>
+</li>
+<li><p class="first">Fixing ordering. [sk2]</p>
+</li>
+<li><p class="first">Tidying interface if set externally. [sk2]</p>
+</li>
+<li><p class="first">Clean up interface handling. [sk2]</p>
+</li>
+<li><p class="first">Less cryptic names, tidying. [sk2]</p>
+</li>
+<li><p class="first">Remap icons. [sk2]</p>
+</li>
+<li><p class="first">Add todos, better remote interface desc. [sk2]</p>
+</li>
+<li><p class="first">Copying attributes. [sk2]</p>
+</li>
+<li><p class="first">Better labelling, testing of interfaces. [sk2]</p>
+</li>
+<li><p class="first">Flip. [sk2]</p>
+</li>
+<li><p class="first">Handling of interfaces if allocated in physical. [sk2]</p>
+</li>
+<li><p class="first">Improve tension on paths. [sk2]</p>
+</li>
+<li><p class="first">Dev. [sk2]</p>
+</li>
+<li><p class="first">Able to search for edge by edge, used for cross-layer edge searches.
+[sk2]</p>
+</li>
+<li><p class="first">String function ensures string. [sk2]</p>
+</li>
+<li><p class="first">Interface errorr handling. [sk2]</p>
+</li>
+<li><p class="first">Handle numeric node ids. [sk2]</p>
+</li>
+<li><p class="first">More work on paths. [sk2]</p>
+</li>
+<li><p class="first">Dev. [sk2]</p>
+</li>
+<li><p class="first">Compress anm to send over wire. [sk2]</p>
+</li>
+<li><p class="first">Cdp on mgmt eth. [sk2]</p>
+</li>
+<li><p class="first">Add measure support. [sk2]</p>
+</li>
+<li><p class="first">Add path annotations. [sk2]</p>
+</li>
+<li><p class="first">Tidy. [sk2]</p>
+</li>
+<li><p class="first">Fixing interface access. [sk2]</p>
+</li>
+<li><p class="first">Fixing serialising. [sk2]</p>
+</li>
+<li><p class="first">Fix corner-case with building trees. [sk2]</p>
+</li>
+<li><p class="first">Add logging message. [sk2]</p>
+</li>
+<li><p class="first">Merge pull request #179 from sk2/custom-folders. [Simon Knight]</p>
+<p>Custom folders</p>
+</li>
+<li><p class="first">Work on new measure framework. [sk2]</p>
+</li>
+<li><p class="first">Initial work. [sk2]</p>
+</li>
+<li><p class="first">Toggle. [sk2]</p>
+</li>
+<li><p class="first">Remap the interfaces back to nodes, and integers. [sk2]</p>
+</li>
+<li><p class="first">Hash on edges. [sk2]</p>
+</li>
+</ul>
+</div>
+<div class="section" id="v0-4-9-2013-06-14">
+<h1>v0.4.9 (2013-06-14)</h1>
+<ul class="simple">
+<li>Fix bug with nx-os. [sk2]</li>
+<li>Better hashing for cross-layer and cross-anm/nidb interface
+comparison. [sk2]</li>
+<li>Add quiet (non verbose) option. [sk2]</li>
+<li>Test for presence in vrf graph. [sk2]</li>
+<li>Only add vrfs if at least one node has been tagged with vrf tag. [sk2]</li>
+<li>Turn web json stream back to anm/nidb. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-4-8-2013-06-12">
+<h1>v0.4.8 (2013-06-12)</h1>
+<ul class="simple">
+<li>Ospfv3 on loopback zero. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-4-7-2013-06-12">
+<h1>v0.4.7 (2013-06-12)</h1>
+<ul class="simple">
+<li>Tidy. [sk2]</li>
+<li>Add servers to igp. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-4-6-2013-06-11">
+<h1>v0.4.6 (2013-06-11)</h1>
+<ul>
+<li><p class="first">Disable bundled vis. [sk2]</p>
+</li>
+<li><p class="first">Update demo notebook. [sk2]</p>
+</li>
+<li><p class="first">Support for specific packages. [sk2]</p>
+</li>
+<li><p class="first">Update template. [sk2]</p>
+</li>
+<li><p class="first">Ignore ds store. [sk2]</p>
+</li>
+<li><p class="first">Add key filename support. [sk2]</p>
+</li>
+<li><p class="first">Split out args so can call programatically. [sk2]</p>
+<p>arg_string = &quot;-f %s --deploy&quot; % input_file args =
+console_script.parse_options(arg_string) console_script.main(args)</p>
+</li>
+<li><p class="first">Mark ipv4/ipv6 per interface, numeric ids. [sk2]</p>
+</li>
+<li><p class="first">Add l3 conn graph, use for vrfs. [sk2]</p>
+</li>
+<li><p class="first">Add dump. [sk2]</p>
+</li>
+<li><p class="first">Update entry point. [sk2]</p>
+</li>
+<li><p class="first">Update ignore. [sk2]</p>
+</li>
+<li><p class="first">Add tests. [sk2]</p>
+</li>
+<li><p class="first">Tidying compiler for interfaces. [sk2]</p>
+</li>
+<li><p class="first">Tidying, add option to force ank vis, add info message if single user
+mode activated. [sk2]</p>
+</li>
+<li><p class="first">Update to command line argument parsing. [sk2]</p>
+</li>
+<li><p class="first">Remove testing uuid. [sk2]</p>
+</li>
+<li><p class="first">Remove unused imports. [sk2]</p>
+</li>
+<li><p class="first">More multi-user support. [sk2]</p>
+</li>
+<li><p class="first">Tidy. [sk2]</p>
+</li>
+<li><p class="first">Use shorter uuid - less unique, but more usable. still unlikely to
+collide for our purposes. [sk2]</p>
+</li>
+<li><p class="first">Send uuid with highlight. [sk2]</p>
+</li>
+<li><p class="first">Tidy, add support for muti user. [sk2]</p>
+</li>
+<li><p class="first">Multi-user vis support. [sk2]</p>
+</li>
+<li><p class="first">Add todo. [sk2]</p>
+</li>
+<li><p class="first">Dont monitor build_network (won't work if using as module) [sk2]</p>
+</li>
+<li><p class="first">Add uuid support. [sk2]</p>
+</li>
+<li><p class="first">Support uuid. [sk2]</p>
+</li>
+<li><p class="first">Remove messaging call. [sk2]</p>
+</li>
+<li><p class="first">Remove highlight call. [sk2]</p>
+</li>
+<li><p class="first">Tidy. [sk2]</p>
+</li>
+<li><p class="first">Tidy. [sk2]</p>
+</li>
+</ul>
+</div>
+<div class="section" id="v0-4-5-2013-05-29">
+<h1>v0.4.5 (2013-05-29)</h1>
+<ul class="simple">
+<li>Use green for verified paths. [sk2]</li>
+<li>Use green for verified paths. [sk2]</li>
+<li>Use autonetkit_cisco web content if present. [sk2]</li>
+<li>Exception handling. [sk2]</li>
+<li>Add logging message. [sk2]</li>
+<li>Add logging message. [sk2]</li>
+<li>Fix logging. [sk2]</li>
+<li>Update demos. [sk2]</li>
+<li>Markdown extension of md not mmd. [sk2]</li>
+<li>Readme from .txt -&gt; mmd. [sk2]</li>
+<li>Retry as markdown. [sk2]</li>
+<li>Add badge count using. [sk2]</li>
+<li>Demo updates. [sk2]</li>
+<li>More work on demo. [sk2]</li>
+<li>Further improved numeric vm id shutdown. [sk2]</li>
+<li>New demo notebook. [sk2]</li>
+<li>Clean paths on redraw. [sk2]</li>
+<li>Handle numeric vm ids. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-4-4-2013-05-15">
+<h1>v0.4.4 (2013-05-15)</h1>
+<ul class="simple">
+<li>Dhcp management. [sk2]</li>
+<li>Add output target. [sk2]</li>
+<li>Fix global settings. [sk2]</li>
+<li>Add todo. [sk2]</li>
+<li>Updates to notebook. [sk2]</li>
+<li>Restore ui elements. [sk2]</li>
+<li>Link highlights behind nodes. [sk2]</li>
+<li>Add onepk stanza. [sk2]</li>
+<li>Updates. [sk2]</li>
+<li>Updates. [sk2]</li>
+<li>Demo notebook. [sk2]</li>
+<li>Highlight path colour. [sk2]</li>
+<li>Logging, highlight path colour. [sk2]</li>
+<li>Bugfix for highlights. [sk2]</li>
+<li>Bugfix. [sk2]</li>
+<li>Measure. [sk2]</li>
+<li>Add function to map edge attr to interfaces. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-4-2-2013-05-13">
+<h1>v0.4.2 (2013-05-13)</h1>
+<ul class="simple">
+<li>Add code to switch on input extension. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-4-1-2013-05-10">
+<h1>v0.4.1 (2013-05-10)</h1>
+<ul class="simple">
+<li>Don't put clns mtu on loopbacks. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-3-14-2013-05-10">
+<h1>v0.3.14 (2013-05-10)</h1>
+<ul class="simple">
+<li>Enable clns mtu 1400 on isis interfaces. [sk2]</li>
+<li>Enable cdp per interface. [sk2]</li>
+<li>Enable cdp on all interfaces, rename mgmt interface. [sk2]</li>
+<li>Add ank_cisco to version. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-3-13-2013-05-10">
+<h1>v0.3.13 (2013-05-10)</h1>
+<ul class="simple">
+<li>Mpls lite support for ios. [sk2]</li>
+<li>Only add PE, P to mpls_ldp. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-3-12-2013-05-10">
+<h1>v0.3.12 (2013-05-10)</h1>
+<ul class="simple">
+<li>Use specified subnet. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Return interface on creation. [sk2]</li>
+<li>Updating ip allocations. [sk2]</li>
+<li>Refactored ip allocation. [sk2]</li>
+<li>Add comment. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-3-11-2013-05-09">
+<h1>v0.3.11 (2013-05-09)</h1>
+<ul class="simple">
+<li>Mgmt + cdp. [sk2]</li>
+<li>Management toggle. [sk2]</li>
+<li>Tidying. [sk2]</li>
+<li>Rename function. [sk2]</li>
+<li>Support to copy across management info. [sk2]</li>
+<li>Allow [] notation to set/get overlay data. [sk2]</li>
+<li>Fix capitalisation. [sk2]</li>
+<li>Tidy. [sk2]</li>
+<li>Fix imports. [sk2]</li>
+<li>Fix import errors. [sk2]</li>
+<li>Don't over-write infrastructure blocks, closes gh-176. [sk2]</li>
+<li>Add comment. [sk2]</li>
+<li>Ensure allocation is imported. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-3-10-2013-05-04">
+<h1>v0.3.10 (2013-05-04)</h1>
+<ul class="simple">
+<li>Catch value errors. [sk2]</li>
+<li>Fallback. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-3-9-2013-05-03">
+<h1>v0.3.9 (2013-05-03)</h1>
+<ul>
+<li><p class="first">Tidy management ips. [sk2]</p>
+</li>
+<li><p class="first">Explicitly set mgmt interface label for xr and nx-os. [sk2]</p>
+</li>
+<li><p class="first">Tidy. [sk2]</p>
+</li>
+<li><p class="first">Different ids based on ios derivative. [sk2]</p>
+</li>
+<li><p class="first">Tidy. [sk2]</p>
+</li>
+<li><p class="first">Nx-os interface labels. [sk2]</p>
+</li>
+<li><p class="first">Copy management subnet info if relevant. [sk2]</p>
+</li>
+<li><p class="first">Tidying. [sk2]</p>
+</li>
+<li><p class="first">Remove debug. [sk2]</p>
+</li>
+<li><p class="first">Use &quot;use&quot; with icon defs, rather than redefining each time. [sk2]</p>
+<p>based on
+<a class="reference external" href="https://groups.google.com/forum/?fromgroups=#!topic/d3-js/EtEwgOYnY6U">https://groups.google.com/forum/?fromgroups=#!topic/d3-js/EtEwgOYnY6U</a>
+better performance avoids the chrome caching issues</p>
+</li>
+<li><p class="first">Merge pull request #124 from oliviertilmans/http_vis. [Simon Knight]</p>
+<p>Fix a small log.info error</p>
+</li>
+<li><p class="first">Fix the following error: [Olivier Tilmans]</p>
+<p>&gt; File &quot;autonetkit/ank_messaging.py&quot;, line 107, in publish_data &gt;
+log.info(&quot;Unable to connect to HTTP Server %s: e&quot; % (http_url, e)) &gt;
+TypeError: not all arguments converted during string formatting  When
+trying to generate cfg's without having the visualisation server
+running</p>
+</li>
+<li><p class="first">Treat specified interface labels per node rather than globally. [sk2]</p>
+</li>
+<li><p class="first">Make labels on top of links and nodes. [sk2]</p>
+</li>
+<li><p class="first">Add note. [sk2]</p>
+</li>
+<li><p class="first">Dont spuriously warn on unset. [sk2]</p>
+</li>
+<li><p class="first">Remove debug. [sk2]</p>
+</li>
+<li><p class="first">Fix error with interface names if not allocated, eg on a lan segment.
+[sk2]</p>
+</li>
+<li><p class="first">Remove unused code. [sk2]</p>
+</li>
+<li><p class="first">Ignore html coverage output. [sk2]</p>
+</li>
+<li><p class="first">Ignore coverage. [sk2]</p>
+</li>
+<li><p class="first">Rename validate to ank_validate to avoid conflict with configobj and
+paths. [sk2]</p>
+</li>
+<li><p class="first">Add IGP overlays even if not used - allows quicker test in compiler.
+[sk2]</p>
+</li>
+<li><p class="first">Include cluster attribute for rendering. [sk2]</p>
+</li>
+<li><p class="first">Show grouping for ibgp_v4 and ibgp_v6. [sk2]</p>
+</li>
+<li><p class="first">Resolve merge conflicts. [sk2]</p>
+</li>
+<li><p class="first">Tidy ignore. [sk2]</p>
+</li>
+<li><p class="first">Fix single-node hulls: make slightly bigger so don't get printing
+artifacts with gap in middle. [sk2]</p>
+</li>
+<li><p class="first">Merge pull request #116 from oliviertilmans/cleanup. [Simon Knight]</p>
+<p>Minor cleanup &amp; usage of os.path.join</p>
+</li>
+<li><p class="first">Merge pull request #119 from oliviertilmans/device_type_server. [Simon
+Knight]</p>
+<p>(Fix Issue #117) Using Any other non router l3device node (i.e.
+server) crashes ANK</p>
+</li>
+<li><p class="first">Merge pull request #118 from sdefauw/master. [Simon Knight]</p>
+<p>Bug of boolean fields in graphml solved.</p>
+</li>
+<li><p class="first">Hostname is now independent from zebra. [Olivier Tilmans]</p>
+</li>
+<li><p class="first">Merge branch 'device_type_server' into anycast_dns_resolver. [Olivier
+Tilmans]</p>
+</li>
+<li><p class="first">Start zebra only if the node needs it (is a router at the moment)
+[Olivier Tilmans]</p>
+</li>
+<li><p class="first">Added anycast ip attribute. [Olivier Tilmans]</p>
+</li>
+<li><p class="first">Add anycast dns resolver support on ANK side, anycast ip's have yet to
+handled. [Olivier Tilmans]</p>
+</li>
+<li><ul class="first simple">
+<li>Allow the server nodes (and by extension all l3devices) to be real</li>
+</ul>
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">changelog.rst</tt>, line 2118)</p>
+<p>Bullet list ends without a blank line; unexpected unindent.</p>
+</div>
+<p>netkit VM's * Make the start of the zebra daemon optional (only if one
+of its component is in use) * Made sure that the debug flag for BGP
+was only set if BGP was enabled in the node. [Olivier Tilmans]</p>
+</li>
+<li><p class="first">Ensure that copy_edge_attr_from will only copy attributes from edges
+which are common to the two graphs. [Olivier Tilmans]</p>
+</li>
+<li><p class="first">Bug of boolean fields in graphml solved. [Sébastien De Fauw]</p>
+</li>
+<li><p class="first">Enforced usage of os.path.join in compiler. [Olivier Tilmans]</p>
+</li>
+<li><p class="first">Remove redundant overlay creations. [Olivier Tilmans]</p>
+</li>
+<li><p class="first">Clean out last of pika references. [sk2]</p>
+</li>
+<li><p class="first">Tidying messaging. [sk2]</p>
+</li>
+<li><p class="first">Use new format messaging. [sk2]</p>
+</li>
+<li><p class="first">Using url params for routing, stripping out rabbitmq and telnet. [sk2]</p>
+</li>
+<li><p class="first">Tidying up json format. [sk2]</p>
+</li>
+<li><p class="first">Uncompress notebooks for easier access. [sk2]</p>
+</li>
+<li><p class="first">Compress ipython notebooks. [sk2]</p>
+</li>
+<li><p class="first">Remove symlink. [sk2]</p>
+</li>
+<li><p class="first">Use gzip for default (smaller file size) [sk2]</p>
+</li>
+<li><p class="first">Use gzip for default json. [sk2]</p>
+</li>
+<li><p class="first">Remove unused data. [sk2]</p>
+</li>
+<li><p class="first">Only apply ospf to interfaces bound in ospf graph. [sk2]</p>
+</li>
+<li><p class="first">Remove images from tutorial. [sk2]</p>
+</li>
+</ul>
+</div>
+<div class="section" id="v0-3-7-2013-04-15">
+<h1>v0.3.7 (2013-04-15)</h1>
+<ul class="simple">
+<li>Update packages to latest version. [sk2]</li>
+<li>Remove message pipe using telnet, support tornado 3.0.1. [sk2]</li>
+</ul>
+</div>
+<div class="section" id="v0-3-6-2013-04-15">
+<h1>v0.3.6 (2013-04-15)</h1>
+<ul>
+<li><p class="first">Add images. [sk2]</p>
+</li>
+<li><p class="first">New module to push changes. [sk2]</p>
+</li>
+<li><p class="first">Split out functions. [sk2]</p>
+</li>
+<li><p class="first">Allow search on node id as well as label. [sk2]</p>
+</li>
+<li><p class="first">Convert multi -&gt; single edge graph. [sk2]</p>
+</li>
+<li><p class="first">Split out functions. [sk2]</p>
+</li>
+<li><p class="first">Split out functions. [sk2]</p>
+</li>
+<li><p class="first">Allow select edge by nodes. [sk2]</p>
+</li>
+<li><p class="first">Example notebook on OSPF cost experiments. [sk2]</p>
+</li>
+<li><p class="first">Inc version. [sk2]</p>
+</li>
+<li><p class="first">Split the boolean to render to_memory, and the rendered output. [sk2]</p>
+</li>
+<li><p class="first">Tidying. [sk2]</p>
+</li>
+<li><p class="first">Split out initialise into new function. [sk2]</p>
+</li>
+<li><p class="first">New diff script to monitor and update network. [sk2]</p>
+</li>
+<li><p class="first">Update. [sk2]</p>
+</li>
+<li><p class="first">Modify example input. [sk2]</p>
+</li>
+<li><p class="first">Add support for trace colours. [sk2]</p>
+</li>
+<li><p class="first">Updates to traces. [sk2]</p>
+</li>
+<li><p class="first">Index edges by src/dst pair. [sk2]</p>
+</li>
+<li><p class="first">Add note. [sk2]</p>
+</li>
+<li><p class="first">Comment out highlight. [sk2]</p>
+</li>
+<li><p class="first">Allow access interface by numeric value (eg if from diff output) [sk2]</p>
+</li>
+<li><p class="first">Add support for show ip ospf and conf t. [sk2]</p>
+</li>
+<li><p class="first">Add function to diff two nidbs. [sk2]</p>
+</li>
+<li><p class="first">Add basic processing (this needs to be moved to a process module)
+[sk2]</p>
+</li>
+<li><p class="first">Increase management subnet pool for testing (this needs to be modified
+later) [sk2]</p>
+</li>
+<li><p class="first">Don't set ibgp for grid. [sk2]</p>
+</li>
+<li><p class="first">Remove extra update. [sk2]</p>
+</li>
+<li><p class="first">Allow path data. [sk2]</p>
+</li>
+<li><p class="first">More work on path animations. [sk2]</p>
+</li>
+<li><p class="first">Animated path plotting. [sk2]</p>
+</li>
+<li><p class="first">Change marker colour. [sk2]</p>
+</li>
+<li><p class="first">Mapping from node id to id, ensures unique. [sk2]</p>
+</li>
+<li><p class="first">Tidying. [sk2]</p>
+</li>
+<li><p class="first">Improve path plotting, add markers (arrows) [sk2]</p>
+</li>
+<li><p class="first">Groupings for nodes, edges, etc: can control ordering. [sk2]</p>
+</li>
+<li><p class="first">Notify when receive highlight. [sk2]</p>
+</li>
+<li><p class="first">Storing measured data to json. [sk2]</p>
+</li>
+<li><p class="first">Improvements to automated measurement: use iteration rather than
+callbacks. [sk2]</p>
+</li>
+<li><p class="first">Tidying, show verification results. [sk2]</p>
+</li>
+<li><p class="first">Set ospf for quagga. [sk2]</p>
+</li>
+<li><p class="first">Sort cd ids. [sk2]</p>
+</li>
+<li><p class="first">Basic shell script to run measure periodically. [sk2]</p>
+<p>will later be replaced with pure python script run as part of
+autonetkit (or autonetkit_measure) command</p>
+</li>
+<li><p class="first">Data and script to replay measurements. [sk2]</p>
+</li>
+<li><p class="first">New verify module. [sk2]</p>
+</li>
+<li><p class="first">Sort names for split. [sk2]</p>
+</li>
+<li><p class="first">Better trace highlight support. [sk2]</p>
+</li>
+<li><p class="first">Add sh ip route support. [sk2]</p>
+</li>
+<li><p class="first">Bugfix: only validate if anm loaded. [sk2]</p>
+</li>
+<li><p class="first">Remove old code. [sk2]</p>
+</li>
+<li><p class="first">Add support for parsing sh ip route from quagga. [sk2]</p>
+</li>
+<li><p class="first">Support for highlight paths [node, node, ... node] [sk2]</p>
+</li>
+<li><p class="first">Support for highlight paths. [sk2]</p>
+</li>
+<li><p class="first">Asn 0 -&gt; 1. [sk2]</p>
+</li>
+<li><p class="first">Remove trailing comma which made loopback ip a tuple. [sk2]</p>
+</li>
+<li><p class="first">Support topology data used to store data without a template to render.
+[sk2]</p>
+</li>
+<li><p class="first">More work on oob ips. [sk2]</p>
+</li>
+<li><p class="first">Better handling for non existent interfaces - eg oob added to nidb.
+[sk2]</p>
+</li>
+<li><p class="first">Allow interfaces to be added to nidb. [sk2]</p>
+</li>
+<li><p class="first">Adding oob support. [sk2]</p>
+</li>
+<li><p class="first">More work on vrfs. [sk2]</p>
+</li>
+<li><p class="first">Tidy .gitignore. [sk2]</p>
+</li>
+<li><p class="first">Ignore <em>.graphml</em> files. [sk2]</p>
+</li>
+<li><p class="first">New collision domain icon. [sk2]</p>
+</li>
+<li><p class="first">Remove symlink that crept in. [sk2]</p>
+</li>
+<li><p class="first">Remove point-to-point config statement for ospf. [sk2]</p>
+</li>
+<li><p class="first">Use same variable name for vpnv4. [sk2]</p>
+</li>
+<li><p class="first">Tidying vrf pre-process for ibgp. [sk2]</p>
+</li>
+<li><p class="first">Enforce specific packages. [sk2]</p>
+</li>
+<li><p class="first">Change default edge color. [sk2]</p>
+</li>
+<li><p class="first">Send ipv4 infra as json. [sk2]</p>
+</li>
+<li><p class="first">Convert areas to strings for serializing keys. [sk2]</p>
+</li>
+<li><p class="first">Add docstrings. [sk2]</p>
+</li>
+<li><p class="first">Sort returned json keys. [sk2]</p>
+</li>
+<li><p class="first">Continued vrfs. [sk2]</p>
+</li>
+<li><p class="first">Ibgp vrf. [sk2]</p>
+</li>
+<li><p class="first">Work on vrfs and bgp sessions, tidied up bgp sessions. [sk2]</p>
+</li>
+<li><p class="first">More work on bgp vrfs. [sk2]</p>
+</li>
+<li><p class="first">More work on vrfs. [sk2]</p>
+</li>
+<li><p class="first">Remove debugging. [sk2]</p>
+</li>
+<li><p class="first">Add to mpls ldp if bound in that overlay. [sk2]</p>
+</li>
+<li><p class="first">Copy description as well as type from anm. [sk2]</p>
+</li>
+<li><p class="first">Add todo. [sk2]</p>
+</li>
+<li><p class="first">Smaller interface labels. [sk2]</p>
+</li>
+<li><p class="first">Allow access to interface from nidb. [sk2]</p>
+</li>
+<li><p class="first">Remove testing code. [sk2]</p>
+</li>
+<li><p class="first">Work on vrfs, mpls ldp. [sk2]</p>
+</li>
+<li><p class="first">Work on mpls, vrfs, mpls ldp. [sk2]</p>
+</li>
+<li><p class="first">Fix issue with interface descriptions for secondary loopbacks. [sk2]</p>
+</li>
+<li><p class="first">Copy interface ids back from nidb to anm overlays, condense to brief
+for brevity. [sk2]</p>
+</li>
+<li><p class="first">Update doc, work on json tree for nidb. [sk2]</p>
+</li>
+<li><p class="first">Merge pull request #115 from sk2/master. [Simon Knight]</p>
+<p>merge back to interfaces</p>
+</li>
+<li><p class="first">Merge pull request #114 from sk2/validate. [Simon Knight]</p>
+<p>add validation tests for ipv4</p>
+</li>
+<li><p class="first">Merge pull request #113 from sk2/interfaces. [Simon Knight]</p>
+<p>Interfaces</p>
+</li>
+<li><p class="first">Add validation tests for ipv4. [sk2]</p>
+</li>
+<li><p class="first">Initial commit of validate. [sk2]</p>
+</li>
+<li><p class="first">Remove specific code, works under generic interface attributes. [sk2]</p>
+</li>
+<li><p class="first">Add hooks for validate enable/disable. [sk2]</p>
+</li>
+<li><p class="first">Workaround to import validate from python system, namespace clash with
+using validate inside ank. [sk2]</p>
+</li>
+<li><p class="first">Shortcut to check if interface is physical. [sk2]</p>
+</li>
+<li><p class="first">Interface font size. [sk2]</p>
+</li>
+<li><p class="first">Simpler cd icon. [sk2]</p>
+</li>
+<li><p class="first">More work on vrfs. [sk2]</p>
+</li>
+<li><p class="first">Generic interface overlay groupings (to support vrfs and ospf in
+consistent format, will auto adapt) [sk2]</p>
+</li>
+<li><p class="first">V6 secondary loopback alloc. [sk2]</p>
+</li>
+<li><p class="first">Add shortcuts to interface iteration by type. [sk2]</p>
+</li>
+<li><p class="first">Fix comment. [sk2]</p>
+</li>
+<li><p class="first">Define lt for interface comparisons. [sk2]</p>
+</li>
+<li><p class="first">Optional handling of secondary loopbacks. [sk2]</p>
+</li>
+<li><p class="first">Tidy. [sk2]</p>
+</li>
+<li><p class="first">Copying v4 and v6 ips for secondary loopbacks. [sk2]</p>
+</li>
+<li><p class="first">Tidying vrf interfaces. [sk2]</p>
+</li>
+<li><p class="first">Merge pull request #112 from sk2/interfaces. [Simon Knight]</p>
+<p>Interfaces</p>
+</li>
+<li><p class="first">Ipv4/v6 switches. [sk2]</p>
+</li>
+<li><p class="first">More work on tidying v4, v6, interfaces, testing. [sk2]</p>
+</li>
+<li><p class="first">More interface hulls. [sk2]</p>
+</li>
+<li><p class="first">Tidy icons. [sk2]</p>
+</li>
+<li><p class="first">Debug. [sk2]</p>
+</li>
+<li><p class="first">Inc ver. [sk2]</p>
+</li>
+<li><p class="first">Update. [sk2]</p>
+</li>
+<li><p class="first">New icon. [sk2]</p>
+</li>
+<li><p class="first">Interface hulls. [sk2]</p>
+</li>
+<li><p class="first">Bugfixes. [sk2]</p>
+</li>
+<li><p class="first">Add accessors for physical and loopback access. [sk2]</p>
+</li>
+<li><p class="first">More work on interfaces. [sk2]</p>
+</li>
+<li><p class="first">Fix ibgp layering. [sk2]</p>
+</li>
+<li><p class="first">More interface work. [sk2]</p>
+</li>
+<li><p class="first">More interfaces. [sk2]</p>
+</li>
+<li><p class="first">More interface work. [sk2]</p>
+</li>
+<li><p class="first">More work on interfaces. [sk2]</p>
+</li>
+<li><p class="first">More work on interfaces: datastructures, api, build, compile. [sk2]</p>
+</li>
+<li><p class="first">Fixes for interfaces. [sk2]</p>
+</li>
+<li><p class="first">Partial code for interface groupings eg for ospf areas. [sk2]</p>
+</li>
+<li><p class="first">Working interface mappings in nidb. [sk2]</p>
+</li>
+<li><p class="first">Remove debug. [sk2]</p>
+</li>
+<li><p class="first">Copying across interface type to nidb. [sk2]</p>
+</li>
+<li><p class="first">Interface dev. [sk2]</p>
+</li>
+<li><p class="first">Adding notes. [sk2]</p>
+</li>
+<li><p class="first">Fix order: first param if using args eg (&quot;description&quot;) is desc not
+type. [sk2]</p>
+</li>
+<li><p class="first">Fix bug: need to test overlay_id is phy, not node_id is phy. [sk2]</p>
+</li>
+<li><p class="first">Fix docstring. [sk2]</p>
+</li>
+<li><p class="first">Add note. [sk2]</p>
+</li>
+<li><p class="first">Return type. [sk2]</p>
+</li>
+<li><p class="first">Tidy. [sk2]</p>
+</li>
+<li><p class="first">Remove unneeded check (as fixed bug in ank split) [sk2]</p>
+</li>
+<li><p class="first">Fix bug: was copying interface id from src rather than dst. [sk2]</p>
+</li>
+<li><p class="first">Add todo. [sk2]</p>
+</li>
+<li><p class="first">Add todo. [sk2]</p>
+</li>
+<li><p class="first">Expand out _interfaces for edges. [sk2]</p>
+</li>
+<li><p class="first">More dev work on interfaces. [sk2]</p>
+</li>
+<li><p class="first">Looking up interfaces in nidb. [sk2]</p>
+</li>
+<li><p class="first">Better adding edges to nidb if from cd vs switch. [sk2]</p>
+</li>
+<li><p class="first">Better adding edges to nidb if from cd vs switch. [sk2]</p>
+</li>
+<li><p class="first">Edge comparisons. [sk2]</p>
+</li>
+<li><p class="first">Debug. [sk2]</p>
+</li>
+<li><p class="first">Workarounds for multipoint ospf. [sk2]</p>
+</li>
+<li><p class="first">Workarounds for multipoint ospf. [sk2]</p>
+</li>
+<li><p class="first">Merge pull request #111 from sk2/multipoint. [Simon Knight]</p>
+<p>Multipoint</p>
+</li>
+<li><p class="first">Make single-node groups less bubble-y. [sk2]</p>
+</li>
+<li><p class="first">Tidy. [sk2]</p>
+</li>
+<li><p class="first">Update ebgp to handle switches. [sk2]</p>
+</li>
+<li><p class="first">Fix bugs in explode. [sk2]</p>
+</li>
+<li><p class="first">Fix multipoint ebgp session handling to obtain ips. [sk2]</p>
+</li>
+<li><p class="first">Switch support for isis, ospf, ebgp. [sk2]</p>
+</li>
+<li><p class="first">Handle connected components. [sk2]</p>
+</li>
+<li><p class="first">Concat rather than nested lists. [sk2]</p>
+</li>
+<li><p class="first">Add todo. [sk2]</p>
+</li>
+<li><p class="first">Fix support for wrapping exploded edges. [sk2]</p>
+</li>
+<li><p class="first">Look at neighbouring routers. [sk2]</p>
+</li>
+<li><p class="first">Only look at neighbouring routers for vrf (handles switches, other
+devices) [sk2]</p>
+</li>
+<li><p class="first">Fix bug where passing in empty list would fall back to all nodes in
+graph. [sk2]</p>
+<p>now check if nbunch is None rather than evaluating to False (which was
+case for empty list)</p>
+</li>
+<li><p class="first">Merge pull request #110 from sk2/master. [Simon Knight]</p>
+<p>merge updates back to vrf branch</p>
+</li>
+<li><p class="first">Fix issue with ibgp levels. [sk2]</p>
+</li>
+<li><p class="first">More work on interfaces. [sk2]</p>
+</li>
+<li><p class="first">Updating interface support. [sk2]</p>
+</li>
+<li><p class="first">Testing code for interfaces. [sk2]</p>
+</li>
+<li><p class="first">Testing code for interfaces. [sk2]</p>
+</li>
+<li><p class="first">Correct returning edges to use new interface binding format of
+{node_id: interface_id} [sk2]</p>
+</li>
+<li><p class="first">Access corresponding interface across overlays (if exists) [sk2]</p>
+</li>
+<li><p class="first">String repr of anm. [sk2]</p>
+</li>
+<li><p class="first">New function for testing if overlay present in anm. [sk2]</p>
+</li>
+<li><p class="first">Retain relevant interface bindings when splitting edges. [sk2]</p>
+</li>
+<li><p class="first">Merge pull request #108 from sk2/multi-edge. [Simon Knight]</p>
+<p>Multi edge</p>
+</li>
+<li><p class="first">Inc ver. [sk2]</p>
+</li>
+<li><p class="first">Fix problem with one or two collision domain ASes. [sk2]</p>
+</li>
+<li><p class="first">Handle case of AS with no iBGP nodes (all set to ibgp_role of None)
+[sk2]</p>
+</li>
+<li><p class="first">Updates. [sk2]</p>
+</li>
+<li><p class="first">Fix correct image. [sk2]</p>
+</li>
+<li><p class="first">Fix right version. [sk2]</p>
+</li>
+<li><p class="first">Update. [sk2]</p>
+</li>
+<li><p class="first">Updates. [sk2]</p>
+</li>
+<li><p class="first">Updates. [sk2]</p>
+</li>
+<li><p class="first">More updates. [sk2]</p>
+</li>
+<li><p class="first">Updates. [sk2]</p>
+</li>
+<li><p class="first">Updates. [sk2]</p>
+</li>
+<li><p class="first">Updates. [sk2]</p>
+</li>
+<li><p class="first">Revert change. [sk2]</p>
+</li>
+<li><p class="first">Move to work with online notebook viewer. [sk2]</p>
+</li>
+<li><p class="first">Update images, add images to tutorial. [sk2]</p>
+</li>
+<li><p class="first">Update tutorial. [sk2]</p>
+</li>
+<li><p class="first">Increase timeout. [sk2]</p>
+</li>
+<li><p class="first">Add tutorial graphml. [sk2]</p>
+</li>
+<li><p class="first">Add tutorial images. [sk2]</p>
+</li>
+<li><p class="first">Remove debug. [sk2]</p>
+</li>
+<li><p class="first">Update tutorial. [sk2]</p>
+</li>
+<li><p class="first">Inc ver. [sk2]</p>
+</li>
+<li><p class="first">Updates. [sk2]</p>
+</li>
+<li><p class="first">Use ipv4 not ip. [sk2]</p>
+</li>
+<li><p class="first">Tidy. [sk2]</p>
+</li>
+<li><p class="first">New path colours. [sk2]</p>
+</li>
+<li><p class="first">Handling starting and lab started. [sk2]</p>
+</li>
+<li><p class="first">Better debug. [sk2]</p>
+</li>
+<li><p class="first">Use ipv4 overlay. [sk2]</p>
+</li>
+<li><p class="first">Add todo. [sk2]</p>
+</li>
+<li><p class="first">Tidying, add option for grid. [sk2]</p>
+</li>
+<li><p class="first">Default ospf cost. [sk2]</p>
+</li>
+<li><p class="first">Ensure ospf cost is int. [sk2]</p>
+</li>
+<li><p class="first">Add 2d grid. [sk2]</p>
+</li>
+<li><p class="first">Bugfix. [sk2]</p>
+</li>
+<li><p class="first">More work on vrfs. [sk2]</p>
+</li>
+<li><p class="first">Remove website (has been moved to gh-pages branch) [sk2]</p>
+</li>
+<li><p class="first">Inc ver. [sk2]</p>
+</li>
+<li><p class="first">Closes gh-91. [sk2]</p>
+</li>
+<li><p class="first">Extra send option. [sk2]</p>
+</li>
+<li><p class="first">More explicit boolean. [sk2]</p>
+</li>
+<li><p class="first">Remove debug. [sk2]</p>
+</li>
+<li><p class="first">Workaround for gh-90. [sk2]</p>
+</li>
+<li><p class="first">Auto list contributors from github api. [sk2]</p>
+</li>
+<li><p class="first">Set default igp. [sk2]</p>
+</li>
+<li><p class="first">Bugfix: dont set if node not in graph. [sk2]</p>
+</li>
+<li><p class="first">Extend tutorial examples. [sk2]</p>
+</li>
+<li><p class="first">Allow type casting in copy edge and node attribute functions. [sk2]</p>
+</li>
+<li><p class="first">Update tutorial. [sk2]</p>
+</li>
+<li><p class="first">Add tutorial. [sk2]</p>
+</li>
+<li><p class="first">Move to gist. [sk2]</p>
+</li>
+<li><p class="first">More notebook updates. [sk2]</p>
+</li>
+<li><p class="first">Update workbook. [sk2]</p>
+</li>
+<li><p class="first">Example ipython notebook. [sk2]</p>
+</li>
+<li><p class="first">Highlights for nodes and edges. [sk2]</p>
+</li>
+<li><p class="first">Inc ver. [sk2]</p>
+</li>
+<li><p class="first">White body for printing. [sk2]</p>
+</li>
+<li><p class="first">Merge ospf areas back into general function. [sk2]</p>
+</li>
+<li><p class="first">Search for edges based on src/dst string ids. [sk2]</p>
+</li>
+<li><p class="first">Simplified access to update http. [sk2]</p>
+</li>
+<li><p class="first">Add shortcuts to common classes/functions. [sk2]</p>
+</li>
+<li><p class="first">Merge pull request #88 from metaswirl/master. [Simon Knight]</p>
+<p>First pull request :)</p>
+</li>
+<li><p class="first">Merge pull request #89 from bhesmans/fixCache. [Simon Knight]</p>
+<p>fixe cache issue.</p>
+</li>
+<li><p class="first">Fixe cache issue. [Hesmans Benjamin]</p>
+<p>Won't render otherwise  the two path joined were both absolute. Now,
+use relative &quot;base&quot; isntead of full_base to build the base_cache_dir</p>
+</li>
+<li><p class="first">Cleaned comments. [Niklas Semmler]</p>
+</li>
+<li><p class="first">Added isis support to quagga, fixed a bug in the renderer. [Niklas
+Semmler]</p>
+</li>
+<li><p class="first">Tidying code. [sk2]</p>
+</li>
+<li><p class="first">Add offset to fix truncating of curved edges to boxes in 2 node group
+plots. [sk2]</p>
+</li>
+<li><p class="first">Fix ordering of functions. [sk2]</p>
+</li>
+<li><p class="first">Tidy. [sk2]</p>
+</li>
+<li><p class="first">Pep8, tidying. [sk2]</p>
+</li>
+<li><p class="first">Tidying. [sk2]</p>
+</li>
+<li><p class="first">Tidying vrfs. [sk2]</p>
+</li>
+<li><p class="first">Merge pull request #86 from sk2/vrf. [Simon Knight]</p>
+<p>Vrf support, misc bugfixes + improvements</p>
+</li>
+<li><p class="first">Fix merge. [sk2]</p>
+</li>
+<li><p class="first">Auto set ce. [sk2]</p>
+</li>
+<li><p class="first">Remove todo. [sk2]</p>
+</li>
+<li><p class="first">Merge pull request #85 from bhesmans/fixRRClientAS. [Simon Knight]</p>
+<p>quick fix for RR: no remote as.</p>
+</li>
+<li><p class="first">Remove offset. [sk2]</p>
+</li>
+<li><p class="first">Vrfs. [sk2]</p>
+</li>
+<li><p class="first">Bugfix. [sk2]</p>
+</li>
+<li><p class="first">Handle socket in use. [sk2]</p>
+</li>
+<li><p class="first">Quick fix for RR: no remote as. [Hesmans Benjamin]</p>
+</li>
+<li><p class="first">Work on caching. [sk2]</p>
+</li>
+<li><p class="first">Use set comprehensions. [sk2]</p>
+</li>
+<li><p class="first">Tidy. [sk2]</p>
+</li>
+<li><p class="first">Move utility function. [sk2]</p>
+</li>
+<li><p class="first">Code tidy. [sk2]</p>
+</li>
+<li><p class="first">Pep8. [sk2]</p>
+</li>
+<li><p class="first">Merge pull request #65 from oliviertilmans/master. [Simon Knight]</p>
+<p>Clear out .svn subdir from doc/source/reference/</p>
+</li>
+<li><p class="first">Updated gitignore to avoid further accidental tracking of .svn
+subdirs. [Olivier Tilmans]</p>
+</li>
+<li><p class="first">Removed svn subdir. [Olivier Tilmans]</p>
+</li>
+<li><p class="first">Ios v6 isis. [sk2]</p>
+</li>
+<li><p class="first">Add template error rendering. [sk2]</p>
+</li>
+<li><p class="first">Ospfv3 on ios. [sk2]</p>
+</li>
+<li><p class="first">Tidy status output. [sk2]</p>
+</li>
+<li><p class="first">Marking for ospf v3. [sk2]</p>
+</li>
+<li><p class="first">Attempts to tidy zoom. [sk2]</p>
+</li>
+<li><p class="first">Increment version. [sk2]</p>
+</li>
+<li><p class="first">Fix indent, add process id for isis. [sk2]</p>
+</li>
+<li><p class="first">Bugfix:  126 -&gt;128 bit v6 loopbacks. [sk2]</p>
+</li>
+<li><p class="first">More work on interfaces, secondary loopbacks, vrfs. [sk2]</p>
+</li>
+<li><p class="first">More interface support. [sk2]</p>
+</li>
+<li><p class="first">Allocate to secondary loopbacks. [sk2]</p>
+</li>
+<li><p class="first">Initial vrf block. [sk2]</p>
+</li>
+<li><p class="first">More vrf. [sk2]</p>
+</li>
+<li><p class="first">Improved interface handling. [sk2]</p>
+</li>
+<li><p class="first">Update github link ank_v3_dev -&gt; autonetkit. [sk2]</p>
+</li>
+<li><p class="first">More work on interfaces: store on physical graph if node exists in it.
+allows consistent interfaces across layers. [sk2]</p>
+</li>
+<li><p class="first">Toggle filter. [sk2]</p>
+</li>
+<li><p class="first">Neater filter. [sk2]</p>
+</li>
+<li><p class="first">Inc ver. [sk2]</p>
+</li>
+<li><p class="first">Toggle filter. [sk2]</p>
+</li>
+<li><p class="first">Add extra log message. [sk2]</p>
+</li>
+<li><p class="first">Load opacity on enter. [sk2]</p>
+</li>
+<li><p class="first">Filter long attribute lists. [sk2]</p>
+</li>
+<li><p class="first">Remove debug. [sk2]</p>
+</li>
+<li><p class="first">Node filtering. [sk2]</p>
+</li>
+<li><p class="first">Work on filtering opacity. [sk2]</p>
+</li>
+<li><p class="first">Increment version. [sk2]</p>
+</li>
+<li><p class="first">Check l3 cluster for ibgp, tidy syntax. [sk2]</p>
+</li>
+<li><p class="first">Fix quagga. [sk2]</p>
+</li>
+<li><p class="first">Work on interfaces. [sk2]</p>
+</li>
+<li><p class="first">Attribute filtering for neighbors. [sk2]</p>
+</li>
+<li><p class="first">Take icon size into account for auto scaling. [sk2]</p>
+</li>
+<li><p class="first">Add grouping for vrf. [sk2]</p>
+</li>
+<li><p class="first">Interfaces: adding with attributes, filtering on attributes,
+iteration. [sk2]</p>
+</li>
+<li><p class="first">Error handling. [sk2]</p>
+</li>
+<li><p class="first">Adding vrf config. [sk2]</p>
+</li>
+<li><p class="first">Tidy v6 access, format for consistency. [sk2]</p>
+</li>
+<li><p class="first">Renaming ip -&gt; ipv4, ip6 -&gt; ipv6. [sk2]</p>
+</li>
+<li><p class="first">Only configure v4 or v6 address blocks if v4 or v6 respectively is
+enabled. [sk2]</p>
+</li>
+<li><p class="first">Add note. [sk2]</p>
+</li>
+<li><p class="first">Fix ipv4 var. [sk2]</p>
+</li>
+<li><p class="first">Tidy debug. [sk2]</p>
+</li>
+<li><p class="first">More work on nx_os. [sk2]</p>
+</li>
+<li><p class="first">Initial work for nxos. [sk2]</p>
+</li>
+<li><p class="first">Updates to allow dual-stack for cisco. [sk2]</p>
+</li>
+<li><p class="first">Update scale for resized initial. [sk2]</p>
+</li>
+<li><p class="first">Inc version. [sk2]</p>
+</li>
+<li><p class="first">Tidy syntax. [sk2]</p>
+</li>
+<li><p class="first">Tidying example access syntax. [sk2]</p>
+</li>
+<li><p class="first">Better default scale for large topologies. [sk2]</p>
+</li>
+<li><p class="first">Rename icon to descriptive label. [sk2]</p>
+</li>
+<li><p class="first">Fix var names. [sk2]</p>
+</li>
+<li><p class="first">Fix order of description. [sk2]</p>
+</li>
+<li><p class="first">Set config dir, fix chassis. [sk2]</p>
+</li>
+<li><p class="first">Add todo note. [sk2]</p>
+</li>
+<li><p class="first">Fix error handling. [sk2]</p>
+</li>
+<li><p class="first">Default to memory. [sk2]</p>
+</li>
+<li><p class="first">Fix quagga ip format. [sk2]</p>
+</li>
+<li><p class="first">Set dynagen config directory. [sk2]</p>
+</li>
+<li><p class="first">Tidy dynagen. [sk2]</p>
+</li>
+<li><p class="first">Toggle off v6. [sk2]</p>
+</li>
+<li><p class="first">Use 7200 image. [sk2]</p>
+</li>
+<li><p class="first">Add functions to nidb to be closer to anm. [sk2]</p>
+</li>
+<li><p class="first">Ospf cost support. [sk2]</p>
+</li>
+<li><p class="first">Enable v6. [sk2]</p>
+</li>
+<li><p class="first">Fix level support for ibgp from yed. [sk2]</p>
+</li>
+<li><p class="first">Update add_edge attr. [sk2]</p>
+</li>
+<li><p class="first">Update. [sk2]</p>
+</li>
+<li><p class="first">Initial commit of dynagen code for gh-46. [sk2]</p>
+</li>
+<li><p class="first">Handle no ip6 graph. [sk2]</p>
+</li>
+<li><p class="first">Remove overlay_accessor: use either anm['overlay_id'] or
+G_a.overlay(&quot;overlay_id&quot;) [sk2]</p>
+</li>
+<li><p class="first">Access overlay directly. [sk2]</p>
+</li>
+<li><p class="first">Support v6. [sk2]</p>
+</li>
+<li><p class="first">Support v6. [sk2]</p>
+</li>
+<li><p class="first">Add groupby independent of subgraph. [sk2]</p>
+</li>
+<li><p class="first">Add library for # [sk2]</p>
+</li>
+<li><p class="first">Info -&gt; debug. [sk2]</p>
+</li>
+<li><p class="first">Increment version. [sk2]</p>
+</li>
+<li><p class="first">Add # library. [sk2]</p>
+</li>
+<li><p class="first">Tidy logic, add l3 to ibgp clustering. [sk2]</p>
+</li>
+<li><p class="first">Look for correct package name. [sk2]</p>
+</li>
+<li><p class="first">Tidy. [sk2]</p>
+</li>
+<li><p class="first">Tidying, adding from HRR-&gt;RR if same RR group. [sk2]</p>
+</li>
+<li><p class="first">Add extra logging information. [sk2]</p>
+</li>
+<li><p class="first">Remove debug. [sk2]</p>
+</li>
+<li><p class="first">Change interface allocations. [sk2]</p>
+</li>
+<li><p class="first">Simplifying. [sk2]</p>
+</li>
+<li><p class="first">Tidy to use routers. [sk2]</p>
+</li>
+<li><p class="first">Exclude _interfaces from edge tooltip. [sk2]</p>
+</li>
+<li><p class="first">Fix websocket tooltip. [sk2]</p>
+</li>
+<li><p class="first">Add deploy wrapped, tidy. [sk2]</p>
+</li>
+<li><p class="first">Tidy syntax. [sk2]</p>
+</li>
+<li><p class="first">Tidy. [sk2]</p>
+</li>
+<li><p class="first">Add routers shortcut. [sk2]</p>
+</li>
+<li><p class="first">Support ibgp l1-&gt;l3 if not l2 in ibgp_l3_cluster. [sk2]</p>
+</li>
+<li><p class="first">Add ignores. [sk2]</p>
+</li>
+<li><p class="first">Update ignore. [sk2]</p>
+</li>
+<li><p class="first">Add fonts to manifest. [Simon Knight]</p>
+</li>
+<li><p class="first">Remove other deps. [Simon Knight]</p>
+</li>
+<li><p class="first">Update setup. [Simon Knight]</p>
+</li>
+<li><p class="first">Update version. [Simon Knight]</p>
+</li>
+<li><p class="first">Update icons folder. [Simon Knight]</p>
+</li>
+<li><p class="first">Merge pull request #64 from sk2/development. [Simon Knight]</p>
+<p>Development</p>
+</li>
+<li><p class="first">Handle pika. [sk2]</p>
+</li>
+<li><p class="first">Merge pull request #63 from sk2/master. [Simon Knight]</p>
+<p>push</p>
+</li>
+<li><p class="first">Merge pull request #62 from sk2/Stable. [Simon Knight]</p>
+<p>improvements to measurement and traceroute plotting</p>
+</li>
+<li><p class="first">Improvements to measurement and traceroute plotting. [sk2]</p>
+</li>
+<li><p class="first">Merge pull request #61 from sk2/development. [Simon Knight]</p>
+<p>Development</p>
+</li>
+<li><p class="first">Disable measure by default. [sk2]</p>
+</li>
+<li><p class="first">Remove debug. [sk2]</p>
+</li>
+<li><p class="first">Add bootup circles. [sk2]</p>
+</li>
+<li><p class="first">Show websocket state as icon. [sk2]</p>
+</li>
+<li><p class="first">Merge pull request #60 from sk2/development. [Simon Knight]</p>
+<p>Development</p>
+</li>
+<li><p class="first">Add example. [sk2]</p>
+</li>
+<li><p class="first">Merge pull request #59 from sk2/development. [Simon Knight]</p>
+<p>Development</p>
+</li>
+<li><p class="first">Remove debug. [sk2]</p>
+</li>
+<li><p class="first">More features. [sk2]</p>
+</li>
+<li><p class="first">Exit for paths. [sk2]</p>
+</li>
+<li><p class="first">Bugfix. [sk2]</p>
+</li>
+<li><p class="first">Allow direct messaging using messaging rather than manual rabbitmq
+construction. [sk2]</p>
+</li>
+<li><p class="first">Merge pull request #58 from sk2/development. [Simon Knight]</p>
+<p>Development</p>
+</li>
+<li><p class="first">Tidy. [sk2]</p>
+</li>
+<li><p class="first">Example updates. [sk2]</p>
+</li>
+<li><p class="first">Bugfix. [sk2]</p>
+</li>
+<li><p class="first">Measure client updates. [sk2]</p>
+</li>
+<li><p class="first">Change import order. [sk2]</p>
+</li>
+<li><p class="first">More updates. [sk2]</p>
+</li>
+<li><p class="first">Take rmq as argument. [sk2]</p>
+</li>
+<li><p class="first">Add measure client. [sk2]</p>
+</li>
+<li><p class="first">Merge pull request #57 from sk2/development. [Simon Knight]</p>
+<p>tidy</p>
+</li>
+<li><p class="first">Ignore rendered. [sk2]</p>
+</li>
+<li><p class="first">Tidy. [sk2]</p>
+</li>
+<li><p class="first">Merge pull request #56 from sk2/development. [Simon Knight]</p>
+<p>move example to base dir</p>
+</li>
+<li><p class="first">Move example to base dir. [sk2]</p>
+</li>
+<li><p class="first">Merge pull request #55 from sk2/development. [Simon Knight]</p>
+<p>Development</p>
+</li>
+<li><p class="first">Work on example. [sk2]</p>
+</li>
+<li><p class="first">Update default log. [sk2]</p>
+</li>
+<li><p class="first">More icon. [sk2]</p>
+</li>
+<li><p class="first">Example. [sk2]</p>
+</li>
+<li><p class="first">More icon. [sk2]</p>
+</li>
+<li><p class="first">More icon. [sk2]</p>
+</li>
+<li><p class="first">Merge pull request #54 from sk2/development. [Simon Knight]</p>
+<p>Development</p>
+</li>
+<li><p class="first">Remove egg info. [sk2]</p>
+</li>
+<li><p class="first">Tidy. [sk2]</p>
+</li>
+<li><p class="first">Update icon. [sk2]</p>
+</li>
+<li><p class="first">Move vis folder. [sk2]</p>
+</li>
+<li><p class="first">Update packaging dependencies. [sk2]</p>
+</li>
+<li><p class="first">Update doc, setup config. [sk2]</p>
+</li>
+<li><p class="first">Merge pull request #53 from sk2/interfaces. [Simon Knight]</p>
+<p>Interfaces</p>
+</li>
+<li><p class="first">Add dependencies. [sk2]</p>
+</li>
+<li><p class="first">Add icons to ui. [sk2]</p>
+</li>
+<li><p class="first">Merge pull request #52 from sk2/interfaces. [Simon Knight]</p>
+<p>Interfaces</p>
+</li>
+<li><p class="first">Update icon. [sk2]</p>
+</li>
+<li><p class="first">Remove old messaging package. [sk2]</p>
+</li>
+<li><p class="first">Merge pull request #51 from sk2/interfaces. [Simon Knight]</p>
+<p>Interfaces</p>
+</li>
+<li><p class="first">Move to examples directory. [sk2]</p>
+</li>
+<li><p class="first">Add zoom fit button. [sk2]</p>
+</li>
+<li><p class="first">Update vis layout. [sk2]</p>
+</li>
+<li><p class="first">Update year, add favico to website. [sk2]</p>
+</li>
+<li><p class="first">Icon data. [sk2]</p>
+</li>
+<li><p class="first">Update icon. [sk2]</p>
+</li>
+<li><p class="first">Auto zoom, remove interfaces and labels. [sk2]</p>
+</li>
+<li><p class="first">Dont hide labels. [sk2]</p>
+</li>
+<li><p class="first">Add icon. [sk2]</p>
+</li>
+<li><p class="first">Remove unused messaging. [sk2]</p>
+</li>
+<li><p class="first">Ui tidy. [sk2]</p>
+</li>
+<li><p class="first">Revert. [sk2]</p>
+</li>
+<li><p class="first">Auto hide revisions, tidy general ui, remove interfaces with toggle.
+[sk2]</p>
+</li>
+<li><p class="first">Tidying. [sk2]</p>
+</li>
+<li><p class="first">Merge pull request #50 from sk2/interfaces. [Simon Knight]</p>
+<p>Merge</p>
+</li>
+<li><p class="first">Add docs to repo. [sk2]</p>
+</li>
+<li><p class="first">Remove unused python package. [sk2]</p>
+</li>
+<li><p class="first">Add note. [sk2]</p>
+</li>
+<li><p class="first">Add icon. [sk2]</p>
+</li>
+<li><p class="first">Add todo. [sk2]</p>
+</li>
+<li><p class="first">Better node handling. [sk2]</p>
+</li>
+<li><p class="first">Remove debug. [sk2]</p>
+</li>
+<li><p class="first">Tidying. [sk2]</p>
+</li>
+<li><p class="first">Simpler add edges wrapper. [sk2]</p>
+</li>
+<li><p class="first">Tidy manifest. [sk2]</p>
+</li>
+<li><p class="first">Set default for blank labels, better handling of non-unique labels: if
+so then set with asn. [sk2]</p>
+</li>
+<li><p class="first">Handle multi-as from zoo. [sk2]</p>
+</li>
+<li><p class="first">Tidying. [sk2]</p>
+</li>
+<li><p class="first">Add ip. [sk2]</p>
+</li>
+<li><p class="first">Processing for nren 1400. [sk2]</p>
+</li>
+<li><p class="first">Simple example. [sk2]</p>
+</li>
+<li><p class="first">More example. [sk2]</p>
+</li>
+<li><p class="first">More examples. [sk2]</p>
+</li>
+<li><p class="first">Set False for yEd exported booleans (by default not present on a node)
+[sk2]</p>
+</li>
+<li><p class="first">Tidy simple. [sk2]</p>
+</li>
+<li><p class="first">Add retain to adding nodes through add_overlay. [sk2]</p>
+</li>
+<li><p class="first">Add build option. [sk2]</p>
+</li>
+<li><p class="first">Tidy simple example. [sk2]</p>
+</li>
+<li><p class="first">Add examples. [sk2]</p>
+</li>
+<li><p class="first">Tidy logic. [sk2]</p>
+</li>
+<li><p class="first">New simplified example. [sk2]</p>
+</li>
+<li><p class="first">Tidy, toggle out publishing v6 topology. [sk2]</p>
+</li>
+<li><p class="first">Use new add overlay format. [sk2]</p>
+</li>
+<li><p class="first">Add ability to add nodes at overlay creation. [sk2]</p>
+</li>
+<li><p class="first">Merge pull request #43 from sk2/interfaces. [Simon Knight]</p>
+<p>Interfaces</p>
+</li>
+<li><p class="first">V6 overlay support and allocation done. [sk2]</p>
+</li>
+<li><p class="first">Optional server param for messaging: not required if using http post,
+as picked up from settings. [sk2]</p>
+</li>
+<li><p class="first">Adding ipv6 support. [sk2]</p>
+</li>
+<li><p class="first">Increment version. [sk2]</p>
+</li>
+<li><p class="first">Support import of cisco templates. [sk2]</p>
+</li>
+<li><p class="first">Move more cisco specific code out. [sk2]</p>
+</li>
+<li><p class="first">Move cisco specific load and deploy to autonetkit_cisco module. [sk2]</p>
+</li>
+<li><p class="first">Update doc. [sk2]</p>
+</li>
+<li><p class="first">Increment. [sk2]</p>
+</li>
+<li><p class="first">Ensure area is string. [sk2]</p>
+</li>
+<li><p class="first">Initial work on highlighting shared interfaces (eg loopback0) [sk2]</p>
+</li>
+<li><p class="first">Tidy. [sk2]</p>
+</li>
+<li><p class="first">Tidy. [sk2]</p>
+</li>
+<li><p class="first">Remove unused allocate_hardware. [sk2]</p>
+</li>
+<li><p class="first">Add interface labels. [sk2]</p>
+</li>
+<li><p class="first">Tidying debug. [sk2]</p>
+</li>
+<li><p class="first">More interfaces. [sk2]</p>
+</li>
+<li><p class="first">More improvements to interfaces. [sk2]</p>
+</li>
+<li><p class="first">More work on interfaces - work in progress. [sk2]</p>
+</li>
+<li><p class="first">More work on vis. [sk2]</p>
+</li>
+<li><p class="first">Display interfaces for directed edges. [sk2]</p>
+</li>
+<li><p class="first">Bigger font for edges. [sk2]</p>
+</li>
+<li><p class="first">Much improved directed edges, now with labels on the edge. [sk2]</p>
+</li>
+<li><p class="first">Redoing directed edges. [sk2]</p>
+</li>
+<li><p class="first">Dev. [sk2]</p>
+</li>
+<li><p class="first">Dev. [sk2]</p>
+</li>
+<li><p class="first">Disable zoom. [sk2]</p>
+</li>
+<li><p class="first">Initial work on dynamic zooming. [sk2]</p>
+</li>
+<li><p class="first">Remote message pipe from setup guide. [sk2]</p>
+</li>
+<li><p class="first">Merge pull request #40 from sk2/interfaces. [Simon Knight]</p>
+<p>tidy</p>
+</li>
+<li><p class="first">Tidy. [sk2]</p>
+</li>
+<li><p class="first">Merge pull request #39 from sk2/interfaces. [Simon Knight]</p>
+<p>Interfaces</p>
+</li>
+<li><p class="first">Disable full hostnames. [sk2]</p>
+</li>
+<li><p class="first">Increment version. [sk2]</p>
+</li>
+<li><p class="first">Lower node labels. [sk2]</p>
+</li>
+<li><p class="first">Lower node labels. [sk2]</p>
+</li>
+<li><p class="first">Tidy. [sk2]</p>
+</li>
+<li><p class="first">Tidy. [sk2]</p>
+</li>
+<li><p class="first">Better option to disable edge labels. [sk2]</p>
+</li>
+<li><p class="first">Don't display interfaces. [sk2]</p>
+</li>
+<li><p class="first">Better handling of interfaces in tooltip. [sk2]</p>
+</li>
+<li><p class="first">Add option to disable edge labels. [sk2]</p>
+</li>
+<li><p class="first">Tidy area zero handling. [sk2]</p>
+</li>
+<li><p class="first">Handle ip address format for ospf areas. [sk2]</p>
+</li>
+<li><p class="first">Tidy, todos. [sk2]</p>
+</li>
+<li><p class="first">Correct rendering of arrays in tooltips. [sk2]</p>
+</li>
+<li><p class="first">Interface toggle. [sk2]</p>
+</li>
+<li><p class="first">More improvements for interfaces. [sk2]</p>
+</li>
+<li><p class="first">Better interface vis. [sk2]</p>
+</li>
+<li><p class="first">Add interfaces to anm, render interfaces on vis. [sk2]</p>
+</li>
+<li><p class="first">Store ospf areas on node. [sk2]</p>
+</li>
+<li><p class="first">Upgrade d3 from v2 to v3. [sk2]</p>
+</li>
+<li><p class="first">Use v3 of d3, hide history buttons. [sk2]</p>
+</li>
+<li><p class="first">Alignment, grouping for ospf areas. [sk2]</p>
+</li>
+<li><p class="first">Tidy. [sk2]</p>
+</li>
+<li><p class="first">Correct docstring. [sk2]</p>
+</li>
+<li><p class="first">Merge pull request #38 from sk2/dev. [Simon Knight]</p>
+<p>default netkit render</p>
+</li>
+<li><p class="first">Default netkit render. [sk2]</p>
+</li>
+<li><p class="first">Merge pull request #37 from sk2/dev. [Simon Knight]</p>
+<p>better web message</p>
+</li>
+<li><p class="first">Better web message. [sk2]</p>
+</li>
+<li><p class="first">Merge pull request #36 from sk2/dev. [Simon Knight]</p>
+<p>Dev</p>
+</li>
+<li><p class="first">Ignore. [sk2]</p>
+</li>
+<li><p class="first">Add tornado to base dependencies. [sk2]</p>
+</li>
+<li><p class="first">Error handling. [sk2]</p>
+</li>
+<li><p class="first">Error handling if no input file. [sk2]</p>
+</li>
+<li><p class="first">Better desc string. [sk2]</p>
+</li>
+<li><p class="first">Disable pika requirement for base install. [sk2]</p>
+</li>
+<li><p class="first">Enable http post by default. [sk2]</p>
+</li>
+<li><p class="first">Merge pull request #35 from sk2/dev. [Simon Knight]</p>
+<p>Merge latest updates</p>
+</li>
+<li><p class="first">Set input label for other device types, used in post-processing
+module. [Simon Knight]</p>
+</li>
+<li><p class="first">Support manually specified interface names. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidy. [Simon Knight]</p>
+</li>
+<li><p class="first">Support manually specified interface names. [Simon Knight]</p>
+</li>
+<li><p class="first">New messaging module. [Simon Knight]</p>
+</li>
+<li><p class="first">Better error handling for invalid category ids. [Simon Knight]</p>
+</li>
+<li><p class="first">Fix syntax error in logging. [Simon Knight]</p>
+</li>
+<li><p class="first">Add end statement. [Simon Knight]</p>
+</li>
+<li><p class="first">Handle extra attribute. [Simon Knight]</p>
+</li>
+<li><p class="first">Copy across extra attribute. [Simon Knight]</p>
+</li>
+<li><p class="first">Support for specified interface names. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidying. [Simon Knight]</p>
+</li>
+<li><p class="first">Update look and feel. [Simon Knight]</p>
+</li>
+<li><p class="first">Rename ank_pika to more generic messaging module. [Simon Knight]</p>
+</li>
+<li><p class="first">Increment version. [Simon Knight]</p>
+</li>
+<li><p class="first">Add new icons. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidy http post, support manually specified IPs. [Simon Knight]</p>
+</li>
+<li><p class="first">Updates to logging. [Simon Knight]</p>
+</li>
+<li><p class="first">Merge pull request #34 from sk2/dev. [Simon Knight]</p>
+<p>iBGP hierarchies, HTTP Post to update web ui</p>
+</li>
+<li><p class="first">Tweak line offsets. [Simon Knight]</p>
+</li>
+<li><p class="first">Support HTTP POST for updating topologies. [Simon Knight]</p>
+</li>
+<li><p class="first">Fix indent. [Simon Knight]</p>
+</li>
+<li><p class="first">Group by l3 cluster. [Simon Knight]</p>
+</li>
+<li><p class="first">Tweaks to vis. [Simon Knight]</p>
+</li>
+<li><p class="first">Update taper. [Simon Knight]</p>
+</li>
+<li><p class="first">More tapered edges. [Simon Knight]</p>
+</li>
+<li><p class="first">Update ignore. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidy neighbors. [Simon Knight]</p>
+</li>
+<li><p class="first">Ibgp hierarchies. [Simon Knight]</p>
+</li>
+<li><p class="first">Tapered edges. [Simon Knight]</p>
+</li>
+<li><p class="first">Merge pull request #33 from sk2/dev. [Simon Knight]</p>
+<p>route reflectors</p>
+</li>
+<li><p class="first">Corrections to iBGP. [Simon Knight]</p>
+</li>
+<li><p class="first">Seperate out address classes. [Simon Knight]</p>
+</li>
+<li><p class="first">Seperate out address classes. [Simon Knight]</p>
+</li>
+<li><p class="first">Remove debug. [Simon Knight]</p>
+</li>
+<li><p class="first">Route reflectors. [Simon Knight]</p>
+</li>
+<li><p class="first">Merge pull request #32 from sk2/dev. [Simon Knight]</p>
+<p>IOS IGP, bugfix for single-AS loopbacks</p>
+</li>
+<li><p class="first">Fix single-AS loopbacks. [Simon Knight]</p>
+</li>
+<li><p class="first">Hover for ip address nodes. [Simon Knight]</p>
+</li>
+<li><p class="first">Interface type. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidy. [Simon Knight]</p>
+</li>
+<li><p class="first">Fix network format. [Simon Knight]</p>
+</li>
+<li><p class="first">Merge pull request #31 from sk2/dev. [Simon Knight]</p>
+<p>Dev</p>
+</li>
+<li><p class="first">Add isis support to ios. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidy. [Simon Knight]</p>
+</li>
+<li><p class="first">Merge pull request #30 from sk2/dev. [Simon Knight]</p>
+<p>Dev</p>
+</li>
+<li><p class="first">Issue with configspec, update areas. [Simon Knight]</p>
+</li>
+<li><p class="first">Set syntax from config defaults. [Simon Knight]</p>
+</li>
+<li><p class="first">Merge pull request #29 from sk2/dev. [Simon Knight]</p>
+<p>fixes to ios config, interface naming, separate loopback IP groups:
+don't allocate 10.0.0.0 etc as a loopback</p>
+</li>
+<li><p class="first">Seperate loopback groups: don't allocate 10.0.0.0 as a loopback.
+[Simon Knight]</p>
+</li>
+<li><p class="first">Allocated loopbacks in a group: don't want 10.0.0.0 as a loopback ip.
+[Simon Knight]</p>
+</li>
+<li><p class="first">Add point-to-point to networks. [Simon Knight]</p>
+</li>
+<li><p class="first">Id format Ethernet x/0. [Simon Knight]</p>
+</li>
+<li><p class="first">Option to toggle timestamp in rendered output. [Simon Knight]</p>
+</li>
+<li><p class="first">Handle socket error with warning. [Simon Knight]</p>
+</li>
+<li><p class="first">Merge pull request #28 from sk2/dev. [Simon Knight]</p>
+<p>website updates, add readme</p>
+</li>
+<li><p class="first">Update website, add readme. [Simon Knight]</p>
+</li>
+<li><p class="first">Fix github link. [Simon Knight]</p>
+</li>
+<li><p class="first">Update css page references, title in using. [Simon Knight]</p>
+</li>
+<li><p class="first">New website. [Simon Knight]</p>
+</li>
+<li><p class="first">Merge pull request #27 from sk2/dev. [Simon Knight]</p>
+<p>Dev</p>
+</li>
+<li><p class="first">Tidy loading. [Simon Knight]</p>
+</li>
+<li><p class="first">Default ospf area for graphml. [Simon Knight]</p>
+</li>
+<li><p class="first">Update defaut topology for vis. [Simon Knight]</p>
+</li>
+<li><p class="first">Merge pull request #26 from sk2/dev. [Simon Knight]</p>
+<p>add edge labels, restore print css, hierarchical ospf for IOS</p>
+</li>
+<li><p class="first">More hierarchical ospf config. [Simon Knight]</p>
+</li>
+<li><p class="first">Ospf hierarchy. [Simon Knight]</p>
+</li>
+<li><p class="first">Fix print css. [Simon Knight]</p>
+</li>
+<li><p class="first">Edge labels. [Simon Knight]</p>
+</li>
+<li><p class="first">Merge pull request #24 from sk2/dev. [Simon Knight]</p>
+<p>remove debug, update github link to dev alpha</p>
+</li>
+<li><p class="first">Update github link to dev alpha. [Simon Knight]</p>
+</li>
+<li><p class="first">Remove debug. [Simon Knight]</p>
+</li>
+<li><p class="first">Merge pull request #23 from sk2/dev. [Simon Knight]</p>
+<p>Optional render, adding node label and edge group dropdowns, add ospf
+areas, tipsy for tooltips</p>
+</li>
+<li><p class="first">Default area of 0. [Simon Knight]</p>
+</li>
+<li><p class="first">Redrawing changed edge_group_id. [Simon Knight]</p>
+</li>
+<li><p class="first">Hide infobar, larger font for yapsy. [Simon Knight]</p>
+</li>
+<li><p class="first">Use tipsy for tooltips. [Simon Knight]</p>
+</li>
+<li><p class="first">Add OSPF router type. [Simon Knight]</p>
+</li>
+<li><p class="first">Add title on hover, tidying. [Simon Knight]</p>
+</li>
+<li><p class="first">Work on ospf areas. [Simon Knight]</p>
+</li>
+<li><p class="first">Support for node label and edge grouping. [Simon Knight]</p>
+</li>
+<li><p class="first">Add comments. [Simon Knight]</p>
+</li>
+<li><p class="first">Add dropdowns for node label and edge grouping. [Simon Knight]</p>
+</li>
+<li><p class="first">Add underscore js library. [Simon Knight]</p>
+</li>
+<li><p class="first">Add render option. [Simon Knight]</p>
+</li>
+<li><p class="first">Merge pull request #22 from sk2/dev. [Simon Knight]</p>
+<p>bugfix for ip if no links, add support for nested grouping in vis
+(used for ospf attributes)</p>
+</li>
+<li><p class="first">Fix ip crash if no links. [Simon Knight]</p>
+</li>
+<li><p class="first">Remove debug, copy ospf_area into &quot;area&quot; in ospf graph. [Simon Knight]</p>
+</li>
+<li><p class="first">Support ospf areas, nested groupings. [Simon Knight]</p>
+</li>
+<li><p class="first">More parameters for copy_attr_from. [Simon Knight]</p>
+</li>
+<li><p class="first">Merge pull request #16 from sk2/dev. [Simon Knight]</p>
+<p>Improvements to packaging for textfsm templates, add demo video to
+website, fix passive interface for quagga IGP</p>
+</li>
+<li><p class="first">Add demo video. [Simon Knight]</p>
+</li>
+<li><p class="first">Correct path. [Simon Knight]</p>
+</li>
+<li><p class="first">Open traceroute template from package. [Simon Knight]</p>
+</li>
+<li><p class="first">Use package template file. [Simon Knight]</p>
+</li>
+<li><p class="first">Update textfsm include. [Simon Knight]</p>
+</li>
+<li><p class="first">Include textfsm templates. [Simon Knight]</p>
+</li>
+<li><p class="first">Non numeric first character for zebra hostname too. [Simon Knight]</p>
+</li>
+<li><p class="first">Make sure quagga hostnames start with letter. [Simon Knight]</p>
+</li>
+<li><p class="first">Passive interfaces for ebgp. [Simon Knight]</p>
+</li>
+<li><p class="first">Add loopback to interfaces. [Simon Knight]</p>
+</li>
+<li><p class="first">Handle empty key string. [Simon Knight]</p>
+</li>
+<li><p class="first">Merge pull request #15 from sk2/dev. [Simon Knight]</p>
+<p>Dev</p>
+</li>
+<li><p class="first">Make screencasts more visible. [Simon Knight]</p>
+</li>
+<li><p class="first">Change ip ranges. [Simon Knight]</p>
+</li>
+<li><p class="first">Add alpha sorting for machines. [Simon Knight]</p>
+</li>
+<li><p class="first">Use interface id. [Simon Knight]</p>
+</li>
+<li><p class="first">Add sorting. [Simon Knight]</p>
+</li>
+<li><p class="first">Add text sorting. [Simon Knight]</p>
+</li>
+<li><p class="first">Start loopbacks at 172.16.127 so don't interfere with taps. [Simon
+Knight]</p>
+</li>
+<li><p class="first">Don't clobber measure. [Simon Knight]</p>
+</li>
+<li><p class="first">Less verbose messages. [Simon Knight]</p>
+</li>
+<li><p class="first">Better output. [Simon Knight]</p>
+</li>
+<li><p class="first">Add note. [Simon Knight]</p>
+</li>
+<li><p class="first">Merge pull request #13 from sk2/dev. [Simon Knight]</p>
+<p>drive compilation from config file</p>
+</li>
+<li><p class="first">Drive compilation from config file. [Simon Knight]</p>
+</li>
+<li><p class="first">Merge pull request #12 from sk2/dev. [Simon Knight]</p>
+<p>Dev</p>
+</li>
+<li><p class="first">Add publications. [Simon Knight]</p>
+</li>
+<li><p class="first">Remove debug. [Simon Knight]</p>
+</li>
+<li><p class="first">Neater maximise display. [Simon Knight]</p>
+</li>
+<li><p class="first">Handle case of no infrastructure ips to advertise. [Simon Knight]</p>
+</li>
+<li><p class="first">Allocate loopbacks seperately to infra, closes gh-10. [Simon Knight]</p>
+</li>
+<li><p class="first">Add css maximise option. [Simon Knight]</p>
+</li>
+<li><p class="first">Merge pull request #11 from sk2/dev. [Simon Knight]</p>
+<p>Cleaner updating to web interface</p>
+</li>
+<li><p class="first">Read updates. [Simon Knight]</p>
+</li>
+<li><p class="first">Remove extra sending pika. [Simon Knight]</p>
+</li>
+<li><p class="first">Remove debug. [Simon Knight]</p>
+</li>
+<li><p class="first">Merge pull request #9 from sk2/dev. [Simon Knight]</p>
+<p>Basic lat/lon to x/y from zoo, grid layout if no x/y set</p>
+</li>
+<li><p class="first">Add comment. [Simon Knight]</p>
+</li>
+<li><p class="first">Merge pull request #8 from sk2/dev. [Simon Knight]</p>
+<p>Dev</p>
+</li>
+<li><p class="first">Support for reading from stdin, writing single-file templates into
+memory. [Simon Knight]</p>
+</li>
+<li><p class="first">Use argparse instead of deprecated optparse. [Simon Knight]</p>
+</li>
+<li><p class="first">Support html in status: lists rather than block of text. [Simon
+Knight]</p>
+</li>
+<li><p class="first">Merge pull request #7 from sk2/dev. [Simon Knight]</p>
+<p>Dev</p>
+</li>
+<li><p class="first">Update instructions. [Simon Knight]</p>
+</li>
+<li><p class="first">Inc. [Simon Knight]</p>
+</li>
+<li><p class="first">Update isis format. [Simon Knight]</p>
+</li>
+<li><p class="first">Default isis metric. [Simon Knight]</p>
+</li>
+<li><p class="first">Merge pull request #6 from sk2/dev. [Simon Knight]</p>
+<p>Dev</p>
+</li>
+<li><p class="first">Merge pull request #5 from sk2/master. [Simon Knight]</p>
+<p>Dev</p>
+</li>
+<li><p class="first">Dont warn if no rmq. [Simon Knight]</p>
+</li>
+<li><p class="first">Merge pull request #4 from sk2/dev. [Simon Knight]</p>
+<p>Dev</p>
+</li>
+<li><p class="first">Update tutorial. [Simon Knight]</p>
+</li>
+<li><p class="first">Inc. [Simon Knight]</p>
+</li>
+<li><p class="first">Better handling of timestamp. [Simon Knight]</p>
+</li>
+<li><p class="first">Include quagga templates. [Simon Knight]</p>
+</li>
+<li><p class="first">Disable file logging for now. [Simon Knight]</p>
+</li>
+<li><p class="first">Default to compile. [Simon Knight]</p>
+</li>
+<li><p class="first">Don't write overlays as graphml. [Simon Knight]</p>
+</li>
+<li><p class="first">Merge pull request #3 from sk2/master. [Simon Knight]</p>
+<p>Merge website and templates</p>
+</li>
+<li><p class="first">Add tutorial. [Simon Knight]</p>
+</li>
+<li><p class="first">Inc ver. [Simon Knight]</p>
+</li>
+<li><p class="first">Include quagga templates. [Simon Knight]</p>
+</li>
+<li><p class="first">Merge pull request #2 from sk2/dev. [Simon Knight]</p>
+<p>Better defaults and compilation</p>
+</li>
+<li><p class="first">Better compilation depending on presence of platform/host. [Simon
+Knight]</p>
+</li>
+<li><p class="first">Update graphml default. [Simon Knight]</p>
+</li>
+<li><p class="first">Remove debug. [Simon Knight]</p>
+</li>
+<li><p class="first">Merge pull request #1 from sk2/dev. [Simon Knight]</p>
+<p>Dev</p>
+</li>
+<li><p class="first">Add development install guide. [Simon Knight]</p>
+</li>
+<li><p class="first">Increment version. [Simon Knight]</p>
+</li>
+<li><p class="first">Update interface names. [Simon Knight]</p>
+</li>
+<li><p class="first">Add youtube link for screencasts. [Simon Knight]</p>
+</li>
+<li><p class="first">Increment version, include html data in package. [Simon Knight]</p>
+</li>
+<li><p class="first">Support telnet sockets. [Simon Knight]</p>
+</li>
+<li><p class="first">Use new load module. [Simon Knight]</p>
+</li>
+<li><p class="first">More visible trace data. [Simon Knight]</p>
+</li>
+<li><p class="first">Remove debug. [Simon Knight]</p>
+</li>
+<li><p class="first">Sorting edges. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidying. [Simon Knight]</p>
+</li>
+<li><p class="first">More visible traceroutes. [Simon Knight]</p>
+</li>
+<li><p class="first">Add support for telnet. [Simon Knight]</p>
+</li>
+<li><p class="first">Move vis inside distro. [Simon Knight]</p>
+</li>
+<li><p class="first">Updates. [Simon Knight]</p>
+</li>
+<li><p class="first">Use ank vis in distro. [Simon Knight]</p>
+</li>
+<li><p class="first">Increment version. [Simon Knight]</p>
+</li>
+<li><p class="first">Include vis in distro. [Simon Knight]</p>
+</li>
+<li><p class="first">Increment version. [Simon Knight]</p>
+</li>
+<li><p class="first">Fix naming. [Simon Knight]</p>
+</li>
+<li><p class="first">Comment out dev. [Simon Knight]</p>
+</li>
+<li><p class="first">Increment version. [Simon Knight]</p>
+</li>
+<li><p class="first">Use correct ip for update-source. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidy anm sending over rabbit. [Simon Knight]</p>
+</li>
+<li><p class="first">Dev. [Simon Knight]</p>
+</li>
+<li><p class="first">Error handling alpha only name sorting. [Simon Knight]</p>
+</li>
+<li><p class="first">More visible traces. [Simon Knight]</p>
+</li>
+<li><p class="first">Updates for netkit deploy. [Simon Knight]</p>
+</li>
+<li><p class="first">Use rabbitmq server from config. [Simon Knight]</p>
+</li>
+<li><p class="first">Better log message. [Simon Knight]</p>
+</li>
+<li><p class="first">Fix int ids. [Simon Knight]</p>
+</li>
+<li><p class="first">Dev. [Simon Knight]</p>
+</li>
+<li><p class="first">Update version. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidying. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidying. [Simon Knight]</p>
+</li>
+<li><p class="first">Use package name. [Simon Knight]</p>
+</li>
+<li><p class="first">Get correct package name for version. [Simon Knight]</p>
+</li>
+<li><p class="first">Store original node label. [Simon Knight]</p>
+</li>
+<li><p class="first">Update ignore for package. [Simon Knight]</p>
+</li>
+<li><p class="first">Rename package version. [Simon Knight]</p>
+</li>
+<li><p class="first">Add console help, version. [Simon Knight]</p>
+</li>
+<li><p class="first">Remove dev. [Simon Knight]</p>
+</li>
+<li><p class="first">Adding directed input graph support - useful for edge attributes.
+[Simon Knight]</p>
+</li>
+<li><p class="first">Sort interfaces on id. [Simon Knight]</p>
+</li>
+<li><p class="first">Copy edge attributes. [Simon Knight]</p>
+</li>
+<li><p class="first">Edge comparisons for sorting. [Simon Knight]</p>
+</li>
+<li><p class="first">Improve bgp, isis. [Simon Knight]</p>
+</li>
+<li><p class="first">Better version string. [Simon Knight]</p>
+</li>
+<li><p class="first">Notes. [Simon Knight]</p>
+</li>
+<li><p class="first">Better ios support, isis. [Simon Knight]</p>
+</li>
+<li><p class="first">Default isis process id. [Simon Knight]</p>
+</li>
+<li><p class="first">Hide nav for printing. [Simon Knight]</p>
+</li>
+<li><p class="first">Longer delay for monitor, optional archiving, neater json writing for
+diff. [Simon Knight]</p>
+</li>
+<li><p class="first">Select between IGPs. [Simon Knight]</p>
+</li>
+<li><p class="first">Diffing support. [Simon Knight]</p>
+</li>
+<li><p class="first">Greatly improved differ. [Simon Knight]</p>
+</li>
+<li><p class="first">Ignore diff. [Simon Knight]</p>
+</li>
+<li><p class="first">Error message if no rabbitmq. [Simon Knight]</p>
+</li>
+<li><p class="first">Disable hardware alloc for now. [Simon Knight]</p>
+</li>
+<li><p class="first">Default dir. [Simon Knight]</p>
+</li>
+<li><p class="first">Testing diff. [Simon Knight]</p>
+</li>
+<li><p class="first">Handle sets. [Simon Knight]</p>
+</li>
+<li><p class="first">More on interfaces. [Simon Knight]</p>
+</li>
+<li><p class="first">Add graphics data. [Simon Knight]</p>
+</li>
+<li><p class="first">Setting group attr. [Simon Knight]</p>
+</li>
+<li><p class="first">Better error handling, retain of node id. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidy. [Simon Knight]</p>
+</li>
+<li><p class="first">More dev. [Simon Knight]</p>
+</li>
+<li><p class="first">Basic interface icon. [Simon Knight]</p>
+</li>
+<li><p class="first">More testing for hw. [Simon Knight]</p>
+</li>
+<li><p class="first">Add remove_node fn. [Simon Knight]</p>
+</li>
+<li><p class="first">More hw alloc. [Simon Knight]</p>
+</li>
+<li><p class="first">Handle empty overlays. [Simon Knight]</p>
+</li>
+<li><p class="first">Adding conn graph. [Simon Knight]</p>
+</li>
+<li><p class="first">Graph based hardware. [Simon Knight]</p>
+</li>
+<li><p class="first">Change zoom. [Simon Knight]</p>
+</li>
+<li><p class="first">Group by device for conn graph. [Simon Knight]</p>
+</li>
+<li><p class="first">Add hash for set comparison, accessor for anm, option to add node,
+option to not clobber adding nodes, [Simon Knight]</p>
+</li>
+<li><p class="first">Before switching to graph-based interface representation. [Simon
+Knight]</p>
+</li>
+<li><p class="first">Hardware profiles. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidy. [Simon Knight]</p>
+</li>
+<li><p class="first">Adding hardware profiles. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidying. [Simon Knight]</p>
+</li>
+<li><p class="first">Adding standalone actions. [Simon Knight]</p>
+</li>
+<li><p class="first">Policy parsing implemented, including nested if/then/else. [Simon
+Knight]</p>
+</li>
+<li><p class="first">More policy. [Simon Knight]</p>
+</li>
+<li><p class="first">More pol. [Simon Knight]</p>
+</li>
+<li><p class="first">Initial policy parsing. [Simon Knight]</p>
+</li>
+<li><p class="first">Fix packaging. [Simon Knight]</p>
+</li>
+<li><p class="first">Handle imports better. [Simon Knight]</p>
+</li>
+<li><p class="first">Remove unused dep. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidy. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidy. [Simon Knight]</p>
+</li>
+<li><p class="first">Update. [Simon Knight]</p>
+</li>
+<li><p class="first">Updates. [Simon Knight]</p>
+</li>
+<li><p class="first">Disable sockets for now. [Simon Knight]</p>
+</li>
+<li><p class="first">Adding messaging. [Simon Knight]</p>
+</li>
+<li><p class="first">Update ignore. [Simon Knight]</p>
+</li>
+<li><p class="first">Add cisco internal support, tidy up, update build options if updated,
+relay update node parameter. [Simon Knight]</p>
+</li>
+<li><p class="first">Default disabled pika. [Simon Knight]</p>
+</li>
+<li><p class="first">Add node label, tidy. [Simon Knight]</p>
+</li>
+<li><p class="first">Relay update, support cisco internal host. [Simon Knight]</p>
+</li>
+<li><p class="first">Handle disabled pika. [Simon Knight]</p>
+</li>
+<li><p class="first">Restoring ios2. [Simon Knight]</p>
+</li>
+<li><p class="first">Update ignore. [Simon Knight]</p>
+</li>
+<li><p class="first">Exceptions class. [Simon Knight]</p>
+</li>
+<li><p class="first">Add sorting. [Simon Knight]</p>
+</li>
+<li><p class="first">Better exception handling. [Simon Knight]</p>
+</li>
+<li><p class="first">Add internal host. [Simon Knight]</p>
+</li>
+<li><p class="first">Handle non .graphml. [Simon Knight]</p>
+</li>
+<li><p class="first">Todo. [Simon Knight]</p>
+</li>
+<li><p class="first">Change sizes. [Simon Knight]</p>
+</li>
+<li><p class="first">Ignore. [Simon Knight]</p>
+</li>
+<li><p class="first">Remove. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidying. [Simon Knight]</p>
+</li>
+<li><p class="first">Moved ip to be native networkx graph based. [Simon Knight]</p>
+</li>
+<li><p class="first">More tidying compiler. [Simon Knight]</p>
+</li>
+<li><p class="first">Keeping track of parent to update dicts. [Simon Knight]</p>
+</li>
+<li><p class="first">Nidb access methods needing work - can't modify dictionary accessors.
+[Simon Knight]</p>
+</li>
+<li><p class="first">Before updating interface format. [Simon Knight]</p>
+</li>
+<li><p class="first">Search by edge id. [Simon Knight]</p>
+</li>
+<li><p class="first">Append as kwargs. [Simon Knight]</p>
+</li>
+<li><p class="first">Moving to integrated lists. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidy. [Simon Knight]</p>
+</li>
+<li><p class="first">Put in list (expected format) [Simon Knight]</p>
+</li>
+<li><p class="first">Don't clobber host attribute from switches bugfix. [Simon Knight]</p>
+</li>
+<li><p class="first">Adding sorting to tidy up compiler. [Simon Knight]</p>
+</li>
+<li><p class="first">Allocate ip not subnet to loopback. [Simon Knight]</p>
+</li>
+<li><p class="first">Add area back. [Simon Knight]</p>
+</li>
+<li><p class="first">Better vis, moving towards twitter bootstrap, scalable with resizing.
+[Simon Knight]</p>
+</li>
+<li><p class="first">Tidying formatting. [Simon Knight]</p>
+</li>
+<li><p class="first">Minimum of one rr per AS. [Simon Knight]</p>
+</li>
+<li><p class="first">Better transition from overlay -&gt; ip allocs. [Simon Knight]</p>
+</li>
+<li><p class="first">Add node sorting for anm, placeholder for nidb. [Simon Knight]</p>
+</li>
+<li><p class="first">More ip progress. [Simon Knight]</p>
+</li>
+<li><p class="first">Ip addressing working. [Simon Knight]</p>
+</li>
+<li><p class="first">More ip. [Simon Knight]</p>
+</li>
+<li><p class="first">Add option to search for edge by node pair. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidy. [Simon Knight]</p>
+</li>
+<li><p class="first">Use neighbors from overlay. [Simon Knight]</p>
+</li>
+<li><p class="first">Better ip vis. [Simon Knight]</p>
+</li>
+<li><p class="first">Testing radial layout. [Simon Knight]</p>
+</li>
+<li><p class="first">More addressing. [Simon Knight]</p>
+</li>
+<li><p class="first">More ip addressing. [Simon Knight]</p>
+</li>
+<li><p class="first">More ip addressing. [Simon Knight]</p>
+</li>
+<li><p class="first">Redoing IP allocation to be digraph (DAG) based. [Simon Knight]</p>
+</li>
+<li><p class="first">Better plotting. [Simon Knight]</p>
+</li>
+<li><p class="first">Transitions for updated ip data. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidying, adding support for ip allocation plotting. [Simon Knight]</p>
+</li>
+<li><p class="first">Add demo to website. [Simon Knight]</p>
+</li>
+<li><p class="first">Remove debug. [Simon Knight]</p>
+</li>
+<li><p class="first">Remove debug. [Simon Knight]</p>
+</li>
+<li><p class="first">More config driven. [Simon Knight]</p>
+</li>
+<li><p class="first">Use standard folder format. [Simon Knight]</p>
+</li>
+<li><p class="first">Turn down base logging (fixes verbose paramiko) [Simon Knight]</p>
+</li>
+<li><p class="first">Tidy. [Simon Knight]</p>
+</li>
+<li><p class="first">Use config instead of hard-coded settings. [Simon Knight]</p>
+</li>
+<li><p class="first">Default boolean for general configs, add deploy hosts. [Simon Knight]</p>
+</li>
+<li><p class="first">Update title with revison number. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidying igp. [Simon Knight]</p>
+</li>
+<li><p class="first">Move deploy to directory. [Simon Knight]</p>
+</li>
+<li><p class="first">Measure directory. [Simon Knight]</p>
+</li>
+<li><p class="first">More isis support. [Simon Knight]</p>
+</li>
+<li><p class="first">Ready for sorted. [Simon Knight]</p>
+</li>
+<li><p class="first">Debug on key miss. [Simon Knight]</p>
+</li>
+<li><p class="first">Retain data. [Simon Knight]</p>
+</li>
+<li><p class="first">Isis support. [Simon Knight]</p>
+</li>
+<li><p class="first">Ignore extra rendered. [Simon Knight]</p>
+</li>
+<li><p class="first">Subgraph only for netkit nodes. [Simon Knight]</p>
+</li>
+<li><p class="first">Remove defaults (use config) [Simon Knight]</p>
+</li>
+<li><p class="first">Tidy. [Simon Knight]</p>
+</li>
+<li><p class="first">Also load cisco compiler. [Simon Knight]</p>
+</li>
+<li><p class="first">Defaults from config. [Simon Knight]</p>
+</li>
+<li><p class="first">Defaults from config. [Simon Knight]</p>
+</li>
+<li><p class="first">More concise edge adding syntax. [Simon Knight]</p>
+</li>
+<li><p class="first">Debug. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidy ip to network entity function. [Simon Knight]</p>
+</li>
+<li><p class="first">Use new graphml reader. [Simon Knight]</p>
+</li>
+<li><p class="first">Better most frequent algorithm. [Simon Knight]</p>
+</li>
+<li><p class="first">Split out graphml reader. [Simon Knight]</p>
+</li>
+<li><p class="first">Split out graphml reader, better most frequent algorithm. [Simon
+Knight]</p>
+</li>
+<li><p class="first">Create load module directory. [Simon Knight]</p>
+</li>
+<li><p class="first">Move to load module directory, remove old caching code. [Simon Knight]</p>
+</li>
+<li><p class="first">Add most frequent function, use instead. [Simon Knight]</p>
+</li>
+<li><p class="first">Use loopback to create network_entity_title. [Simon Knight]</p>
+</li>
+<li><p class="first">Bugfix: take most frequent ASN for inter-asn collision domains, rather
+than mean. [Simon Knight]</p>
+<p>(otherwise cd between ASN 2 and 4 gets put in 3)</p>
+</li>
+<li><p class="first">Add setup for pypi. [Simon Knight]</p>
+</li>
+<li><p class="first">Turn down log verbosity. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidied, adding IS-IS support. [Simon Knight]</p>
+</li>
+<li><p class="first">Better file checking, tidied up building, better monitor mode,
+checking if build has changed, better stack trace. [Simon Knight]</p>
+</li>
+<li><p class="first">Ignore egg builds. [Simon Knight]</p>
+</li>
+<li><p class="first">Default overlay of phy not ospf. [Simon Knight]</p>
+</li>
+<li><p class="first">Bugfix: asn of parent not neighbor. [Simon Knight]</p>
+</li>
+<li><p class="first">Render for single run mode. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidying. [Simon Knight]</p>
+</li>
+<li><p class="first">More descriptive queue name. [Simon Knight]</p>
+</li>
+<li><p class="first">Use server from config. [Simon Knight]</p>
+</li>
+<li><p class="first">Better formatting,zoom. [Simon Knight]</p>
+</li>
+<li><p class="first">Add zoom. [Simon Knight]</p>
+</li>
+<li><p class="first">Ignore local config, crash dump. [Simon Knight]</p>
+</li>
+<li><p class="first">Read from config. [Simon Knight]</p>
+</li>
+<li><p class="first">Default localhost. [Simon Knight]</p>
+</li>
+<li><p class="first">Default localhost. [Simon Knight]</p>
+</li>
+<li><p class="first">Hiding better layout for printing. [Simon Knight]</p>
+</li>
+<li><p class="first">Better layout. [Simon Knight]</p>
+</li>
+<li><p class="first">Fix fast-forward, add hidden option for printing each history
+revision. [Simon Knight]</p>
+</li>
+<li><p class="first">Update title with revision id. [Simon Knight]</p>
+</li>
+<li><p class="first">Added clarity for comparison. [Simon Knight]</p>
+</li>
+<li><p class="first">Add arrows, full history support. [Simon Knight]</p>
+</li>
+<li><p class="first">Use global config settings. [Simon Knight]</p>
+</li>
+<li><p class="first">Support for pika to update web ui. [Simon Knight]</p>
+</li>
+<li><p class="first">Add note. [Simon Knight]</p>
+</li>
+<li><p class="first">Revision back and forward. [Simon Knight]</p>
+</li>
+<li><p class="first">Also turn off infobar. [Simon Knight]</p>
+</li>
+<li><p class="first">Preselect correct dropdown based on overlay_id at init, add history
+support. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidy print. [Simon Knight]</p>
+</li>
+<li><p class="first">Remove redundant code. [Simon Knight]</p>
+</li>
+<li><p class="first">Add print css to disable nav. [Simon Knight]</p>
+</li>
+<li><p class="first">Extra notes. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidying js in vis. [Simon Knight]</p>
+</li>
+<li><p class="first">More tidying. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidy. [Simon Knight]</p>
+</li>
+<li><p class="first">Add config file. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidy. [Simon Knight]</p>
+</li>
+<li><p class="first">Serialize ip using json. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidying. [Simon Knight]</p>
+</li>
+<li><p class="first">Default not to compile. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidy json support. [Simon Knight]</p>
+</li>
+<li><p class="first">Use json instead of pickle for serializing anm. [Simon Knight]</p>
+</li>
+<li><p class="first">Function to copy graphics across from anm. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidying compression, moving network construction to seperate module.
+[Simon Knight]</p>
+</li>
+<li><p class="first">Move network construction into seperate module. [Simon Knight]</p>
+</li>
+<li><p class="first">Abstract out pika messaging. [Simon Knight]</p>
+</li>
+<li><p class="first">Restore diffing (disabled for now awaiting stable IP addressing)
+[Simon Knight]</p>
+</li>
+<li><p class="first">Better error handling, initial support for diffs. [Simon Knight]</p>
+</li>
+<li><p class="first">Work with attributes rather than anm nodes directly. [Simon Knight]</p>
+</li>
+<li><p class="first">Handling nidb. [Simon Knight]</p>
+</li>
+<li><p class="first">Better serialization, de-serialize ip address/ip networks in lists
+properly. [Simon Knight]</p>
+</li>
+<li><p class="first">Don't use object references to anm nodes in nidb, use attributes eg
+asn, label, etc. [Simon Knight]</p>
+</li>
+<li><p class="first">Save/restore nidb using pickle. [Simon Knight]</p>
+</li>
+<li><p class="first">Directed edge arcs, working on arrow alignment. [Simon Knight]</p>
+</li>
+<li><p class="first">Trace colour. [Simon Knight]</p>
+</li>
+<li><p class="first">Plotting all traceroutes (bugfix) [Simon Knight]</p>
+</li>
+<li><p class="first">Loading saved json. [Simon Knight]</p>
+</li>
+<li><p class="first">Saving json. [Simon Knight]</p>
+</li>
+<li><p class="first">Testing cloud (doesn't scale width well) [Simon Knight]</p>
+</li>
+<li><p class="first">Add cloud icon. [Simon Knight]</p>
+</li>
+<li><p class="first">Set new default. [Simon Knight]</p>
+</li>
+<li><p class="first">Remove debug. [Simon Knight]</p>
+</li>
+<li><p class="first">Tweaking grouping. [Simon Knight]</p>
+</li>
+<li><p class="first">Grouping for single nodes, tidy. [Simon Knight]</p>
+</li>
+<li><p class="first">Add hull for groups of 2 nodes. [Simon Knight]</p>
+</li>
+<li><p class="first">Add compression for large anm that exceed rabbitmq max frame size.
+[Simon Knight]</p>
+</li>
+<li><p class="first">Add compression support. [Simon Knight]</p>
+</li>
+<li><p class="first">Add queue watching for debugging. [Simon Knight]</p>
+</li>
+<li><p class="first">Filter out incomplete traceroutes. [Simon Knight]</p>
+</li>
+<li><p class="first">Default not to compile. [Simon Knight]</p>
+</li>
+<li><p class="first">Increase dimensions. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidy. [Simon Knight]</p>
+</li>
+<li><p class="first">Json handling IP address serialization and deserialization. [Simon
+Knight]</p>
+</li>
+<li><p class="first">Use json properly. [Simon Knight]</p>
+</li>
+<li><p class="first">Example to load on webserver. [Simon Knight]</p>
+</li>
+<li><p class="first">Send json not pickle to webserver. [Simon Knight]</p>
+</li>
+<li><p class="first">Update overlay dropdown, remove poll code. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidy. [Simon Knight]</p>
+</li>
+<li><p class="first">Pass json over rabbitmq rather than pickled anm - much more flexible.
+[Simon Knight]</p>
+</li>
+<li><p class="first">Initial work to pass json anm rather than pickled anm across network
+to webserver. [Simon Knight]</p>
+</li>
+<li><p class="first">Create dir if needed for topology (bugfix) [Simon Knight]</p>
+</li>
+<li><p class="first">Extra todo note. [Simon Knight]</p>
+</li>
+<li><p class="first">Don't relabel if same label (saves clobbering node data) [Simon
+Knight]</p>
+</li>
+<li><p class="first">Visual tweaks, reload images -&gt; stay vector. [Simon Knight]</p>
+</li>
+<li><p class="first">Placeholder. [Simon Knight]</p>
+</li>
+<li><p class="first">Ignore logs. [Simon Knight]</p>
+</li>
+<li><p class="first">Script to update website. [Simon Knight]</p>
+</li>
+<li><p class="first">Demo website redirect. [Simon Knight]</p>
+</li>
+<li><p class="first">Add pop to graphics. [Simon Knight]</p>
+</li>
+<li><p class="first">Smoother updates and transitions. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidy debug. [Simon Knight]</p>
+</li>
+<li><p class="first">Visual tweaks. [Simon Knight]</p>
+</li>
+<li><p class="first">Handle if no version number. [Simon Knight]</p>
+</li>
+<li><p class="first">Problems with pika sending anm. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidy. [Simon Knight]</p>
+</li>
+<li><p class="first">Better parsing and rmq messages on starting and launched. [Simon
+Knight]</p>
+</li>
+<li><p class="first">Nicer trace colours. [Simon Knight]</p>
+</li>
+<li><p class="first">Turn off compile by default. [Simon Knight]</p>
+</li>
+<li><p class="first">Handle paths. [Simon Knight]</p>
+</li>
+<li><p class="first">Add path for traceroutes. [Simon Knight]</p>
+</li>
+<li><p class="first">Fix traceroutes. [Simon Knight]</p>
+</li>
+<li><p class="first">Placeholder for webserver. [Simon Knight]</p>
+</li>
+<li><p class="first">Remove debug. [Simon Knight]</p>
+</li>
+<li><p class="first">Change status font, don't list id in attributes. [Simon Knight]</p>
+</li>
+<li><p class="first">Remove need for full ank install (better for remote servers) [Simon
+Knight]</p>
+</li>
+<li><p class="first">Tidy debug, better info messages. [Simon Knight]</p>
+</li>
+<li><p class="first">Add more icons. [Simon Knight]</p>
+</li>
+<li><p class="first">Websocket live updates working. [Simon Knight]</p>
+</li>
+<li><p class="first">Add rmq support. [Simon Knight]</p>
+</li>
+<li><p class="first">Debugging. [Simon Knight]</p>
+</li>
+<li><p class="first">Extra note. [Simon Knight]</p>
+</li>
+<li><p class="first">Moving to entirely websocket, no polling. [Simon Knight]</p>
+</li>
+<li><p class="first">Removing outdated webserver. [Simon Knight]</p>
+</li>
+<li><p class="first">Fix bug in monitoring. [Simon Knight]</p>
+</li>
+<li><p class="first">Better hull updates, status labels, general tidy, [Simon Knight]</p>
+</li>
+<li><p class="first">Better handling of no template attribute set. [Simon Knight]</p>
+</li>
+<li><p class="first">Fix grouping hulls. [Simon Knight]</p>
+</li>
+<li><p class="first">Update monitor mode. [Simon Knight]</p>
+</li>
+<li><p class="first">Better log output. [Simon Knight]</p>
+</li>
+<li><p class="first">Exception handling. [Simon Knight]</p>
+</li>
+<li><p class="first">Dynamic websocket url. [Simon Knight]</p>
+</li>
+<li><p class="first">Update label, select node from available nodes rather than hard-coded.
+[Simon Knight]</p>
+</li>
+<li><p class="first">Basic process error handling. [Simon Knight]</p>
+</li>
+<li><p class="first">Add support for http. [Simon Knight]</p>
+</li>
+<li><p class="first">Support tornado based web. [Simon Knight]</p>
+</li>
+<li><p class="first">Fix label naming, [Simon Knight]</p>
+</li>
+<li><p class="first">Moving webapp to single script, entirely in tornado. [Simon Knight]</p>
+</li>
+<li><p class="first">Don't run graph products if no template set. [Simon Knight]</p>
+</li>
+<li><p class="first">Remove debug. [Simon Knight]</p>
+</li>
+<li><p class="first">Remove debug. [Simon Knight]</p>
+</li>
+<li><p class="first">Graph products working. [Simon Knight]</p>
+</li>
+<li><p class="first">Remove debug. [Simon Knight]</p>
+</li>
+<li><p class="first">Remove debug. [Simon Knight]</p>
+</li>
+<li><p class="first">More graph products. [Simon Knight]</p>
+</li>
+<li><p class="first">More graph products. [Simon Knight]</p>
+</li>
+<li><p class="first">Plotting edges from graph products. [Simon Knight]</p>
+</li>
+<li><p class="first">Bug with hull in d3. [Simon Knight]</p>
+</li>
+<li><p class="first">Initial commit of graph products. [Simon Knight]</p>
+</li>
+<li><p class="first">Don't try overlays on first call. [Simon Knight]</p>
+</li>
+<li><p class="first">Adding graph product support. [Simon Knight]</p>
+</li>
+<li><p class="first">Bugfix. [Simon Knight]</p>
+</li>
+<li><p class="first">Fn to replace graph. [Simon Knight]</p>
+</li>
+<li><p class="first">Move icons. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidying. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidy icons. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidying viz. [Simon Knight]</p>
+</li>
+<li><p class="first">More trace route parsing. [Simon Knight]</p>
+</li>
+<li><p class="first">Better trace route  vis. [Simon Knight]</p>
+</li>
+<li><p class="first">Neater save/restore. [Simon Knight]</p>
+</li>
+<li><p class="first">Turn down debug. [Simon Knight]</p>
+</li>
+<li><p class="first">Nidb save/restore. [Simon Knight]</p>
+</li>
+<li><p class="first">Visualize ip allocs. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidy. [Simon Knight]</p>
+</li>
+<li><p class="first">Neater pickle. [Simon Knight]</p>
+</li>
+<li><p class="first">Path plotting in d3. [Simon Knight]</p>
+</li>
+<li><p class="first">More d3. [Simon Knight]</p>
+</li>
+<li><p class="first">More rabbitmq/json/websockets/d3. [Simon Knight]</p>
+</li>
+<li><p class="first">Bgp working, adding rmq sending of trace routes to d3. [Simon Knight]</p>
+</li>
+<li><p class="first">List machines in lab - don't just boot all folders. [Simon Knight]</p>
+</li>
+<li><p class="first">Log booting machines. [Simon Knight]</p>
+</li>
+<li><p class="first">Connect to interface not loopback ip for ebgp. [Simon Knight]</p>
+</li>
+<li><p class="first">Options for compile, deploy, measure. [Simon Knight]</p>
+</li>
+<li><p class="first">Add file logging. [Simon Knight]</p>
+</li>
+<li><p class="first">Fix issue where multiple threads create folder at same time. [Simon
+Knight]</p>
+</li>
+<li><p class="first">Use ethernet address for next-hop as workaround to DENIED due to: non-
+connected next-hop; [Simon Knight]</p>
+</li>
+<li><p class="first">Ebgp DENIED due to: non-connected next-hop. [Simon Knight]</p>
+</li>
+<li><p class="first">Add static loopback routes for bgp. [Simon Knight]</p>
+</li>
+<li><p class="first">Fix indent. [Simon Knight]</p>
+</li>
+<li><p class="first">Fix warning. [Simon Knight]</p>
+</li>
+<li><p class="first">Fix bgp network advertisement. [Simon Knight]</p>
+</li>
+<li><p class="first">Fixing ebgp for traceroutes. [Simon Knight]</p>
+</li>
+<li><p class="first">Adding extra measurement functions. [Simon Knight]</p>
+</li>
+<li><p class="first">End-to-end deployment using exscript, measurement using exscript/rmq,
+and parsing using textfsm. [Simon Knight]</p>
+</li>
+<li><p class="first">More rmq measurement. [Simon Knight]</p>
+</li>
+<li><p class="first">Adding rmq remote measurement. [Simon Knight]</p>
+</li>
+<li><p class="first">More textfsm. [Simon Knight]</p>
+</li>
+<li><p class="first">With initial textfsm processing of sh ip route. [Simon Knight]</p>
+</li>
+<li><p class="first">Trying to capture routing output using exscript templates. [Simon
+Knight]</p>
+</li>
+<li><p class="first">Collecting data from hosts. [Simon Knight]</p>
+</li>
+<li><p class="first">Fixing bgp config. [Simon Knight]</p>
+</li>
+<li><p class="first">Fixing netkit routing. [Simon Knight]</p>
+</li>
+<li><p class="first">Use remote interface ip for eBGP not loopback. [Simon Knight]</p>
+</li>
+<li><p class="first">Fix issue with single dst node being treated as string for set. [Simon
+Knight]</p>
+</li>
+<li><p class="first">More netkit deploy improvements. [Simon Knight]</p>
+</li>
+<li><p class="first">Fixing netkit deployment. [Simon Knight]</p>
+</li>
+<li><p class="first">Remove previous lab dirs. [Simon Knight]</p>
+</li>
+<li><p class="first">Testing deployment. [Simon Knight]</p>
+</li>
+<li><p class="first">Testing. [Simon Knight]</p>
+</li>
+<li><p class="first">Better deployment. [Simon Knight]</p>
+</li>
+<li><p class="first">Don't save ip allocs -&gt; speed. [Simon Knight]</p>
+</li>
+<li><p class="first">Fix up naming. [Simon Knight]</p>
+</li>
+<li><p class="first">Recommit. [Simon Knight]</p>
+</li>
+<li><p class="first">Update ignore. [Simon Knight]</p>
+</li>
+<li><p class="first">Better formatting. [Simon Knight]</p>
+</li>
+<li><p class="first">Support host keys. [Simon Knight]</p>
+</li>
+<li><p class="first">Use nklab not netkit as  folder, support for host keys. [Simon Knight]</p>
+</li>
+<li><p class="first">Add nonzero for nodes, fix subtle issue with evaluation nonzero for
+None values in nidb_node_category. [Simon Knight]</p>
+</li>
+<li><p class="first">Update template names. [Simon Knight]</p>
+</li>
+<li><p class="first">Pass Network name to nidb. [Simon Knight]</p>
+</li>
+<li><p class="first">Sort rendering. [Simon Knight]</p>
+</li>
+<li><p class="first">Default name handling. [Simon Knight]</p>
+</li>
+<li><p class="first">Ignore graphmls. [Simon Knight]</p>
+</li>
+<li><p class="first">Tidying, add ssh. [Simon Knight]</p>
+</li>
+<li><p class="first">Copy Network for zoo graphs. [Simon Knight]</p>
+</li>
+<li><p class="first">New function to copy attributes from one overlay to another. [Simon
+Knight]</p>
+</li>
+<li><p class="first">Remove debug. [Simon Knight]</p>
+</li>
+<li><p class="first">Different folder naming structure. [Simon Knight]</p>
+</li>
+<li><p class="first">Dump graph attributes. [Simon Knight]</p>
+</li>
+<li><p class="first">New naming functions. [Simon Knight]</p>
+</li>
+<li><p class="first">Fixes. [Simon Knight]</p>
+</li>
+<li><p class="first">Writing collision domains. [Simon Knight]</p>
+</li>
+<li><p class="first">Update ignore. [Simon Knight]</p>
+</li>
+<li><p class="first">Remove built docs. [Simon Knight]</p>
+</li>
+</ul>
+</div>
+</div>
+</body>
+</html>

@@ -1,12 +1,12 @@
-<?xml version="1.0" encoding="UTF-8"?><testsuite name="nosetests" tests="5" errors="0" failures="0" skip="0"><testcase classname="test_anm" name="test" time="0.046"><system-out><![CDATA[[loopback.r1, eth0.r1]
+<?xml version="1.0" encoding="UTF-8"?><testsuite name="nosetests" tests="5" errors="0" failures="0" skip="0"><testcase classname="test_anm" name="test" time="0.104"><system-out><![CDATA[[loopback.r1, eth0.r1]
 loopback.r1 [('description', 'loopback'), ('category', 'loopback')]
 eth0.r1 [('speed', 100), ('description', 'eth0'), ('category', 'physical')]
 ['loopback', 'eth0']
-]]></system-out></testcase><testcase classname="test_console_script" name="test" time="2.272"><system-out><![CDATA[/Users/simonknight/Dropbox/PhD/Dev/autonetkit/tests/small_internet.graphml
-]]></system-out></testcase><testcase classname="test_graphml" name="test" time="0.127"><system-out><![CDATA[Building anm for blank_labels
+]]></system-out></testcase><testcase classname="test_console_script" name="test" time="4.117"><system-out><![CDATA[/Users/simonknight/Dropbox/PhD/Dev/autonetkit/tests/small_internet.graphml
+]]></system-out></testcase><testcase classname="test_graphml" name="test" time="0.188"><system-out><![CDATA[Building anm for blank_labels
 Building anm for duplicate_labels
 Building anm for asn_zero
-]]></system-out></testcase><testcase classname="test_multi_edge" name="test" time="0.043"><system-out><![CDATA[edges
+]]></system-out></testcase><testcase classname="test_multi_edge" name="test" time="0.064"><system-out><![CDATA[edges
 multi: (r2, r3, 0)
 multi: (r2, r3, 1)
 multi: (r2, r1, 0)
@@ -25,4 +25,4 @@ multi2: (r2, r1, 2) i_4
 multi2: (r2, r1, 3) i_5
 multi2: (r2, r1, 4) i_6
 multi2: (r3, r1, 0) i_7
-]]></system-out></testcase><testcase classname="test_serialization" name="test" time="0.640"></testcase></testsuite>
+]]></system-out></testcase><testcase classname="test_serialization" name="test" time="1.219"></testcase></testsuite>

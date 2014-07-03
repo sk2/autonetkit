@@ -15,27 +15,27 @@
       "src_port": "eth1"
     }, 
     {
-      "dst": "r4", 
-      "dst_port": "eth0", 
-      "src": "r2", 
-      "src_port": "eth2"
-    }, 
-    {
       "dst": "r1", 
       "dst_port": "eth1", 
       "src": "r3", 
       "src_port": "eth0"
     }, 
     {
-      "dst": "r5", 
-      "dst_port": "eth1", 
-      "src": "r3", 
-      "src_port": "eth2"
+      "dst": "r2", 
+      "dst_port": "eth2", 
+      "src": "r4", 
+      "src_port": "eth0"
     }, 
     {
       "dst": "r5", 
       "dst_port": "eth0", 
       "src": "r4", 
+      "src_port": "eth1"
+    }, 
+    {
+      "dst": "r3", 
+      "dst_port": "eth2", 
+      "src": "r5", 
       "src_port": "eth1"
     }
   ], 
