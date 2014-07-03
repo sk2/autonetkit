@@ -174,6 +174,22 @@ interface ${interface.id}
 !
 % endfor
 !
+% for tunnel in node.gre_tunnels:
+interface Tunnel${tunnel.id}
+  % if tunnel.use_ipv4:
+  ip address ${tunnel.ipv4_address} ${tunnel.ipv4_subnet.netmask}
+  %else:
+  no ip address
+  %endif
+  % if tunnel.use_ipv6:
+  ipv6 address ${tunnel.ipv6_address}
+  %endif
+  tunnel source 172.16.1.50
+  !  FLAT Interface local address
+  tunnel destination 172.16.1.51
+  ! FLAT Interface remote address
+%endfor
+!
 ## OSPF
 % if node.ospf:
 % if node.ospf.use_ipv4:

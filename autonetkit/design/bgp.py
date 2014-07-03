@@ -66,7 +66,7 @@ def build_ebgp(anm):
 
     g_ebgp = anm.add_overlay("ebgp", directed=True)
 
-    g_ebgp.add_nodes_from(g_l3)
+    g_ebgp.add_nodes_from(g_l3.routers())
     ank_utils.copy_int_attr_from(g_l3, g_ebgp, "multipoint")
 
     ebgp_edges = [e for e in g_l3.edges() if e.src.asn != e.dst.asn]
@@ -199,7 +199,7 @@ def build_bgp(anm):
 
     """TODO: remove from here once compiler updated"""
     g_bgp = anm.add_overlay("bgp", directed=True)
-    g_bgp.add_nodes_from(g_l3)
+    g_bgp.add_nodes_from(g_l3.routers())
     g_bgp.add_edges_from(g_l3.edges(), bidirectional = True)
     ank_utils.copy_int_attr_from(g_l3, g_bgp, "multipoint")
 

@@ -443,6 +443,7 @@ class IosClassicCompiler(IosBaseCompiler):
 
         self.mpls_te(node)
         self.mpls_oam(node)
+        self.gre(node)
 
         phy_node = self.anm['phy'].node(node)
         if phy_node.device_subtype == 'IOSv':
@@ -484,6 +485,33 @@ class IosClassicCompiler(IosBaseCompiler):
             }
 
                           # TODO: add wrapper for this
+    def gre(self, node):
+        node.gre_tunnels = []
+        if not self.anm.has_overlay('gre_tunnel'):
+            return
+
+        g_gre_tunnel = self.anm['gre_tunnel']
+        if node not in g_gre_tunnel:
+            return   # no gre tunnel for node
+
+        gre_node = g_gre_tunnel.node(node)
+        neighbors = gre_node.neighbors()
+        for index, neigh in enumerate(neighbors, start=1):
+            stanza = ConfigStanza(id = index, endpoint = neigh)
+
+            if neigh.tunnel_enabled_ipv4:
+                ip_address = neigh.tunnel_ipv4_address
+                cidr = neigh.tunnel_ipv4_cidr
+                stanza.ipv4_address = ip_address
+                stanza.ipv4_subnet = cidr
+                stanza.use_ipv4 = True
+
+            if neigh.tunnel_enabled_ipv6:
+                cidr = neigh.tunnel_ipv6_cidr
+                stanza.ipv4_subnet = cidr
+                stanza.use_ipv6 = True
+
+            node.gre_tunnels.append(stanza)
 
     def mpls_te(self, node):
         super(IosClassicCompiler, self).mpls_te(node)
