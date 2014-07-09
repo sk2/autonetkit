@@ -499,6 +499,13 @@ class IosClassicCompiler(IosBaseCompiler):
         for index, neigh in enumerate(neighbors, start=1):
             stanza = ConfigStanza(id = index, endpoint = neigh)
 
+            #TODO: try/except here
+            #TODO: Explain logic here
+            src_int = g_gre_tunnel.edge(node, neigh).src_int
+            tunnel_source  = node.interface(src_int).id
+            stanza.source = tunnel_source
+            stanza.destination = "0.0.0.0" # placeholder for user to replace
+
             if neigh.tunnel_enabled_ipv4:
                 ip_address = neigh.tunnel_ipv4_address
                 cidr = neigh.tunnel_ipv4_cidr

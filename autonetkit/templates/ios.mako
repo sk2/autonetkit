@@ -184,10 +184,8 @@ interface Tunnel${tunnel.id}
   % if tunnel.use_ipv6:
   ipv6 address ${tunnel.ipv6_address}
   %endif
-  tunnel source 172.16.1.50
-  !  FLAT Interface local address
-  tunnel destination 172.16.1.51
-  ! FLAT Interface remote address
+  tunnel source ${tunnel.source}
+  tunnel destination ${tunnel.destination}
 %endfor
 !
 ## OSPF
