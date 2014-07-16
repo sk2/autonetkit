@@ -167,7 +167,7 @@ def build_ipv6(anm):
         extract_ipv6_blocks(anm)
 
     if any(i for n in g_ip.nodes() for i in
-     n.loopback_interfaces if not i.is_loopback_zero):
+     n.loopback_interfaces() if not i.is_loopback_zero):
         block_message = "IPv6 Secondary Loopbacks: %s" % secondary_loopback_block
         log.info(block_message)
 

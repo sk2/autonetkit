@@ -268,6 +268,9 @@ def build_vrf(anm):
     vrf_pre_process(anm)
 
     def is_pe_ce_edge(edge):
+        if not(edge.src in g_vrf and edge.dst in g_vrf):
+            return False
+
         src_vrf_role = g_vrf.node(edge.src).vrf_role
         dst_vrf_role = g_vrf.node(edge.dst).vrf_role
         return (src_vrf_role, dst_vrf_role) in (("PE", "CE"), ("CE", "PE"))
@@ -278,6 +281,8 @@ def build_vrf(anm):
     g_vrf.add_edges_from(vrf_add_edges)
 
     def is_pe_p_edge(edge):
+        if not(edge.src in g_vrf and edge.dst in g_vrf):
+            return False
         src_vrf_role = g_vrf.node(edge.src).vrf_role
         dst_vrf_role = g_vrf.node(edge.dst).vrf_role
         return (src_vrf_role, dst_vrf_role) in (("PE", "P"), ("P", "PE"))
