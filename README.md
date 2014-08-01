@@ -198,6 +198,7 @@ More information on AutoNetkit:
 *  [AutoNetkit YouTube Channel](http://www.youtube.com/autonetkit)
 *  [CoNEXT 2013 Slides](https://db.tt/JkRrU5q5) (Dec 13)
 *  [CoNext 2013 Conference Paper](http://conferences.sigcomm.org/co-next/2013/program/p235.pdf)
+*  [Extended recording of CoNext Slides](https://www.youtube.com/watch?v=0W73HLdlwOs)
 *  [PyCon Australia 2013 Presentation on Autonetkit](http://t.co/H4NWROoAJK) [(Slides)](http://t.co/x0NXLMATEq) (July 13)
 
 *  [API Documentation](https://autonetkit.readthedocs.org/)
