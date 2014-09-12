@@ -112,3 +112,4 @@ tox.ini
 
 cover/*
 docs/html/*
+setup_tornado4.py
