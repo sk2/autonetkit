@@ -411,7 +411,7 @@ class NmGraph(OverlayBase):
                 log.warning("Unsupported edge %s" % str(in_edge))
             if not(src in self and dst in self):
                 if warn:
-                    self.log.warning("Not adding edge %s, src/dst not in overlay"
+                    self.log.debug("Not adding edge %s, src/dst not in overlay"
                         % str(in_edge))
                 continue
 
