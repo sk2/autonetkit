@@ -4,6 +4,17 @@ import autonetkit.ank as ank_utils
 from autonetkit.ank_utils import call_log
 
 #TODO: extract the repeated code and use the layer2  and layer3 graphs
+def build_igp(anm):
+    build_ospf(anm)
+    build_eigrp(anm)
+    build_isis(anm)
+
+    g_igp = anm.add_overlay("igp")
+    igp_protocols = ["ospf", "eigrp", "isis"]
+    for protocol in igp_protocols:
+        g_protocol = anm[protocol]
+        g_igp.add_nodes_from(g_protocol, igp = protocol)
+        g_igp.add_edges_from(g_protocol.edges(), igp = protocol)
 
 #@call_log
 def build_ospf(anm):
