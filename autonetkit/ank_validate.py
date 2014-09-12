@@ -11,6 +11,7 @@ def validate(anm):
     tests_passed = validate_ipv4(anm) and tests_passed
 
     validate_ibgp(anm)
+    validate_igp(anm)
     check_for_selfloops(anm)
     all_nodes_have_asn(anm)
 
@@ -50,6 +51,24 @@ def validate_ibgp(anm):
             #TODO: list connected components - but not the primary?
         else:
             g_ibgp_v4.log.debug("iBGP v4 topology for ASN%s is connected" % asn)
+
+def validate_igp(anm):
+    import networkx as nx
+    #TODO: test if overlay is present, if not then warn
+    if not anm.has_overlay("igp"):
+        return # no ibgp v4  - eg if ip addressing disabled
+
+    g_igp = anm['igp']
+
+    for asn, devices in ank_utils.groupby("asn", g_igp):
+        asn_subgraph = g_igp.subgraph(devices)
+        graph = asn_subgraph._graph
+        # get subgraph
+        if not nx.is_connected(graph):
+            g_igp.log.warning("IGP topology for ASN%s is disconnected" % asn)
+            #TODO: list connected components - but not the primary?
+        else:
+            g_igp.log.debug("IGP topology for ASN%s is connected" % asn)
 
 
 def all_same(items):
