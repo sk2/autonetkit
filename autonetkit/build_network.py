@@ -233,10 +233,8 @@ def apply_design_rules(anm):
         cisco_build_network.pre_design(anm)
 
     log.info("Building IGP")
-    from autonetkit.design.igp import build_ospf, build_eigrp, build_isis
-    build_ospf(anm)
-    build_eigrp(anm)
-    build_isis(anm)
+    from autonetkit.design.igp import build_igp
+    build_igp(anm)
 
     log.info("Building BGP")
     from autonetkit.design.bgp import build_bgp
