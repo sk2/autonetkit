@@ -216,7 +216,7 @@ class IpTree(object):
                     prefixlen = 32 - subnet_size(len(items))  # group all loopbacks into single subnet
                     subgraph.add_node(parent_id, prefixlen=prefixlen,
                             loopback_group=True)
-                    for item in items:
+                    for item in sorted(items):
 
                     # subgraph.add_edge(node, child_a)
 
@@ -239,7 +239,7 @@ class IpTree(object):
                 prefixlen = 32 - subnet_size(len(items))  # group all loopbacks into single subnet
                 subgraph.add_node(parent_id, prefixlen=prefixlen,
                                   loopback_group=True)
-                for item in items:
+                for item in sorted(items):
 
                 # subgraph.add_edge(node, child_a)
 
@@ -253,7 +253,7 @@ class IpTree(object):
                 subgraph.node[root_node]['group_attr'] = attr_value
                 continue  # finished for loopbacks, continue only for collision domains
 
-            for item in items:
+            for item in sorted(items):
                 if item.broadcast_domain:
                     subgraph.add_node(self.next_node_id, prefixlen=32
                             - subnet_size(item.degree()), host=item)
@@ -301,7 +301,7 @@ class IpTree(object):
             # rebuild with parent nodes
 
             nodes_by_level = defaultdict(list)
-            for node in subgraph.nodes():
+            for node in sorted(subgraph.nodes()):
                 prefixlen = subgraph.node[node]['prefixlen']
                 nodes_by_level[prefixlen].append(node)
 
@@ -376,7 +376,7 @@ class IpTree(object):
 # add children of collision domains
 
         cd_nodes = [n for n in self if n.is_broadcast_domain()]
-        for cd in cd_nodes:
+        for cd in sorted(cd_nodes):
             for edge in sorted(cd.host.edges()):
 
                 # TODO: sort these
@@ -409,7 +409,7 @@ class IpTree(object):
 
                 iterhosts = node.subnet.iter_hosts()  # ensures start at .1 rather than .0
                 sub_children = node.children()
-                for sub_child in sub_children:
+                for sub_child in sorted(sub_children):
 
                     # TODO: tidy up this allocation to always record the subnet
 
@@ -438,7 +438,7 @@ class IpTree(object):
 
                 return
 
-            for child in children:
+            for child in sorted(children):
 
                 # traverse the tree
 
@@ -447,7 +447,7 @@ class IpTree(object):
                     child.subnet = subnet
                     iterhosts = child.subnet.iter_hosts()  # ensures start at .1 rather than .0
                     sub_children = child.children()
-                    for sub_child in sub_children:
+                    for sub_child in sorted(sub_children):
                         if sub_child.is_interface():
                             interface = sub_child.host
                             if interface.is_physical:
@@ -473,7 +473,7 @@ class IpTree(object):
                     child.subnet = subnet.next()
                     iterhosts = child.subnet.iter_hosts()  # ensures start at .1 rather than .0
                     sub_children = child.children()
-                    for sub_child in sub_children:
+                    for sub_child in sorted(sub_children):
                         if sub_child.is_interface() \
                             and not sub_child.host.is_loopback_zero:
 
