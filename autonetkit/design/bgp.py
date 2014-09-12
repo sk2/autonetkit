@@ -200,7 +200,9 @@ def build_bgp(anm):
     """TODO: remove from here once compiler updated"""
     g_bgp = anm.add_overlay("bgp", directed=True)
     g_bgp.add_nodes_from(g_l3.routers())
-    g_bgp.add_edges_from(g_l3.edges(), bidirectional = True)
+    edges_to_add = [e for e in g_l3.edges()
+    if e.src in g_bgp and e.dst in g_bgp]
+    g_bgp.add_edges_from(edges_to_add, bidirectional = True)
     ank_utils.copy_int_attr_from(g_l3, g_bgp, "multipoint")
 
     # remove ibgp links
