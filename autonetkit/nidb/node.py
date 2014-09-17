@@ -102,6 +102,7 @@ class DmNode(object):
 
     @property
     def interfaces(self):
+        #TODO: make not a property
         """Called by templates, sorts by ID"""
         int_list = self.get_interfaces()
 
