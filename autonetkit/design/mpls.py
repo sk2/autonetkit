@@ -136,7 +136,7 @@ def build_ibgp_vpn_v4(anm):
     if len(v6_vrf_nodes):
         message = ", ".join(str(s) for s in v6_vrf_nodes)
         log.warning("This version of AutoNetkit does not support IPv6 MPLS VPNs. "
-            "The following nodes have IPv6 enabled but will not have an associated IPv6 MPLS VPN topolog created: %s" % message)
+            "The following nodes have IPv6 enabled but will not have an associated IPv6 MPLS VPN topology created: %s" % message)
 
     ibgp_v4_nodes = list(g_ibgp_v4.nodes())
     pe_nodes = set(g_vrf.nodes(vrf_role = "PE"))
