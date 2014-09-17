@@ -61,6 +61,8 @@ def validate_igp(anm):
     g_igp = anm['igp']
 
     for asn, devices in ank_utils.groupby("asn", g_igp):
+        if asn is None:
+            continue
         asn_subgraph = g_igp.subgraph(devices)
         graph = asn_subgraph._graph
         # get subgraph
