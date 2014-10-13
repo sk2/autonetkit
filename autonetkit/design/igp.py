@@ -11,6 +11,7 @@ def build_igp(anm):
     build_eigrp(anm)
     build_isis(anm)
 
+    # Build a protocol summary graph
     g_igp = anm.add_overlay("igp")
     igp_protocols = ["ospf", "eigrp", "isis"]
     for protocol in igp_protocols:
@@ -38,13 +39,14 @@ def build_ospf(anm):
     import netaddr
     g_in = anm['input']
     g_l3 = anm['layer3']
+    g_phy = anm['phy']
     # add regardless, so allows quick check of node in anm['ospf'] in compilers
     g_ospf = anm.add_overlay("ospf")
     if not anm['phy'].data.enable_routing:
         g_ospf.log.info("Routing disabled, not configuring OSPF")
         return
 
-    if not any(n.igp == "ospf" for n in g_in):
+    if not any(n.igp == "ospf" for n in g_phy):
         g_ospf.log.debug("No OSPF nodes")
         return
 
@@ -193,12 +195,13 @@ def build_eigrp(anm):
     # add regardless, so allows quick check of node in anm['isis'] in compilers
     g_l3 = anm['layer3']
     g_eigrp = anm.add_overlay("eigrp")
+    g_phy = anm['phy']
 
     if not anm['phy'].data.enable_routing:
         g_eigrp.log.info("Routing disabled, not configuring EIGRP")
         return
 
-    if not any(n.igp == "eigrp" for n in g_in):
+    if not any(n.igp == "eigrp" for n in g_phy):
         log.debug("No EIGRP nodes")
         return
     eigrp_nodes = [n for n in g_l3 if n['phy'].igp == "eigrp"]
@@ -233,18 +236,27 @@ def build_eigrp(anm):
 #@call_log
 
 
+def build_network_entity_title(anm):
+    g_isis = anm['isis']
+    g_ipv4 = anm['ipv4']
+    for node in g_isis.routers():
+        ip_node = g_ipv4.node(node)
+        node.net = ip_to_net_ent_title_ios(ip_node.loopback)
+
+
 def build_isis(anm):
     """Build isis overlay"""
     g_in = anm['input']
     # add regardless, so allows quick check of node in anm['isis'] in compilers
     g_l3 = anm['layer3']
+    g_phy = anm['phy']
     g_isis = anm.add_overlay("isis")
 
     if not anm['phy'].data.enable_routing:
         g_isis.log.info("Routing disabled, not configuring ISIS")
         return
 
-    if not any(n.igp == "isis" for n in g_in):
+    if not any(n.igp == "isis" for n in g_phy):
         g_isis.log.debug("No ISIS nodes")
         return
 
@@ -253,16 +265,15 @@ def build_isis(anm):
     g_isis.add_edges_from(g_l3.edges(), warn=False)
     ank_utils.copy_int_attr_from(g_l3, g_isis, "multipoint")
 
-    g_ipv4 = anm['ipv4']
     ank_utils.copy_attr_from(
         g_in, g_isis, "custom_config_isis", dst_attr="custom_config")
 
     g_isis.remove_edges_from(
         [link for link in g_isis.edges() if link.src.asn != link.dst.asn])
 
+    build_network_entity_title(anm)
+
     for node in g_isis.routers():
-        ip_node = g_ipv4.node(node)
-        node.net = ip_to_net_ent_title_ios(ip_node.loopback)
         node.process_id = node.asn
 
     for link in g_isis.edges():

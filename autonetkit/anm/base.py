@@ -10,6 +10,7 @@ from autonetkit.anm.graph_data import NmGraphData
 from autonetkit.anm.interface import NmPort
 from autonetkit.anm.node import NmNode
 from autonetkit.exception import OverlayNotFound
+#TODO: check if this is still a performance hit
 from autonetkit.log import CustomAdapter
 
 
