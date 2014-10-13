@@ -1,4 +1,4 @@
-#!/usr/bin/python
+    #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import autonetkit.log as log
 import autonetkit.ank as ank_utils
@@ -257,7 +257,7 @@ def mark_ebgp_vrf(anm):
     pe_nodes = set(g_vrf.nodes(vrf_role="PE"))
     ce_nodes = set(g_vrf.nodes(vrf_role="CE"))
     for edge in g_ebgpv4.edges():
-        if (edge.src in pe_nodes and edge.dst in ce_nodes):
+        if edge.src in pe_nodes and edge.dst in ce_nodes:
             # exclude from "regular" ebgp (as put into vrf stanza)
             edge.exclude = True
             edge.vrf = edge.dst['vrf'].vrf

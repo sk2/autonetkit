@@ -1,7 +1,8 @@
 """Zmq based measurement server"""
-# based on https://learning-0mq-with-pyzmq.readthedocs.org/en/latest/pyzmq/patterns/pushpull.html
+# based on
+# https://learning-0mq-with-pyzmq.readthedocs.org/en/latest/pyzmq/patterns/pushpull.html
 
-#TODO: rewrite as callbacks rather than threads
+# TODO: rewrite as callbacks rather than threads
 
 import zmq
 import json
@@ -10,6 +11,7 @@ import telnetlib
 from threading import Thread
 import time
 import sys
+
 
 def streamer_device(port_in, port_out):
     from zmq.devices import ProcessDevice
@@ -22,6 +24,7 @@ def streamer_device(port_in, port_out):
     pd.setsockopt_out(zmq.IDENTITY, 'PUSH')
     pd.start()
 # it will now be running in a background process
+
 
 def forwarder_device(port_in, port_out):
     from zmq.devices import ProcessDevice
@@ -37,16 +40,18 @@ def forwarder_device(port_in, port_out):
 
 CONNECTORS = {}
 
-#TODO: inherit from base autonetkit connector abstract function
+# TODO: inherit from base autonetkit connector abstract function
+
+
 def netkit_connector(host, username, password, command, *args, **kwargs):
-    #Note: user prompt and priv prompt have same password
+    # Note: user prompt and priv prompt have same password
     vtysh = kwargs.get("vtysh", False)
 
     print host, username, password, command, vtysh
 
     print "Connecting to %s" % (host)
     try:
-        tn = telnetlib.Telnet(host, timeout = 10)
+        tn = telnetlib.Telnet(host, timeout=10)
     except Exception, e:
         print "Unable to connect to %s: %s" % (host, e)
         return
@@ -54,7 +59,7 @@ def netkit_connector(host, username, password, command, *args, **kwargs):
     tn.set_debuglevel(0)
     print "Connected to %s" % host
 
-    welcome_banner = tn.read_until("login:", timeout = 10)
+    welcome_banner = tn.read_until("login:", timeout=10)
     last_line = welcome_banner.splitlines()[-1]
     hostname = last_line.replace("login:", "").strip()
 
@@ -62,25 +67,25 @@ def netkit_connector(host, username, password, command, *args, **kwargs):
 
     print "Hostname is %s" % hostname
 
-    #TODO: check why need the below for ascii/unicode/pzmq?
+    # TODO: check why need the below for ascii/unicode/pzmq?
 
     tn.write(username + '\n')
-    tn.read_until("Password:", timeout = 10)
+    tn.read_until("Password:", timeout=10)
     tn.write(password + '\n')
-    tn.read_until(linux_prompt, timeout = 10)
+    tn.read_until(linux_prompt, timeout=10)
     if vtysh:
         vtysh_prompt = hostname + "#"
         tn.write("vtysh" + "\n")
-        tn.read_until(vtysh_prompt, timeout = 10)
+        tn.read_until(vtysh_prompt, timeout=10)
         tn.write("terminal length 0" + "\n")
-        tn.read_until(vtysh_prompt, timeout = 10)
+        tn.read_until(vtysh_prompt, timeout=10)
         tn.write(command + "\n")
-        result = tn.read_until(vtysh_prompt, timeout = 10)
+        result = tn.read_until(vtysh_prompt, timeout=10)
         tn.write("exit" + "\n")
-        #TODO: check if need to parse result also to strip out prompt
+        # TODO: check if need to parse result also to strip out prompt
     else:
         tn.write(command + "\n")
-        result = tn.read_until(linux_prompt, timeout = 10)
+        result = tn.read_until(linux_prompt, timeout=10)
         result = "\n".join(result.splitlines()[1:-1])
 
     print "Finished for %s" % hostname
@@ -90,26 +95,33 @@ def netkit_connector(host, username, password, command, *args, **kwargs):
 
 CONNECTORS['netkit'] = netkit_connector
 try:
-  import autonetkit_cisco
-  import autonetkit_cisco.measure_connectors
+    import autonetkit_cisco
+    import autonetkit_cisco.measure_connectors
 except ImportError:
-  pass # not installed
+    pass  # not installed
 else:
-  CONNECTORS['iosv_ns'] = autonetkit_cisco.measure_connectors.iosv_ns_connector
-  CONNECTORS['csr1000v_ns'] = autonetkit_cisco.measure_connectors.iosv_ns_connector
-  CONNECTORS['ios_xrv_ns'] = autonetkit_cisco.measure_connectors.ios_xrv_ns_connector
-  CONNECTORS['nx_osv_ns'] = autonetkit_cisco.measure_connectors.nx_osv_ns_connector
-  CONNECTORS['ubuntu_ns'] = autonetkit_cisco.measure_connectors.linux_ns_connector
+    CONNECTORS[
+        'iosv_ns'] = autonetkit_cisco.measure_connectors.iosv_ns_connector
+    CONNECTORS[
+        'csr1000v_ns'] = autonetkit_cisco.measure_connectors.iosv_ns_connector
+    CONNECTORS[
+        'ios_xrv_ns'] = autonetkit_cisco.measure_connectors.ios_xrv_ns_connector
+    CONNECTORS[
+        'nx_osv_ns'] = autonetkit_cisco.measure_connectors.nx_osv_ns_connector
+    CONNECTORS[
+        'ubuntu_ns'] = autonetkit_cisco.measure_connectors.linux_ns_connector
+
 
 def do_connect(**kwargs):
-  #TODO: use a function map
-  connector = kwargs.get("connector")
-  connector_fn = CONNECTORS[connector] #TODO: capture if not found
-  try:
-    return connector_fn(**kwargs)
-  except EOFError:
-    print "Unable to connect with connector %s" % connector
-    return ""
+    # TODO: use a function map
+    connector = kwargs.get("connector")
+    connector_fn = CONNECTORS[connector]  # TODO: capture if not found
+    try:
+        return connector_fn(**kwargs)
+    except EOFError:
+        print "Unable to connect with connector %s" % connector
+        return ""
+
 
 def worker():
     context = zmq.Context()
@@ -120,81 +132,81 @@ def worker():
     consumer_sender = context.socket(zmq.PUB)
     consumer_sender.connect("tcp://127.0.0.1:5561")
     while True:
-       #  Wait for next request from client
-       print "Waiting for message"
-       work = consumer_receiver.recv_json()
-       #socket.send(json.dumps("hello"))
-       #continue
-       print "Received request: ", work
-       data = json.loads(work)
-       host = data['host'] #TODO: rename this to host_ip
-       #TODO: add support for host port (default 23)
-       connector = data['connector']
-       username = data['username']
-       password = data['password']
-       command = data['command']
-       message_key = data['message_key']
-       vtysh = data.get('vtysh', False)
-       message_key = str(message_key)
-       username = str(username)
-       password = str(password)
-       command = str(command)
-       print "command is", command
-       data = {k: str(v) for k, v in data.items()}
-       try:
-         hostname, result = do_connect(**data)
-         success = True
-       except Exception, e:
-        import traceback
-        traceback.print_exc()
-        print e
-        hostname = ""
-        success = False
-        result = str(e)
-        if "No route to host" in e:
-          # simpler message
-          result = "No route to host"
-        if "pexpect.TIMEOUT" in str(e):
-          #TODO: test for timeout exception directly
-          result = "Pexpect timeout"
-       finally:
+        #  Wait for next request from client
+        print "Waiting for message"
+        work = consumer_receiver.recv_json()
+        # socket.send(json.dumps("hello"))
+        # continue
+        print "Received request: ", work
+        data = json.loads(work)
+        host = data['host']  # TODO: rename this to host_ip
+        # TODO: add support for host port (default 23)
+        connector = data['connector']
+        username = data['username']
+        password = data['password']
+        command = data['command']
+        message_key = data['message_key']
+        vtysh = data.get('vtysh', False)
+        message_key = str(message_key)
+        username = str(username)
+        password = str(password)
+        command = str(command)
+        print "command is", command
+        data = {k: str(v) for k, v in data.items()}
         try:
-          hostname = str(hostname)
-          result = str(result)
-          send_data = dict(data)
-          send_data.update({'command': work,
-                      "success": success,
-                      'hostname': hostname,
-                      'result': result})
-          del send_data['username']
-          del send_data['password']
-          message = json.dumps(send_data)
+            hostname, result = do_connect(**data)
+            success = True
         except Exception, e:
-          print "cant dump", e
-        else:
-          consumer_sender.send_multipart([message_key, message])
-          print "Sent to zmq"
+            import traceback
+            traceback.print_exc()
+            print e
+            hostname = ""
+            success = False
+            result = str(e)
+            if "No route to host" in e:
+                # simpler message
+                result = "No route to host"
+            if "pexpect.TIMEOUT" in str(e):
+                # TODO: test for timeout exception directly
+                result = "Pexpect timeout"
+        finally:
+            try:
+                hostname = str(hostname)
+                result = str(result)
+                send_data = dict(data)
+                send_data.update({'command': work,
+                                  "success": success,
+                                  'hostname': hostname,
+                                  'result': result})
+                del send_data['username']
+                del send_data['password']
+                message = json.dumps(send_data)
+            except Exception, e:
+                print "cant dump", e
+            else:
+                consumer_sender.send_multipart([message_key, message])
+                print "Sent to zmq"
+
 
 def main():
-  num_worker_threads = 5
-  try:
-    num_worker_threads = int(sys.argv[1])
-  except IndexError:
-    pass
-  #NOTE: need pts/x available for worst-case of all threads at once
-  for i in range(num_worker_threads):
-      t = Thread(target=worker)
-      t.daemon = True
-      t.start()
+    num_worker_threads = 5
+    try:
+        num_worker_threads = int(sys.argv[1])
+    except IndexError:
+        pass
+    # NOTE: need pts/x available for worst-case of all threads at once
+    for i in range(num_worker_threads):
+        t = Thread(target=worker)
+        t.daemon = True
+        t.start()
 
+    # start the streamer device
+    # TODO: double check what these are used for
+    streamer_device(5559, 5560)
+    forwarder_device(5561, 5562)
 
-  # start the streamer device
-  #TODO: double check what these are used for
-  streamer_device(5559, 5560)
-  forwarder_device(5561, 5562)
-
-  while True:
-      time.sleep(1)
+    while True:
+        time.sleep(1)
 
 if __name__ == "__main__":
-  main()
+    main()

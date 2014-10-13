@@ -1,8 +1,8 @@
-def get_results(server, commands, send_port = 5559, receive_port = 5562):
+def get_results(server, commands, send_port=5559, receive_port=5562):
     import zmq
     import json
     import autonetkit.log as log
-    import uuid # create key for unique zmq channel for replies
+    import uuid  # create key for unique zmq channel for replies
     message_key = uuid.uuid4()
     message_key = str(message_key)
 
@@ -14,9 +14,9 @@ def get_results(server, commands, send_port = 5559, receive_port = 5562):
     results_receiver = context.socket(zmq.SUB)
     results_receiver.connect("tcp://%s:%s" % (server, receive_port))
     results_receiver.setsockopt(zmq.SUBSCRIBE, message_key)
-    #NOTE: need to connect *before* send commands in order to capture replies
+    # NOTE: need to connect *before* send commands in order to capture replies
     send_commands(server, commands, message_key,
-        send_port, receive_port)
+                  send_port, receive_port)
 
     log.info("Collecting results")
 
@@ -31,14 +31,15 @@ def get_results(server, commands, send_port = 5559, receive_port = 5562):
         command = json.loads(result["command"])
         host = command["host"]
         log.debug("%s/%s: Reply from %s (%s)" % (index,
-            len(commands), hostname, host))
+                                                 len(commands), hostname, host))
         yield result
     else:
         # cleanup
         results_receiver.close()
 
+
 def send_commands(server, commands, message_key, send_port=5559,
-   receive_port = 5562):
+                  receive_port=5562):
     import zmq
     import json
     import autonetkit.log as log
@@ -53,13 +54,13 @@ def send_commands(server, commands, message_key, send_port=5559,
     results_receiver = context.socket(zmq.SUB)
     results_receiver.connect("tcp://%s:%s" % (server, receive_port))
     results_receiver.setsockopt(zmq.SUBSCRIBE, message_key)
-    #NOTE: need to connect *before* send commands in order to capture replies
+    # NOTE: need to connect *before* send commands in order to capture replies
 
     for command in commands:
         command["message_key"] = message_key
 
         work_message = json.dumps(command, cls=ank_json.AnkEncoder, indent=4)
-        #print "sending", work_message
+        # print "sending", work_message
         log.debug("Sending %s to %s" % (command['command'], command['host']))
         zmq_socket.send_json(work_message)
 
