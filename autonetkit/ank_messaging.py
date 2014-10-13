@@ -10,6 +10,8 @@ if use_http_post:
     import urllib
 
 #@call_log
+
+
 def format_http_url(host=None, port=None, route='publish'):
     if not host and not port:
         host = config.settings['Http Post']['server']
@@ -20,12 +22,9 @@ def format_http_url(host=None, port=None, route='publish'):
 default_http_url = format_http_url()
 
 #@call_log
-def update_vis(
-    anm=None,
-    nidb=None,
-    http_url=None,
-    uuid=None,
-    ):
+
+
+def update_vis(anm=None, nidb=None, http_url=None, uuid=None):
     if http_url is None:
         http_url = default_http_url
 
@@ -41,13 +40,12 @@ def update_vis(
         uuid = get_uuid(anm)
 
     params = urllib.urlencode({'body': body, 'type': 'anm',
-                              'uuid': uuid})
+                               'uuid': uuid})
     try:
         data = urllib.urlopen(http_url, params).read()
         log.debug(data)
     except IOError, e:
-        log.info('Unable to connect to visualisation server %s'
-                 % http_url)
+        log.info('Unable to connect to visualisation server %s', http_url)
         return
 
     if not anm:
@@ -57,6 +55,8 @@ def update_vis(
         log.info('Visualisation server running')
 
 #@call_log
+
+
 def get_uuid(anm):
     try:
         return config.settings['Http Post']['uuid']
@@ -66,14 +66,8 @@ def get_uuid(anm):
 
 
 #@call_log
-def highlight(
-    nodes=None,
-    edges=None,
-    paths=None,
-    path=None,
-    uuid='singleuser',
-    http_url=None,
-    ):
+def highlight(nodes=None, edges=None, paths=None, path=None,
+              uuid='singleuser', http_url=None):
     if http_url is None:
         http_url = default_http_url
     if not paths:
@@ -100,18 +94,18 @@ def highlight(
             return e  # likely already edge (src, dst) id tuple (string)
 
     nodes = [nfilter(n) for n in nodes]
-    #TODO: allow node annotations also
+    # TODO: allow node annotations also
 
     filtered_edges = []
     for edge in edges:
         if isinstance(edge, dict) and 'edge' in edge:
-           edge_data = dict(edge)  # use as-is (but make copy)
+            edge_data = dict(edge)  # use as-is (but make copy)
         else:
-            edge_data = {'edge': edge} # no extra data
+            edge_data = {'edge': edge}  # no extra data
 
         edge_data['src'] = edge_data['edge'].src.id
         edge_data['dst'] = edge_data['edge'].dst.id
-        del edge_data['edge'] # remove now have extracted the src/dst
+        del edge_data['edge']  # remove now have extracted the src/dst
         filtered_edges.append(edge_data)
 
     #edges = [efilter(e) for e in edges]
@@ -121,11 +115,8 @@ def highlight(
         # TODO: tidy this logic
 
         if isinstance(path, dict) and 'path' in path:
-            path_data = dict(path ) # use as-is (but make copy)
+            path_data = dict(path)  # use as-is (but make copy)
         else:
-            import random
-            is_verified = bool(random.randint(0, 1))
-
             # path_data = {'path': path, 'verified': is_verified}
 
             path_data = {'path': path}
@@ -137,16 +128,15 @@ def highlight(
 
     import json
     body = json.dumps({'nodes': nodes, 'edges': filtered_edges,
-                      'paths': filtered_paths})
+                       'paths': filtered_paths})
 
     params = urllib.urlencode({'body': body, 'type': 'highlight',
-                              'uuid': uuid})
+                               'uuid': uuid})
 
-    # TODO: split this common function out, create at runtime so don't need to keep reading config
+    # TODO: split this common function out, create at runtime so don't need to
+    # keep reading config
 
     try:
-        data = urllib.urlopen(http_url, params).read()
-    except IOError, e:
-        log.info('Unable to connect to HTTP Server %s: %s' % (http_url,
-                 e))
-
+        urllib.urlopen(http_url, params).read()
+    except IOError, error:
+        log.info('Unable to connect to HTTP Server %s: %s', http_url, error)

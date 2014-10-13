@@ -82,8 +82,8 @@ def copy_attr_from(overlay_src, overlay_dst, src_attr, dst_attr=None,
             # TODO: check if because node doesn't exist in dest, or because
             # attribute doesn't exist in graph_src
 
-            log.debug('Unable to copy node attribute %s for %s in %s'
-                      % (src_attr, node, overlay_src))
+            log.debug('Unable to copy node attribute %s for %s in %s',
+                      src_attr, node, overlay_src)
         else:
 
             # TODO: use a dtype to take an int, float, etc
@@ -144,8 +144,9 @@ def copy_edge_attr_from(overlay_src, overlay_dst, src_attr,
             # TODO: check if because edge doesn't exist in dest, or because
             # attribute doesn't exist in graph_src
 
-            log.debug('Unable to copy edge attribute %s for (%s, %s) in %s'
-                      % edge)
+            log.debug('Unable to copy edge attribute %s for (%s, %s) in %s',
+                      src_attr, edge.src, edge.dst, overlay_src)
+
         else:
 
             # TODO: use a dtype to take an int, float, etc
@@ -159,8 +160,8 @@ def copy_edge_attr_from(overlay_src, overlay_dst, src_attr,
                 overlay_dst.edge(edge).set(dst_attr, val)
             except AttributeError:
                 # fail to debug - as attribute may not have been set
-                log.debug('Unable to set edge attribute on %s in %s'
-                          % (edge, overlay_dst))
+                log.debug('Unable to set edge attribute on %s in %s',
+                          edge, overlay_dst)
 
 
 # TODO: make edges own module
@@ -397,8 +398,8 @@ def aggregate_nodes(nm_graph, nodes, retain=None):
 
             nodes_to_remove = list(component_nodes)
             base = nodes_to_remove.pop()  # choose a base device to retain
-            log.debug('Retaining %s, removing %s' % (base,
-                                                     nodes_to_remove))
+            log.debug('Retaining %s, removing %s', base,
+                      nodes_to_remove)
 
             external_edges = []
             for node in nodes_to_remove:
@@ -406,7 +407,7 @@ def aggregate_nodes(nm_graph, nodes, retain=None):
                                    not in component_nodes]
                 # all edges out of component
 
-            log.debug('External edges %s' % external_edges)
+            log.debug('External edges %s', external_edges)
             edges_to_add = []
             for edge in external_edges:
                 dst = edge.dst
@@ -439,7 +440,7 @@ def most_frequent(iterable):
         return max(gby(sorted(iterable)), key=lambda (x, v):
                    (len(list(v)), -iterable.index(x)))[0]
     except ValueError, error:
-        log.warning('Unable to calculate most_frequent, %s' % error)
+        log.warning('Unable to calculate most_frequent, %s', error)
         return None
 
 
