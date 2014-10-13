@@ -10,6 +10,13 @@ def validate(anm):
     tests_passed = True
     tests_passed = validate_ipv4(anm) and tests_passed
 
+    try:
+        from autonetkit_cisco import ank_validate as cisco_validate
+    except ImportError, e:
+        log.debug("Unable to load autonetkit_cisco %s" % e)
+    else:
+        cisco_validate.validate(anm)
+
     validate_ibgp(anm)
     validate_igp(anm)
     check_for_selfloops(anm)
