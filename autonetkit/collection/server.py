@@ -52,8 +52,8 @@ def netkit_connector(host, username, password, command, *args, **kwargs):
     print "Connecting to %s" % (host)
     try:
         tn = telnetlib.Telnet(host, timeout=10)
-    except Exception, e:
-        print "Unable to connect to %s: %s" % (host, e)
+    except Exception, error:
+        print "Unable to connect to %s: %s" % (host, error)
         return
 
     tn.set_debuglevel(0)
