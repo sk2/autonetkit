@@ -68,7 +68,7 @@ class OverlayBase(object):
         edge_to_find,
         dst_to_find=None,
         key=0,
-        ):
+    ):
         '''returns edge in this graph with same src and dst
         and key for parallel edges (default is to return first edge)
         #TODO: explain parameter overloading: strings, edges, nodes...'''
@@ -76,15 +76,15 @@ class OverlayBase(object):
         # TODO: handle multigraphs
         if isinstance(edge_to_find, NmEdge):
             # TODO: tidy this logic
-            edge = edge_to_find # alias for neater code
+            edge = edge_to_find  # alias for neater code
             if (edge.is_multigraph() and self.is_multigraph()
                 and self._graph.has_edge(edge.src,
-                    edge.dst, key=edge.ekey)):
+                                         edge.dst, key=edge.ekey)):
                 return NmEdge(self._anm, self._overlay_id,
-                    edge.src, edge.dst, edge.ekey)
+                              edge.src, edge.dst, edge.ekey)
             elif (self._graph.has_edge(edge.src, edge.dst)):
-                    return NmEdge(self._anm, self._overlay_id,
-                        edge.src, edge.dst)
+                return NmEdge(self._anm, self._overlay_id,
+                              edge.src, edge.dst)
 
         if isinstance(edge_to_find, NmEdge):
             src_id = edge_to_find.src
@@ -93,10 +93,10 @@ class OverlayBase(object):
 
             if self.is_multigraph():
                 for (src, dst, rkey) in self._graph.edges(src_id,
-                        keys=True):
+                                                          keys=True):
                     if dst == dst_id and rkey == search_key:
                         return NmEdge(self._anm, self._overlay_id, src,
-                                dst, search_key)
+                                      dst, search_key)
 
             for (src, dst) in self._graph.edges(src_id):
                 if dst == dst_id:
@@ -136,10 +136,10 @@ class OverlayBase(object):
             search_key = key
             if self.is_multigraph():
                 for (src, dst, rkey) in self._graph.edges(src_id,
-                        keys=True):
+                                                          keys=True):
                     if dst == dst_id and rkey == search_key:
                         return NmEdge(self._anm, self._overlay_id, src,
-                                dst, search_key)
+                                      dst, search_key)
 
             for (src, dst) in self._graph.edges(src_id):
                 if dst == dst_id:
@@ -166,7 +166,8 @@ class OverlayBase(object):
             if key in self._graph:
                 return NmNode(self._anm, self._overlay_id, key)
 
-            # doesn't have node_id, likely a label string, search based on this # label
+            # doesn't have node_id, likely a label string, search based on this
+            # # label
 
             for node in self:
                 if str(node) == key:
@@ -177,7 +178,8 @@ class OverlayBase(object):
     def overlay(self, key):
         """Get to other overlay graphs in functions"""
 
-        # TODO: refactor: shouldn't be returning concrete instantiation from abstract parent!
+        # TODO: refactor: shouldn't be returning concrete instantiation from
+        # abstract parent!
 
         from autonetkit.anm.graph import NmGraph
         return NmGraph(self._anm, key)
@@ -267,8 +269,8 @@ class OverlayBase(object):
         else:
             data = nodes
         data = sorted(data, key=lambda x: x.get(attribute))
-        for (key, grouping) in itertools.groupby(data, key=lambda x: \
-                x.get(attribute)):
+        for (key, grouping) in itertools.groupby(data, key=lambda x:
+                                                 x.get(attribute)):
             result[key] = list(grouping)
 
         return result
@@ -278,7 +280,7 @@ class OverlayBase(object):
         nbunch=None,
         *args,
         **kwargs
-        ):
+    ):
         """"""
 
         if nbunch is None:
@@ -299,7 +301,7 @@ class OverlayBase(object):
         dst_nbunch=None,
         *args,
         **kwargs
-        ):
+    ):
         """"""
 
 # src_nbunch or dst_nbunch may be single node
@@ -312,7 +314,7 @@ class OverlayBase(object):
             except AttributeError:
                 src_nbunch = (n.node_id for n in src_nbunch)
 
-                              # only store the id in overlay
+                # only store the id in overlay
 
         def filter_func(edge):
             """Filter based on args and kwargs"""
@@ -327,7 +329,7 @@ class OverlayBase(object):
         else:
             default_key = 0
             valid_edges = list((src, dst, default_key) for (src,
-                               dst) in self._graph.edges(src_nbunch))
+                                                            dst) in self._graph.edges(src_nbunch))
 
         if dst_nbunch:
             try:
@@ -342,11 +344,11 @@ class OverlayBase(object):
 
         if len(args) or len(kwargs):
             all_edges = [NmEdge(self._anm, self._overlay_id, src, dst,
-                         key) for (src, dst, key) in valid_edges]
+                                key) for (src, dst, key) in valid_edges]
             result = list(edge for edge in all_edges
                           if filter_func(edge))
         else:
             result = list(NmEdge(self._anm, self._overlay_id, src, dst,
-                          key) for (src, dst, key) in valid_edges)
+                                 key) for (src, dst, key) in valid_edges)
 
         return list(result)

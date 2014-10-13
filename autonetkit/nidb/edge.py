@@ -4,26 +4,26 @@ from autonetkit.log import CustomAdapter
 import autonetkit.log as log
 
 
-
 class DmEdge(object):
+
     """API to access edge in nidb"""
+
     def __init__(self, nidb, src_id, dst_id, ekey=0):
-#Set using this method to bypass __setattr__
+        # Set using this method to bypass __setattr__
         object.__setattr__(self, 'nidb', nidb)
         object.__setattr__(self, 'src_id', src_id)
         object.__setattr__(self, 'dst_id', dst_id)
-        object.__setattr__(self, 'ekey', ekey) # for multigraphs
+        object.__setattr__(self, 'ekey', ekey)  # for multigraphs
         #logger = logging.getLogger("ANK")
         #logstring = "Edge: %s" % str(self)
         #self.log = CustomAdapter(logger, {'item': logstring})
         logger = log
         object.__setattr__(self, 'log', logger)
 
-
     def __repr__(self):
         if self.is_multigraph():
             return '(%s, %s, %s)' % (self.src,
-                self.dst, self.ekey)
+                                     self.dst, self.ekey)
 
         return '(%s, %s)' % (self.src, self.dst)
 
@@ -34,7 +34,7 @@ class DmEdge(object):
 
     @raw_interfaces.setter
     def raw_interfaces(self, value):
-       self._ports = value
+        self._ports = value
 
     def is_multigraph(self):
         return self._graph.is_multigraph()
@@ -49,11 +49,11 @@ class DmEdge(object):
             try:
                 if other.is_multigraph():
                     return (self.src_id, self.dst_id, self.ekey) == (other.src_id,
-                      other.dst_id, other.ekey)
+                                                                     other.dst_id, other.ekey)
                 else:
                     # multi, single
                     return (self.src_id, self.dst_id) == (other.src_id,
-                        other.dst_id)
+                                                          other.dst_id)
 
             except AttributeError:
                 if len(other) == 2:
@@ -63,12 +63,12 @@ class DmEdge(object):
                     # (src, dst, key)
                     return (self.src_id, self.dst_id, self.ekey) == other
 
-
         try:
-            # self is single, other is single or multi -> only compare (src, dst)
+            # self is single, other is single or multi -> only compare (src,
+            # dst)
             return (self.src_id, self.dst_id) == (other.src_id, other.dst_id)
         except AttributeError:
-            #compare to strings
+            # compare to strings
             return (self.src_id, self.dst_id) == other
 
     def __lt__(self, other):
@@ -76,7 +76,6 @@ class DmEdge(object):
         if self.is_multigraph() and other.is_multigraph():
             return (self.src.node_id, self.dst.node_id, self.ekey) \
                 < (other.src.node_id, other.dst.node_id, other.ekey)
-
 
         return (self.src.node_id, self.dst.node_id) \
             < (other.src.node_id, other.dst.node_id)
@@ -87,7 +86,7 @@ class DmEdge(object):
         """
         if self.is_multigraph():
             return self._graph.has_edge(self.src_id, self.dst_id,
-                key=self.ekey)
+                                        key=self.ekey)
 
         return self._graph.has_edge(self.src_id, self.dst_id)
 
@@ -102,7 +101,7 @@ class DmEdge(object):
         """Allows for checking if edge exists
         """
         try:
-            #TODO: refactor to be _graph.has_edge(src, dst)
+            # TODO: refactor to be _graph.has_edge(src, dst)
             _ = self._graph[self.src_id][self.dst_id]
             return True
         except KeyError:

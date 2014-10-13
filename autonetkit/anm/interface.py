@@ -39,7 +39,7 @@ class NmPort(object):
         try:
             description = self.description or self.interface_id
         except (AttributeError, IndexError):
-            #TODO: work out why get here for some topologies:
+            # TODO: work out why get here for some topologies:
             """
             interface.py", line 187, in __getattr__
                 return self._interface.get(key)
@@ -72,7 +72,7 @@ class NmPort(object):
 
     @property
     def is_bound(self):
-        #TODO: make this a function
+        # TODO: make this a function
         """Returns if this interface is bound to an edge on this layer"""
 
         return len(self.edges()) > 0
@@ -103,8 +103,8 @@ class NmPort(object):
                 print "bal"
                 return
                 log.warning("Unable to access interface %s in %s",
-                    "node %s not present in overlay" % (self.interface_id,
-                        self.overlay_id, self.node_id))
+                            "node %s not present in overlay" % (self.interface_id,
+                                                                self.overlay_id, self.node_id))
                 return
 
             log.warning('Unable to find interface %s in %s'
@@ -119,7 +119,7 @@ class NmPort(object):
         if self.overlay_id == 'phy':
             return self
         return NmPort(self.anm, 'phy', self.node_id,
-                                 self.interface_id)
+                      self.interface_id)
 
     def __getitem__(self, overlay_id):
         """Returns corresponding interface in specified overlay"""
@@ -136,7 +136,7 @@ class NmPort(object):
 
         try:
             return NmPort(self.anm, overlay_id,
-                                     self.node_id, self.interface_id)
+                          self.node_id, self.interface_id)
         except KeyError:
             return
 

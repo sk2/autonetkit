@@ -4,7 +4,7 @@ class NmGraphData(object):
 
     def __init__(self, anm, overlay_id):
 
-# Set using this method to bypass __setattr__
+        # Set using this method to bypass __setattr__
 
         object.__setattr__(self, 'anm', anm)
         object.__setattr__(self, 'overlay_id', overlay_id)

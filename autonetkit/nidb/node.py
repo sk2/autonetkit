@@ -9,32 +9,33 @@ from autonetkit.nidb.interface import DmInterface
 import autonetkit.log as log
 
 
-
 @functools.total_ordering
 class DmNode(object):
+
     """API to access overlay graph node in network"""
 
     def __init__(self, nidb, node_id):
-#Set using this method to bypass __setattr__
+        # Set using this method to bypass __setattr__
         object.__setattr__(self, 'nidb', nidb)
         object.__setattr__(self, 'node_id', node_id)
         #logger = logging.getLogger("ANK")
-        #TODO: also pass the node object to the logger for building custom output lists
+        # TODO: also pass the node object to the logger for building custom output lists
         # ie create a special handler that just outputs the specific node/link/interface errors
         #logstring = "Node: %s" % str(self)
         #logger = CustomAdapter(logger, {'item': logstring})
         logger = log
         object.__setattr__(self, 'log', logger)
 
-    #TODO: make a json objct that returns keys that aren't logs, etc - filter out
+    # TODO: make a json objct that returns keys that aren't logs, etc - filter
+    # out
 
     def __repr__(self):
         return self._node_data['label']
 
-    #TODO: add a dump method - needed with str()?
+    # TODO: add a dump method - needed with str()?
 
     def add_stanza(self, name, **kwargs):
-        #TODO: decide if want shortcut for *args to set to True
+        # TODO: decide if want shortcut for *args to set to True
         if self.get(name):
             value = self.get(name)
             if isinstance(value, ConfigStanza):
@@ -42,8 +43,9 @@ class DmNode(object):
                 self.log.debug("Stanza %s already exists" % name)
                 return value
             else:
-                #TODO: remove? - as shouldn't reach here now? GH-186
-                log.warning("Creating stanza: %s already set as %s for %s" % (name, type(value), self))
+                # TODO: remove? - as shouldn't reach here now? GH-186
+                log.warning(
+                    "Creating stanza: %s already set as %s for %s" % (name, type(value), self))
 
         stanza = ConfigStanza(**kwargs)
         self.__setattr__(name, stanza)
@@ -56,17 +58,19 @@ class DmNode(object):
         try:
             return self.node_id == other.node_id
         except AttributeError:
-            return self.node_id == other #TODO: check why comparing against strings - if in overlay graph...
+            # TODO: check why comparing against strings - if in overlay
+            # graph...
+            return self.node_id == other
 
     def interface(self, key):
-        #TODO: also need to allow access interface for nidb and search on (node, interface id) tuple
+        # TODO: also need to allow access interface for nidb and search on
+        # (node, interface id) tuple
         try:
-            interface_id = key.interface_id # eg extract from interface
+            interface_id = key.interface_id  # eg extract from interface
         except AttributeError:
-            interface_id = key # eg string
+            interface_id = key  # eg string
 
         return DmInterface(self.nidb, self.node_id, interface_id)
-
 
     @property
     def _ports(self):
@@ -86,7 +90,7 @@ class DmNode(object):
             if int_id not in self._ports:
                 return int_id
 
-    def add_interface(self, description = None, category = "physical", *args,  **kwargs):
+    def add_interface(self, description=None, category="physical", *args,  **kwargs):
         """Public function to add interface"""
         data = dict(kwargs)
         interface_id = self._next_int_id
@@ -102,23 +106,23 @@ class DmNode(object):
 
     @property
     def interfaces(self):
-        #TODO: make not a property
+        # TODO: make not a property
         """Called by templates, sorts by ID"""
         int_list = self.get_interfaces()
 
         # Put loopbacks before physical interfaces
         type_index = {"loopback": 0, "physical": 1}
-        #TODO: extend this based on medium category, etc
+        # TODO: extend this based on medium category, etc
 
-        int_list = sorted(int_list, key = lambda x: x.id)
-        int_list = sorted(int_list, key = lambda x: type_index[x.category])
+        int_list = sorted(int_list, key=lambda x: x.id)
+        int_list = sorted(int_list, key=lambda x: type_index[x.category])
         return int_list
 
     def physical_interfaces(self):
-        return self.get_interfaces(category = "physical")
+        return self.get_interfaces(category="physical")
 
     def loopback_interfaces(self):
-        return self.get_interfaces(category = "loopback")
+        return self.get_interfaces(category="loopback")
 
     def get_interfaces(self, *args, **kwargs):
         """Public function to view interfaces
@@ -134,8 +138,8 @@ class DmNode(object):
             )
 
         all_interfaces = iter(DmInterface(self.nidb,
-            self.node_id, interface_id)
-            for interface_id in self._interface_ids)
+                                          self.node_id, interface_id)
+                              for interface_id in self._interface_ids)
         retval = (i for i in all_interfaces if filter_func(i))
         return retval
 
@@ -150,7 +154,7 @@ class DmNode(object):
 
     @raw_interfaces.setter
     def raw_interfaces(self, value):
-       self._ports = value
+        self._ports = value
 
     @property
     def _graph(self):
@@ -161,7 +165,7 @@ class DmNode(object):
 
     def neighbors(self):
         return iter(DmNode(self.nidb, node)
-                for node in self._graph.neighbors(self.node_id))
+                    for node in self._graph.neighbors(self.node_id))
 
     def __setstate__(self, state):
         (nidb, node_id) = state
@@ -169,7 +173,7 @@ class DmNode(object):
         object.__setattr__(self, 'node_id', node_id)
 
     def __lt__(self, other):
-        #TODO: use human sort from StackOverflow
+        # TODO: use human sort from StackOverflow
 
         # sort on label if available
         if self.label is not None:
@@ -214,7 +218,7 @@ class DmNode(object):
         return self.nidb.raw_graph().node[self.node_id]
 
     def dump(self):
-        #return str(self._node_data)
+        # return str(self._node_data)
         import pprint
         pprint.pprint(self._node_data)
 
@@ -238,11 +242,11 @@ class DmNode(object):
         """Layer 3 devices: router, server, cloud, host
         ie not switch
         """
-        #TODO: need to check for cloud, host
+        # TODO: need to check for cloud, host
         return self.is_router() or self.is_server()
 
     def edges(self, *args, **kwargs):
-        #TODO: want to add filter for *args and **kwargs here too
+        # TODO: want to add filter for *args and **kwargs here too
         return self.nidb.edges(self, *args, **kwargs)
 
     @property
@@ -260,7 +264,7 @@ class DmNode(object):
         """Returns edge property"""
         data = self._node_data.get(key)
 
-        #TODO: remove once deprecated DmNode_category
+        # TODO: remove once deprecated DmNode_category
         if isinstance(data, ConfigStanza):
             return data
 
@@ -269,7 +273,7 @@ class DmNode(object):
     def __setattr__(self, key, val):
         """Sets edge property"""
         self._node_data[key] = val
-        #return DmNode_category(self.nidb, self.node_id, key)
+        # return DmNode_category(self.nidb, self.node_id, key)
 
     def __iter__(self):
         return iter(self._node_data)

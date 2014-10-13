@@ -19,7 +19,7 @@ class NmNode(object):
         node_id,
     ):
 
-# Set using this method to bypass __setattr__
+        # Set using this method to bypass __setattr__
 
         object.__setattr__(self, 'anm', anm)
         object.__setattr__(self, 'overlay_id', overlay_id)
@@ -85,7 +85,7 @@ class NmNode(object):
 # want [r1, r2, ..., r11, r12, ..., r21, r22] not [r1, r11, r12, r2, r21, r22]
 # so need to look at numeric part
         import string
-        #TODO: use human sort from StackOverflow
+        # TODO: use human sort from StackOverflow
 
         # sort on label if available
         if self.label is not None:
@@ -149,7 +149,7 @@ class NmNode(object):
         if self.overlay_id != 'phy' and self['phy']:
             next_id = self['phy']._next_int_id()
             self['phy']._ports[next_id] = {'category': category,
-                                             'description': description}
+                                           'description': description}
 
             # TODO: fix this workaround for not returning description from phy
             # graph
@@ -169,14 +169,14 @@ class NmNode(object):
         interface_id = self._add_interface(category='loopback', *args,
                                            **kwargs)
         return NmPort(self.anm, self.overlay_id,
-                                 self.node_id, interface_id)
+                      self.node_id, interface_id)
 
     def add_interface(self, *args, **kwargs):
         """Public function to add interface"""
 
         interface_id = self._add_interface(*args, **kwargs)
         return NmPort(self.anm, self.overlay_id,
-                                 self.node_id, interface_id)
+                      self.node_id, interface_id)
 
     def interfaces(self, *args, **kwargs):
         """Public function to view interfaces"""
@@ -186,11 +186,11 @@ class NmNode(object):
 
             return all(getattr(interface, key) for key in args) \
                 and all(getattr(interface, key) == val for (key,
-                        val) in kwargs.items())
+                                                            val) in kwargs.items())
 
         all_interfaces = iter(NmPort(self.anm,
-                              self.overlay_id, self.node_id,
-                              interface_id) for interface_id in
+                                     self.overlay_id, self.node_id,
+                                     interface_id) for interface_id in
                               self._interface_ids())
 
         retval = (i for i in all_interfaces if filter_func(i))
@@ -202,7 +202,7 @@ class NmNode(object):
         try:
             if key.interface_id in self._interface_ids():
                 return NmPort(self.anm, self.overlay_id,
-                                         self.node_id, key.interface_id)
+                              self.node_id, key.interface_id)
         except AttributeError:
 
             # try with key as id
@@ -210,7 +210,7 @@ class NmNode(object):
             try:
                 if key in self._interface_ids():
                     return NmPort(self.anm, self.overlay_id,
-                                             self.node_id, key)
+                                  self.node_id, key)
             except AttributeError:
 
                 # no match for either
@@ -228,7 +228,8 @@ class NmNode(object):
 
     def _interface_ids(self):
         """Returns interface ids for this node"""
-        #TODO: use from this layer, otherwise can get errors iterating when eg vrfs
+        # TODO: use from this layer, otherwise can get errors iterating when eg
+        # vrfs
         return self._ports.keys()
 
         if self.overlay_id != 'phy' and self['phy']:
@@ -237,7 +238,7 @@ class NmNode(object):
             # the interface mappings from phy
 
             return self['phy']._graph.node[self.node_id]['_ports'
-                                                      ].keys()
+                                                         ].keys()
         else:
             try:
                 return self._ports.keys()
@@ -263,7 +264,7 @@ class NmNode(object):
             return self.anm.overlay_nx_graphs[self.overlay_id]
         except Exception, e:
             log.warning("Error accessing overlay %s for node %s: %s" %
-                (self.overlay_id, self.node_id, e))
+                        (self.overlay_id, self.node_id, e))
 
     @property
     def _nx_node_data(self):
@@ -272,7 +273,7 @@ class NmNode(object):
             return self._graph.node[self.node_id]
         except Exception, e:
             log.warning("Error accessing node data %s for node %s: %s" %
-                (self.overlay_id, self.node_id, e))
+                        (self.overlay_id, self.node_id, e))
 
     def is_router(self):
         """Either from this graph or the physical graph"""
@@ -317,13 +318,13 @@ class NmNode(object):
 
     @raw_interfaces.setter
     def raw_interfaces(self, value):
-     self._ports = value
+        self._ports = value
 
     @property
     def asn(self):
         """Returns ASN of this node"""
         # TODO: make a function (not property)
-        #TODO: refactor, for nodes created such as virtual switches
+        # TODO: refactor, for nodes created such as virtual switches
 
         try:
             return self._graph.node[self.node_id]['asn']  # not in this graph
@@ -382,13 +383,11 @@ class NmNode(object):
 
         return self._graph.degree(self.node_id)
 
-
-
     def neighbors(self, *args, **kwargs):
         """Returns neighbors of node"""
 
         neighs = list(NmNode(self.anm, self.overlay_id, node)
-                    for node in self._graph.neighbors(self.node_id))
+                      for node in self._graph.neighbors(self.node_id))
 
         return self._overlay.filter(neighs, *args, **kwargs)
 
@@ -398,7 +397,7 @@ class NmNode(object):
 
         if len(args) or len(kwargs):
             log.warning("Attribute-based filtering not currently",
-             "supported for neighbor_interfaces")
+                        "supported for neighbor_interfaces")
 
         return iter(edge.dst_int for edge in self.edges())
 
@@ -417,7 +416,7 @@ class NmNode(object):
         try:
             del data['_ports']
         except KeyError:
-            pass # no interfaces set
+            pass  # no interfaces set
         return str(data)
 
     def edges(self, *args, **kwargs):
@@ -445,7 +444,7 @@ class NmNode(object):
     def __getattr__(self, key):
         """Returns node property
         This is useful for accesing attributes passed through from graphml"""
-        #TODO: refactor/document this logic
+        # TODO: refactor/document this logic
 
         try:
             node_data = self._graph.node[self.node_id]
@@ -471,7 +470,7 @@ class NmNode(object):
                 # from http://stackoverflow.com/q/2654113
                 self.log.debug(
                     "Accessing unset attribute %s in %s" % (key,
-                        self.overlay_id))
+                                                            self.overlay_id))
                 return
 
         # map through to phy

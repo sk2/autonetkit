@@ -1,7 +1,10 @@
 import autonetkit.log as log
 
+
 class PlatformCompiler(object):
+
     """Base Platform Compiler"""
+
     def __init__(self, nidb, anm, host):
         self.nidb = nidb
         self.anm = anm
@@ -17,10 +20,10 @@ class PlatformCompiler(object):
 
     def copy_across_ip_addresses(self):
         log.info("Copying IP addresses to device model")
-        #TODO: try/except and raise SystemError as fatal error if cant copy
+        # TODO: try/except and raise SystemError as fatal error if cant copy
         from autonetkit.ank import sn_preflen_to_network
 
-        #TODO:  check if this will clobber with platform?
+        # TODO:  check if this will clobber with platform?
         for node in self.nidb.l3devices(host=self.host):
             phy_node = self.anm['phy'].node(node)
 
@@ -37,15 +40,16 @@ class PlatformCompiler(object):
                     if interface.is_physical and not interface.is_bound:
                         continue
 
-                    #TODO: also need to skip layer2 virtual interfaces
+                    # TODO: also need to skip layer2 virtual interfaces
                     # interface is connected
                     try:
                         interface.ipv4_address = ipv4_int.ip_address
                         interface.ipv4_subnet = ipv4_int.subnet
                         interface.ipv4_cidr = sn_preflen_to_network(interface.ipv4_address,
-                            interface.ipv4_subnet.prefixlen)
+                                                                    interface.ipv4_subnet.prefixlen)
                     except AttributeError:
-                        log.warning("Unable to copy across IPv4 for %s" % interface)
+                        log.warning(
+                            "Unable to copy across IPv4 for %s" % interface)
                     else:
                         interface.use_ipv4 = True
                 if phy_node.use_ipv6:
@@ -55,13 +59,12 @@ class PlatformCompiler(object):
                     if interface.is_physical and not interface.is_bound:
                         continue
                     try:
-                        #TODO: copy ip address as well
+                        # TODO: copy ip address as well
                         interface.ipv6_subnet = ipv6_int.subnet
                         interface.ipv6_address = sn_preflen_to_network(ipv6_int.ip_address,
-                            interface.ipv6_subnet.prefixlen)
+                                                                       interface.ipv6_subnet.prefixlen)
                     except AttributeError:
-                        log.warning("Unable to copy IPv6 subnet for %s" % interface)
+                        log.warning(
+                            "Unable to copy IPv6 subnet for %s" % interface)
                     else:
                         interface.use_ipv6 = True
-
-

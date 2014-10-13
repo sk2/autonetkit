@@ -22,7 +22,7 @@ class IosBaseCompiler(RouterCompiler):
         adds vpnv4 = True if ip_version == 4 and session is in g_ibgp_vpn_v4"""
 
         data = super(IosBaseCompiler, self).ibgp_session_data(session,
-                ip_version)
+                                                              ip_version)
         if ip_version == 4:
             g_ibgp_vpn_v4 = self.anm['ibgp_vpn_v4']
             if g_ibgp_vpn_v4.has_edge(session):
@@ -59,7 +59,7 @@ class IosBaseCompiler(RouterCompiler):
 
     def interfaces(self, node):
         phy_loopback_zero = self.anm['phy'
-                ].interface(node.loopback_zero)
+                                     ].interface(node.loopback_zero)
         if node.ip.use_ipv4:
             ipv4_loopback_subnet = netaddr.IPNetwork('0.0.0.0/32')
             ipv4_loopback_zero = phy_loopback_zero['ipv4']
@@ -69,15 +69,16 @@ class IosBaseCompiler(RouterCompiler):
             node.loopback_zero.ipv4_subnet = ipv4_loopback_subnet
             node.loopback_zero.ipv4_cidr = \
                 sn_preflen_to_network(ipv4_address,
-                    ipv4_loopback_subnet.prefixlen)
+                                      ipv4_loopback_subnet.prefixlen)
 
         if node.ip.use_ipv6:
-            #TODO: clean this up so can set on router_base: call cidr not address and update templates
+            # TODO: clean this up so can set on router_base: call cidr not
+            # address and update templates
             node.loopback_zero.use_ipv6 = True
             ipv6_loopback_zero = phy_loopback_zero['ipv6']
             node.loopback_zero.ipv6_address = \
                 sn_preflen_to_network(ipv6_loopback_zero.ip_address,
-                    128)
+                                      128)
 
         super(IosBaseCompiler, self).interfaces(node)
 
@@ -85,7 +86,7 @@ class IosBaseCompiler(RouterCompiler):
             interface.use_cdp = node.use_cdp  # use node value
 
         for interface in node.interfaces:
-            interface.sub_ints = [] # temporary until full subinterfaces
+            interface.sub_ints = []  # temporary until full subinterfaces
 
         for interface in node.physical_interfaces():
             g_ext_conn = self.anm['ext_conn']
@@ -96,12 +97,12 @@ class IosBaseCompiler(RouterCompiler):
             ext_int = node_ext_conn.interface(interface)
             for sub_int in ext_int.sub_int or []:
                 stanza = ConfigStanza(
-                    id =sub_int['id'],
-                    ipv4_address =sub_int['ipv4_address'],
-                    ipv4_prefixlen =sub_int['ipv4_prefixlen'],
-                    ipv4_subnet =sub_int['ipv4_subnet'],
-                    dot1q =sub_int['dot1q'],
-                    )
+                    id=sub_int['id'],
+                    ipv4_address=sub_int['ipv4_address'],
+                    ipv4_prefixlen=sub_int['ipv4_prefixlen'],
+                    ipv4_subnet=sub_int['ipv4_subnet'],
+                    dot1q=sub_int['dot1q'],
+                )
                 interface.sub_ints.append(stanza)
 
     def mpls_oam(self, node):
@@ -137,26 +138,26 @@ class IosBaseCompiler(RouterCompiler):
 
         if node.is_ebgp_v4 and node.ip.use_ipv4:
             infra_blocks = self.anm['ipv4'].data['infra_blocks'
-                    ].get(phy_node.asn) or []
+                                                 ].get(phy_node.asn) or []
             for infra_route in infra_blocks:
                 stanza = ConfigStanza(
-                    prefix = str(infra_route.network),
-                    netmask = str(infra_route.netmask),
-                    nexthop  = "Null0",
-                    metric = 254,
-                    )
+                    prefix=str(infra_route.network),
+                    netmask=str(infra_route.netmask),
+                    nexthop="Null0",
+                    metric=254,
+                )
                 node.ipv4_static_routes.append(stanza)
 
         if node.is_ebgp_v6 and node.ip.use_ipv6:
             infra_blocks = self.anm['ipv6'].data['infra_blocks'
-                    ].get(phy_node.asn) or []
-            #TODO: setup schema with defaults
+                                                 ].get(phy_node.asn) or []
+            # TODO: setup schema with defaults
             for infra_route in infra_blocks:
                 stanza = ConfigStanza(
-                    prefix =str(infra_route),
-                    nexthop  = "Null0",
-                    metric = 254,
-                    )
+                    prefix=str(infra_route),
+                    nexthop="Null0",
+                    metric=254,
+                )
                 node.ipv6_static_routes.append(stanza)
 
     def bgp(self, node):
@@ -169,13 +170,13 @@ class IosBaseCompiler(RouterCompiler):
         g_ebgp_v6 = self.anm['ebgp_v6']
 
         if node in g_ebgp_v4 \
-            and len(list(g_ebgp_v4.node(node).edges())) > 0:
+                and len(list(g_ebgp_v4.node(node).edges())) > 0:
             node.is_ebgp_v4 = True
         else:
             node.is_ebgp_v4 = False
 
         if node in g_ebgp_v6 \
-            and len(list(g_ebgp_v6.node(node).edges())) > 0:
+                and len(list(g_ebgp_v6.node(node).edges())) > 0:
             node.is_ebgp_v6 = True
         else:
             node.is_ebgp_v6 = False
@@ -183,7 +184,7 @@ class IosBaseCompiler(RouterCompiler):
         node.bgp.ipv4_advertise_subnets = []
         node.bgp.ipv6_advertise_subnets = []
 
-         # Advertise loopbacks into BGP
+        # Advertise loopbacks into BGP
 
         if node.ip.use_ipv4:
             node.bgp.ipv4_advertise_subnets = \
@@ -196,13 +197,13 @@ class IosBaseCompiler(RouterCompiler):
 
         if node.ip.use_ipv4 and node.is_ebgp_v4:
             infra_blocks = self.anm['ipv4'].data['infra_blocks'
-                    ].get(asn) or []
+                                                 ].get(asn) or []
             for infra_route in infra_blocks:
                 node.bgp.ipv4_advertise_subnets.append(infra_route)
 
         if node.ip.use_ipv6 and node.is_ebgp_v6:
             infra_blocks = self.anm['ipv6'].data['infra_blocks'
-                    ].get(asn) or []
+                                                 ].get(asn) or []
             for infra_route in infra_blocks:
                 node.bgp.ipv6_advertise_subnets.append(infra_route)
 
@@ -260,7 +261,7 @@ class IosBaseCompiler(RouterCompiler):
                     use_ipv6=node.ip.use_ipv6,
                     vrf_ebgp_neighbors=vrf_ebgp_neighbors[vrf],
                     vrf_ibgp_neighbors=vrf_ibgp_neighbors[vrf],
-                    )
+                )
                 node.bgp.vrfs.append(stanza)
 
         # Retain route_target if in ibgp_vpn_v4 and RR or HRR (set in design)
@@ -270,7 +271,7 @@ class IosBaseCompiler(RouterCompiler):
             retain = False
             if vpnv4_node.retain_route_target:
                 retain = True
-            node.bgp.vpnv4 = ConfigStanza(retain_route_target = retain)
+            node.bgp.vpnv4 = ConfigStanza(retain_route_target=retain)
 
     def vrf_igp_interfaces(self, node):
 
@@ -298,13 +299,15 @@ class IosBaseCompiler(RouterCompiler):
                 rd_index = vrf_node.rd_indices[vrf]
                 rd = '%s:%s' % (node.asn, rd_index)
 
-                stanza = ConfigStanza(vrf = vrf, rd = rd, route_target = route_target)
+                stanza = ConfigStanza(
+                    vrf=vrf, rd=rd, route_target=route_target)
                 node.vrf.vrfs.append(stanza)
 
             for interface in node.interfaces:
                 vrf_int = self.anm['vrf'].interface(interface)
                 if vrf_int.vrf_name:
-                    interface.vrf = vrf_int.vrf_name  # mark interface as being part of vrf
+                    # mark interface as being part of vrf
+                    interface.vrf = vrf_int.vrf_name
                     if interface.physical:
                         interface.description += ' vrf %s' \
                             % vrf_int.vrf_name
@@ -329,10 +332,10 @@ class IosBaseCompiler(RouterCompiler):
 
         node.vrf.use_ipv4 = node.ip.use_ipv4
         node.vrf.use_ipv6 = node.ip.use_ipv6
-        node.vrf.vrfs = sorted(node.vrf.vrfs, key = lambda x: x.vrf)
+        node.vrf.vrfs = sorted(node.vrf.vrfs, key=lambda x: x.vrf)
 
         if self.anm.has_overlay('mpls_ldp') and node \
-            in self.anm['mpls_ldp']:
+                in self.anm['mpls_ldp']:
             node.mpls.enabled = True
             node.mpls.router_id = node.loopback_zero.id
 
@@ -346,7 +349,7 @@ class IosBaseCompiler(RouterCompiler):
                 if interface.exclude_igp:
                     continue  # don't configure IGP for this interface
 
-                #TODO: use ConfigStanza here
+                # TODO: use ConfigStanza here
                 interface.ospf = {
                     'cost': ospf_int.cost,
                     'area': ospf_int.area,
@@ -354,9 +357,9 @@ class IosBaseCompiler(RouterCompiler):
                     'use_ipv4': node.ip.use_ipv4,
                     'use_ipv6': node.ip.use_ipv6,
                     'multipoint': ospf_int.multipoint,
-                    }
+                }
 
-                          # TODO: add wrapper for this
+                # TODO: add wrapper for this
 
     def eigrp(self, node):
         super(IosBaseCompiler, self).eigrp(node)
@@ -375,9 +378,9 @@ class IosBaseCompiler(RouterCompiler):
                     'use_ipv4': node.ip.use_ipv4,
                     'use_ipv6': node.ip.use_ipv6,
                     'multipoint': eigrp_int.multipoint,
-                    }
+                }
 
-                          # TODO: add wrapper for this
+                # TODO: add wrapper for this
 
     def isis(self, node):
         super(IosBaseCompiler, self).isis(node)
@@ -389,10 +392,10 @@ class IosBaseCompiler(RouterCompiler):
                 log.debug("No ISIS connections for interface %s" % interface)
                 continue
 
-            #TODO: change this to be is_bound and is_multipoint
+            # TODO: change this to be is_bound and is_multipoint
             if isis_int.multipoint:
                 log.warning('Extended IOS config support not valid for multipoint ISIS connections on %s'
-                    % interface)
+                            % interface)
                 continue
 
                 # TODO multipoint handling?
@@ -482,9 +485,9 @@ class IosClassicCompiler(IosBaseCompiler):
             'use_ipv4': False,
             'use_ipv6': node.ip.use_ipv6,
             'multipoint': False,
-            }
+        }
 
-                          # TODO: add wrapper for this
+        # TODO: add wrapper for this
     def gre(self, node):
         node.gre_tunnels = []
         if not self.anm.has_overlay('gre_tunnel'):
@@ -497,14 +500,14 @@ class IosClassicCompiler(IosBaseCompiler):
         gre_node = g_gre_tunnel.node(node)
         neighbors = gre_node.neighbors()
         for index, neigh in enumerate(neighbors, start=1):
-            stanza = ConfigStanza(id = index, endpoint = neigh)
+            stanza = ConfigStanza(id=index, endpoint=neigh)
 
-            #TODO: try/except here
-            #TODO: Explain logic here
+            # TODO: try/except here
+            # TODO: Explain logic here
             src_int = g_gre_tunnel.edge(node, neigh).src_int
-            tunnel_source  = node.interface(src_int).id
+            tunnel_source = node.interface(src_int).id
             stanza.source = tunnel_source
-            stanza.destination = "0.0.0.0" # placeholder for user to replace
+            stanza.destination = "0.0.0.0"  # placeholder for user to replace
 
             if neigh.tunnel_enabled_ipv4:
                 ip_address = neigh.tunnel_ipv4_address
@@ -533,7 +536,7 @@ class IosClassicCompiler(IosBaseCompiler):
             nidb_interface = self.nidb.interface(interface)
             if not interface.is_bound:
                 log.debug('Not enable MPLS and RSVP for interface %s on %s '
-                           % (nidb_interface.id, node))
+                          % (nidb_interface.id, node))
                 continue
             nidb_interface.te_tunnels = True
             nidb_interface.rsvp_bandwidth_percent = 100
@@ -626,7 +629,7 @@ class IosClassicCompiler(IosBaseCompiler):
                 neigh_data = ConfigStanza(neigh)
                 vpnv4_neighbors.append(neigh_data)
 
-        vpnv4_neighbors = sorted(vpnv4_neighbors, key=lambda x: \
+        vpnv4_neighbors = sorted(vpnv4_neighbors, key=lambda x:
                                  x['loopback'])
         node.bgp.vpnv4_neighbors = vpnv4_neighbors
 
@@ -651,8 +654,8 @@ class IosXrCompiler(IosBaseCompiler):
 
         for interface in mpls_te_node.physical_interfaces():
             nidb_interface = self.nidb.interface(interface)
-            stanza = ConfigStanza(id = nidb_interface.id,
-                                   bandwidth_percent = 100)
+            stanza = ConfigStanza(id=nidb_interface.id,
+                                  bandwidth_percent=100)
             rsvp_interfaces.append(stanza)
 
             mpls_te_interfaces.append(nidb_interface.id)
@@ -677,7 +680,7 @@ class IosXrCompiler(IosBaseCompiler):
 
             eigrp_int = g_eigrp.interface(interface)
             if eigrp_int and eigrp_int.is_bound:
-                #TODO: for here and below use stanza directly
+                # TODO: for here and below use stanza directly
                 data = {'id': interface.id, 'passive': False}
                 stanza = ConfigStanza(**data)
                 if node.eigrp.use_ipv4:
@@ -717,7 +720,7 @@ class IosXrCompiler(IosBaseCompiler):
                 if interface.isis.mtu is not None:
                     data['mtu'] = interface.isis.hello_padding_disable
 
-                #TODO: make stanza
+                # TODO: make stanza
                 stanza = ConfigStanza(**data)
                 node.isis.isis_links.append(stanza)
 
@@ -735,7 +738,8 @@ class NxOsCompiler(IosBaseCompiler):
             return   # no mpls te configured
 
         if node.supported_features.mpls_te is False:
-            node.log.warning("Feature MPLS TE is not supported for %s on the %s platform" % (node.device_subtype, node.platform))
+            node.log.warning("Feature MPLS TE is not supported for %s on the %s platform" % (
+                node.device_subtype, node.platform))
 
     def mpls_oam(self, node):
         g_mpls_oam = self.anm['mpls_oam']
@@ -743,18 +747,20 @@ class NxOsCompiler(IosBaseCompiler):
             return   # no mpls oam configured
 
         if node.supported_features.mpls_oam is False:
-            node.log.warning("Feature MPLS OAM is not supported for %s the on %s platform" % (node.device_subtype, node.platform))
+            node.log.warning("Feature MPLS OAM is not supported for %s the on %s platform" % (
+                node.device_subtype, node.platform))
 
     def vrf(self, node):
         g_vrf = self.anm['vrf']
         if node not in g_vrf:
             return   # no mpls oam configured
         if node.supported_features.vrf is False:
-            node.log.warning("Feature VRF is not supported for %s on the %s platform" % (node.device_subtype, node.platform))
+            node.log.warning("Feature VRF is not supported for %s on the %s platform" % (
+                node.device_subtype, node.platform))
 
     def interfaces(self, node):
 
-# need to aggregate areas
+        # need to aggregate areas
 
         super(NxOsCompiler, self).interfaces(node)
 
@@ -769,13 +775,13 @@ class NxOsCompiler(IosBaseCompiler):
             'process_id': node.ospf.process_id,
             'use_ipv4': node.ip.use_ipv4,
             'use_ipv6': node.ip.use_ipv6,
-            }
+        }
 
-                  # TODO: add wrapper for this
+        # TODO: add wrapper for this
 
     def eigrp(self, node):
 
-        # #TODO: do we want to specify the name or hard-code (as currently)?
+        # TODO: do we want to specify the name or hard-code (as currently)?
 
         super(NxOsCompiler, self).eigrp(node)
         loopback_zero = node.loopback_zero

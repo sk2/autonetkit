@@ -8,11 +8,13 @@ from autonetkit.nidb.edge import DmEdge
 from autonetkit.nidb.node import DmNode
 from autonetkit.nidb.base import DmBase
 
+
 class DmGraphData(object):
+
     """API to access overlay graph data in network"""
 
     def __init__(self, nidb):
-#Set using this method to bypass __setattr__
+        # Set using this method to bypass __setattr__
         object.__setattr__(self, 'nidb', nidb)
 
     def __repr__(self):
@@ -26,15 +28,17 @@ class DmGraphData(object):
         """Sets edge property"""
         self.nidb.raw_graph().graph[key] = val
 
-#TODO: make this inherit same overlay base as overlay_graph for add nodes etc properties
+# TODO: make this inherit same overlay base as overlay_graph for add nodes etc properties
 # but not the degree etc
 
+
 class DmLabTopology(object):
+
     """API to access lab topology in network"""
-    #TODO: replace this with ConfigStanza
+    # TODO: replace this with ConfigStanza
 
     def __init__(self, nidb, topology_id):
-#Set using this method to bypass __setattr__
+        # Set using this method to bypass __setattr__
         object.__setattr__(self, 'nidb', nidb)
         object.__setattr__(self, 'topology_id', topology_id)
 
@@ -62,12 +66,16 @@ class DmLabTopology(object):
         than setattr(topology, key, value)"""
         return self.__setattr__(key, val)
 
+
 class DeviceModel(DmBase):
+
     def __init__(self):
         super(DeviceModel, self).__init__()
-        self._graph = nx.Graph() # only for connectivity, any other information stored on node
+        # only for connectivity, any other information stored on node
+        self._graph = nx.Graph()
         self._graph.graph['topologies'] = collections.defaultdict(dict)
-        self._graph.graph['timestamp'] = time.strftime("%Y%m%d_%H%M%S", time.localtime())
+        self._graph.graph['timestamp'] = time.strftime(
+            "%Y%m%d_%H%M%S", time.localtime())
 
     def topology(self, key):
         return DmLabTopology(self, key)
@@ -79,25 +87,29 @@ class DeviceModel(DmBase):
     def timestamp(self):
         return self._graph.graph['timestamp']
 
-    def subgraph(self, nbunch, name = None):
-        nbunch = (n.node_id for n in nbunch) # only store the id in overlay
+    def subgraph(self, nbunch, name=None):
+        nbunch = (n.node_id for n in nbunch)  # only store the id in overlay
         return DmSubgraph(self._graph.subgraph(nbunch), name)
 
-    def boundary_nodes(self, nbunch, nbunch2 = None):
-        nbunch = (n.node_id for n in nbunch) # only store the id in overlay
+    def boundary_nodes(self, nbunch, nbunch2=None):
+        nbunch = (n.node_id for n in nbunch)  # only store the id in overlay
         return iter(DmNode(self, node)
-                for node in nx.node_boundary(self._graph, nbunch, nbunch2))
+                    for node in nx.node_boundary(self._graph, nbunch, nbunch2))
 
-    def boundary_edges(self, nbunch, nbunch2 = None):
-        nbunch = (n.node_id for n in nbunch) # only store the id in overlay
+    def boundary_edges(self, nbunch, nbunch2=None):
+        nbunch = (n.node_id for n in nbunch)  # only store the id in overlay
         return iter(DmEdge(self, src, dst)
-                for (src, dst) in nx.edge_boundary(self._graph, nbunch, nbunch2))
+                    for (src, dst) in nx.edge_boundary(self._graph, nbunch, nbunch2))
+
 
 class DmSubgraph(DmBase):
-    def __init__(self, graph, name = None):
+
+    def __init__(self, graph, name=None):
         super(DmSubgraph, self).__init__()
-        #TODO: need to refer back to the source nidb
-        self._graph = graph # only for connectivity, any other information stored on node
+        # TODO: need to refer back to the source nidb
+        # only for connectivity, any other information stored on node
+        self._graph = graph
         self._name = name
+
     def __repr__(self):
         return "nidb: %s" % self._name

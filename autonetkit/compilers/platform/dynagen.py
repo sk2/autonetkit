@@ -6,7 +6,9 @@ import autonetkit.ank as ank
 from autonetkit.compilers.device.cisco import IosClassicCompiler
 from autonetkit.nidb import ConfigStanza
 
+
 class DynagenCompiler(PlatformCompiler):
+
     """Dynagen Platform Compiler"""
     config_dir = "configs"
 
@@ -65,10 +67,12 @@ class DynagenCompiler(PlatformCompiler):
             node.aux_port = node.console_port + 500
 
     def lab_topology(self):
-# TODO: replace name/label and use attribute from subgraph
+        # TODO: replace name/label and use attribute from subgraph
         lab_topology = self.nidb.topology[self.host]
-        lab_topology.render_template = os.path.join("templates","dynagen.mako")
-        lab_topology.render_dst_folder = os.path.join("rendered", self.host, "dynagen")
+        lab_topology.render_template = os.path.join(
+            "templates", "dynagen.mako")
+        lab_topology.render_dst_folder = os.path.join(
+            "rendered", self.host, "dynagen")
         lab_topology.render_dst_file = "topology.net"
 
         lab_topology.config_dir = self.config_dir
@@ -106,7 +110,7 @@ class DynagenCompiler(PlatformCompiler):
                 number_of_slots)]
             cnfg = os.path.join(self.config_dir, router.render.dst_file)
 
-            #TODO: make this a config stanza
+            # TODO: make this a config stanza
             lab_topology.routers.append(
                 hostname=str(router),
                 model=7200,

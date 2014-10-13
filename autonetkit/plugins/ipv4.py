@@ -13,7 +13,8 @@ import netaddr
 import networkx as nx
 from autonetkit.exception import AutoNetkitException
 
-# TODO: allow slack in allocations: both for ASN (group level), and for collision domains to allow new nodes to be easily added
+# TODO: allow slack in allocations: both for ASN (group level), and for
+# collision domains to allow new nodes to be easily added
 
 try:
     import cPickle as pickle
@@ -84,12 +85,12 @@ class IpTree(object):
         self.graph = nx.DiGraph()
         self.root_node = None
         self.timestamp = time.strftime('%Y%m%d_%H%M%S',
-                time.localtime())
+                                       time.localtime())
 
 # taken_nodes -> these are nodes manually specified, eg in graphml
 
         self.node_id_counter = (i for i in itertools.count(0) if i
-            not in self.graph)
+                                not in self.graph)
         self.root_ip_block = root_ip_block
 
     def __len__(self):
@@ -105,14 +106,15 @@ class IpTree(object):
     def add_parent_nodes(self, subgraph, level_counts):
         for level in range(32, 0, -1):
             try:
-                current_count = float(level_counts[level])  # float so do floating point division
+                # float so do floating point division
+                current_count = float(level_counts[level])
             except KeyError:
                 continue  # key not present - likely higher up tree
             parent_count = int(math.ceil(current_count / 2))
             parent_level = level - 1
             level_counts[parent_level] += parent_count
             subgraph.add_nodes_from((self.next_node_id,
-                                    {'prefixlen': parent_level})
+                                     {'prefixlen': parent_level})
                                     for n in range(parent_count))
 
             if level_counts[parent_level] == 1:
@@ -123,7 +125,7 @@ class IpTree(object):
                     if all('host' in subgraph.node[n] for n in
                            children):
                         subgraph.add_node(self.next_node_id,
-                                prefixlen=parent_level - 1)
+                                          prefixlen=parent_level - 1)
 
                     break  # Reached top of tree
 
@@ -132,7 +134,7 @@ class IpTree(object):
         subgraph,
         level_counts,
         nodes_by_level,
-        ):
+    ):
         smallest_prefix = min(level_counts.keys())
         for prefixlen in range(smallest_prefix, 32):
 
@@ -141,7 +143,7 @@ class IpTree(object):
             unallocated_children = set(nodes_by_level[prefixlen + 1])
             for node in sorted(nodes_by_level[prefixlen]):
                 is_not_subnet = not ('host' in subgraph.node[node]
-                        or 'group_attr' in subgraph.node[node])
+                                     or 'group_attr' in subgraph.node[node])
                 if is_not_subnet:
                     child_a = unallocated_children.pop()
                     subgraph.add_edge(node, child_a)
@@ -181,11 +183,12 @@ class IpTree(object):
         subgraphs = []
 
 # if network final octet is .0 eg 10.0.0.0 or 192.168.0.0, then add extra "dummy" node, so don't have a loopback of 10.0.0.0
-# Change strategy: if just hosts (ie loopbacks), then allocate as a large collision domain
+# Change strategy: if just hosts (ie loopbacks), then allocate as a large
+# collision domain
 
         if not len(self.unallocated_nodes):
 
-# no nodes to allocate - eg could be no collision domains
+            # no nodes to allocate - eg could be no collision domains
 
             return
 
@@ -193,7 +196,8 @@ class IpTree(object):
         key_func = lambda x: x.get(group_attr)
         if all(isinstance(item, autonetkit.anm.NmPort)
                and item.is_loopback for item in unallocated_nodes):
-            key_func = lambda x: x.node.get(group_attr)  # interface, map key function to be the interface's node
+            # interface, map key function to be the interface's node
+            key_func = lambda x: x.node.get(group_attr)
 
         unallocated_nodes = sorted(unallocated_nodes, key=key_func)
         groupings = itertools.groupby(unallocated_nodes, key=key_func)
@@ -201,7 +205,7 @@ class IpTree(object):
 
         for (attr_value, items) in groupings:
 
-# make subtree for each attr
+            # make subtree for each attr
 
             items = sorted(list(items))
             subgraph = nx.DiGraph()
@@ -213,35 +217,41 @@ class IpTree(object):
 
                 if all(item.is_loopback for item in items):
                     parent_id = self.next_node_id
-                    prefixlen = 32 - subnet_size(len(items))  # group all loopbacks into single subnet
+                    # group all loopbacks into single subnet
+                    prefixlen = 32 - subnet_size(len(items))
                     subgraph.add_node(parent_id, prefixlen=prefixlen,
-                            loopback_group=True)
+                                      loopback_group=True)
                     for item in sorted(items):
 
-                    # subgraph.add_edge(node, child_a)
+                        # subgraph.add_edge(node, child_a)
 
                         item_id = self.next_node_id
                         subgraph.add_node(item_id, prefixlen=32,
-                                host=item)
+                                          host=item)
                         subgraph.add_edge(parent_id, item_id)
 
                     root_node = parent_id
                     subgraphs.append(subgraph)
                     subgraph.graph['root'] = root_node
                     subgraph.node[root_node]['group_attr'] = attr_value
-                    continue  # finished for loopbacks, continue only for collision domains
+                    # finished for loopbacks, continue only for collision
+                    # domains
+                    continue
 
             if all(item.is_l3device() for item in items):
 
-                # Note: only l3 devices are added for loopbacks: cds allocate to edges not devices (for now) - will be fixed when move to proper interface model
+                # Note: only l3 devices are added for loopbacks: cds allocate
+                # to edges not devices (for now) - will be fixed when move to
+                # proper interface model
 
                 parent_id = self.next_node_id
-                prefixlen = 32 - subnet_size(len(items))  # group all loopbacks into single subnet
+                # group all loopbacks into single subnet
+                prefixlen = 32 - subnet_size(len(items))
                 subgraph.add_node(parent_id, prefixlen=prefixlen,
                                   loopback_group=True)
                 for item in sorted(items):
 
-                # subgraph.add_edge(node, child_a)
+                    # subgraph.add_edge(node, child_a)
 
                     item_id = self.next_node_id
                     subgraph.add_node(item_id, prefixlen=32, host=item)
@@ -251,15 +261,16 @@ class IpTree(object):
                 subgraphs.append(subgraph)
                 subgraph.graph['root'] = root_node
                 subgraph.node[root_node]['group_attr'] = attr_value
-                continue  # finished for loopbacks, continue only for collision domains
+                # finished for loopbacks, continue only for collision domains
+                continue
 
             for item in sorted(items):
                 if item.broadcast_domain:
                     subgraph.add_node(self.next_node_id, prefixlen=32
-                            - subnet_size(item.degree()), host=item)
+                                      - subnet_size(item.degree()), host=item)
                 if item.is_l3device():
                     subgraph.add_node(self.next_node_id, prefixlen=32,
-                            host=item)
+                                      host=item)
 
             # now group by levels
 
@@ -271,14 +282,15 @@ class IpTree(object):
                 nodes_by_level[prefixlen].append(node)
 
             log.debug('Building IP subtree for %s %s' % (group_attr,
-                      attr_value))
+                                                         attr_value))
 
             for (level, nodes) in nodes_by_level.items():
                 level_counts[level] = len(nodes)
 
             self.add_parent_nodes(subgraph, level_counts)
 
-# test if min_level node is bound, if so then add a parent, so root for AS isn't a cd
+# test if min_level node is bound, if so then add a parent, so root for AS
+# isn't a cd
 
             min_level = min(level_counts)
             min_level_nodes = [n for n in subgraph
@@ -306,7 +318,7 @@ class IpTree(object):
                 nodes_by_level[prefixlen].append(node)
 
             root_node = self.build_tree(subgraph, level_counts,
-                    nodes_by_level)
+                                        nodes_by_level)
             subgraphs.append(subgraph)
 
             subgraph.graph['root'] = root_node
@@ -316,12 +328,13 @@ class IpTree(object):
 
             subgraph.node[root_node]['prefixlen'] = 16
             subgraph.node[root_node]['group_attr'] = attr_value
-            prefixes_by_attr[attr_value] = subgraph.node[root_node]['prefixlen']
+            prefixes_by_attr[attr_value] = subgraph.node[
+                root_node]['prefixlen']
 
         global_graph = nx.DiGraph()
-        subgraphs = sorted(subgraphs, key=lambda x: \
+        subgraphs = sorted(subgraphs, key=lambda x:
                            subgraph.node[subgraph.graph['root'
-                           ]]['group_attr'])
+                                                        ]]['group_attr'])
         root_nodes = [subgraph.graph['root'] for subgraph in subgraphs]
         root_nodes = []
         for subgraph in subgraphs:
@@ -349,7 +362,7 @@ class IpTree(object):
             nodes_by_level[prefixlen].append(node)
 
         global_root = self.build_tree(global_graph, level_counts,
-                nodes_by_level)
+                                      nodes_by_level)
         global_root = TreeNode(global_graph, global_root)
 
         for subgraph in subgraphs:
@@ -366,11 +379,13 @@ class IpTree(object):
                 self.root_ip_block.subnet(global_prefix_len).next()
         except StopIteration:
             #message = ("Unable to allocate IPv4 subnets. ")
-            formatted_prefixes = ", ".join("AS%s: /%s" % (k,v) for k,v in sorted(prefixes_by_attr.items()))
+            formatted_prefixes = ", ".join(
+                "AS%s: /%s" % (k, v) for k, v in sorted(prefixes_by_attr.items()))
             message = ("Cannot create requested number of /%s subnets from root block %s. Please specify a larger root IP block. (Requested subnet allocations are: %s)"
                        % (global_prefix_len, self.root_ip_block, formatted_prefixes))
             log.error(message)
-            raise AutoNetkitException(message)  # TODO: throw ANK specific exception here
+            # TODO: throw ANK specific exception here
+            raise AutoNetkitException(message)
         self.graph = global_graph
 
 # add children of collision domains
@@ -384,8 +399,9 @@ class IpTree(object):
                 child_id = self.next_node_id
                 cd_id = cd.node
                 global_graph.add_node(child_id, prefixlen=32,
-                        host=edge.dst_int)
-                global_graph.add_edge(cd_id, child_id)  # cd -> neigh (cd is parent)
+                                      host=edge.dst_int)
+                # cd -> neigh (cd is parent)
+                global_graph.add_edge(cd_id, child_id)
 
 # TODO: make allocate seperate step
 
@@ -396,25 +412,29 @@ class IpTree(object):
             children = sorted(node.children())
             prefixlen = node.prefixlen + 1
 
-            # workaround for clobbering attr subgraph root node with /16 if was a /28
+            # workaround for clobbering attr subgraph root node with /16 if was
+            # a /28
 
             subnet = node.subnet.subnet(prefixlen)
 
 # handle case where children subnet
 
-            if node.is_loopback_group() or node.is_broadcast_domain():  # special case of single AS -> root is loopback_group
+            # special case of single AS -> root is loopback_group
+            if node.is_loopback_group() or node.is_broadcast_domain():
 
                 # TODO: generalise this rather than repeated code with below
-                # node.subnet = subnet.next() # Note: don't break into smaller subnets if single-AS
+                # node.subnet = subnet.next() # Note: don't break into smaller
+                # subnets if single-AS
 
-                iterhosts = node.subnet.iter_hosts()  # ensures start at .1 rather than .0
+                # ensures start at .1 rather than .0
+                iterhosts = node.subnet.iter_hosts()
                 sub_children = node.children()
                 for sub_child in sorted(sub_children):
 
                     # TODO: tidy up this allocation to always record the subnet
 
                     if sub_child.is_interface() \
-                        and sub_child.host.is_loopback:
+                            and sub_child.host.is_loopback:
                         if sub_child.host.is_loopback_zero:
 
                             # loopback zero, just store the ip address
@@ -427,7 +447,7 @@ class IpTree(object):
                             sub_child.ip_address = iterhosts.next()
                             sub_child.subnet = node.subnet
                     elif sub_child.is_interface() \
-                        and sub_child.host.is_physical:
+                            and sub_child.host.is_physical:
 
                         # physical interface
 
@@ -445,7 +465,8 @@ class IpTree(object):
                 if child.is_broadcast_domain():
                     subnet = subnet.next()
                     child.subnet = subnet
-                    iterhosts = child.subnet.iter_hosts()  # ensures start at .1 rather than .0
+                    # ensures start at .1 rather than .0
+                    iterhosts = child.subnet.iter_hosts()
                     sub_children = child.children()
                     for sub_child in sorted(sub_children):
                         if sub_child.is_interface():
@@ -457,7 +478,7 @@ class IpTree(object):
                                 sub_child.ip_address = iterhosts.next()
                                 sub_child.subnet = subnet
                             elif interface.is_loopback \
-                                and not interface.is_loopback_zero:
+                                    and not interface.is_loopback_zero:
 
                                 # secondary loopback interface
 
@@ -471,11 +492,12 @@ class IpTree(object):
                     child.subnet = subnet.next()
                 elif child.is_loopback_group():
                     child.subnet = subnet.next()
-                    iterhosts = child.subnet.iter_hosts()  # ensures start at .1 rather than .0
+                    # ensures start at .1 rather than .0
+                    iterhosts = child.subnet.iter_hosts()
                     sub_children = child.children()
                     for sub_child in sorted(sub_children):
                         if sub_child.is_interface() \
-                            and not sub_child.host.is_loopback_zero:
+                                and not sub_child.host.is_loopback_zero:
 
                            # secondary loopback
 
@@ -544,15 +566,15 @@ class IpTree(object):
 
     def assign(self):
 
-# assigns allocated addresses back to hosts
+        # assigns allocated addresses back to hosts
         # don't look at host nodes now - use loopback_groups
-        #TODO: make check for interface and loopback zero now
+        # TODO: make check for interface and loopback zero now
         host_tree_nodes = [n for n in self if n.is_host()
-                            and isinstance(n.host, autonetkit.anm.NmNode)
+                           and isinstance(n.host, autonetkit.anm.NmNode)
                            and n.host.is_l3device()]
 
         # for host_tree_node in host_tree_nodes:
-            # print host_tree_node, host_tree_node.subnet
+        # print host_tree_node, host_tree_node.subnet
 
         for host_tree_node in host_tree_nodes:
             host_tree_node.host.loopback = host_tree_node.subnet
@@ -570,7 +592,7 @@ class IpTree(object):
 
                 interface.loopback = n.ip_address
             elif interface.is_loopback \
-                and not interface.is_loopback_zero:
+                    and not interface.is_loopback_zero:
 
                 # secondary loopback
 
@@ -585,11 +607,12 @@ def assign_asn_to_interasn_cds(g_ip, address_block=None):
     G_phy = g_ip.overlay('phy')
     for broadcast_domain in g_ip.nodes('broadcast_domain'):
         neigh_asn = list(ank_utils.neigh_attr(g_ip, broadcast_domain,
-                         'asn', G_phy))  # asn of neighbors
+                                              'asn', G_phy))  # asn of neighbors
         if len(set(neigh_asn)) == 1:
             asn = set(neigh_asn).pop()  # asn of any neigh, as all same
         else:
-            asn = ank_utils.most_frequent(neigh_asn)  # allocate cd to asn with most neighbors in it
+            # allocate cd to asn with most neighbors in it
+            asn = ank_utils.most_frequent(neigh_asn)
         broadcast_domain.asn = asn
 
     return
@@ -646,7 +669,7 @@ def allocate_vrf_loopbacks(g_ip, address_block=None):
     ip_tree = IpTree(address_block)
 
     vrf_loopbacks = [i for i in secondary_loopbacks if i['vrf'
-                     ].vrf_name]
+                                                         ].vrf_name]
 
     ip_tree.add_nodes(sorted(vrf_loopbacks))
 
@@ -655,6 +678,5 @@ def allocate_vrf_loopbacks(g_ip, address_block=None):
     # secondary_loopback_tree = ip_tree.json()
 
     ip_tree.assign()
-
 
     # TODO: store vrf block to g_ip.data

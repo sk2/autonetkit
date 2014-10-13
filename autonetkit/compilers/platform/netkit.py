@@ -12,7 +12,9 @@ from autonetkit.compilers.device.quagga import QuaggaCompiler
 from autonetkit.nidb import ConfigStanza
 from autonetkit.render2 import NodeRender, PlatformRender
 
+
 class NetkitCompiler(PlatformCompiler):
+
     """Netkit Platform Compiler"""
     @staticmethod
     def index_to_int_id(index):
@@ -33,28 +35,30 @@ class NetkitCompiler(PlatformCompiler):
             folder_name = naming.network_hostname(phy_node)
             dm_node = self.nidb.node(phy_node)
             dm_node.add_stanza("render")
-            #TODO: order by folder and file template src/dst
-            dm_node.render.base = os.path.join("templates","quagga")
+            # TODO: order by folder and file template src/dst
+            dm_node.render.base = os.path.join("templates", "quagga")
             dm_node.render.template = os.path.join("templates",
-                "netkit_startup.mako")
+                                                   "netkit_startup.mako")
             dm_node.render.dst_folder = os.path.join("rendered",
-                self.host, "netkit")
+                                                     self.host, "netkit")
             dm_node.render.base_dst_folder = os.path.join("rendered",
-                self.host, "netkit", folder_name)
+                                                          self.host, "netkit", folder_name)
             dm_node.render.dst_file = "%s.startup" % folder_name
 
             dm_node.render.custom = {
-                    'abc': 'def.txt'
-                    }
+                'abc': 'def.txt'
+            }
 
             render2 = NodeRender()
-            #TODO: dest folder also needs to be able to accept a list
-            #TODO: document that use a list so can do native os.path.join on target platform
+            # TODO: dest folder also needs to be able to accept a list
+            # TODO: document that use a list so can do native os.path.join on
+            # target platform
             render2.add_folder(["templates", "quagga"], folder_name)
-            render2.add_file(("templates", "netkit_startup.mako"), "%s.startup" % folder_name)
+            render2.add_file(
+                ("templates", "netkit_startup.mako"), "%s.startup" % folder_name)
             dm_node.render2 = render2
             lab_topology.render2.add_node(dm_node)
-            #lab_topology.render2_hosts.append(phy_node)
+            # lab_topology.render2_hosts.append(phy_node)
 
 # allocate zebra information
             dm_node.add_stanza("zebra")
@@ -65,7 +69,8 @@ class NetkitCompiler(PlatformCompiler):
                 hostname = "r" + hostname
             dm_node.hostname = hostname  # can't have . in quagga hostnames
             dm_node.add_stanza("ssh")
-            dm_node.ssh.use_key = True  # TODO: make this set based on presence of key
+            # TODO: make this set based on presence of key
+            dm_node.ssh.use_key = True
 
             # Note this could take external data
             int_ids = itertools.count(0)
@@ -95,35 +100,35 @@ class NetkitCompiler(PlatformCompiler):
         lab_topology = self.nidb.topology(self.host)
         from netaddr import IPNetwork
         address_block = IPNetwork(settings.get("tapsn")
-            or "172.16.0.0/16").iter_hosts() # added for backwards compatibility
+                                  or "172.16.0.0/16").iter_hosts()  # added for backwards compatibility
         lab_topology.tap_host = address_block.next()
         lab_topology.tap_vm = address_block.next()  # for tunnel host
         for node in sorted(self.nidb.l3devices(host=self.host)):
             node.tap.ip = address_block.next()
 
     def allocate_lab_topology(self):
-# TODO: replace name/label and use attribute from subgraph
+        # TODO: replace name/label and use attribute from subgraph
         lab_topology = self.nidb.topology(self.host)
         lab_topology.render_template = os.path.join("templates",
-            "netkit_lab_conf.mako")
+                                                    "netkit_lab_conf.mako")
         lab_topology.render_dst_folder = os.path.join("rendered",
-            self.host, "netkit")
+                                                      self.host, "netkit")
         lab_topology.render_dst_file = "lab.conf"
         lab_topology.description = "AutoNetkit Lab"
         lab_topology.author = "AutoNetkit"
         lab_topology.web = "www.autonetkit.org"
 
-        render2  = lab_topology.render2
-        #TODO: test with adding a folder
+        render2 = lab_topology.render2
+        # TODO: test with adding a folder
         #render2.add_folder(["templates", "quagga"], folder_name)
         render2.add_file(("templates", "netkit_lab_conf.mako"), "lab.conf")
         render2.base_folder = [self.host, "netkit"]
         render2.archive = "%s_%s" % (self.host, "netkit")
         render2.template_data = {
-        "render_dst_file": "lab.conf",
-        "description": "AutoNetkit Lab",
-        "author": "AutoNetkit",
-        "web": "www.autonetkit.org",
+            "render_dst_file": "lab.conf",
+            "description": "AutoNetkit Lab",
+            "author": "AutoNetkit",
+            "web": "www.autonetkit.org",
         }
 
         host_nodes = list(
@@ -136,13 +141,13 @@ class NetkitCompiler(PlatformCompiler):
         subgraph = self.nidb.subgraph(host_nodes, self.host)
 
         lab_topology.machines = " ".join(alpha_sort(naming.network_hostname(phy_node)
-            for phy_node in subgraph.l3devices()))
+                                                    for phy_node in subgraph.l3devices()))
 
         lab_topology.config_items = []
         for node in sorted(subgraph.l3devices()):
             for interface in node.physical_interfaces():
                 broadcast_domain = str(interface.ipv4_subnet).replace("/", ".")
-                #netkit lab.conf uses 1 instead of eth1
+                # netkit lab.conf uses 1 instead of eth1
                 numeric_id = interface.numeric_id
                 stanza = ConfigStanza(
                     device=naming.network_hostname(node),
@@ -161,5 +166,6 @@ class NetkitCompiler(PlatformCompiler):
                 )
                 lab_topology.tap_ips.append(stanza)
 
-        lab_topology.tap_ips = sorted(lab_topology.tap_ips, key = lambda x: x.ip)
-        lab_topology.config_items = sorted(lab_topology.config_items, key = lambda x: x.device)
+        lab_topology.tap_ips = sorted(lab_topology.tap_ips, key=lambda x: x.ip)
+        lab_topology.config_items = sorted(
+            lab_topology.config_items, key=lambda x: x.device)

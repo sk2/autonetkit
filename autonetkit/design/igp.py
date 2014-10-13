@@ -3,7 +3,9 @@ import autonetkit.ank as ank_utils
 
 from autonetkit.ank_utils import call_log
 
-#TODO: extract the repeated code and use the layer2  and layer3 graphs
+# TODO: extract the repeated code and use the layer2  and layer3 graphs
+
+
 def build_igp(anm):
     build_ospf(anm)
     build_eigrp(anm)
@@ -13,10 +15,12 @@ def build_igp(anm):
     igp_protocols = ["ospf", "eigrp", "isis"]
     for protocol in igp_protocols:
         g_protocol = anm[protocol]
-        g_igp.add_nodes_from(g_protocol, igp = protocol)
-        g_igp.add_edges_from(g_protocol.edges(), igp = protocol)
+        g_igp.add_nodes_from(g_protocol, igp=protocol)
+        g_igp.add_edges_from(g_protocol.edges(), igp=protocol)
 
 #@call_log
+
+
 def build_ospf(anm):
     """
     Build OSPF graph.
@@ -46,10 +50,10 @@ def build_ospf(anm):
 
     ospf_nodes = [n for n in g_l3 if n['phy'].igp == "ospf"]
     g_ospf.add_nodes_from(ospf_nodes)
-    g_ospf.add_edges_from(g_l3.edges(), warn = False)
+    g_ospf.add_edges_from(g_l3.edges(), warn=False)
     ank_utils.copy_int_attr_from(g_l3, g_ospf, "multipoint")
 
-    #TODO: work out why this doesnt work
+    # TODO: work out why this doesnt work
     #ank_utils.copy_int_attr_from(g_in, g_ospf, "ospf_cost", dst_attr="cost",  type=int, default = 1)
     for node in g_ospf:
         for interface in node.physical_interfaces():
@@ -57,7 +61,8 @@ def build_ospf(anm):
 
     ank_utils.copy_attr_from(g_in, g_ospf, "ospf_area", dst_attr="area")
     #ank_utils.copy_edge_attr_from(g_in, g_ospf, "ospf_cost", dst_attr="cost",  type=int, default = 1)
-    ank_utils.copy_attr_from(g_in, g_ospf, "custom_config_ospf", dst_attr="custom_config")
+    ank_utils.copy_attr_from(
+        g_in, g_ospf, "custom_config_ospf", dst_attr="custom_config")
 
     g_ospf.remove_edges_from([link for link in g_ospf.edges(
     ) if link.src.asn != link.dst.asn])  # remove inter-AS links
@@ -69,7 +74,6 @@ def build_ospf(anm):
     if any(router.area == "0.0.0.0" for router in g_ospf):
         # string comparison as hasn't yet been cast to IPAddress
         default_area = area_zero_ip
-
 
     for router in g_ospf:
         if not router.area or router.area == "None":
@@ -83,12 +87,12 @@ def build_ospf(anm):
                     router.area = netaddr.IPAddress(router.area)
                 except netaddr.core.AddrFormatError:
                     router.log.warning("Invalid OSPF area %s. Using default"
-                                " of %s" % (router.area, default_area))
+                                       " of %s" % (router.area, default_area))
                     router.area = default_area
 
-    #TODO: use interfaces throughout, rather than edges
+    # TODO: use interfaces throughout, rather than edges
     for router in g_ospf:
-# and set area on interface
+        # and set area on interface
         for edge in router.edges():
             if edge.area:
                 continue  # allocated (from other "direction", as undirected)
@@ -97,7 +101,7 @@ def build_ospf(anm):
                 continue
 
             if router.area in area_zero_ids or edge.dst.area in area_zero_ids:
-# backbone to other area
+                # backbone to other area
                 if router.area in area_zero_ids:
                     # router in backbone, use other area
                     edge.area = edge.dst.area
@@ -125,10 +129,12 @@ def build_ospf(anm):
                 # intersection has at least one element -> router has area zero
                 router.type = "backbone ABR"
             elif router.area in area_zero_ids:
-                router.log.debug("Router belongs to area %s but has no area zero interfaces" %(router.area))
+                router.log.debug(
+                    "Router belongs to area %s but has no area zero interfaces" % (router.area))
                 router.type = "backbone ABR"
             else:
-                router.log.warning("spans multiple areas but is not a member of area 0")
+                router.log.warning(
+                    "spans multiple areas but is not a member of area 0")
                 router.type = "INVALID"
 
     if (any(area_zero_int in router.areas for router in g_ospf) and
@@ -140,7 +146,8 @@ def build_ospf(anm):
             link.cost = 1
 
     # map areas and costs onto interfaces
-    #TODO: later map them directly rather than with edges - this is part of the transition
+    # TODO: later map them directly rather than with edges - this is part of
+    # the transition
     for edge in g_ospf.edges():
         for interface in edge.interfaces():
             interface.cost = edge.cost
@@ -153,6 +160,8 @@ def build_ospf(anm):
         router.process_id = router.asn
 
 #@call_log
+
+
 def ip_to_net_ent_title_ios(ip_addr):
     """ Converts an IP address into an OSI Network Entity Title
     suitable for use in IS-IS on IOS.
@@ -175,6 +184,8 @@ def ip_to_net_ent_title_ios(ip_addr):
                      "00"])
 
 #@call_log
+
+
 def build_eigrp(anm):
     """Build eigrp overlay"""
     g_in = anm['input']
@@ -191,15 +202,16 @@ def build_eigrp(anm):
         return
     eigrp_nodes = [n for n in g_l3 if n['phy'].igp == "eigrp"]
     g_eigrp.add_nodes_from(eigrp_nodes)
-    g_eigrp.add_edges_from(g_l3.edges(), warn = False)
+    g_eigrp.add_edges_from(g_l3.edges(), warn=False)
     ank_utils.copy_int_attr_from(g_l3, g_eigrp, "multipoint")
 
-    ank_utils.copy_attr_from(g_in, g_eigrp, "custom_config_eigrp", dst_attr="custom_config")
+    ank_utils.copy_attr_from(
+        g_in, g_eigrp, "custom_config_eigrp", dst_attr="custom_config")
 
 # Merge and explode switches
     ank_utils.aggregate_nodes(g_eigrp, g_eigrp.switches())
     exploded_edges = ank_utils.explode_nodes(g_eigrp,
-        g_eigrp.switches())
+                                             g_eigrp.switches())
     for edge in exploded_edges:
         edge.multipoint = True
 
@@ -218,6 +230,8 @@ def build_eigrp(anm):
             interface.multipoint = edge.multipoint
 
 #@call_log
+
+
 def build_isis(anm):
     """Build isis overlay"""
     g_in = anm['input']
@@ -235,11 +249,12 @@ def build_isis(anm):
 
     isis_nodes = [n for n in g_l3 if n['phy'].igp == "isis"]
     g_isis.add_nodes_from(isis_nodes)
-    g_isis.add_edges_from(g_l3.edges(), warn = False)
+    g_isis.add_edges_from(g_l3.edges(), warn=False)
     ank_utils.copy_int_attr_from(g_l3, g_isis, "multipoint")
 
     g_ipv4 = anm['ipv4']
-    ank_utils.copy_attr_from(g_in, g_isis, "custom_config_isis", dst_attr="custom_config")
+    ank_utils.copy_attr_from(
+        g_in, g_isis, "custom_config_isis", dst_attr="custom_config")
 
     g_isis.remove_edges_from(
         [link for link in g_isis.edges() if link.src.asn != link.dst.asn])

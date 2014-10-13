@@ -16,6 +16,8 @@ __all__ = ['build']
 from autonetkit.ank_utils import call_log
 
 #@call_log
+
+
 def load(input_graph_string):
     # TODO: look at XML header for file type
     import autonetkit.load.graphml as graphml
@@ -26,7 +28,7 @@ def load(input_graph_string):
         try:
             input_graph = load_json.load_json(input_graph_string)
         except (ValueError, autonetkit.exception.AnkIncorrectFileFormat):
-# try a different reader
+            # try a different reader
             try:
                 from autonetkit_cisco import load as cisco_load
             except ImportError, e:
@@ -38,7 +40,7 @@ def load(input_graph_string):
                 SETTINGS['General']['deploy'] = True
                 SETTINGS['Deploy Hosts']['internal'] = {
                     'VIRL': {
-                    'deploy': True,
+                        'deploy': True,
                     },
                 }
 
@@ -70,7 +72,7 @@ def grid_2d(dim):
     SETTINGS['General']['deploy'] = True
     SETTINGS['Deploy Hosts']['internal'] = {
         'cisco': {
-        'deploy': True,
+            'deploy': True,
         },
     }
 
@@ -81,10 +83,10 @@ def grid_2d(dim):
 def initialise(input_graph):
     """Initialises the input graph with from a NetworkX graph"""
     all_multigraph = input_graph.is_multigraph()
-    anm = autonetkit.anm.NetworkModel(all_multigraph = all_multigraph)
+    anm = autonetkit.anm.NetworkModel(all_multigraph=all_multigraph)
 
     g_in = anm.initialise_input(input_graph)
-    #autonetkit.update_vis(anm)
+    # autonetkit.update_vis(anm)
 
 # set defaults
     if not g_in.data.specified_int_names:
@@ -164,7 +166,7 @@ def apply_design_rules(anm):
 
     g_phy = anm['phy']
     from autonetkit.design.osi_layers import (build_layer2,
-        check_layer2, build_layer2_broadcast, build_layer3)
+                                              check_layer2, build_layer2_broadcast, build_layer3)
     log.info("Building layer2")
     build_layer2(anm)
 
@@ -248,7 +250,7 @@ def apply_design_rules(anm):
 # post-processing
     if anm['phy'].data.enable_routing:
         from autonetkit.design.mpls import (mark_ebgp_vrf,
-            build_ibgp_vpn_v4)
+                                            build_ibgp_vpn_v4)
         mark_ebgp_vrf(anm)
         build_ibgp_vpn_v4(anm)  # build after bgp as is based on
     # autonetkit.update_vis(anm)
@@ -271,6 +273,7 @@ def build(input_graph):
     anm = initialise(input_graph)
     anm = apply_design_rules(anm)
     return anm
+
 
 def remove_parallel_switch_links(anm):
     return
@@ -304,7 +307,7 @@ def remove_parallel_switch_links(anm):
                 dst.log.warning(
                     "Multiple edges exist to same switch cluster: "
                     " %s (%s). Removing edges from interfaces %s" % (
-                    str(sorted(component)), interfaces, interfaces_to_disconnect))
+                        str(sorted(component)), interfaces, interfaces_to_disconnect))
 
                 g_phy.remove_edges_from(edges_to_remove)
 
@@ -349,6 +352,8 @@ def build_phy(anm):
     remove_parallel_switch_links(anm)
 
 #@call_log
+
+
 def build_conn(anm):
     """Build connectivity overlay"""
     g_in = anm['input']

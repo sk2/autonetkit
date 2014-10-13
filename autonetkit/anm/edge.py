@@ -18,14 +18,14 @@ class NmEdge(object):
         overlay_id,
         src_id,
         dst_id,
-        ekey = 0,
+        ekey=0,
     ):
 
         object.__setattr__(self, 'anm', anm)
         object.__setattr__(self, 'overlay_id', overlay_id)
         object.__setattr__(self, 'src_id', src_id)
         object.__setattr__(self, 'dst_id', dst_id)
-        object.__setattr__(self, 'ekey', ekey) # for multigraphs
+        object.__setattr__(self, 'ekey', ekey)  # for multigraphs
         #logger = logging.getLogger("ANK")
         #logstring = "Interface: %s" % str(self)
         #logger = CustomAdapter(logger, {'item': logstring})
@@ -49,7 +49,7 @@ class NmEdge(object):
 
     def is_parallel(self):
         """If there is more than one edge between the src, dst of this edge"""
-        #TODO: check this for digraph, multiidigraph
+        # TODO: check this for digraph, multiidigraph
         return self._overlay.number_of_edges(self.src, self.dst) > 1
 
     def __eq__(self, other):
@@ -58,11 +58,11 @@ class NmEdge(object):
             try:
                 if other.is_multigraph():
                     return (self.src_id, self.dst_id, self.ekey) == (other.src_id,
-                      other.dst_id, other.ekey)
+                                                                     other.dst_id, other.ekey)
                 else:
                     # multi, single
                     return (self.src_id, self.dst_id) == (other.src_id,
-                        other.dst_id)
+                                                          other.dst_id)
 
             except AttributeError:
                 if len(other) == 2:
@@ -72,19 +72,19 @@ class NmEdge(object):
                     # (src, dst, key)
                     return (self.src_id, self.dst_id, self.ekey) == other
 
-
         try:
-            # self is single, other is single or multi -> only compare (src, dst)
+            # self is single, other is single or multi -> only compare (src,
+            # dst)
             return (self.src_id, self.dst_id) == (other.src_id, other.dst_id)
         except AttributeError:
-            #compare to strings
+            # compare to strings
             return (self.src_id, self.dst_id) == other
 
     def __repr__(self):
         """String of node"""
         if self.is_multigraph():
             return '%s: (%s, %s, %s)' % (self.overlay_id, self.src,
-                self.dst, self.ekey)
+                                         self.dst, self.ekey)
 
         return '%s: (%s, %s)' % (self.overlay_id, self.src, self.dst)
 
@@ -98,13 +98,11 @@ class NmEdge(object):
     def _overlay(self):
         return NmGraph(self.anm, self.overlay_id)
 
-
     def __lt__(self, other):
         """"""
         if self.is_multigraph() and other.is_multigraph():
             return (self.src.node_id, self.dst.node_id, self.ekey) \
                 < (other.src.node_id, other.dst.node_id, other.ekey)
-
 
         return (self.src.node_id, self.dst.node_id) \
             < (other.src.node_id, other.dst.node_id)
@@ -115,7 +113,7 @@ class NmEdge(object):
         """
         if self.is_multigraph():
             return self._graph.has_edge(self.src_id, self.dst_id,
-                key=self.ekey)
+                                        key=self.ekey)
 
         return self._graph.has_edge(self.src_id, self.dst_id)
 
@@ -126,7 +124,7 @@ class NmEdge(object):
 
     @raw_interfaces.setter
     def raw_interfaces(self, value):
-       self._ports = value
+        self._ports = value
 
     @property
     def _graph(self):
@@ -156,7 +154,6 @@ class NmEdge(object):
 
         return NmNode(self.anm, self.overlay_id, self.dst_id)
 
-
     # Interfaces
 
     def apply_to_interfaces(self, attribute):
@@ -170,7 +167,7 @@ class NmEdge(object):
 
         src_int_id = self._ports[self.src_id]
         return NmPort(self.anm, self.overlay_id,
-                           self.src_id, src_int_id)
+                      self.src_id, src_int_id)
 
     @property
     def dst_int(self):
@@ -181,7 +178,7 @@ class NmEdge(object):
         except KeyError:
             log.warn("Remove interface not present for %s" % self)
         return NmPort(self.anm, self.overlay_id,
-                           self.dst_id, dst_int_id)
+                      self.dst_id, dst_int_id)
 
     def bind_interface(self, node, interface):
         """Bind this edge to specified index"""
@@ -193,14 +190,13 @@ class NmEdge(object):
         # TODO: warn if interface doesn't exist on node
 
         return iter(NmPort(self.anm, self.overlay_id,
-                    node_id, interface_id) for (node_id,
-                    interface_id) in self._ports.items())
+                           node_id, interface_id) for (node_id,
+                                                       interface_id) in self._ports.items())
 
     #
 
     def dump(self):
         return str(self._graph[self.src_id][self.dst_id])
-
 
     def get(self, key):
         """For consistency, edge.get(key) is neater than getattr(edge, key)"""
@@ -221,7 +217,7 @@ class NmEdge(object):
         """Sets edge property"""
 
         if key == 'raw_interfaces':
-            #TODO: fix workaround for
+            # TODO: fix workaround for
             # http://docs.python.org/2/reference/datamodel.html#customizing-attribute-access
             object.__setattr__(self, 'raw_interfaces', val)
 
