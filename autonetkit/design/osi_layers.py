@@ -1,9 +1,6 @@
 import autonetkit.log as log
 import autonetkit.ank as ank_utils
 
-from autonetkit.ank_utils import call_log
-
-
 def build_layer2(anm):
     g_l2 = anm.add_overlay('layer2')
     g_phy = anm['phy']
@@ -16,7 +13,7 @@ def build_layer2(anm):
 
     try:
         from autonetkit_cisco import build_network as cisco_build_network
-    except ImportError, e:
+    except ImportError:
         pass
     else:
         cisco_build_network.post_layer2(anm)
@@ -40,8 +37,8 @@ def check_layer2(anm):
         # eBGP if more than one unique neigh ASN
         is_ebgp = len(neigh_asns.keys()) > 1
         if is_igp and is_ebgp:
-            log.warning("Switch %s contains both IGP and eBGP neighbors"
-                        % switch)
+            log.warning("Switch %s contains both IGP and eBGP neighbors",
+                        switch)
 
     # check for multiple links from nodes to switch
     for switch in sorted(g_l2.switches()):
@@ -49,8 +46,8 @@ def check_layer2(anm):
             edges = g_l2.edges(switch, neighbor)
             if len(edges) > 1:
                 # more than one edge between the (src, dst) pair -> parallel
-                log.warning("Multiple edges (%s) between %s and device %s"
-                            % (len(edges), switch, neighbor))
+                log.warning("Multiple edges (%s) between %s and device %s",
+                            len(edges), switch, neighbor)
 
 
 def build_layer2_broadcast(anm):
@@ -115,7 +112,7 @@ def build_layer2_broadcast(anm):
     coincident_nodes = {k: v for k, v in coincident_nodes.items()
                         if len(v) > 1}  # trim out single node co-ordinates
     import math
-    for key, val in coincident_nodes.items():
+    for _, val in coincident_nodes.items():
         for index, item in enumerate(val):
             index = index + 1
             x_offset = 25 * math.floor(index / 2) * math.pow(-1, index)
@@ -183,10 +180,6 @@ def build_layer3(anm):
                  and n['layer2'].device_subtype == "virtual"]
 
     # explode each seperately?
-    vswitch_edges = []
-    for vswitch in vswitches:
-        vswitch_edges += ank_utils.explode_nodes(g_l3, [vswitch])
-
     for edge in exploded_edges:
         edge.multipoint = True
         edge.src_int.multipoint = True

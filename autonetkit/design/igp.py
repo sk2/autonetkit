@@ -130,7 +130,8 @@ def build_ospf(anm):
                 router.type = "backbone ABR"
             elif router.area in area_zero_ids:
                 router.log.debug(
-                    "Router belongs to area %s but has no area zero interfaces" % (router.area))
+                    "Router belongs to area %s but has no area zero interfaces",
+                    router.area)
                 router.type = "backbone ABR"
             else:
                 router.log.warning(
@@ -146,7 +147,7 @@ def build_ospf(anm):
             link.cost = 1
 
     # map areas and costs onto interfaces
-    # TODO: later map them directly rather than with edges - this is part of
+    # TODO: later map them directly rather than with edges - part of
     # the transition
     for edge in g_ospf.edges():
         for interface in edge.interfaces():

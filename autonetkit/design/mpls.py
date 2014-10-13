@@ -250,7 +250,6 @@ def build_mpls_ldp(anm):
 
 
 def mark_ebgp_vrf(anm):
-    g_ebgp = anm['ebgp']
     g_vrf = anm['vrf']
     g_ebgpv4 = anm['ebgp_v4']
     g_ebgpv6 = anm['ebgp_v6']
@@ -263,7 +262,7 @@ def mark_ebgp_vrf(anm):
             edge.vrf = edge.dst['vrf'].vrf
 
     for edge in g_ebgpv6.edges():
-        if (edge.src in pe_nodes and edge.dst in ce_nodes):
+        if edge.src in pe_nodes and edge.dst in ce_nodes:
              # exclude from "regular" ebgp (as put into vrf stanza)
             edge.exclude = True
             edge.vrf = edge.dst['vrf'].vrf
@@ -278,7 +277,7 @@ def build_vrf(anm):
     g_vrf = anm.add_overlay("vrf")
 
     import autonetkit
-    autonetkit.ank.set_node_default(g_in,  vrf=None)
+    autonetkit.ank.set_node_default(g_in, vrf=None)
 
     if not any(True for n in g_in.routers() if n.vrf):
         log.debug("No VRFs set")

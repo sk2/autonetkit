@@ -126,12 +126,12 @@ class NmPort(object):
 
         if not self.anm.has_overlay(overlay_id):
             log.warning('Trying to access interface %s for non-existent overlay %s'
-                        % (self, overlay_id))
+                        , self, overlay_id)
             return None
 
         if not self.node_id in self.anm.overlay_nx_graphs[overlay_id]:
             log.debug('Trying to access interface %s for non-existent node %s in overlay %s'
-                      % (self, self.node_id, self.overlay_id))
+                      , self, self.node_id, self.overlay_id)
             return None
 
         try:

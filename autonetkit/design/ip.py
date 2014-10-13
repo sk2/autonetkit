@@ -3,7 +3,6 @@
 import autonetkit.ank as ank_utils
 import autonetkit.config
 import autonetkit.log as log
-from autonetkit.ank_utils import call_log
 
 SETTINGS = autonetkit.config.settings
 
@@ -49,28 +48,31 @@ def extract_ipv6_blocks(anm):
         infra_subnet = g_in.data.ipv6_infra_subnet
         infra_prefix = g_in.data.ipv6_infra_prefix
         infra_block = sn_preflen_to_network(infra_subnet, infra_prefix)
-    except Exception, e:
+    except Exception, error:
         infra_block = IPNetwork(
-            '%s/%s' % (ipv6_defaults["infra_subnet"], ipv6_defaults["infra_prefix"]))
+            '%s/%s' % (ipv6_defaults["infra_subnet"],
+                       ipv6_defaults["infra_prefix"]))
         if infra_subnet is None or infra_prefix is None:
-            log.debug('Using default IPv6 infra_subnet %s' % infra_block)
+            log.debug('Using default IPv6 infra_subnet %s', infra_block)
         else:
             log.warning('Unable to obtain IPv6 infra_subnet from input graph: %s, using default %s' % (
-                e, infra_block))
+                error, infra_block))
 
     try:
         loopback_subnet = g_in.data.ipv6_loopback_subnet
         loopback_prefix = g_in.data.ipv6_loopback_prefix
         loopback_block = sn_preflen_to_network(loopback_subnet,
                                                loopback_prefix)
-    except Exception, e:
+    except Exception, error:
         loopback_block = IPNetwork(
-            '%s/%s' % (ipv6_defaults["loopback_subnet"], ipv6_defaults["loopback_prefix"]))
+            '%s/%s' % (ipv6_defaults["loopback_subnet"],
+                       ipv6_defaults["loopback_prefix"]))
         if loopback_subnet is None or loopback_prefix is None:
-            log.debug('Using default IPv6 loopback_subnet %s' % loopback_block)
+            log.debug('Using default IPv6 loopback_subnet %s',
+                      loopback_block)
         else:
-            log.warning('Unable to obtain IPv6 loopback_subnet from input graph: %s, using default %s' % (
-                e, loopback_block))
+            log.warning('Unable to obtain IPv6 loopback_subnet from" input graph: %s, using default %s' % (
+                error, loopback_block))
 
     try:
         vrf_loopback_subnet = g_in.data.ipv6_vrf_loopback_subnet
@@ -124,8 +126,8 @@ def manual_ipv6_infrastructure_allocation(anm):
                                            i.prefixlen)) for i in connected_interfaces]
 
         if len(cd_subnets) == 0:
-            log.warning(
-                "Collision domain %s is not connected to any nodes" % coll_dom)
+            log.warning("Collision domain %s is not connected to any nodes",
+                        coll_dom)
             continue
 
         try:
@@ -135,7 +137,7 @@ def manual_ipv6_infrastructure_allocation(anm):
                                                         i.subnet.network, i.prefixlen) for i in
                                          connected_interfaces)
             log.warning('Non matching subnets from collision domain %s: %s'
-                        % (coll_dom, mismatch_subnets))
+                        ,coll_dom, mismatch_subnets)
         else:
             coll_dom.subnet = cd_subnets[0]  # take first entry
 

@@ -72,8 +72,6 @@ def build_ebgp_v6(anm):
 
 
 def build_ebgp(anm):
-    g_in = anm['input']
-    g_phy = anm['phy']
     g_l3 = anm['layer3']
 
     g_ebgp = anm.add_overlay("ebgp", directed=True)
@@ -89,7 +87,6 @@ def build_ebgp(anm):
 
 def build_ibgp(anm):
     g_in = anm['input']
-    g_phy = anm['phy']
     g_bgp = anm['bgp']
 
     # TODO: build direct to ibgp graph - can construct combined bgp for vis
@@ -114,10 +111,10 @@ def build_ibgp(anm):
     # Notify user of non-ibgp nodes
     non_ibgp_nodes = [n for n in g_bgp if n.ibgp_role is "Disabled"]
     if 0 < len(non_ibgp_nodes) < 10:
-        log.info("Skipping iBGP for iBGP disabled nodes: %s" % non_ibgp_nodes)
+        log.info("Skipping iBGP for iBGP disabled nodes: %s", non_ibgp_nodes)
     elif len(non_ibgp_nodes) >= 10:
-        log.info(
-            "Skipping iBGP for more than 10 iBGP disabled nodes: refer to visualization for resulting topology.")
+        log.info("Skipping iBGP for more than 10 iBGP disabled nodes:",
+                 "refer to visualization for resulting topology.")
 
     # warn for any nodes that have RR set but no rr_cluster, or HRR set and no
     # hrr_cluster
@@ -133,7 +130,7 @@ def build_ibgp(anm):
         log.warning("Some routers are set as HRR but have no hrr_cluster: %s. Please specify an hrr_cluster for peering."
                     % ", ".join(str(n) for n in hrr_mismatch))
 
-    for asn, asn_devices in ank_utils.groupby("asn", ibgp_nodes):
+    for _, asn_devices in ank_utils.groupby("asn", ibgp_nodes):
         asn_devices = list(asn_devices)
 
         # iBGP peer peers with
@@ -147,12 +144,12 @@ def build_ibgp(anm):
         down_links = []
 
         # 0. RRCs can only belong to either an rr_cluster or a hrr_cluster
-        invalid_rrcs = [
-            r for r in rrcs if r.rr_cluster is not None and r.hrr_cluster is not None]
+        invalid_rrcs = [r for r in rrcs if r.rr_cluster is not None
+                        and r.hrr_cluster is not None]
         if len(invalid_rrcs):
             message = ", ".join(str(r) for r in invalid_rrcs)
             log.warning("RRCs can only have either a rr_cluster or hrr_cluster set. "
-                        "The following have both set, and only the rr_cluster will be used: %s" % message)
+                        "The following have both set, and only the rr_cluster will be used: %s", message)
 
         # TODO: do we also want to warn for RRCs with no cluster set? Do we also exclude these?
         # TODO: do we also want to warn for HRRs and RRs with no cluster set?
