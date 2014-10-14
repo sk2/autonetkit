@@ -11,7 +11,7 @@ from autonetkit.anm.graph_data import NmGraphData
 from autonetkit.anm.interface import NmPort
 from autonetkit.anm.node import NmNode
 from autonetkit.exception import OverlayNotFound
-#TODO: check if this is still a performance hit
+# TODO: check if this is still a performance hit
 from autonetkit.log import CustomAdapter
 
 
@@ -214,12 +214,12 @@ class OverlayBase(object):
                 return NmNode(self._anm, self._overlay_id, key)
 
             # doesn't have node_id, likely a label string, search based on this
-            # # label
+            # label
 
             for node in self:
                 if str(node) == key:
                     return node
-            #TODO: change warning to an exception
+            # TODO: change warning to an exception
             log.warning('Unable to find node %s in %s ' % (key, self))
             return None
 
@@ -276,6 +276,7 @@ class OverlayBase(object):
 
     def routers(self, *args, **kwargs):
         """Shortcut for nodes(), sets device_type to be router
+
         >>> anm = autonetkit.nm_mixed()
         >>> anm['phy'].routers()
         [r1, r2, r3]
@@ -287,6 +288,7 @@ class OverlayBase(object):
 
     def switches(self, *args, **kwargs):
         """Shortcut for nodes(), sets device_type to be switch
+
         >>> anm = autonetkit.nm_mixed()
         >>> anm['phy'].switches()
         [sw1]
@@ -298,6 +300,7 @@ class OverlayBase(object):
 
     def servers(self, *args, **kwargs):
         """Shortcut for nodes(), sets device_type to be server
+
         >>> anm = autonetkit.nm_mixed()
         >>> anm['phy'].servers()
         [s1]
@@ -308,7 +311,7 @@ class OverlayBase(object):
         return [r for r in result if r.is_server()]
 
     def l3devices(self, *args, **kwargs):
-        """Shortcut for nodes(), sets device_type to be server
+        """Shortcut for nodes(), tests if device is_l3device
 
         >>> anm = autonetkit.nm_mixed()
         >>> anm['phy'].l3devices()
