@@ -39,7 +39,7 @@ class OverlayBase(object):
 
         Example:
 
-        >>> anm = autonetkit.nm_house()
+        >>> anm = autonetkit.topos.house()
         >>> anm['phy']
         phy
 
@@ -51,10 +51,10 @@ class OverlayBase(object):
         """
         Example:
 
-        >>> anm = autonetkit.nm_house()
+        >>> anm = autonetkit.topos.house()
         >>> anm['phy'].is_multigraph()
         False
-        >>> anm = autonetkit.nm_multi()
+        >>> anm = autonetkit.topos.multi()
         >>> anm['phy'].is_multigraph()
         True
 
@@ -71,7 +71,7 @@ class OverlayBase(object):
         """
         Example:
 
-        >>> anm = autonetkit.nm_house()
+        >>> anm = autonetkit.topos.house()
         >>> "r1" in anm['phy']
         True
         >>> "test" in anm['phy']
@@ -92,19 +92,14 @@ class OverlayBase(object):
         return NmPort(self._anm, self._overlay_id, interface.node_id,
                       interface.interface_id)
 
-    def edge(
-        self,
-        edge_to_find,
-        dst_to_find=None,
-        key=0,
-    ):
+    def edge(self, edge_to_find, dst_to_find=None, key=0):
         '''returns edge in this graph with same src and dst
         and key for parallel edges (default is to return first edge)
         #TODO: explain parameter overloading: strings, edges, nodes...
 
         Example:
 
-        >>> anm = autonetkit.nm_house()
+        >>> anm = autonetkit.topos.house()
         >>> g_phy = anm['phy']
         >>> e_r1_r2 = g_phy.edge("r1", "r2")
 
@@ -198,7 +193,7 @@ class OverlayBase(object):
 
         Example:
 
-        >>> anm = autonetkit.nm_house()
+        >>> anm = autonetkit.topos.house()
         >>> g_phy = anm['phy']
         >>> r1 = g_phy.node("r1")
 
@@ -271,7 +266,26 @@ class OverlayBase(object):
         return len(self._graph)
 
     def nodes(self, *args, **kwargs):
-        """"""
+        """
+
+        >>> anm = autonetkit.topos.multi_as()
+        >>> g_phy = anm["phy"]
+        >>> g_phy.nodes()
+        [r4, r5, r6, r7, r1, r2, r3, r8, r9, r10]
+
+        >>> g_phy.nodes(asn=1)
+        [r4, r5, r1, r2, r3]
+
+        >>> g_phy.nodes(asn=3)
+        [r7, r8, r9, r10]
+
+        >>> g_phy.nodes(asn=1, ibgp_role="RR")
+        [r4, r5]
+
+        >>> g_phy.nodes(asn=1, ibgp_role="RRC")
+        [r1, r2, r3]
+
+        """
 
         result = list(NmNode(self._anm, self._overlay_id, node)
                       for node in self._graph)
@@ -283,7 +297,7 @@ class OverlayBase(object):
     def routers(self, *args, **kwargs):
         """Shortcut for nodes(), sets device_type to be router
 
-        >>> anm = autonetkit.nm_mixed()
+        >>> anm = autonetkit.topos.mixed()
         >>> anm['phy'].routers()
         [r1, r2, r3]
 
@@ -295,7 +309,7 @@ class OverlayBase(object):
     def switches(self, *args, **kwargs):
         """Shortcut for nodes(), sets device_type to be switch
 
-        >>> anm = autonetkit.nm_mixed()
+        >>> anm = autonetkit.topos.mixed()
         >>> anm['phy'].switches()
         [sw1]
 
@@ -307,7 +321,7 @@ class OverlayBase(object):
     def servers(self, *args, **kwargs):
         """Shortcut for nodes(), sets device_type to be server
 
-        >>> anm = autonetkit.nm_mixed()
+        >>> anm = autonetkit.topos.mixed()
         >>> anm['phy'].servers()
         [s1]
 
@@ -319,7 +333,7 @@ class OverlayBase(object):
     def l3devices(self, *args, **kwargs):
         """Shortcut for nodes(), tests if device is_l3device
 
-        >>> anm = autonetkit.nm_mixed()
+        >>> anm = autonetkit.topos.mixed()
         >>> anm['phy'].l3devices()
         [s1, r1, r2, r3]
 
@@ -336,10 +350,15 @@ class OverlayBase(object):
     def groupby(self, attribute, nodes=None):
         """Returns a dictionary sorted by attribute
 
-        >>> anm = autonetkit.nm_house()
+        >>> anm = autonetkit.topos.house()
         >>> g_phy = anm['phy']
         >>> g_phy.groupby("asn")
         {1: [r1, r2, r3], 2: [r4, r5]}
+
+        Can also specify a subset to work from
+        >>> nodes = [n for n in g_phy if n.degree() > 2]
+        >>> g_phy.groupby("asn", nodes=nodes)
+        {1: [r2, r3]}
 
         """
 
@@ -356,12 +375,7 @@ class OverlayBase(object):
 
         return result
 
-    def filter(
-        self,
-        nbunch=None,
-        *args,
-        **kwargs
-    ):
+    def filter(self, nbunch=None, *args, **kwargs):
         """"""
 
         if nbunch is None:
@@ -376,14 +390,19 @@ class OverlayBase(object):
 
         return [n for n in nbunch if filter_func(n)]
 
-    def edges(
-        self,
-        src_nbunch=None,
-        dst_nbunch=None,
-        *args,
-        **kwargs
-    ):
-        """"""
+    def edges(self, src_nbunch=None, dst_nbunch=None, *args,
+              **kwargs):
+        """
+        >>> anm = autonetkit.topos.house()
+        >>> g_phy = anm['phy']
+        >>> g_phy.edges()
+        [phy: (r4, r5), phy: (r4, r2), phy: (r5, r3), phy: (r1, r2), phy: (r1, r3), phy: (r2, r3)]
+
+        >>> g_phy.edge("r1", "r2").color = "red"
+        >>> g_phy.edges(color = "red")
+        [phy: (r1, r2)]
+
+        """
 
 # src_nbunch or dst_nbunch may be single node
 # TODO: refactor this
@@ -409,8 +428,8 @@ class OverlayBase(object):
                                self._graph.edges(src_nbunch, keys=True))
         else:
             default_key = 0
-            valid_edges = list((src, dst, default_key) for (src,
-                                                            dst) in self._graph.edges(src_nbunch))
+            valid_edges = list((src, dst, default_key)
+                               for (src, dst) in self._graph.edges(src_nbunch))
 
         if dst_nbunch:
             try:
@@ -434,7 +453,3 @@ class OverlayBase(object):
 
         return list(result)
 
-if __name__ == "__main__":
-    import doctest
-    from autonetkit.anm.network_model import NetworkModel
-    doctest.testmod(extraglobs={'anm': NetworkModel()})

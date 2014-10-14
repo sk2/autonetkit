@@ -90,6 +90,7 @@ def build_ibgp(anm):
     g_bgp = anm['bgp']
 
     # TODO: build direct to ibgp graph - can construct combined bgp for vis
+    #TODO: normalise input property
 
     ank_utils.copy_attr_from(g_in, g_bgp, "ibgp_role")
     ank_utils.copy_attr_from(
