@@ -36,17 +36,7 @@ class NmPort(object):
         return hash(self.__key())
 
     def __repr__(self):
-        try:
-            description = self.description or self.interface_id
-        except (AttributeError, IndexError):
-            # TODO: work out why get here for some topologies:
-            """
-            interface.py", line 187, in __getattr__
-                return self._interface.get(key)
-            AttributeError: 'NoneType' object has no attribute 'get'
-            """
-            description = self.interface_id
-        return '%s.%s' % (description, self.node)
+        return '%s.%s' % (self.id, self.node)
 
     def __eq__(self, other):
         return self.__key() == other.__key()

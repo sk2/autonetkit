@@ -54,7 +54,7 @@ class OverlayBase(object):
         >>> anm = autonetkit.topos.house()
         >>> anm['phy'].is_multigraph()
         False
-        >>> anm = autonetkit.topos.multi()
+        >>> anm = autonetkit.topos.multi_edge()
         >>> anm['phy'].is_multigraph()
         True
 
@@ -106,6 +106,13 @@ class OverlayBase(object):
         Can also find from an edge
 
         >>> e_r1_r2_input = anm['input'].edge(e_r1_r2)
+
+        And for multi-edge graphs can specify key
+        >>> anm = autonetkit.topos.multi_edge()
+        >>> e1 = anm['phy'].edge("r1", "r2", 0)
+        >>> e2 = anm['phy'].edge("r1", "r2", 1)
+        >>> e1 == e2
+        False
 
 
         '''

@@ -1,9 +1,9 @@
-from autonetkit.topologies import house
+import autonetkit
 import autonetkit.design.igp
 from mock import patch
 
 def build_layer3():
-    anm = house.house()
+    anm = autonetkit.topos.house()
     from autonetkit.design.osi_layers import build_layer2, build_layer3
     build_layer2(anm)
     build_layer3(anm)
