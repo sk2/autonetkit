@@ -1,4 +1,4 @@
-def multi():
+def multi_edge():
     """Returns anm with  input and physical as house graph"""
     from networkx.readwrite import json_graph
     import networkx as nx
