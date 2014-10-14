@@ -196,7 +196,7 @@ class OverlayBase(object):
         >>> g_phy = anm['phy']
         >>> r1 = g_phy.node("r1")
 
-        Can also find across layeA
+        Can also find across layers
         >>> r1_input = anm['input'].node(r1)
 
         """
@@ -275,25 +275,46 @@ class OverlayBase(object):
         return result
 
     def routers(self, *args, **kwargs):
-        """Shortcut for nodes(), sets device_type to be router"""
+        """Shortcut for nodes(), sets device_type to be router
+        >>> anm = autonetkit.nm_mixed()
+        >>> anm['phy'].routers()
+        [r1, r2, r3]
+
+        """
 
         result = self.nodes(*args, **kwargs)
         return [r for r in result if r.is_router()]
 
     def switches(self, *args, **kwargs):
-        """Shortcut for nodes(), sets device_type to be switch"""
+        """Shortcut for nodes(), sets device_type to be switch
+        >>> anm = autonetkit.nm_mixed()
+        >>> anm['phy'].switches()
+        [sw1]
+
+        """
 
         result = self.nodes(*args, **kwargs)
         return [r for r in result if r.is_switch()]
 
     def servers(self, *args, **kwargs):
-        """Shortcut for nodes(), sets device_type to be server"""
+        """Shortcut for nodes(), sets device_type to be server
+        >>> anm = autonetkit.nm_mixed()
+        >>> anm['phy'].servers()
+        [s1]
+
+        """
 
         result = self.nodes(*args, **kwargs)
         return [r for r in result if r.is_server()]
 
     def l3devices(self, *args, **kwargs):
-        """Shortcut for nodes(), sets device_type to be server"""
+        """Shortcut for nodes(), sets device_type to be server
+
+        >>> anm = autonetkit.nm_mixed()
+        >>> anm['phy'].l3devices()
+        [s1, r1, r2, r3]
+
+        """
 
         result = self.nodes(*args, **kwargs)
         return [r for r in result if r.is_l3device()]
@@ -305,6 +326,11 @@ class OverlayBase(object):
 
     def groupby(self, attribute, nodes=None):
         """Returns a dictionary sorted by attribute
+
+        >>> anm = autonetkit.nm_house()
+        >>> g_phy = anm['phy']
+        >>> g_phy.groupby("asn")
+        {1: [r1, r2, r3], 2: [r4, r5]}
 
         """
 
