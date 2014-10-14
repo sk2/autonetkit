@@ -108,6 +108,7 @@ class OverlayBase(object):
         >>> e_r1_r2_input = anm['input'].edge(e_r1_r2)
 
         And for multi-edge graphs can specify key
+
         >>> anm = autonetkit.topos.multi_edge()
         >>> e1 = anm['phy'].edge("r1", "r2", 0)
         >>> e2 = anm['phy'].edge("r1", "r2", 1)
@@ -363,6 +364,7 @@ class OverlayBase(object):
         {1: [r1, r2, r3], 2: [r4, r5]}
 
         Can also specify a subset to work from
+
         >>> nodes = [n for n in g_phy if n.degree() > 2]
         >>> g_phy.groupby("asn", nodes=nodes)
         {1: [r2, r3]}
