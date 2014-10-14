@@ -13,9 +13,8 @@ SETTINGS = autonetkit.config.settings
 # TODO: revisit phy_neighbors for eg ASN and use layer3 instead
 
 __all__ = ['build']
-from autonetkit.ank_utils import call_log
 
-#@call_log
+
 def load(input_graph_string):
     # TODO: look at XML header for file type
     import autonetkit.load.graphml as graphml
@@ -26,11 +25,11 @@ def load(input_graph_string):
         try:
             input_graph = load_json.load_json(input_graph_string)
         except (ValueError, autonetkit.exception.AnkIncorrectFileFormat):
-# try a different reader
+            # try a different reader
             try:
                 from autonetkit_cisco import load as cisco_load
-            except ImportError, e:
-                log.debug("Unable to load autonetkit_cisco %s" % e)
+            except ImportError, error:
+                log.debug("Unable to load autonetkit_cisco %s", error)
                 return  # module not present (development module)
             else:
                 input_graph = cisco_load.load(input_graph_string)
@@ -38,14 +37,13 @@ def load(input_graph_string):
                 SETTINGS['General']['deploy'] = True
                 SETTINGS['Deploy Hosts']['internal'] = {
                     'VIRL': {
-                    'deploy': True,
+                        'deploy': True,
                     },
                 }
 
     return input_graph
 
 
-#@call_log
 def grid_2d(dim):
     """Creates a 2d grid of dimension dim"""
     graph = nx.grid_2d_graph(dim, dim)
@@ -70,21 +68,20 @@ def grid_2d(dim):
     SETTINGS['General']['deploy'] = True
     SETTINGS['Deploy Hosts']['internal'] = {
         'cisco': {
-        'deploy': True,
+            'deploy': True,
         },
     }
 
     return graph
 
 
-#@call_log
 def initialise(input_graph):
     """Initialises the input graph with from a NetworkX graph"""
     all_multigraph = input_graph.is_multigraph()
-    anm = autonetkit.anm.NetworkModel(all_multigraph = all_multigraph)
+    anm = autonetkit.anm.NetworkModel(all_multigraph=all_multigraph)
 
     g_in = anm.initialise_input(input_graph)
-    #autonetkit.update_vis(anm)
+    # autonetkit.update_vis(anm)
 
 # set defaults
     if not g_in.data.specified_int_names:
@@ -106,7 +103,7 @@ def initialise(input_graph):
     # TODO: is this used?
     g_in.update(g_in.servers(platform="netkit"), syntax="quagga")
 
-    autonetkit.ank.set_node_default(g_in,  specified_int_names=None)
+    autonetkit.ank.set_node_default(g_in, specified_int_names=None)
 
     g_graphics = anm.add_overlay("graphics")  # plotting data
     g_graphics.add_nodes_from(g_in, retain=['x', 'y', 'device_type',
@@ -115,7 +112,6 @@ def initialise(input_graph):
     return anm
 
 
-#@call_log
 def check_server_asns(anm):
     """Checks that servers have appropriate ASN allocated.
     Warns and auto-corrects servers connected to routers of a different AS
@@ -131,7 +127,8 @@ def check_server_asns(anm):
         l3_neighbor_asns = set(n.asn for n in l3_neighbors)
         if server.asn not in l3_neighbor_asns:
             neighs_with_asn = ["%s: AS %s" % (n, n.asn)
-                               for n in l3_neighbors]  # tuples for warning message
+                               for n in l3_neighbors]
+            # tuples for warning message
             server.log.warning("Server does not belong to same ASN "
                                "as neighbors %s" % (neighs_with_asn))
 
@@ -140,14 +137,13 @@ def check_server_asns(anm):
                 if server['input'].default_asn:
                     neigh_asn = l3_neighbor_asns.pop()
                     log.warning("Updating server %s AS from %s"
-                                " to %s" % (server, server.asn, neigh_asn))
+                                " to %s", server, server.asn, neigh_asn)
                     server.asn = neigh_asn
                 else:
                     log.info("Server %s ASN %s explictly set by user, "
-                             "not auto-correcting" % (server, server.asn))
+                             "not auto-correcting", server, server.asn)
 
 
-#@call_log
 def apply_design_rules(anm):
     """Applies appropriate design rules to ANM"""
     log.info("Building overlay topologies")
@@ -158,19 +154,20 @@ def apply_design_rules(anm):
     try:
         from autonetkit_cisco import build_network as cisco_build_network
     except ImportError, e:
-        log.debug("Unable to load autonetkit_cisco %s" % e)
+        log.debug("Unable to load autonetkit_cisco %s", e)
     else:
         cisco_build_network.post_phy(anm)
 
     g_phy = anm['phy']
     from autonetkit.design.osi_layers import (build_layer2,
-        check_layer2, build_layer2_broadcast, build_layer3)
+                                              check_layer2, build_layer2_broadcast,
+                                              build_layer3)
     log.info("Building layer2")
     build_layer2(anm)
 
     try:
         from autonetkit_cisco import build_network as cisco_build_network
-    except ImportError, e:
+    except ImportError:
         pass
     else:
         cisco_build_network.apply_vlans(anm)
@@ -220,15 +217,15 @@ def apply_design_rules(anm):
         anm.add_overlay("ipv6")  # placeholder for compiler logic
 
     default_igp = g_in.data.igp or "ospf"
-    ank_utils.set_node_default(g_in,  igp=default_igp)
+    ank_utils.set_node_default(g_in, igp=default_igp)
     ank_utils.copy_attr_from(g_in, g_phy, "igp")
 
     ank_utils.copy_attr_from(g_in, g_phy, "include_csr")
 
     try:
         from autonetkit_cisco import build_network as cisco_build_network
-    except ImportError, e:
-        log.debug("Unable to load autonetkit_cisco %s" % e)
+    except ImportError, error:
+        log.debug("Unable to load autonetkit_cisco %s" % error)
     else:
         cisco_build_network.pre_design(anm)
 
@@ -248,15 +245,15 @@ def apply_design_rules(anm):
 # post-processing
     if anm['phy'].data.enable_routing:
         from autonetkit.design.mpls import (mark_ebgp_vrf,
-            build_ibgp_vpn_v4)
+                                            build_ibgp_vpn_v4)
         mark_ebgp_vrf(anm)
         build_ibgp_vpn_v4(anm)  # build after bgp as is based on
     # autonetkit.update_vis(anm)
 
     try:
         from autonetkit_cisco import build_network as cisco_build_network
-    except ImportError, e:
-        log.debug("Unable to load autonetkit_cisco %s" % e)
+    except ImportError, error:
+        log.debug("Unable to load autonetkit_cisco %s", error)
     else:
         cisco_build_network.post_design(anm)
 
@@ -264,7 +261,6 @@ def apply_design_rules(anm):
     return anm
 
 
-#@call_log
 def build(input_graph):
     """Main function to build network overlay topologies"""
     anm = None
@@ -272,13 +268,14 @@ def build(input_graph):
     anm = apply_design_rules(anm)
     return anm
 
+
 def remove_parallel_switch_links(anm):
     return
     g_phy = anm['phy']
     subs = ank_utils.connected_subgraphs(g_phy, g_phy.switches())
     for component in subs:
-        log.debug("Checking for multiple links to switch cluster %s"
-                  % str(sorted(component)))
+        log.debug(
+            "Checking for multiple links to switch cluster %s", str(sorted(component)))
 
         # Collect all links into this cluster
         external_edges = []
@@ -299,17 +296,17 @@ def remove_parallel_switch_links(anm):
                 edges_to_remove = sorted(edges)[1:]  # remove all but first
                 interfaces = ", ".join(
                     sorted(str(edge.dst_int['phy']) for edge in edges))
-                interfaces_to_disconnect = ", ".join(sorted(str(edge.dst_int['phy'])
-                                                            for edge in edges_to_remove))
+                interfaces_to_disconnect = ", ".join(sorted(str(e.dst_int['phy'])
+                                                            for e in edges_to_remove))
                 dst.log.warning(
                     "Multiple edges exist to same switch cluster: "
                     " %s (%s). Removing edges from interfaces %s" % (
-                    str(sorted(component)), interfaces, interfaces_to_disconnect))
+                        str(sorted(component)), interfaces,
+                        interfaces_to_disconnect))
 
                 g_phy.remove_edges_from(edges_to_remove)
 
 
-#@call_log
 def build_phy(anm):
     """Build physical overlay"""
     g_in = anm['input']
@@ -319,18 +316,18 @@ def build_phy(anm):
     if g_phy.data.enable_routing is None:
         g_in.data.enable_routing = True  # default if not set
 
-    g_phy.add_nodes_from(g_in, retain=['label', 'update', 'device_type', 'asn',
-                                       'specified_int_names', 'x', 'y',
+    g_phy.add_nodes_from(g_in, retain=['label', 'update', 'device_type',
+                                       'asn', 'specified_int_names', 'x', 'y',
                                        'device_subtype', 'platform', 'host', 'syntax'])
 
     if g_in.data.Creator == "Topology Zoo Toolset":
         ank_utils.copy_attr_from(g_in, g_phy, "Network")
 
-    ank_utils.set_node_default(g_phy,  Network=None)
+    ank_utils.set_node_default(g_phy, Network=None)
     g_phy.add_edges_from(g_in.edges(type="physical"))
     # TODO: make this automatic if adding to the physical graph?
 
-    ank_utils.set_node_default(g_phy,  use_ipv4=False, use_ipv6=False)
+    ank_utils.set_node_default(g_phy, use_ipv4=False, use_ipv6=False)
     ank_utils.copy_attr_from(g_in, g_phy, "custom_config_global",
                              dst_attr="custom_config")
 
@@ -348,7 +345,7 @@ def build_phy(anm):
 
     remove_parallel_switch_links(anm)
 
-#@call_log
+
 def build_conn(anm):
     """Build connectivity overlay"""
     g_in = anm['input']

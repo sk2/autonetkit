@@ -90,6 +90,9 @@ interface ${interface.id}
   % if interface.comment:
   ! ${interface.comment}
   %endif
+  % if interface.mtu:
+  mtu ${interface.mtu}
+  %endif
   % if interface.custom_config:
   ${interface.custom_config}
   %endif

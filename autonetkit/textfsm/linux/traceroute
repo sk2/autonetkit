@@ -1,7 +1,0 @@
-Value Hop (\d+(\.\d+){3})
-Value delay (\d+)
-
-Start
-  ^ \d+ +${Hop} +${delay}+ ms +\d+ ms +\d+ ms -> Record
-  ^ \d+ +${Hop} +${delay}+ ms -> Record
-  ^ \d+ +${Hop} +${delay}+ ms +\d+ ms -> Record

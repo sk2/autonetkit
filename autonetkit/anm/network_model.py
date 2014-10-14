@@ -25,7 +25,7 @@ class NetworkModel(object):
         self.label_attrs = ['label']
         self._build_node_label()
         self.timestamp = time.strftime('%Y%m%d_%H%M%S',
-                time.localtime())
+                                       time.localtime())
 
         # TODO: make this a proper method
 
@@ -91,7 +91,7 @@ class NetworkModel(object):
             latest_file = pickle_files[-1]
         except IndexError:
 
-# No files loaded
+            # No files loaded
 
             log.warning('No previous ANM saved. Please compile new ANM')
             return
@@ -120,10 +120,9 @@ class NetworkModel(object):
         for (overlay_id, graph_data) in data.items():
 
             self._overlays[overlay_id] = \
-            ank_json.ank_json_loads(graph_data)
+                ank_json.ank_json_loads(graph_data)
 
             ank_json.rebind_interfaces(self)
-
 
     @property
     def _phy(self):
@@ -148,7 +147,7 @@ class NetworkModel(object):
             'pop',
             'label',
             'asn',
-            ])
+        ])
         return g_in
 
     def initialise_input(self, graph):
@@ -169,9 +168,9 @@ class NetworkModel(object):
         directed=False,
         multi_edge=False,
         retain=None,
-        ):
+    ):
         """Adds overlay graph of name name"""
-        #TODO: refactor this logic
+        # TODO: refactor this logic
         log.debug("Adding overlay %s" % name)
 
         multi_edge = multi_edge or self.all_multigraph
@@ -234,9 +233,9 @@ class NetworkModel(object):
 
         def custom_label(node):
             return self.label_seperator.join(str(self._overlays['phy'
-                    ].node[node.node_id].get(val)) for val in
-                    self.label_attrs if self._overlays['phy'
-                    ].node[node.node_id].get(val) is not None)
+                                                                ].node[node.node_id].get(val)) for val in
+                                             self.label_attrs if self._overlays['phy'
+                                                                                ].node[node.node_id].get(val) is not None)
 
         self.node_label = custom_label
 

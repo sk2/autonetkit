@@ -4,6 +4,7 @@ from collections import defaultdict
 from networkx.readwrite import json_graph
 settings = autonetkit.config.settings
 
+
 def nx_to_simple(graph):
     j_data = json_graph.node_link_data(graph)
 
@@ -29,7 +30,7 @@ def nx_to_simple(graph):
             # record the mapping of index to port_id
             port_index_mapping[node_id][index] = port_id
 
-        node['ports'] = sorted(ports, key = lambda x: x['id'])
+        node['ports'] = sorted(ports, key=lambda x: x['id'])
         del node['_ports']
 
     nodes = j_data['nodes']
@@ -41,11 +42,11 @@ def nx_to_simple(graph):
         dst_int_index = link['_ports'][dst_node]
         src_int = port_index_mapping[src_node][src_int_index]
         dst_int = port_index_mapping[dst_node][dst_int_index]
-        #link['ports'] = {'src': src_node, 'src_port': src_int,
+        # link['ports'] = {'src': src_node, 'src_port': src_int,
         #                     'dst': dst_node, 'dst_port': dst_int}
         link['src'] = src_node
         link['src_port'] = src_int
-        link['dst'] =  dst_node
+        link['dst'] = dst_node
         link['dst_port'] = dst_int
         del link['_ports']
         try:
@@ -55,9 +56,9 @@ def nx_to_simple(graph):
         del link['source']
         del link['target']
 
-
-    j_data['nodes'] = sorted(j_data['nodes'], key = lambda x: x['id'])
-    j_data['links'] = sorted(j_data['links'], key = lambda x: (x['src'], x['dst']))
+    j_data['nodes'] = sorted(j_data['nodes'], key=lambda x: x['id'])
+    j_data['links'] = sorted(
+        j_data['links'], key=lambda x: (x['src'], x['dst']))
 
     return j_data
 
@@ -68,19 +69,19 @@ def simple_to_nx(j_data):
         node_id = node['id']
         # first check for loopback zero
         ports = node['ports']
-        _ports = {} # output format
+        _ports = {}  # output format
         try:
             lo_zero = [p for p in ports if p['id'] == "Loopback0"].pop()
         except IndexError:
             # can't pop -> no loopback zero, append
             lo_zero = {'category': 'loopback',
-                         'description': "Loopback Zero"}
+                       'description': "Loopback Zero"}
         else:
             ports.remove(lo_zero)
         finally:
             _ports[0] = lo_zero
 
-        for index, port in enumerate(ports, start = 1):
+        for index, port in enumerate(ports, start=1):
             _ports[index] = port
             port_to_index_mapping[node_id][port['id']] = index
 
@@ -106,18 +107,19 @@ def simple_to_nx(j_data):
                       dst: dst_port_id}
 
         unmapped_links.append({'source': src_pos,
-            'target': dst_pos,
-            '_ports': interfaces
-            })
+                               'target': dst_pos,
+                               '_ports': interfaces
+                               })
 
     j_data['links'] = unmapped_links
     return json_graph.node_link_graph(j_data)
+
 
 def load_json(input_data):
     import json
     data = json.loads(input_data)
     graph = simple_to_nx(data)
-    #TODO: any required pre-processing goes here
+    # TODO: any required pre-processing goes here
 
     ank_graph_defaults = settings['JSON']['Graph Defaults']
     for (key, val) in ank_graph_defaults.items():
@@ -156,8 +158,7 @@ def load_json(input_data):
     for node in sorted(graph):
         graph.node[node]['asn'] = int(graph.node[node]['asn'])
 
-    #TODO: set default x/y if not set - or else json export will do it
+    # TODO: set default x/y if not set - or else json export will do it
     graph.graph['file_type'] = 'json'
-
 
     return graph

@@ -4,12 +4,14 @@
 import itertools
 import logging
 
+import autonetkit
 import autonetkit.log as log
 from autonetkit.anm.edge import NmEdge
 from autonetkit.anm.graph_data import NmGraphData
 from autonetkit.anm.interface import NmPort
 from autonetkit.anm.node import NmNode
 from autonetkit.exception import OverlayNotFound
+#TODO: check if this is still a performance hit
 from autonetkit.log import CustomAdapter
 
 
@@ -33,11 +35,28 @@ class OverlayBase(object):
         object.__setattr__(self, 'log', logger)
 
     def __repr__(self):
-        """"""
+        """
+
+        Example:
+        >>> anm = autonetkit.nm_house()
+        >>> anm['phy']
+        phy
+
+        """
 
         return self._overlay_id
 
     def is_multigraph(self):
+        """
+        Example:
+        >>> anm = autonetkit.nm_house()
+        >>> anm['phy'].is_multigraph()
+        False
+        >>> anm = autonetkit.nm_multi()
+        >>> anm['phy'].is_multigraph()
+        True
+
+        """
         return self._graph.is_multigraph()
 
     @property
@@ -47,7 +66,14 @@ class OverlayBase(object):
         return NmGraphData(self._anm, self._overlay_id)
 
     def __contains__(self, n):
-        """"""
+        """
+        Example:
+        >>> anm = autonetkit.nm_house()
+        >>> "r1" in anm['phy']
+        True
+        >>> "test" in anm['phy']
+        False
+        """
 
         try:
             return n.node_id in self._graph
@@ -68,23 +94,34 @@ class OverlayBase(object):
         edge_to_find,
         dst_to_find=None,
         key=0,
-        ):
+    ):
         '''returns edge in this graph with same src and dst
         and key for parallel edges (default is to return first edge)
-        #TODO: explain parameter overloading: strings, edges, nodes...'''
+        #TODO: explain parameter overloading: strings, edges, nodes...
+
+        Example:
+        >>> anm = autonetkit.nm_house()
+        >>> g_phy = anm['phy']
+        >>> e_r1_r2 = g_phy.edge("r1", "r2")
+
+        Can also find from an edge
+        >>> e_r1_r2_input = anm['input'].edge(e_r1_r2)
+
+
+        '''
 
         # TODO: handle multigraphs
         if isinstance(edge_to_find, NmEdge):
             # TODO: tidy this logic
-            edge = edge_to_find # alias for neater code
+            edge = edge_to_find  # alias for neater code
             if (edge.is_multigraph() and self.is_multigraph()
                 and self._graph.has_edge(edge.src,
-                    edge.dst, key=edge.ekey)):
+                                         edge.dst, key=edge.ekey)):
                 return NmEdge(self._anm, self._overlay_id,
-                    edge.src, edge.dst, edge.ekey)
+                              edge.src, edge.dst, edge.ekey)
             elif (self._graph.has_edge(edge.src, edge.dst)):
-                    return NmEdge(self._anm, self._overlay_id,
-                        edge.src, edge.dst)
+                return NmEdge(self._anm, self._overlay_id,
+                              edge.src, edge.dst)
 
         if isinstance(edge_to_find, NmEdge):
             src_id = edge_to_find.src
@@ -93,10 +130,10 @@ class OverlayBase(object):
 
             if self.is_multigraph():
                 for (src, dst, rkey) in self._graph.edges(src_id,
-                        keys=True):
+                                                          keys=True):
                     if dst == dst_id and rkey == search_key:
                         return NmEdge(self._anm, self._overlay_id, src,
-                                dst, search_key)
+                                      dst, search_key)
 
             for (src, dst) in self._graph.edges(src_id):
                 if dst == dst_id:
@@ -136,10 +173,10 @@ class OverlayBase(object):
             search_key = key
             if self.is_multigraph():
                 for (src, dst, rkey) in self._graph.edges(src_id,
-                        keys=True):
+                                                          keys=True):
                     if dst == dst_id and rkey == search_key:
                         return NmEdge(self._anm, self._overlay_id, src,
-                                dst, search_key)
+                                      dst, search_key)
 
             for (src, dst) in self._graph.edges(src_id):
                 if dst == dst_id:
@@ -152,7 +189,17 @@ class OverlayBase(object):
 
     def node(self, key):
         """Returns node based on name
-        This is currently O(N). Could use a lookup table"""
+        This is currently O(N). Could use a lookup table
+
+        Example:
+        >>> anm = autonetkit.nm_house()
+        >>> g_phy = anm['phy']
+        >>> r1 = g_phy.node("r1")
+
+        Can also find across layers
+        >>> r1_input = anm['input'].node(r1)
+
+        """
 
         # TODO: refactor
 
@@ -166,18 +213,21 @@ class OverlayBase(object):
             if key in self._graph:
                 return NmNode(self._anm, self._overlay_id, key)
 
-            # doesn't have node_id, likely a label string, search based on this # label
+            # doesn't have node_id, likely a label string, search based on this
+            # # label
 
             for node in self:
                 if str(node) == key:
                     return node
+            #TODO: change warning to an exception
             log.warning('Unable to find node %s in %s ' % (key, self))
             return None
 
     def overlay(self, key):
         """Get to other overlay graphs in functions"""
 
-        # TODO: refactor: shouldn't be returning concrete instantiation from abstract parent!
+        # TODO: refactor: shouldn't be returning concrete instantiation from
+        # abstract parent!
 
         from autonetkit.anm.graph import NmGraph
         return NmGraph(self._anm, key)
@@ -225,25 +275,46 @@ class OverlayBase(object):
         return result
 
     def routers(self, *args, **kwargs):
-        """Shortcut for nodes(), sets device_type to be router"""
+        """Shortcut for nodes(), sets device_type to be router
+        >>> anm = autonetkit.nm_mixed()
+        >>> anm['phy'].routers()
+        [r1, r2, r3]
+
+        """
 
         result = self.nodes(*args, **kwargs)
         return [r for r in result if r.is_router()]
 
     def switches(self, *args, **kwargs):
-        """Shortcut for nodes(), sets device_type to be switch"""
+        """Shortcut for nodes(), sets device_type to be switch
+        >>> anm = autonetkit.nm_mixed()
+        >>> anm['phy'].switches()
+        [sw1]
+
+        """
 
         result = self.nodes(*args, **kwargs)
         return [r for r in result if r.is_switch()]
 
     def servers(self, *args, **kwargs):
-        """Shortcut for nodes(), sets device_type to be server"""
+        """Shortcut for nodes(), sets device_type to be server
+        >>> anm = autonetkit.nm_mixed()
+        >>> anm['phy'].servers()
+        [s1]
+
+        """
 
         result = self.nodes(*args, **kwargs)
         return [r for r in result if r.is_server()]
 
     def l3devices(self, *args, **kwargs):
-        """Shortcut for nodes(), sets device_type to be server"""
+        """Shortcut for nodes(), sets device_type to be server
+
+        >>> anm = autonetkit.nm_mixed()
+        >>> anm['phy'].l3devices()
+        [s1, r1, r2, r3]
+
+        """
 
         result = self.nodes(*args, **kwargs)
         return [r for r in result if r.is_l3device()]
@@ -256,8 +327,11 @@ class OverlayBase(object):
     def groupby(self, attribute, nodes=None):
         """Returns a dictionary sorted by attribute
 
-        >>> G_in.groupby("asn")
-        {u'1': [r1, r2, r3, sw1], u'2': [r4]}
+        >>> anm = autonetkit.nm_house()
+        >>> g_phy = anm['phy']
+        >>> g_phy.groupby("asn")
+        {1: [r1, r2, r3], 2: [r4, r5]}
+
         """
 
         result = {}
@@ -267,8 +341,8 @@ class OverlayBase(object):
         else:
             data = nodes
         data = sorted(data, key=lambda x: x.get(attribute))
-        for (key, grouping) in itertools.groupby(data, key=lambda x: \
-                x.get(attribute)):
+        for (key, grouping) in itertools.groupby(data, key=lambda x:
+                                                 x.get(attribute)):
             result[key] = list(grouping)
 
         return result
@@ -278,7 +352,7 @@ class OverlayBase(object):
         nbunch=None,
         *args,
         **kwargs
-        ):
+    ):
         """"""
 
         if nbunch is None:
@@ -299,7 +373,7 @@ class OverlayBase(object):
         dst_nbunch=None,
         *args,
         **kwargs
-        ):
+    ):
         """"""
 
 # src_nbunch or dst_nbunch may be single node
@@ -312,7 +386,7 @@ class OverlayBase(object):
             except AttributeError:
                 src_nbunch = (n.node_id for n in src_nbunch)
 
-                              # only store the id in overlay
+                # only store the id in overlay
 
         def filter_func(edge):
             """Filter based on args and kwargs"""
@@ -327,7 +401,7 @@ class OverlayBase(object):
         else:
             default_key = 0
             valid_edges = list((src, dst, default_key) for (src,
-                               dst) in self._graph.edges(src_nbunch))
+                                                            dst) in self._graph.edges(src_nbunch))
 
         if dst_nbunch:
             try:
@@ -342,11 +416,16 @@ class OverlayBase(object):
 
         if len(args) or len(kwargs):
             all_edges = [NmEdge(self._anm, self._overlay_id, src, dst,
-                         key) for (src, dst, key) in valid_edges]
+                                key) for (src, dst, key) in valid_edges]
             result = list(edge for edge in all_edges
                           if filter_func(edge))
         else:
             result = list(NmEdge(self._anm, self._overlay_id, src, dst,
-                          key) for (src, dst, key) in valid_edges)
+                                 key) for (src, dst, key) in valid_edges)
 
         return list(result)
+
+if __name__ == "__main__":
+    import doctest
+    from autonetkit.anm.network_model import NetworkModel
+    doctest.testmod(extraglobs={'anm': NetworkModel()})

@@ -7,19 +7,14 @@ from collections import namedtuple
 import autonetkit.log as log
 import networkx as nx
 from ank_utils import unwrap_graph, unwrap_nodes
-from anm import NmEdge, NmNode
-
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
+from autonetkit.anm import NmEdge, NmNode
 
 # helper namedtuples - until have a more complete schema (such as from Yang)
 static_route_v4 = namedtuple("static_route_v4",
-    ["prefix", "netmask", "nexthop", "metric"])
+                             ["prefix", "netmask", "nexthop", "metric"])
 
 static_route_v6 = namedtuple("static_route_v6",
-    ["prefix", "nexthop", "metric"])
+                             ["prefix", "nexthop", "metric"])
 
 
 def sn_preflen_to_network(address, prefixlen):
@@ -36,17 +31,7 @@ def fqdn(node):
 
 
 def name_folder_safe(foldername):
-    for illegal_char in [
-        ' ',
-        '/',
-        '_',
-        ',',
-        '.',
-        '&amp;',
-        '-',
-        '(',
-        ')',
-        ]:
+    for illegal_char in [' ', '/', '_', ',', '.', '&amp;', '-', '(', ')', ]:
         foldername = foldername.replace(illegal_char, '_')
 
     # Don't want double _
@@ -56,12 +41,12 @@ def name_folder_safe(foldername):
     return foldername
 
 
-def set_node_default(NmGraph, nbunch=None, **kwargs):
+def set_node_default(nm_graph, nbunch=None, **kwargs):
     """Sets all nodes in nbunch to value if key not already set
     Note: this won't apply to future nodes added
     """
 
-    graph = unwrap_graph(NmGraph)
+    graph = unwrap_graph(nm_graph)
     if nbunch is None:
         nbunch = graph.nodes()
     else:
@@ -76,15 +61,8 @@ def set_node_default(NmGraph, nbunch=None, **kwargs):
 
 # TODO: rename to copy_node_attr_from
 
-def copy_attr_from(
-    overlay_src,
-    overlay_dst,
-    src_attr,
-    dst_attr=None,
-    nbunch=None,
-    type=None,
-    default=None,
-    ):
+def copy_attr_from(overlay_src, overlay_dst, src_attr, dst_attr=None,
+                   nbunch=None, type=None, default=None):
 
     # TODO: add dest format, eg to convert to int
 
@@ -96,15 +74,16 @@ def copy_attr_from(
     if not nbunch:
         nbunch = graph_src.nodes()
 
-    for n in nbunch:
+    for node in nbunch:
         try:
-            val = graph_src.node[n].get(src_attr, default)
+            val = graph_src.node[node].get(src_attr, default)
         except KeyError:
 
-            # TODO: check if because node doesn't exist in dest, or because attribute doesn't exist in graph_src
+            # TODO: check if because node doesn't exist in dest, or because
+            # attribute doesn't exist in graph_src
 
-            log.debug('Unable to copy node attribute %s for %s in %s'
-                      % (src_attr, n, overlay_src))
+            log.debug('Unable to copy node attribute %s for %s in %s',
+                      src_attr, node, overlay_src)
         else:
 
             # TODO: use a dtype to take an int, float, etc
@@ -114,19 +93,12 @@ def copy_attr_from(
             elif type is int:
                 val = int(val)
 
-            if n in graph_dst:
-                graph_dst.node[n][dst_attr] = val
+            if node in graph_dst:
+                graph_dst.node[node][dst_attr] = val
 
 
-def copy_int_attr_from(
-    overlay_src,
-    overlay_dst,
-    src_attr,
-    dst_attr=None,
-    nbunch=None,
-    type=None,
-    default=None,
-    ):
+def copy_int_attr_from(overlay_src, overlay_dst, src_attr, dst_attr=None,
+                       nbunch=None, type=None, default=None):
 
     # note; uses high-level API for practicality over raw speed
 
@@ -155,14 +127,8 @@ def copy_int_attr_from(
                 dst_int.set(dst_attr, val)
 
 
-def copy_edge_attr_from(
-    overlay_src,
-    overlay_dst,
-    src_attr,
-    dst_attr=None,
-    type=None,
-    default=None,
-    ):
+def copy_edge_attr_from(overlay_src, overlay_dst, src_attr,
+                        dst_attr=None, type=None, default=None):
     # note this won't work if merge/aggregate edges
 
     if not dst_attr:
@@ -175,10 +141,12 @@ def copy_edge_attr_from(
                 val = default
         except KeyError:
 
-            # TODO: check if because edge doesn't exist in dest, or because attribute doesn't exist in graph_src
+            # TODO: check if because edge doesn't exist in dest, or because
+            # attribute doesn't exist in graph_src
 
-            log.debug('Unable to copy edge attribute %s for (%s, %s) in %s'
-                       % edge)
+            log.debug('Unable to copy edge attribute %s for (%s, %s) in %s',
+                      src_attr, edge.src, edge.dst, overlay_src)
+
         else:
 
             # TODO: use a dtype to take an int, float, etc
@@ -192,13 +160,13 @@ def copy_edge_attr_from(
                 overlay_dst.edge(edge).set(dst_attr, val)
             except AttributeError:
                 # fail to debug - as attribute may not have been set
-                log.debug('Unable to set edge attribute on %s in %s'
-                            % (edge, overlay_dst))
+                log.debug('Unable to set edge attribute on %s in %s',
+                          edge, overlay_dst)
 
 
 # TODO: make edges own module
 
-def wrap_edges(NmGraph, edges):
+def wrap_edges(nm_graph, edges):
     """ wraps edge ids into edge overlay """
 
     # TODO: make support multigraphs
@@ -215,40 +183,39 @@ def wrap_edges(NmGraph, edges):
     except ValueError:
         pass  # already of form (src, dst)
 
-    return list(NmEdge(NmGraph._anm, NmGraph._overlay_id, src, dst)
-        for (src, dst) in edges)
+    return list(NmEdge(nm_graph._anm, nm_graph._overlay_id, src, dst)
+                for (src, dst) in edges)
 
 
-def wrap_nodes(NmGraph, nodes):
+def wrap_nodes(nm_graph, nodes):
     """ wraps node id into node overlay """
 
-    return (NmNode(NmGraph._anm, NmGraph._overlay_id, node) for node in
-        nodes)
+    return (NmNode(nm_graph._anm, nm_graph._overlay_id, node)
+            for node in nodes)
 
 
-def in_edges(NmGraph, nodes=None):
+def in_edges(nm_graph, nodes=None):
 
     # TODO: make support multigraphs
 
-    graph = unwrap_graph(NmGraph)
+    graph = unwrap_graph(nm_graph)
     edges = graph.in_edges(nodes)
-    return wrap_edges(NmGraph, edges)
+    return wrap_edges(nm_graph, edges)
 
 
-def split(
-    NmGraph,
-    edges,
-    retain=[],
-    id_prepend='',
-    ):
+def split(nm_graph, edges, retain=None, id_prepend=''):
+
+    if retain is None:
+        retain = []
 
     try:
-        retain.lower()  # TODO: find more efficient operation to test if string-like
+        # TODO: find more efficient operation to test if string-like
+        retain.lower()
         retain = [retain]  # was a string, put into list
     except AttributeError:
         pass  # already a list
 
-    graph = unwrap_graph(NmGraph)
+    graph = unwrap_graph(nm_graph)
     edges_to_add = []
     added_nodes = []
     edges = list(edges)
@@ -265,10 +232,11 @@ def split(
 
             # undirected, make id deterministic across ank runs
 
-            (node_a, node_b) = sorted([src, dst])  # use sorted for consistency
+            # use sorted for consistency
+            (node_a, node_b) = sorted([src, dst])
             new_id = '%s%s_%s' % (id_prepend, node_a, node_b)
 
-        if NmGraph.is_multigraph():
+        if nm_graph.is_multigraph():
             new_id = new_id + '_%s' % edge.ekey
 
         ports = edge.raw_interfaces
@@ -291,21 +259,23 @@ def split(
 
         added_nodes.append(new_id)
 
-    NmGraph.add_nodes_from(added_nodes)
-    NmGraph.add_edges_from(edges_to_add)
+    nm_graph.add_nodes_from(added_nodes)
+    nm_graph.add_edges_from(edges_to_add)
 
     # remove the pre-split edges
 
-    NmGraph.remove_edges_from(edges)
+    nm_graph.remove_edges_from(edges)
 
-    return wrap_nodes(NmGraph, added_nodes)
+    return wrap_nodes(nm_graph, added_nodes)
 
 
-def explode_nodes(NmGraph, nodes, retain=[]):
+def explode_nodes(nm_graph, nodes, retain=None):
     """Explodes all nodes in nodes
     TODO: explain better
-    TODO: Add support for digraph - check if NmGraph.is_directed()
+    TODO: Add support for digraph - check if nm_graph.is_directed()
     """
+    if retain is None:
+        retain = []
 
     log.debug('Exploding nodes')
     try:
@@ -345,14 +315,14 @@ def explode_nodes(NmGraph, nodes, retain=[]):
             try:
                 src_int_id = src_edge.raw_interfaces[src.node_id]
             except KeyError:
-                pass # not set
+                pass  # not set
             else:
                 data['_ports'][src.node_id] = src_int_id
 
             try:
                 dst_int_id = dst_edge.raw_interfaces[dst.node_id]
             except KeyError:
-                pass # not set
+                pass  # not set
             else:
                 data['_ports'][dst.node_id] = dst_int_id
 
@@ -360,20 +330,20 @@ def explode_nodes(NmGraph, nodes, retain=[]):
 
             # TODO: use add_edge
 
-            NmGraph.add_edges_from([new_edge])
+            nm_graph.add_edges_from([new_edge])
             total_added_edges.append(new_edge)
 
-        NmGraph.remove_node(node)
-    return wrap_edges(NmGraph, total_added_edges)
+        nm_graph.remove_node(node)
+    return wrap_edges(nm_graph, total_added_edges)
 
 
-def label(NmGraph, nodes):
-    return list(NmGraph._anm.node_label(node) for node in nodes)
+def label(nm_graph, nodes):
+    return list(nm_graph._anm.node_label(node) for node in nodes)
 
 
-def connected_subgraphs(NmGraph, nodes):
+def connected_subgraphs(nm_graph, nodes):
     nodes = list(unwrap_nodes(nodes))
-    graph = unwrap_graph(NmGraph)
+    graph = unwrap_graph(nm_graph)
     subgraph = graph.subgraph(nodes)
     if not len(subgraph.edges()):
 
@@ -388,13 +358,15 @@ def connected_subgraphs(NmGraph, nodes):
 
     wrapped = []
     for component in component_nodes_list:
-        wrapped.append(list(wrap_nodes(NmGraph, component)))
+        wrapped.append(list(wrap_nodes(nm_graph, component)))
 
     return wrapped
 
 
-def aggregate_nodes(NmGraph, nodes, retain=[]):
+def aggregate_nodes(nm_graph, nodes, retain=None):
     """Combines connected into a single node"""
+    if retain is None:
+        retain = []
 
     try:
         retain.lower()
@@ -403,7 +375,7 @@ def aggregate_nodes(NmGraph, nodes, retain=[]):
         pass  # already a list
 
     nodes = list(unwrap_nodes(nodes))
-    graph = unwrap_graph(NmGraph)
+    graph = unwrap_graph(nm_graph)
     subgraph = graph.subgraph(nodes)
     if not len(subgraph.edges()):
 
@@ -418,22 +390,24 @@ def aggregate_nodes(NmGraph, nodes, retain=[]):
         component_nodes_list = nx.connected_components(subgraph)
     for component_nodes in component_nodes_list:
         if len(component_nodes) > 1:
-            component_nodes = [NmGraph.node(n) for n in component_nodes]
+            component_nodes = [nm_graph.node(n)
+                               for n in component_nodes]
 
             # TODO: could choose most connected, or most central?
             # TODO: refactor so use nodes_to_remove
 
             nodes_to_remove = list(component_nodes)
-            base = nodes_to_remove.pop()  # choose one base device to retain
-            log.debug('Retaining %s, removing %s' % (base,
-                      nodes_to_remove))
+            base = nodes_to_remove.pop()  # choose a base device to retain
+            log.debug('Retaining %s, removing %s', base,
+                      nodes_to_remove)
 
             external_edges = []
             for node in nodes_to_remove:
                 external_edges += [e for e in node.edges() if e.dst
-                                   not in component_nodes]  # all edges out of the component
+                                   not in component_nodes]
+                # all edges out of component
 
-            log.debug('External edges %s' % external_edges)
+            log.debug('External edges %s', external_edges)
             edges_to_add = []
             for edge in external_edges:
                 dst = edge.dst
@@ -449,11 +423,11 @@ def aggregate_nodes(NmGraph, nodes, retain=[]):
                 append = (base.node_id, dst.node_id, data)
                 edges_to_add.append(append)
 
-            NmGraph.add_edges_from(edges_to_add)
+            nm_graph.add_edges_from(edges_to_add)
             total_added_edges += edges_to_add
-            NmGraph.remove_nodes_from(nodes_to_remove)
+            nm_graph.remove_nodes_from(nodes_to_remove)
 
-    return wrap_edges(NmGraph, total_added_edges)
+    return wrap_edges(nm_graph, total_added_edges)
 
 
 def most_frequent(iterable):
@@ -461,27 +435,23 @@ def most_frequent(iterable):
 
 # from http://stackoverflow.com/q/1518522
 
-    g = itertools.groupby
+    gby = itertools.groupby
     try:
-        return max(g(sorted(iterable)), key=lambda (x, v): \
+        return max(gby(sorted(iterable)), key=lambda (x, v):
                    (len(list(v)), -iterable.index(x)))[0]
-    except ValueError, e:
-        log.warning('Unable to calculate most_frequent, %s' % e)
+    except ValueError, error:
+        log.warning('Unable to calculate most_frequent, %s', error)
         return None
 
 
-def neigh_most_frequent(
-    NmGraph,
-    node,
-    attribute,
-    attribute_graph=None,
-    allow_none=False,
-    ):
-    """Used to explicitly force most frequent - useful if integers such as ASN which would otherwise return mean"""
+def neigh_most_frequent(nm_graph, node, attribute,
+                        attribute_graph=None, allow_none=False):
+    """Used to explicitly force most frequent -
+    useful if integers such as ASN which would otherwise return mean"""
 
     # TODO: rename to median?
 
-    graph = unwrap_graph(NmGraph)
+    graph = unwrap_graph(nm_graph)
     if attribute_graph:
         attribute_graph = unwrap_graph(attribute_graph)
     else:
@@ -495,20 +465,15 @@ def neigh_most_frequent(
     return most_frequent(values)
 
 
-def neigh_average(
-    NmGraph,
-    node,
-    attribute,
-    attribute_graph=None,
-    ):
+def neigh_average(nm_graph, node, attribute, attribute_graph=None):
     """
-    averages out attribute from neighbors in specified NmGraph
+    averages out attribute from neighbors in specified nm_graph
     attribute_graph is the graph to read the attribute from
     if property is numeric, then return mean
     else return most frequently occuring value
     """
 
-    graph = unwrap_graph(NmGraph)
+    graph = unwrap_graph(nm_graph)
     if attribute_graph:
         attribute_graph = unwrap_graph(attribute_graph)
     else:
@@ -526,17 +491,16 @@ def neigh_average(
         return most_frequent(values)
 
 
-def neigh_attr(
-    NmGraph,
-    node,
-    attribute,
-    attribute_graph=None,
-    ):
+def neigh_attr(nm_graph, node, attribute, attribute_graph=None):
+    """TODO:
+    tidy up parameters to take attribute_graph first, and
+    then evaluate if attribute_graph set, if not then use attribute_graph
+    as attribute
+    explain how nm_graph and attribute_graph work, eg for G_ip and
+    G_phy
+    """
 
-    # TODO: tidy up parameters to take attribute_graph first, and then evaluate if attribute_graph set, if not then use attribute_graph as attribute
-# TODO: explain how NmGraph and attribute_graph work, eg for G_ip and G_phy
-
-    graph = unwrap_graph(NmGraph)
+    graph = unwrap_graph(nm_graph)
     node = unwrap_nodes(node)
     if attribute_graph:
         attribute_graph = unwrap_graph(attribute_graph)
@@ -548,39 +512,36 @@ def neigh_attr(
     neighs = (n for n in graph.neighbors(node))
     valid_nodes = (n for n in neighs if n in attribute_graph)
     return (attribute_graph.node[node].get(attribute) for node in
-        valid_nodes)
+            valid_nodes)
 
 
-def neigh_equal(
-    NmGraph,
-    node,
-    attribute,
-    attribute_graph=None,
-    ):
-    """Boolean, True if neighbors in NmGraph all have same attribute in attribute_graph"""
+def neigh_equal(nm_graph, node, attribute, attribute_graph=None):
+    """Boolean, True if neighbors in nm_graph
+    all have same attribute in attribute_graph"""
 
-    neigh_attrs = neigh_attr(NmGraph, node, attribute, attribute_graph)
+    neigh_attrs = neigh_attr(nm_graph, node, attribute, attribute_graph)
     return len(set(neigh_attrs)) == 1
 
 
-def unique_attr(NmGraph, attribute):
-    graph = unwrap_graph(NmGraph)
+def unique_attr(nm_graph, attribute):
+    graph = unwrap_graph(nm_graph)
     return set(graph.node[node].get(attribute) for node in graph)
 
 
 def groupby(attribute, nodes):
-    """Takes a group of nodes and returns a generator of (attribute, nodes) for each attribute value
-    A simple wrapped around itertools.groupby that creates a lambda for the attribute
+    """Takes a group of nodes and returns a generator of (attribute, nodes)
+     for each attribute value A simple wrapped around itertools.groupby
+     that creates a lambda for the attribute
     """
 
-    import itertools
     keyfunc = lambda x: x.get(attribute)
     nodes = sorted(nodes, key=keyfunc)
     return itertools.groupby(nodes, key=keyfunc)
 
 
 def boundary_nodes(graph, nodes):
-    """ returns nodes at boundary of G based on edge_boundary from networkx """
+    """ returns nodes at boundary of G based on
+    edge_boundary from networkx """
 
     # TODO: move to utils
 # TODO: use networkx boundary nodes directly: does the same thing
@@ -592,7 +553,7 @@ def boundary_nodes(graph, nodes):
     # find boundary
 
     b_edges = nx.edge_boundary(graph, nbunch)  # boundary edges
-    internal_nodes = [s for (s, t) in b_edges]
+    internal_nodes = [s for (s, _) in b_edges]
     assert all(n in nbunch for n in internal_nodes)  # check internal
 
     return wrap_nodes(graph, internal_nodes)

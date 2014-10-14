@@ -4,23 +4,29 @@ import autonetkit.log as log
 from autonetkit.compilers.device.server_base import ServerCompiler
 from autonetkit.nidb import ConfigStanza
 
+
 class UbuntuCompiler(ServerCompiler):
 
     def compile(self, node):
         super(UbuntuCompiler, self).compile(node)
 
-        # up route add -net ${route.network} gw ${router.gw} dev ${route.interface}
+        # up route add -net ${route.network} gw ${router.gw} dev
+        # ${route.interface}
 
         self.static_routes(node)
 
     def static_routes(self, node):
-        node.static_routes_v4 = []  # initialise for case of no routes -> simplifies template logic
-        node.host_routes_v4 = []  # initialise for case of no routes -> simplifies template logic
-        node.static_routes_v6 = []  # initialise for case of no routes -> simplifies template logic
-        node.host_routes_v6 = []  # initialise for case of no routes -> simplifies template logic
+        # initialise for case of no routes -> simplifies template logic
+        node.static_routes_v4 = []
+        # initialise for case of no routes -> simplifies template logic
+        node.host_routes_v4 = []
+        # initialise for case of no routes -> simplifies template logic
+        node.static_routes_v6 = []
+        # initialise for case of no routes -> simplifies template logic
+        node.host_routes_v6 = []
         if not self.anm['phy'].data.enable_routing:
             log.info('Routing disabled, not configuring static routes for Ubuntu server %s'
-                      % node)
+                     % node)
             return
 
         if self.anm['phy'].node(node).dont_configure_static_routing:
@@ -32,14 +38,15 @@ class UbuntuCompiler(ServerCompiler):
                         if n.is_router()]
         if not len(gateway_list):
             log.warning('Server %s is not directly connected to any routers'
-                         % node)
+                        % node)
             return
         elif len(gateway_list) > 1:
-                log.info('Server %s is multi-homed: using gateways %s'
-                         % (node, sorted(gateway_list)))
+            log.info('Server %s is multi-homed: using gateways %s'
+                     % (node, sorted(gateway_list)))
 
         # TODO: warn if server has no neighbors in same ASN (either in design or verification steps)
-        # TODO: need to check that servers don't have any direct ebgp connections
+        # TODO: need to check that servers don't have any direct ebgp
+        # connections
 
         cloud_init_static_routes = []
 
@@ -65,17 +72,17 @@ class UbuntuCompiler(ServerCompiler):
             # IGP advertised infrastructure pool from same AS
             static_routes_v4 = []
             host_routes_v4 = []
-            for (asn, asn_routes)  in self.anm['ipv4'].data['infra_blocks'].items():
+            for (asn, asn_routes) in self.anm['ipv4'].data['infra_blocks'].items():
 
-               # host_routes_v4
-               for infra_route in asn_routes:
+                # host_routes_v4
+                for infra_route in asn_routes:
                     route_entry = {
-                    'network': infra_route,
-                    'prefix': infra_route.network,
-                    'gw': gateway_ipv4,
-                    'interface': server_interface_id,
-                    'description': 'Route to infra subnet in AS %s via %s' \
-                    % (asn, gateway),
+                        'network': infra_route,
+                        'prefix': infra_route.network,
+                        'gw': gateway_ipv4,
+                        'interface': server_interface_id,
+                        'description': 'Route to infra subnet in AS %s via %s'
+                        % (asn, gateway),
                     }
                     route_entry = ConfigStanza(**route_entry)
                     if infra_route.prefixlen == 32:
@@ -86,23 +93,24 @@ class UbuntuCompiler(ServerCompiler):
             # eBGP advertised loopbacks in all (same + other) ASes
 
             for (asn, asn_routes) in self.anm['ipv4'].data['loopback_blocks'
-                    ].items():
+                                                           ].items():
                 for asn_route in asn_routes:
                     route_entry = {
                         'network': asn_route,
                         'prefix': asn_route.network,
                         'gw': gateway_ipv4,
                         'interface': server_interface_id,
-                        'description': 'Route to loopback subnet in AS %s via %s' \
-                            % (asn, gateway),
-                        }
+                        'description': 'Route to loopback subnet in AS %s via %s'
+                        % (asn, gateway),
+                    }
                     route_entry = ConfigStanza(**route_entry)
                     if asn_route.prefixlen == 32:
                         host_routes_v4.append(route_entry)
                     else:
                         static_routes_v4.append(route_entry)
 
-            # TODO: combine the above logic into single step rather than creating dict then formatting with it
+            # TODO: combine the above logic into single step rather than
+            # creating dict then formatting with it
 
             for entry in static_routes_v4:
                 formatted = 'route add -net %s gw %s dev %s' \
@@ -115,7 +123,6 @@ class UbuntuCompiler(ServerCompiler):
 
         node.add_stanza("cloud_init")
         node.cloud_init.static_routes = cloud_init_static_routes
-
 
         # Render inline for packaging into yaml
         # TODO: no longer used, but keep as reference for later templates that require this format

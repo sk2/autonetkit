@@ -15,7 +15,7 @@ class QuaggaCompiler(RouterCompiler):
 
     def interfaces(self, node):
         """Quagga interface compiler"""
-        #TODO: put this on the router base?
+        # TODO: put this on the router base?
 
         ipv4_node = self.anm['ipv4'].node(node)
         phy_node = self.anm['phy'].node(node)
@@ -29,7 +29,6 @@ class QuaggaCompiler(RouterCompiler):
             node.loopback_zero.description = 'Loopback'
             node.loopback_zero.ipv4_address = ipv4_node.loopback
             node.loopback_zero.ipv4_subnet = node.loopback_subnet
-
 
     def ospf(self, node):
         """Quagga ospf compiler"""
@@ -47,12 +46,13 @@ class QuaggaCompiler(RouterCompiler):
             if self.anm.has_overlay('ebgp_v4'):
                 bgp_int = self.anm['ebgp_v4'].interface(interface)
                 if bgp_int.is_bound:  # ebgp interface
-                    node.ospf.passive_interfaces.append(ConfigStanza(id=interface.id))
+                    node.ospf.passive_interfaces.append(
+                        ConfigStanza(id=interface.id))
                     subnet = bgp_int['ipv4'].subnet
                     default_ebgp_area = 0
                     node.ospf.ospf_links.append(
                         ConfigStanza(network=subnet,
-                            area=default_ebgp_area))
+                                     area=default_ebgp_area))
 
     def isis(self, node):
         """Sets ISIS links

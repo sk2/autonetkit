@@ -5,10 +5,18 @@ import autonetkit.log as log
 # which then map to the appropriate log function, so that can handle either be verbose or not verbose to console with test information.
 """
 
+
 def validate(anm):
     log.info("Validating overlay topologies")
     tests_passed = True
     tests_passed = validate_ipv4(anm) and tests_passed
+
+    try:
+        from autonetkit_cisco import ank_validate as cisco_validate
+    except ImportError, e:
+        log.debug("Unable to load autonetkit_cisco %s" % e)
+    else:
+        cisco_validate.validate(anm)
 
     validate_ibgp(anm)
     validate_igp(anm)
@@ -20,12 +28,14 @@ def validate(anm):
     else:
         log.warning("Some validation tests failed.")
 
+
 def check_for_selfloops(anm):
     # checks each overlay for selfloops
     for overlay in anm:
-        selfloop_count =  overlay._graph.number_of_selfloops()
+        selfloop_count = overlay._graph.number_of_selfloops()
         if selfloop_count > 0:
             log.warning("%s has %s self-loops" % (overlay, selfloop_count))
+
 
 def all_nodes_have_asn(anm):
     g_phy = anm['phy']
@@ -33,12 +43,13 @@ def all_nodes_have_asn(anm):
         if node.asn is None:
             log.warning("No ASN set for physical device %s" % node)
 
+
 def validate_ibgp(anm):
     import networkx as nx
-    #TODO: repeat for ibgp v6
-    #TODO: test if overlay is present, if not then warn
+    # TODO: repeat for ibgp v6
+    # TODO: test if overlay is present, if not then warn
     if not anm.has_overlay("ibgp_v4"):
-        return # no ibgp v4  - eg if ip addressing disabled
+        return  # no ibgp v4  - eg if ip addressing disabled
 
     g_ibgp_v4 = anm['ibgp_v4']
 
@@ -47,26 +58,31 @@ def validate_ibgp(anm):
         graph = asn_subgraph._graph
         # get subgraph
         if not nx.is_strongly_connected(graph):
-            g_ibgp_v4.log.warning("iBGP v4 topology for ASN%s is disconnected" % asn)
-            #TODO: list connected components - but not the primary?
+            g_ibgp_v4.log.warning(
+                "iBGP v4 topology for ASN%s is disconnected" % asn)
+            # TODO: list connected components - but not the primary?
         else:
-            g_ibgp_v4.log.debug("iBGP v4 topology for ASN%s is connected" % asn)
+            g_ibgp_v4.log.debug(
+                "iBGP v4 topology for ASN%s is connected" % asn)
+
 
 def validate_igp(anm):
     import networkx as nx
-    #TODO: test if overlay is present, if not then warn
+    # TODO: test if overlay is present, if not then warn
     if not anm.has_overlay("igp"):
-        return # no ibgp v4  - eg if ip addressing disabled
+        return  # no ibgp v4  - eg if ip addressing disabled
 
     g_igp = anm['igp']
 
     for asn, devices in ank_utils.groupby("asn", g_igp):
+        if asn is None:
+            continue
         asn_subgraph = g_igp.subgraph(devices)
         graph = asn_subgraph._graph
         # get subgraph
         if not nx.is_connected(graph):
             g_igp.log.warning("IGP topology for ASN%s is disconnected" % asn)
-            #TODO: list connected components - but not the primary?
+            # TODO: list connected components - but not the primary?
         else:
             g_igp.log.debug("IGP topology for ASN%s is connected" % asn)
 
@@ -74,26 +90,31 @@ def validate_igp(anm):
 def all_same(items):
     # based on http://stackoverflow.com/q/3787908
     # use all with generator as shortcuts to false as soon as one invalid
-    #TODO: place this into generic ANK functions, use similar shortcut for speed elsewhere, in other utility functions
+    # TODO: place this into generic ANK functions, use similar shortcut for
+    # speed elsewhere, in other utility functions
     return all(x == items[0] for x in items)
+
 
 def all_unique(items):
     # based on http://stackoverflow.com/q/3787908
     # shortcuts for efficiency
-     seen = set()
-     return not any(i in seen or seen.add(i) for i in items)
+    seen = set()
+    return not any(i in seen or seen.add(i) for i in items)
+
 
 def duplicate_items(items):
     unique = set(items)
     counts = {i: items.count(i) for i in unique}
     return [i for i in counts if counts[i] > 1]
 
-#TODO: add high-level symmetry, anti-summetry, uniqueness, etc functions as per NCGuard
+# TODO: add high-level symmetry, anti-summetry, uniqueness, etc functions
+# as per NCGuard
 
-#TODO: make generic interface equal or unique function that takes attr
+# TODO: make generic interface equal or unique function that takes attr
+
 
 def validate_ipv4(anm):
-    #TODO: make this generic to also handle IPv6
+    # TODO: make this generic to also handle IPv6
     if not anm.has_overlay("ipv4"):
         log.debug("No IPv4 overlay created, skipping ipv4 validation")
         return
@@ -101,12 +122,12 @@ def validate_ipv4(anm):
     # interface IP uniqueness
     tests_passed = True
 
-    #TODO: only include bound interfaces
+    # TODO: only include bound interfaces
 
     # check globally unique ip addresses
     all_ints = [i for n in g_ipv4.l3devices()
-            for i in n.physical_interfaces()
-            if i.is_bound] # don't include unbound interfaces
+                for i in n.physical_interfaces()
+                if i.is_bound]  # don't include unbound interfaces
     all_int_ips = [i.ip_address for i in all_ints]
 
     if all_unique(all_int_ips):
@@ -116,9 +137,9 @@ def validate_ipv4(anm):
         duplicates = duplicate_items(all_int_ips)
         duplicate_ips = set(duplicate_items(all_int_ips))
         duplicate_ints = [n for n in all_ints
-                if n.ip_address in duplicate_ips]
+                          if n.ip_address in duplicate_ips]
         duplicates = ", ".join("%s: %s" % (i.node, i.ip_address)
-            for i in duplicate_ints)
+                               for i in duplicate_ints)
         g_ipv4.log.warning("Global duplicate IP addresses %s" % duplicates)
 
     for cd in g_ipv4.nodes("broadcast_domain"):
@@ -131,21 +152,21 @@ def validate_ipv4(anm):
             pass
         else:
             subnets = ", ".join("%s: %s" % (i.node, i.subnets)
-                    for i in neigh_int_subnets)
+                                for i in neigh_int_subnets)
             tests_passed = False
             log.warning("Different subnets on %s. %s" %
-                    (cd, subnets))
+                        (cd, subnets))
             # log warning
 
         ip_subnet_mismatches = [i for i in neigh_ints
-                    if i.ip_address not in i.subnet]
+                                if i.ip_address not in i.subnet]
         if len(ip_subnet_mismatches):
             tests_passed = False
             mismatches = ", ".join("%s not in %s on %s" %
-                    (i.ip_address, i.subnet, i.node)
-                    for i in ip_subnet_mismatches)
+                                   (i.ip_address, i.subnet, i.node)
+                                   for i in ip_subnet_mismatches)
             cd.log.warning("Mismatched IP subnets: %s" %
-                    mismatches)
+                           mismatches)
         else:
             cd.log.debug("All subnets match")
 
@@ -157,9 +178,9 @@ def validate_ipv4(anm):
             tests_passed = False
             duplicate_ips = set(duplicate_items(neigh_int_ips))
             duplicate_ints = [n for n in neigh_ints
-                    if n.ip_address in duplicate_ips]
+                              if n.ip_address in duplicate_ips]
             duplicates = ", ".join("%s: %s" % (i.node, i.ip_address)
-                    for i in duplicate_ints)
+                                   for i in duplicate_ints)
             cd.log.warning("Duplicate IP addresses: %s" % duplicates)
 
     if tests_passed:

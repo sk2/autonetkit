@@ -5,6 +5,7 @@ import autonetkit.log as log
 
 
 class DmInterface(object):
+
     def __init__(self, nidb, node_id, interface_id):
         object.__setattr__(self, 'nidb', nidb)
         object.__setattr__(self, 'node_id', node_id)
@@ -14,7 +15,6 @@ class DmInterface(object):
         #self.log = CustomAdapter(logger, {'item': logstring})
         logger = log
         object.__setattr__(self, 'log', logger)
-
 
     def __key(self):
         # based on http://stackoverflow.com/q/2909106
@@ -101,7 +101,7 @@ class DmInterface(object):
             return
 
         if isinstance(data, dict):
-            #TODO: use config stanza instead?
+            # TODO: use config stanza instead?
             return InterfaceDataDict(data)
 
         return data
@@ -126,10 +126,11 @@ class DmInterface(object):
     def edges(self):
         """Returns all edges from node that have this interface ID
         This is the convention for binding an edge to an interface"""
-        # edges have raw_interfaces stored as a dict of {node_id: interface_id, }
+        # edges have raw_interfaces stored as a dict of {node_id: interface_id,
+        # }
         valid_edges = [e for e in self.node.edges()
-                if self.node_id in e.raw_interfaces
-                and e.raw_interfaces[self.node_id] == self.interface_id]
+                       if self.node_id in e.raw_interfaces
+                       and e.raw_interfaces[self.node_id] == self.interface_id]
         return valid_edges
 
     def neighbors(self):
@@ -139,8 +140,10 @@ class DmInterface(object):
         edges = self.edges()
         return [e.dst_int for e in edges]
 
+
 class InterfaceDataDict(collections.MutableMapping):
-    #TODO: replace with config stanza
+    # TODO: replace with config stanza
+
     """A dictionary which allows access as dict.key as well as dict['key']
     Based on http://stackoverflow.com/questions/3387691
     only allows read only acess
@@ -150,17 +153,17 @@ class InterfaceDataDict(collections.MutableMapping):
         return ", ".join(self.store.keys())
 
     def __init__(self, data):
-#Note this won't allow updates in place
+        # Note this won't allow updates in place
         self.store = data
         #self.data = parent[index]
-        #self.update(dict(*args, **kwargs)) # use the free update to set keys
-#TODO: remove duplicate of self.store and parent
+        # self.update(dict(*args, **kwargs)) # use the free update to set keys
+# TODO: remove duplicate of self.store and parent
 
     def __getitem__(self, key):
         return self.store[self.__keytransform__(key)]
 
     def __setitem__(self, key, value):
-        self.store[key] = value # store locally
+        self.store[key] = value  # store locally
 
     def __delitem__(self, key):
         del self.store[self.__keytransform__(key)]
@@ -181,7 +184,7 @@ class InterfaceDataDict(collections.MutableMapping):
         if key == "store":
             object.__setattr__(self, 'store', value)
         else:
-            self.store[key] = value # store locally
+            self.store[key] = value  # store locally
 
     def dump(self):
         return self.store

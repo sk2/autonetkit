@@ -5,6 +5,7 @@ from autonetkit.anm.edge import NmEdge
 from autonetkit.anm.interface import NmPort
 from autonetkit.anm.node import NmNode
 
+
 class NmGraph(OverlayBase):
 
     """API to interact with an overlay graph in ANM"""
@@ -35,10 +36,10 @@ class NmGraph(OverlayBase):
     # node_id
 
     def _record_overlay_dependencies(self, nbunch):
-        #TODO: add this logic to anm so can call when instantiating overlays too
-        #TODO: make this able to be disabled for performance
+        # TODO: add this logic to anm so can call when instantiating overlays too
+        # TODO: make this able to be disabled for performance
         g_deps = self.anm['_dependencies']
-        overlays = {n.overlay_id for n in nbunch  if isinstance(n, NmNode)}
+        overlays = {n.overlay_id for n in nbunch if isinstance(n, NmNode)}
         if len(overlays) and self._overlay_id not in g_deps:
             g_deps.add_node(self._overlay_id)
         for overlay_id in overlays:
@@ -48,7 +49,6 @@ class NmGraph(OverlayBase):
             if g_deps.number_of_edges(self._overlay_id, overlay_id) == 0:
                 edge = (overlay_id, self._overlay_id)
                 g_deps.add_edges_from([edge])
-
 
     def add_nodes_from(
         self,
@@ -71,8 +71,8 @@ class NmGraph(OverlayBase):
         self._record_overlay_dependencies(nbunch)
 
         if not update:
-            #TODO: what is update used for?
-# filter out existing nodes
+            # TODO: what is update used for?
+            # filter out existing nodes
             nbunch = (n for n in nbunch if n not in self._graph)
 
         nbunch = list(nbunch)
@@ -95,7 +95,8 @@ class NmGraph(OverlayBase):
         for node in self._graph.nodes():
             node_data = self._graph.node[node]
             if "label" not in node_data:
-                #TODO: should this just fall through instead to phy/anm label function?
+                # TODO: should this just fall through instead to phy/anm label
+                # function?
                 node_data["label"] = str(node)  # use node id
 
         self._copy_interfaces(node_ids)
@@ -103,21 +104,21 @@ class NmGraph(OverlayBase):
     def _copy_interfaces(self, nbunch):
         """Copies ports from one overlay to another"""
 
-        nbunch = [ n.node_id  if isinstance(n, NmNode) else n
-        for n in nbunch]
+        nbunch = [n.node_id if isinstance(n, NmNode) else n
+                  for n in nbunch]
 
         if self._overlay_id == "phy":
             # note: this will auto copy data from input if present - by default
-            #TODO: provide an option to add_nodes to skip this
+            # TODO: provide an option to add_nodes to skip this
             # or would it be better to just provide a function in ank_utils to
             # wipe interfaces in the rare case it's needed?
             input_graph = self._anm.overlay_nx_graphs['input']
             for node_id in nbunch:
                 if node_id not in input_graph:
                     log.debug("Not copying interfaces for %s: ",
-                        "not in input graph %s" % node_id)
+                              "not in input graph %s" % node_id)
                     self._graph.node[node_id]['_ports'] = {
-                    0: {'description': 'loopback', 'category': 'loopback'}}
+                        0: {'description': 'loopback', 'category': 'loopback'}}
                     continue
 
                 try:
@@ -126,29 +127,30 @@ class NmGraph(OverlayBase):
                     #Node not in input
                     # Just do base initialisation of loopback zero
                     self._graph.node[node_id]['_ports'] = {
-                    0: {'description': 'loopback', 'category': 'loopback'}}
+                        0: {'description': 'loopback', 'category': 'loopback'}}
                 else:
                     interface_data = {'description': None,
-                    'category': 'physical'}
+                                      'category': 'physical'}
                     # need to do dict() to copy, otherwise all point to same memory
                     # location -> clobber
-                    #TODO: update this to also get subinterfaces?
-                    #TODO: should description and category auto fall through?
+                    # TODO: update this to also get subinterfaces?
+                    # TODO: should description and category auto fall through?
                     data = dict((key, dict(interface_data)) for key in
-                        input_interfaces)
+                                input_interfaces)
                     ports = {}
                     for key, vals in input_interfaces.items():
                         port_data = {}
-                        ports[key] =dict(vals)
+                        ports[key] = dict(vals)
 
                     # force 0 to be loopback
-                    #TODO: could warn if already set
-                    ports[0] = {'description': 'loopback', 'category': 'loopback'}
+                    # TODO: could warn if already set
+                    ports[0] = {
+                        'description': 'loopback', 'category': 'loopback'}
                     self._graph.node[node_id]['_ports'] = ports
             return
 
         if self._overlay_id == "graphics":
-            #TODO: remove once graphics removed
+            # TODO: remove once graphics removed
             return
 
         phy_graph = self._anm.overlay_nx_graphs['phy']
@@ -156,21 +158,20 @@ class NmGraph(OverlayBase):
             try:
                 phy_interfaces = phy_graph.node[node_id]['_ports']
             except KeyError:
-                #Node not in phy (eg broadcast domain)
+                # Node not in phy (eg broadcast domain)
                 # Just do base initialisation of loopback zero
                 self._graph.node[node_id]['_ports'] = {
-                0: {'description': 'loopback', 'category': 'loopback'}}
+                    0: {'description': 'loopback', 'category': 'loopback'}}
             else:
                 interface_data = {'description': None,
-                'category': 'physical'}
+                                  'category': 'physical'}
                 # need to do dict() to copy, otherwise all point to same memory
                 # location -> clobber
-                #TODO: update this to also get subinterfaces?
-                #TODO: should description and category auto fall through?
+                # TODO: update this to also get subinterfaces?
+                # TODO: should description and category auto fall through?
                 data = dict((key, dict(interface_data)) for key in
-                    phy_interfaces)
+                            phy_interfaces)
                 self._graph.node[node_id]['_ports'] = data
-
 
     def add_node(
         self,
@@ -181,7 +182,7 @@ class NmGraph(OverlayBase):
         """Adds node to overlay"""
         nbunch = [node]
         self.add_nodes_from(nbunch,
-            retain, **kwargs)
+                            retain, **kwargs)
 
         try:
             node_id = node.id
@@ -191,7 +192,7 @@ class NmGraph(OverlayBase):
 
     def allocate_input_interfaces(self):
         """allocates edges to interfaces"""
-        #TODO: move this to ank utils? or extra step in the anm?
+        # TODO: move this to ank utils? or extra step in the anm?
         if self._overlay_id != "input":
             log.debug("Tried to allocate interfaces to %s" % overlay_id)
             return
@@ -200,14 +201,14 @@ class NmGraph(OverlayBase):
             and all(len(edge['input'].raw_interfaces) > 0 for edge in
                     self.edges()):
             log.debug("Input interfaces allocated")
-            return # interfaces allocated
+            return  # interfaces allocated
         else:
             log.info('Automatically assigning input interfaces')
 
         # Initialise loopback zero on node
         for node in self:
             node.raw_interfaces = {0:
-            {'description': 'loopback', 'category': 'loopback'}}
+                                   {'description': 'loopback', 'category': 'loopback'}}
 
         ebunch = sorted(self.edges())
         for edge in ebunch:
@@ -218,8 +219,8 @@ class NmGraph(OverlayBase):
             dst_int_id = dst._add_interface('%s to %s' % (dst.label,
                                                           src.label))
             edge.raw_interfaces = {
-            src.id: src_int_id,
-            dst.id: dst_int_id}
+                src.id: src_int_id,
+                dst.id: dst_int_id}
 
     def number_of_edges(self, node_a, node_b):
         return self._graph.number_of_edges(node_a, node_b)
@@ -228,7 +229,7 @@ class NmGraph(OverlayBase):
         """Alias for remove_node. Allows
         del overlay[node]
         """
-        #TODO: needs to support node types
+        # TODO: needs to support node types
         self.remove_node(key)
 
     def remove_nodes_from(self, nbunch):
@@ -286,7 +287,7 @@ class NmGraph(OverlayBase):
         ebunch,
         bidirectional=False,
         retain=None,
-        warn = True,
+        warn=True,
         **kwargs
     ):
         """Add edges. Unlike NetworkX, can only add an edge if both
@@ -312,7 +313,7 @@ class NmGraph(OverlayBase):
         except AttributeError:
             pass  # already a list
 
-        #TODO: this needs to support parallel links
+        # TODO: this needs to support parallel links
         for in_edge in ebunch:
             """Edge could be one of:
             - NmEdge
@@ -323,23 +324,23 @@ class NmGraph(OverlayBase):
             - (string, string)
             """
             # This is less efficient than nx add_edges_from, but cleaner logic
-            #TODO: could put the interface data into retain?
-            data = {'_ports': {} } # to retain
-            ekey = None # default is None (nx auto-allocates next int)
+            # TODO: could put the interface data into retain?
+            data = {'_ports': {}}  # to retain
+            ekey = None  # default is None (nx auto-allocates next int)
 
             # convert input to a NmEdge
             src = dst = None
             if isinstance(in_edge, NmEdge):
-                edge = in_edge # simple case
-                ekey = edge.ekey # explictly set ekey
+                edge = in_edge  # simple case
+                ekey = edge.ekey  # explictly set ekey
                 src = edge.src.node_id
                 dst = edge.dst.node_id
 
                 # and copy retain data
                 data = dict((key, edge.get(key)) for key in retain)
-                ports = {k:v for k,v in edge.raw_interfaces.items()
-                if k in self._graph} # only if exists in this overlay
-                #TODO: debug log if skipping a binding?
+                ports = {k: v for k, v in edge.raw_interfaces.items()
+                         if k in self._graph}  # only if exists in this overlay
+                # TODO: debug log if skipping a binding?
                 data['_ports'] = ports
 
                 # this is the only case where copy across data
@@ -378,7 +379,7 @@ class NmGraph(OverlayBase):
                         ports[src] = in_a.interface_id
                     data['_ports'] = ports
 
-                elif  in_a in self and in_b in self:
+                elif in_a in self and in_b in self:
                     src = in_a
                     dst = in_b
 
@@ -386,10 +387,10 @@ class NmGraph(OverlayBase):
                 # (src, dst, ekey) format
                 # or (src, dst, data) format
                 in_a, in_b, in_c = in_edge[0], in_edge[1], in_edge[2]
-                if  in_a in self and in_b in self:
+                if in_a in self and in_b in self:
                     src = in_a
                     dst = in_b
-                    #TODO: document the following logic
+                    # TODO: document the following logic
                     if self.is_multigraph() and not isinstance(in_c, dict):
                         ekey = in_c
                     else:
@@ -398,24 +399,25 @@ class NmGraph(OverlayBase):
             elif len(in_edge) == 4:
                 # (src, dst, ekey, data) format
                 in_a, in_b = in_edge[0], in_edge[1]
-                if  in_a in self and in_b in self:
+                if in_a in self and in_b in self:
                     src = in_a
                     dst = in_b
                     ekey = in_edge[2]
                     data = in_edge[3]
 
-            #TODO: if edge not set at this point, give error/warn
+            # TODO: if edge not set at this point, give error/warn
 
-            #TODO: add check that edge.src and edge.dst exist
+            # TODO: add check that edge.src and edge.dst exist
             if (src is None or dst is None) and warn:
                 log.warning("Unsupported edge %s" % str(in_edge))
             if not(src in self and dst in self):
                 if warn:
                     self.log.debug("Not adding edge %s, src/dst not in overlay"
-                        % str(in_edge))
+                                   % str(in_edge))
                 continue
 
-            #TODO: warn if not multigraph and edge already exists - don't add/clobber
+            # TODO: warn if not multigraph and edge already exists - don't
+            # add/clobber
             data.update(**kwargs)
 
             edges_to_add = []
@@ -439,7 +441,8 @@ class NmGraph(OverlayBase):
         if nbunch in self:
             nbunch = [nbunch]  # single node in the list for iteration
 
-        # if the node is in the underlying networkx graph, then map to an overlay node
+        # if the node is in the underlying networkx graph, then map to an
+        # overlay node
         nbunch = [self.node(n) if n in self._graph else n for n in nbunch]
         for node in nbunch:
             for (key, value) in kwargs.items():

@@ -1,6 +1,7 @@
 import autonetkit.log as log
 from autonetkit.anm.base import OverlayBase
 
+
 class OverlaySubgraph(OverlayBase):
 
     """OverlaySubgraph"""
