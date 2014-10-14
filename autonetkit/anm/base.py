@@ -4,6 +4,7 @@
 import itertools
 import logging
 
+import autonetkit
 import autonetkit.log as log
 from autonetkit.anm.edge import NmEdge
 from autonetkit.anm.graph_data import NmGraphData
@@ -34,11 +35,28 @@ class OverlayBase(object):
         object.__setattr__(self, 'log', logger)
 
     def __repr__(self):
-        """"""
+        """
+
+        Example:
+        >>> anm = autonetkit.nm_house()
+        >>> anm['phy']
+        phy
+
+        """
 
         return self._overlay_id
 
     def is_multigraph(self):
+        """
+        Example:
+        >>> anm = autonetkit.nm_house()
+        >>> anm['phy'].is_multigraph()
+        False
+        >>> anm = autonetkit.nm_multi()
+        >>> anm['phy'].is_multigraph()
+        True
+
+        """
         return self._graph.is_multigraph()
 
     @property
@@ -48,7 +66,14 @@ class OverlayBase(object):
         return NmGraphData(self._anm, self._overlay_id)
 
     def __contains__(self, n):
-        """"""
+        """
+        Example:
+        >>> anm = autonetkit.nm_house()
+        >>> "r1" in anm['phy']
+        True
+        >>> "test" in anm['phy']
+        False
+        """
 
         try:
             return n.node_id in self._graph
@@ -72,7 +97,18 @@ class OverlayBase(object):
     ):
         '''returns edge in this graph with same src and dst
         and key for parallel edges (default is to return first edge)
-        #TODO: explain parameter overloading: strings, edges, nodes...'''
+        #TODO: explain parameter overloading: strings, edges, nodes...
+
+        Example:
+        >>> anm = autonetkit.nm_house()
+        >>> g_phy = anm['phy']
+        >>> e_r1_r2 = g_phy.edge("r1", "r2")
+
+        Can also find from an edge
+        >>> e_r1_r2_input = anm['input'].edge(e_r1_r2)
+
+
+        '''
 
         # TODO: handle multigraphs
         if isinstance(edge_to_find, NmEdge):
@@ -153,7 +189,17 @@ class OverlayBase(object):
 
     def node(self, key):
         """Returns node based on name
-        This is currently O(N). Could use a lookup table"""
+        This is currently O(N). Could use a lookup table
+
+        Example:
+        >>> anm = autonetkit.nm_house()
+        >>> g_phy = anm['phy']
+        >>> r1 = g_phy.node("r1")
+
+        Can also find across layeA
+        >>> r1_input = anm['input'].node(r1)
+
+        """
 
         # TODO: refactor
 
@@ -173,6 +219,7 @@ class OverlayBase(object):
             for node in self:
                 if str(node) == key:
                     return node
+            #TODO: change warning to an exception
             log.warning('Unable to find node %s in %s ' % (key, self))
             return None
 
@@ -259,8 +306,6 @@ class OverlayBase(object):
     def groupby(self, attribute, nodes=None):
         """Returns a dictionary sorted by attribute
 
-        >>> G_in.groupby("asn")
-        {u'1': [r1, r2, r3, sw1], u'2': [r4]}
         """
 
         result = {}
@@ -353,3 +398,8 @@ class OverlayBase(object):
                                  key) for (src, dst, key) in valid_edges)
 
         return list(result)
+
+if __name__ == "__main__":
+    import doctest
+    from autonetkit.anm.network_model import NetworkModel
+    doctest.testmod(extraglobs={'anm': NetworkModel()})
