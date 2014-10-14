@@ -74,6 +74,7 @@ def test():
     assert(loopback0.is_loopback_zero)
 
     #TODO: need to add more loopbacks to test
+    print loopback0
     assert(str(loopback0) == "loopback.r1")
 
     eth0 = test_node.interface(1)
@@ -202,3 +203,5 @@ def test():
     #TODO: test for directed graph
 
     autonetkit.update_http(anm)
+
+test()

@@ -36,7 +36,8 @@ class NmPort(object):
         return hash(self.__key())
 
     def __repr__(self):
-        return '%s.%s' % (self.id, self.node)
+        description = self.id or self.description
+        return '%s.%s' % (description, self.node)
 
     def __eq__(self, other):
         return self.__key() == other.__key()
