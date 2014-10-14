@@ -38,6 +38,7 @@ class OverlayBase(object):
         """
 
         Example:
+
         >>> anm = autonetkit.nm_house()
         >>> anm['phy']
         phy
@@ -49,6 +50,7 @@ class OverlayBase(object):
     def is_multigraph(self):
         """
         Example:
+
         >>> anm = autonetkit.nm_house()
         >>> anm['phy'].is_multigraph()
         False
@@ -68,6 +70,7 @@ class OverlayBase(object):
     def __contains__(self, n):
         """
         Example:
+
         >>> anm = autonetkit.nm_house()
         >>> "r1" in anm['phy']
         True
@@ -100,11 +103,13 @@ class OverlayBase(object):
         #TODO: explain parameter overloading: strings, edges, nodes...
 
         Example:
+
         >>> anm = autonetkit.nm_house()
         >>> g_phy = anm['phy']
         >>> e_r1_r2 = g_phy.edge("r1", "r2")
 
         Can also find from an edge
+
         >>> e_r1_r2_input = anm['input'].edge(e_r1_r2)
 
 
@@ -192,6 +197,7 @@ class OverlayBase(object):
         This is currently O(N). Could use a lookup table
 
         Example:
+
         >>> anm = autonetkit.nm_house()
         >>> g_phy = anm['phy']
         >>> r1 = g_phy.node("r1")
