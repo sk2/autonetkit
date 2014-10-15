@@ -742,7 +742,7 @@ def boundary_nodes(graph, nodes):
     # TODO: move to utils
 # TODO: use networkx boundary nodes directly: does the same thing
 
-    graph = unwrap_graph(graph)
+    graph = unwrap_graph(nm_graph)
     nodes = list(nodes)
     nbunch = list(unwrap_nodes(nodes))
 
@@ -752,4 +752,4 @@ def boundary_nodes(graph, nodes):
     internal_nodes = [s for (s, _) in b_edges]
     assert all(n in nbunch for n in internal_nodes)  # check internal
 
-    return wrap_nodes(graph, internal_nodes)
+    return wrap_nodes(nm_graph, internal_nodes)
