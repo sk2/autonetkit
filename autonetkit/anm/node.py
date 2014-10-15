@@ -135,6 +135,7 @@ class NmNode(object):
         return self.interfaces(category='physical')
 
     def loopback_interfaces(self):
+        #TODO: allow abiility to skip loopback zero
         """"""
 
         return self.interfaces(category='loopback')
