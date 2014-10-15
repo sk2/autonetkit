@@ -4,6 +4,7 @@ from autonetkit.anm.base import OverlayBase
 from autonetkit.anm.edge import NmEdge
 from autonetkit.anm.interface import NmPort
 from autonetkit.anm.node import NmNode
+import autonetkit
 
 
 class NmGraph(OverlayBase):
@@ -14,8 +15,7 @@ class NmGraph(OverlayBase):
     def anm(self):
         """Returns anm for this overlay
 
-        >>> anm = autonetkit.example.house()
-        >>> print anm
+        >>> anm = autonetkit.topos.house()
 
         """
 
