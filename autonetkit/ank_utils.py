@@ -16,10 +16,17 @@ def call_log(fn, *args, **kwargs):
 
 def unwrap_nodes(nodes):
     """Unwrap nodes"""
+    from autonetkit.anm import NmNode
+
     try:
         return nodes.node_id  # treat as single node
     except AttributeError:
-        return (node.node_id for node in nodes)  # treat as list
+        if isinstance(nodes, basestring):
+            return nodes  # string
+
+        return [node.node_id if isinstance(node, NmNode)
+                else node
+                for node in nodes]  # treat as list
 
 
 def unwrap_edges(edges):
