@@ -47,9 +47,10 @@ class PlatformCompiler(object):
                         interface.ipv4_subnet = ipv4_int.subnet
                         interface.ipv4_cidr = sn_preflen_to_network(interface.ipv4_address,
                                                                     interface.ipv4_subnet.prefixlen)
-                    except AttributeError:
+                    except AttributeError, error:
                         log.warning(
                             "Unable to copy across IPv4 for %s" % interface)
+                        log.debug(error)
                     else:
                         interface.use_ipv4 = True
                 if phy_node.use_ipv6:
