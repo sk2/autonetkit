@@ -14,13 +14,8 @@ except ImportError:
                 )
 
 
-def deploy(
-    host,
-    username,
-    dst_folder,
-    key_filename=None,
-    parallel_count=5,
-    ):
+def deploy(host, username, dst_folder, key_filename=None,
+    parallel_count=5):
     tar_file = package(dst_folder)
     transfer(host, username, tar_file, key_filename=key_filename)
     extract(
@@ -44,13 +39,7 @@ def package(src_dir, target='netkit_lab'):
     return tar_filename
 
 
-def transfer(
-    host,
-    username,
-    local,
-    remote=None,
-    key_filename=None,
-    ):
+def transfer(host, username, local, remote=None, key_filename=None):
     log.debug('Transferring lab to %s' % host)
     log.info('Transferring Netkit lab')
     if not remote:
