@@ -3,6 +3,7 @@
 
 import itertools
 from collections import namedtuple
+import autonetkit
 
 import autonetkit.log as log
 import networkx as nx
@@ -16,6 +17,10 @@ static_route_v4 = namedtuple("static_route_v4",
 static_route_v6 = namedtuple("static_route_v6",
                              ["prefix", "nexthop", "metric"])
 
+# TODO: add ability to specify labels to unwrap too
+
+# TODO: split into a utils module
+
 
 def sn_preflen_to_network(address, prefixlen):
     """Workaround for creating an IPNetwork from an address and a prefixlen
@@ -27,6 +32,16 @@ def sn_preflen_to_network(address, prefixlen):
 
 
 def fqdn(node):
+    """
+
+    Example:
+
+    >>> anm = autonetkit.topos.house()
+    >>> r1 = anm['phy'].node("r1")
+    >>> fqdn(r1)
+    'r1.1'
+
+    """
     return '%s.%s' % (node.label, node.asn)
 
 
@@ -44,8 +59,27 @@ def name_folder_safe(foldername):
 def set_node_default(nm_graph, nbunch=None, **kwargs):
     """Sets all nodes in nbunch to value if key not already set
     Note: this won't apply to future nodes added
+
+    >>> anm = autonetkit.topos.house()
+    >>> g_phy = anm['phy']
+    >>> r1 = g_phy.node("r1")
+    >>> r1.color = "blue"
+    >>> [(n, n.color) for n in g_phy]
+    [(r4, None), (r5, None), (r1, 'blue'), (r2, None), (r3, None)]
+    >>> set_node_default(g_phy, color="red")
+    >>> [(n, n.color) for n in g_phy]
+    [(r4, 'red'), (r5, 'red'), (r1, 'blue'), (r2, 'red'), (r3, 'red')]
+
+    Can also set for a specific bunch of nodes
+
+    >>> nodes = ["r1", "r2", "r3"]
+    >>> set_node_default(g_phy, nodes, role="core")
+    >>> [(n, n.role) for n in g_phy]
+    [(r4, None), (r5, None), (r1, 'core'), (r2, 'core'), (r3, 'core')]
+
     """
 
+    # work with the underlying NetworkX graph for efficiency
     graph = unwrap_graph(nm_graph)
     if nbunch is None:
         nbunch = graph.nodes()
@@ -56,15 +90,49 @@ def set_node_default(nm_graph, nbunch=None, **kwargs):
             if key not in graph.node[node]:
                 graph.node[node][key] = val
 
-
 # TODO: also add ability to copy multiple attributes
 
 # TODO: rename to copy_node_attr_from
 
+
 def copy_attr_from(overlay_src, overlay_dst, src_attr, dst_attr=None,
                    nbunch=None, type=None, default=None):
+    """
 
-    # TODO: add dest format, eg to convert to int
+    >>> anm = autonetkit.topos.house()
+    >>> g_in = anm['input']
+    >>> g_phy = anm['phy']
+    >>> [n.color for n in g_phy]
+    [None, None, None, None, None]
+    >>> set_node_default(g_in, color="red")
+    >>> copy_attr_from(g_in, g_phy, "color")
+    >>> [n.color for n in g_phy]
+    ['red', 'red', 'red', 'red', 'red']
+
+    Can specify a default value if unset
+
+    >>> nodes = ["r1", "r2", "r3"]
+    >>> set_node_default(g_in, nodes, role="core")
+    >>> copy_attr_from(g_in, g_phy, "role", default="edge")
+    >>> [(n, n.role) for n in g_phy]
+    [(r4, 'edge'), (r5, 'edge'), (r1, 'core'), (r2, 'core'), (r3, 'core')]
+
+
+    Can specify the remote attribute to set
+
+    >>> copy_attr_from(g_in, g_phy, "role", "device_role", default="edge")
+
+    Can specify the type to cast to
+
+    >>> g_in.update(memory = "32")
+    >>> copy_attr_from(g_in, g_phy, "memory", type=int)
+    >>> [n.memory for n in g_phy]
+    [32, 32, 32, 32, 32]
+
+
+    Supported types to case to are float and int
+
+    """
 
     if not dst_attr:
         dst_attr = src_attr
@@ -99,6 +167,26 @@ def copy_attr_from(overlay_src, overlay_dst, src_attr, dst_attr=None,
 
 def copy_int_attr_from(overlay_src, overlay_dst, src_attr, dst_attr=None,
                        nbunch=None, type=None, default=None):
+
+    #TODO: check if copies to loopbacks as well
+    """
+
+    >>> anm = autonetkit.topos.house()
+    >>> g_in = anm['input']
+    >>> g_phy = anm['phy']
+    >>> [iface.ospf_cost for node in g_phy for iface in node]
+    [None, None, None, None, None, None, None, None, None, None, None, None]
+    >>> for node in g_in:
+    ...      for interface in node:
+    ...         interface.ospf_cost = 10
+    >>> copy_int_attr_from(g_in, g_phy, "ospf_cost")
+    >>> [iface.ospf_cost for node in g_phy for iface in node]
+    [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10]
+
+
+    Supported types to case to are float and int
+
+    """
 
     # note; uses high-level API for practicality over raw speed
 
@@ -167,7 +255,19 @@ def copy_edge_attr_from(overlay_src, overlay_dst, src_attr,
 # TODO: make edges own module
 
 def wrap_edges(nm_graph, edges):
-    """ wraps edge ids into edge overlay """
+    """ wraps edge ids into edge overlay
+
+    >>> anm = autonetkit.topos.house()
+    >>> g_phy = anm['phy']
+    >>> elist = [("r1", "r2"), ("r2", "r3")]
+    >>> edges = wrap_edges(g_phy, elist)
+
+    The edges are now NetworkModel edge objects
+
+    >>> edges
+    [phy: (r1, r2), phy: (r2, r3)]
+
+    """
 
     # TODO: make support multigraphs
 
@@ -188,10 +288,28 @@ def wrap_edges(nm_graph, edges):
 
 
 def wrap_nodes(nm_graph, nodes):
-    """ wraps node id into node overlay """
+    """ wraps node id into node overlay
 
-    return (NmNode(nm_graph._anm, nm_graph._overlay_id, node)
-            for node in nodes)
+    >>> anm = autonetkit.topos.house()
+    >>> g_phy = anm['phy']
+    >>> nlist = ["r1", "r2", "r3"]
+    >>> nodes = wrap_nodes(g_phy, nlist)
+
+    The nodes are now NetworkModel node objects
+
+    >>> nodes
+    [r1, r2, r3]
+
+    This is generally used in internal functions.
+    An alternative method is:
+
+    >>> [g_phy.node(n) for n in nlist]
+    [r1, r2, r3]
+
+     """
+
+    return [NmNode(nm_graph._anm, nm_graph._overlay_id, node)
+            for node in nodes]
 
 
 def in_edges(nm_graph, nodes=None):
@@ -204,6 +322,31 @@ def in_edges(nm_graph, nodes=None):
 
 
 def split(nm_graph, edges, retain=None, id_prepend=''):
+    """
+    Splits edges in two, retaining any attributes specified.
+
+    >>> anm = autonetkit.topos.house()
+    >>> g_phy = anm['phy']
+    >>> edge = g_phy.edge("r1", "r2")
+    >>> new_nodes = split(g_phy, edge)
+    >>> new_nodes
+    [r1_r2]
+    >>> [n.neighbors() for n in new_nodes]
+    [[r1, r2]]
+
+
+    For multiple edges and specifying a prepend for the new nodes
+
+    >>> anm = autonetkit.topos.house()
+    >>> g_phy = anm['phy']
+    >>> edges = g_phy.node("r2").edges()
+    >>> new_nodes = split(g_phy, edges, id_prepend="split_")
+    >>> new_nodes
+    [split_r2_r4, split_r1_r2, split_r2_r3]
+    >>> [n.neighbors() for n in new_nodes]
+    [[r4, r2], [r1, r2], [r2, r3]]
+
+    """
 
     if retain is None:
         retain = []
@@ -218,6 +361,11 @@ def split(nm_graph, edges, retain=None, id_prepend=''):
     graph = unwrap_graph(nm_graph)
     edges_to_add = []
     added_nodes = []
+
+    # handle single edge
+    if edges in nm_graph.edges():
+        edges = [edges] # place into list for iteration
+
     edges = list(edges)
 
     for edge in edges:
@@ -273,6 +421,35 @@ def explode_nodes(nm_graph, nodes, retain=None):
     """Explodes all nodes in nodes
     TODO: explain better
     TODO: Add support for digraph - check if nm_graph.is_directed()
+
+    >>> anm = autonetkit.topos.mixed()
+    >>> g_phy = anm['phy']
+    >>> switches = g_phy.switches()
+    >>> exploded_edges = explode_nodes(g_phy, switches)
+    >>> exploded_edges
+    [phy: (r1, r2)]
+
+
+    Or to explode a specific node
+
+    >>> anm = autonetkit.topos.house()
+    >>> g_phy = anm['phy']
+    >>> g_phy.nodes()
+    [r4, r5, r1, r2, r3]
+
+    >>> sorted(g_phy.edges())
+    [phy: (r1, r2), phy: (r1, r3), phy: (r2, r3), phy: (r4, r2), phy: (r4, r5), phy: (r5, r3)]
+
+    >>> r2 = g_phy.node("r2")
+    >>> exploded_edges = explode_nodes(g_phy, r2)
+    >>> exploded_edges
+    [phy: (r1, r4), phy: (r3, r4), phy: (r1, r3)]
+    >>> g_phy.nodes()
+    [r4, r5, r1, r3]
+
+    >>> sorted(g_phy.edges())
+    [phy: (r1, r3), phy: (r4, r1), phy: (r4, r3), phy: (r4, r5), phy: (r5, r3)]
+
     """
     if retain is None:
         retain = []
@@ -285,6 +462,9 @@ def explode_nodes(nm_graph, nodes, retain=None):
         pass  # already a list
 
     total_added_edges = []  # keep track to return
+
+    if nodes in nm_graph:
+        nodes = [nodes] # place into list for iteration
 
     for node in nodes:
 
@@ -341,8 +521,24 @@ def label(nm_graph, nodes):
     return list(nm_graph._anm.node_label(node) for node in nodes)
 
 
-def connected_subgraphs(nm_graph, nodes):
-    nodes = list(unwrap_nodes(nodes))
+def connected_subgraphs(nm_graph, nodes = None):
+    """
+
+    >>> anm = autonetkit.topos.house()
+    >>> g_phy = anm['phy']
+    >>> connected_subgraphs(g_phy)
+    [[r4, r5, r1, r2, r3]]
+    >>> edges = [("r2", "r4"), ("r3", "r5")]
+    >>> g_phy.remove_edges_from(edges)
+    >>> connected_subgraphs(g_phy)
+    [[r1, r2, r3], [r4, r5]]
+
+
+    """
+    if nodes is None:
+        nodes = nm_graph.nodes()
+    else:
+        nodes = list(unwrap_nodes(nodes))
     graph = unwrap_graph(nm_graph)
     subgraph = graph.subgraph(nodes)
     if not len(subgraph.edges()):

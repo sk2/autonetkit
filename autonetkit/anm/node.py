@@ -124,8 +124,8 @@ class NmNode(object):
 
         """
 
-        #TODO: initialise id for loopback zero?
-        #TODO: Set category for loopback zero to be "loopback"
+        # TODO: initialise id for loopback zero?
+        # TODO: Set category for loopback zero to be "loopback"
 
         return (i for i in self.interfaces('is_loopback_zero')).next()
 
@@ -208,7 +208,7 @@ class NmNode(object):
     # TODO: interface function access needs to be cleaned up
 
     def _add_interface(self, description=None, category='physical',
-        **kwargs):
+                       **kwargs):
         """"""
 
         data = dict(kwargs)
@@ -519,7 +519,7 @@ class NmNode(object):
 
         """
 
-        #TODO: add example for multi-edge
+        # TODO: add example for multi-edge
 
         return self._graph.degree(self.node_id)
 
