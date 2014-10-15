@@ -128,9 +128,9 @@ class RouterCompiler(DeviceCompiler):
         use_bgp = False
         for overlay in bgp_overlays:
             if (self.anm.has_overlay(overlay)
-                    and node in self.anm[overlay]
-                    and self.anm[overlay].node(node).degree() > 0
-                ):
+                        and node in self.anm[overlay]
+                        and self.anm[overlay].node(node).degree() > 0
+                    ):
                 use_bgp = True
                 break
 
@@ -244,11 +244,14 @@ class RouterCompiler(DeviceCompiler):
                     ipv4_int = phy_int['ipv4']
                     interface.use_ipv4 = True
 
-                    interface.ipv4_address = ipv4_int.loopback
-                    interface.ipv4_subnet = node.loopback_subnet
-                    interface.ipv4_cidr = \
-                        sn_preflen_to_network(interface.ipv4_address,
-                                              interface.ipv4_subnet.prefixlen)
+                    try:
+                        interface.ipv4_address = ipv4_int.loopback
+                        interface.ipv4_subnet = node.loopback_subnet
+                        interface.ipv4_cidr = sn_preflen_to_network(interface.ipv4_address,
+                                                                    interface.ipv4_subnet.prefixlen)
+                    except AttributeError:
+                        interface.use_ipv4 = False
+                        log.warning("No IP addresses set on %s", phy_int)
 
                 if node.ip.use_ipv6:
                     ipv6_int = phy_int['ipv6']
@@ -315,6 +318,13 @@ class RouterCompiler(DeviceCompiler):
 
                 interfaces_by_area[area].append(stanza)
 
+        for interface in node.loopback_interfaces():
+            if not interface.inject_to_igp:
+                continue
+
+            else:
+                print "advertise", interface
+
         loopback_zero = node.loopback_zero
         ospf_loopback_zero = g_ospf.interface(loopback_zero)
         router_area = ospf_loopback_zero.area  # area assigned to router
@@ -326,6 +336,7 @@ class RouterCompiler(DeviceCompiler):
 
         node.ospf.interfaces_by_area = ConfigStanza(**interfaces_by_area)
 
+        # TODO: split this into a generic IGP function
         added_networks = set()
         for interface in node.physical_interfaces():
             if interface.exclude_igp:
