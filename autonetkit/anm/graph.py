@@ -173,12 +173,7 @@ class NmGraph(OverlayBase):
                             phy_interfaces)
                 self._graph.node[node_id]['_ports'] = data
 
-    def add_node(
-        self,
-        node,
-        retain=None,
-        **kwargs
-    ):
+    def add_node(self, node, retain=None, **kwargs):
         """Adds node to overlay"""
         nbunch = [node]
         self.add_nodes_from(nbunch,
@@ -249,13 +244,7 @@ class NmGraph(OverlayBase):
 
         self._graph.remove_node(node_id)
 
-    def add_edge(
-        self,
-        src,
-        dst,
-        retain=None,
-        **kwargs
-    ):
+    def add_edge(self, src, dst, retain=None, **kwargs):
         """Adds an edge to the overlay"""
 
         if not retain:
@@ -282,17 +271,17 @@ class NmGraph(OverlayBase):
 
         self.add_edges_from(args, kwargs)
 
-    def add_edges_from(
-        self,
-        ebunch,
-        bidirectional=False,
-        retain=None,
-        warn=True,
-        **kwargs
-    ):
+    def add_edges_from(self, ebunch, bidirectional=False, retain=None,
+                       warn=True, **kwargs):
         """Add edges. Unlike NetworkX, can only add an edge if both
         src and dst in graph already.
         If they are not, then they will not be added (silently ignored)
+
+
+        Retains interface mappings if they are present (this is why ANK
+            stores the interface reference on the edges, as it simplifies
+            cross-layer access, as well as split, aggregate, etc retaining the
+            interface bindings)_
 
         Bidirectional will add edge in both directions. Useful if going
         from an undirected graph to a
@@ -455,7 +444,3 @@ class NmGraph(OverlayBase):
         from autonetkit.anm.subgraph import OverlaySubgraph
         return OverlaySubgraph(self._anm, self._overlay_id,
                                self._graph.subgraph(nbunch), name)
-
-if __name__ == "__main__":
-    import doctest
-    doctest.testmod()
