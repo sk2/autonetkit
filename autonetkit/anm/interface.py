@@ -6,13 +6,7 @@ from autonetkit.log import CustomAdapter
 
 class NmPort(object):
 
-    def __init__(
-        self,
-        anm,
-        overlay_id,
-        node_id,
-        interface_id,
-    ):
+    def __init__(self, anm, overlay_id, node_id, interface_id):
         object.__setattr__(self, 'anm', anm)
         object.__setattr__(self, 'overlay_id', overlay_id)
         object.__setattr__(self, 'node_id', node_id)
