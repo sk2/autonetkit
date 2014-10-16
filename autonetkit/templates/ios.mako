@@ -80,16 +80,20 @@ address-family ipv4
   route-target import ${vrf.route_target}
 exit-address-family
 %endif
-!
 %endfor
 ## L2TP Classes
 % for l2tp_class in node.l2tp_classes:
+% if loop.first:
+!
+% endif
 l2tp-class ${l2tp_class}
 %endfor
-!
 ## PseudoWire Classes
 % for pwc in node.pseudowire_classes:
  % if pwc.encapsulation == "l2tpv3":
+ % if loop.first:
+ !
+ % endif
 pseudowire-class ${pwc.name}
  encapsulation ${pwc.encapsulation}
  protocol l2tpv3 ${pwc.l2tp_class_name}
