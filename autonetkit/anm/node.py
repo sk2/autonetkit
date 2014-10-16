@@ -297,7 +297,7 @@ class NmNode(object):
                                      interface_id) for interface_id in
                               self._interface_ids())
 
-        retval = (i for i in all_interfaces if filter_func(i))
+        retval = [i for i in all_interfaces if filter_func(i)]
         return retval
 
     def interface(self, key):
