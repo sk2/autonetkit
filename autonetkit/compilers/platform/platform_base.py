@@ -40,6 +40,11 @@ class PlatformCompiler(object):
                     if interface.is_physical and not interface.is_bound:
                         continue
 
+                    # permit unbound ip interfaces (e.g. if skipped for l2 encap)
+                    if interface.is_physical and not ipv4_int.is_bound:
+                        interface.use_ipv4 = False
+                        continue
+
                     # TODO: also need to skip layer2 virtual interfaces
                     # interface is connected
                     try:
@@ -58,6 +63,10 @@ class PlatformCompiler(object):
                     if node.is_server() and interface.is_loopback:
                         continue
                     if interface.is_physical and not interface.is_bound:
+                        continue
+                    # permit unbound ip interfaces (e.g. if skipped for l2 encap)
+                    if interface.is_physical and not ipv6_int.is_bound:
+                        interface.use_ipv6 = False
                         continue
                     try:
                         # TODO: copy ip address as well

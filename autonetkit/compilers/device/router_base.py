@@ -496,7 +496,7 @@ class RouterCompiler(DeviceCompiler):
             if not eigrp_int.is_bound:
                 continue  # not an EIGRP interface
             network = ipv4_int.subnet
-            if eigrp_int and eigrp_int.is_bound:
+            if eigrp_int and eigrp_int.is_bound and interface.use_ipv4:
                 ipv4_networks.add(network)
 
         # Loopback zero subnet
