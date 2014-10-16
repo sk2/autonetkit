@@ -82,6 +82,21 @@ exit-address-family
 %endif
 !
 %endfor
+## L2TP Classes
+% for l2tp_class in node.l2tp_classes:
+l2tp-class ${l2tp_class}
+%endfor
+!
+## PseudoWire Classes
+% for pwc in node.pseudowire_classes:
+ % if pwc.encapsulation == "l2tpv3":
+pseudowire-class ${pwc.name}
+ encapsulation ${pwc.encapsulation}
+ protocol l2tpv3 ${pwc.l2tp_class_name}
+ ip local interface ${pwc.local_interface}
+ % endif
+!
+%endfor
 !
 ## Physical Interfaces
 % for interface in node.interfaces:
@@ -173,6 +188,11 @@ interface ${interface.id}
   %endfor
   % if interface.rsvp_bandwidth_percent:
   ip rsvp bandwidth percent ${interface.rsvp_bandwidth_percent}
+  %endif
+  % if interface.xconnect:
+    % if interface.xconnect.encapsulation == "l2tpv3":
+  xconnect ${interface.xconnect.remote_ip} ${interface.xconnect.vc_id} encapsulation l2tpv3 pw-class ${interface.xconnect.pw_class}
+    %endif
   %endif
 !
 % endfor
