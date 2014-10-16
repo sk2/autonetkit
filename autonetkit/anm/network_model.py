@@ -209,6 +209,7 @@ class NetworkModel(object):
         return iter(NmGraph(self, name) for name in self.overlays())
 
     def overlays(self):
+        #TODO: rename to overlay ids
         """"""
 
         return self._overlays.keys()
@@ -219,6 +220,11 @@ class NetworkModel(object):
         return self._phy.filter(*args, **kwargs)
 
     def __getitem__(self, key):
+        """"""
+
+        return NmGraph(self, key)
+
+    def overlay(self, key):
         """"""
 
         return NmGraph(self, key)

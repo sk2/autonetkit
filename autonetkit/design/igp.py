@@ -169,6 +169,7 @@ def ip_to_net_ent_title_ios(ip_addr):
     """ Converts an IP address into an OSI Network Entity Title
     suitable for use in IS-IS on IOS.
 
+    >>> from netaddr import IPAddress
     >>> ip_to_net_ent_title_ios(IPAddress("192.168.19.1"))
     '49.1921.6801.9001.00'
     """

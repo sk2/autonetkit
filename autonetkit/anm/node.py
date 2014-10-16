@@ -58,7 +58,7 @@ class NmNode(object):
 
         """
 
-        return self.interfaces(category='physical')
+        return iter(self.interfaces(category='physical'))
 
     def __len__(self):
         """Number of phyiscal interfaces of a node
@@ -129,15 +129,16 @@ class NmNode(object):
 
         return (i for i in self.interfaces('is_loopback_zero')).next()
 
-    def physical_interfaces(self):
+    def physical_interfaces(self, *args, **kwargs):
         """"""
+        kwargs['category'] = "physical"
+        return self.interfaces(*args, **kwargs)
 
-        return self.interfaces(category='physical')
-
-    def loopback_interfaces(self):
+    def loopback_interfaces(self, *args, **kwargs):
+        #TODO: allow abiility to skip loopback zero
         """"""
-
-        return self.interfaces(category='loopback')
+        kwargs['category'] = "loopback"
+        return self.interfaces(*args, **kwargs)
 
     def is_multigraph(self):
         return self._graph.is_multigraph()
@@ -230,11 +231,47 @@ class NmNode(object):
         self._ports[next_id] = data
         return next_id
 
+    def _sync_loopbacks(self, interface_id):
+        """Syncs a newly added loopback across all overlays the
+        node is in"""
+        for overlay in self.anm:
+            if self not in overlay:
+                continue
+
+            if overlay._overlay_id in ("phy", self.overlay_id):
+                # don't copy to self or phy as already there
+                continue
+
+            if overlay._overlay_id in ("graphics"):
+                """
+                TODO: debug why get problem for graphics
+                 File "/autonetkit/autonetkit/anm/node.py", line 257, in _sync_loopbacks
+                    o_node._ports[interface_id] = {"category": "loopback"}
+                IndexError: list assignment index out of range
+                None
+                """
+                # don't copy to self or phy as already there
+                continue
+
+            o_node = overlay.node(self)
+            if interface_id in o_node._ports:
+                # something has gone wrong - allocated the id over the top
+                # shouldn't happen since the next free id is from the phy
+
+                log.warning("Internal consistency error with copying loopback "
+                    "interface %s to %s in %s", interface_id, self, overlay)
+                continue
+
+            o_node._ports[interface_id] = {"category": "loopback"}
+
     def add_loopback(self, *args, **kwargs):
         '''Public function to add a loopback interface'''
 
         interface_id = self._add_interface(category='loopback', *args,
                                            **kwargs)
+
+        #TODO: want to add loopbacks to all overlays the node is in
+        self._sync_loopbacks(interface_id)
         return NmPort(self.anm, self.overlay_id,
                       self.node_id, interface_id)
 
@@ -260,7 +297,7 @@ class NmNode(object):
                                      interface_id) for interface_id in
                               self._interface_ids())
 
-        retval = (i for i in all_interfaces if filter_func(i))
+        retval = [i for i in all_interfaces if filter_func(i)]
         return retval
 
     def interface(self, key):

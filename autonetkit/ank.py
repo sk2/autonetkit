@@ -734,15 +734,29 @@ def groupby(attribute, nodes):
     nodes = sorted(nodes, key=keyfunc)
     return itertools.groupby(nodes, key=keyfunc)
 
+def shortest_path(nm_graph, src, dst):
 
-def boundary_nodes(graph, nodes):
+    # TODO: move to utils
+# TODO: use networkx boundary nodes directly: does the same thing
+
+    graph = unwrap_graph(nm_graph)
+    src_id = unwrap_nodes(src)
+    dst_id = unwrap_nodes(dst)
+
+    #TODO: check path works for muli-edge graphs too
+    path = nx.shortest_path(graph, src_id, dst_id)
+
+    return wrap_nodes(nm_graph, path)
+
+
+def boundary_nodes(nm_graph, nodes):
     """ returns nodes at boundary of G based on
     edge_boundary from networkx """
 
     # TODO: move to utils
 # TODO: use networkx boundary nodes directly: does the same thing
 
-    graph = unwrap_graph(graph)
+    graph = unwrap_graph(nm_graph)
     nodes = list(nodes)
     nbunch = list(unwrap_nodes(nodes))
 
@@ -752,4 +766,4 @@ def boundary_nodes(graph, nodes):
     internal_nodes = [s for (s, _) in b_edges]
     assert all(n in nbunch for n in internal_nodes)  # check internal
 
-    return wrap_nodes(graph, internal_nodes)
+    return wrap_nodes(nm_graph, internal_nodes)

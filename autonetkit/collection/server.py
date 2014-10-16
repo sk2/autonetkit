@@ -3,8 +3,12 @@
 # https://learning-0mq-with-pyzmq.readthedocs.org/en/latest/pyzmq/patterns/pushpull.html
 
 # TODO: rewrite as callbacks rather than threads
+import autonetkit.log as log
 
-import zmq
+try:
+    import zmq
+except ImportError:
+    log.warning("Unable to import zmq")
 import json
 import socket as python_socket
 import telnetlib

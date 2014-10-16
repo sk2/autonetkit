@@ -375,6 +375,19 @@ def build_ip(anm):
     g_ip.add_nodes_from(g_l2_bc, retain=["asn", "broadcast_domain"])
     g_ip.add_edges_from(g_l2_bc.edges())
 
+    for bc in g_ip.nodes("broadcast_domain"):
+        # Encapsulated if any neighbor interface has
+        for edge in bc.edges():
+            if edge.dst_int['phy'].l2_encapsulated:
+                log.info("Removing IP allocation for broadcast_domain %s "
+                    "as neighbor %s is L2 encapsulated", bc, edge.dst)
+
+                g_ip.remove_node(bc)
+
+                break
+
+
+
 #@call_log
 
 

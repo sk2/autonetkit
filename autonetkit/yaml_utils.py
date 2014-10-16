@@ -1,6 +1,11 @@
 # YAML helpers from http://stackoverflow.com/questions/8640959
 
-import yaml
+try:
+    import yaml
+except ImportError:
+    import autonetkit.log as log
+    log.warning('Yaml Parsing requires pyyaml installed')
+
 from collections import OrderedDict
 
 class quoted(str): pass

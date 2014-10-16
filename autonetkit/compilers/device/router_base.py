@@ -128,9 +128,9 @@ class RouterCompiler(DeviceCompiler):
         use_bgp = False
         for overlay in bgp_overlays:
             if (self.anm.has_overlay(overlay)
-                    and node in self.anm[overlay]
-                    and self.anm[overlay].node(node).degree() > 0
-                ):
+                        and node in self.anm[overlay]
+                        and self.anm[overlay].node(node).degree() > 0
+                    ):
                 use_bgp = True
                 break
 
@@ -244,11 +244,14 @@ class RouterCompiler(DeviceCompiler):
                     ipv4_int = phy_int['ipv4']
                     interface.use_ipv4 = True
 
-                    interface.ipv4_address = ipv4_int.loopback
-                    interface.ipv4_subnet = node.loopback_subnet
-                    interface.ipv4_cidr = \
-                        sn_preflen_to_network(interface.ipv4_address,
-                                              interface.ipv4_subnet.prefixlen)
+                    try:
+                        interface.ipv4_address = ipv4_int.loopback
+                        interface.ipv4_subnet = node.loopback_subnet
+                        interface.ipv4_cidr = sn_preflen_to_network(interface.ipv4_address,
+                                                                    interface.ipv4_subnet.prefixlen)
+                    except AttributeError:
+                        interface.use_ipv4 = False
+                        log.warning("No IP addresses set on %s", phy_int)
 
                 if node.ip.use_ipv6:
                     ipv6_int = phy_int['ipv6']
@@ -326,10 +329,13 @@ class RouterCompiler(DeviceCompiler):
 
         node.ospf.interfaces_by_area = ConfigStanza(**interfaces_by_area)
 
+        # TODO: split this into a generic IGP function
         added_networks = set()
         for interface in node.physical_interfaces():
             if interface.exclude_igp:
                 continue  # don't configure IGP for this interface
+            if not interface.use_ipv4:
+                continue
             ipv4_int = g_ipv4.interface(interface)
             ospf_int = g_ospf.interface(interface)
             if not ospf_int.is_bound:
@@ -346,12 +352,32 @@ class RouterCompiler(DeviceCompiler):
             interface.ospf_cost = ospf_cost
             network = ipv4_int.subnet
 
+            #TODO: refactor to allow injecting loopback IPs, etc into IGP
             if ospf_int and ospf_int.is_bound and network \
                     not in added_networks:  # don't add more than once
                 added_networks.add(network)
                 link_stanza = ConfigStanza(
                     network=network, interface=interface, area=ospf_int.area)
                 node.ospf.ospf_links.append(link_stanza)
+
+        for interface in node.loopback_interfaces():
+            phy_int = self.anm['phy'].interface(interface)
+            ipv4_int = g_ipv4.interface(interface)
+            if not phy_int.inject_to_igp:
+                #TODO: need to confirm which area to use
+                continue
+
+            network = ipv4_int.subnet
+            if network in added_networks:
+                #TODO: may want to warn here
+                continue # already advertised ("how?")
+
+            # Use the same area as Loopback Zero
+            area = node.ospf.loopback_area
+
+            link_stanza = ConfigStanza(
+             network=network, interface=interface, area=area)
+            node.ospf.ospf_links.append(link_stanza)
 
             # also add networks for subnets to servers in the same AS
 
@@ -470,7 +496,7 @@ class RouterCompiler(DeviceCompiler):
             if not eigrp_int.is_bound:
                 continue  # not an EIGRP interface
             network = ipv4_int.subnet
-            if eigrp_int and eigrp_int.is_bound:
+            if eigrp_int and eigrp_int.is_bound and interface.use_ipv4:
                 ipv4_networks.add(network)
 
         # Loopback zero subnet

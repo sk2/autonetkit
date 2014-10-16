@@ -6,13 +6,7 @@ from autonetkit.log import CustomAdapter
 
 class NmPort(object):
 
-    def __init__(
-        self,
-        anm,
-        overlay_id,
-        node_id,
-        interface_id,
-    ):
+    def __init__(self, anm, overlay_id, node_id, interface_id):
         object.__setattr__(self, 'anm', anm)
         object.__setattr__(self, 'overlay_id', overlay_id)
         object.__setattr__(self, 'node_id', node_id)
@@ -34,6 +28,13 @@ class NmPort(object):
         """"""
 
         return hash(self.__key())
+
+
+    def __deepcopy__(self, memo):
+        #TODO: workaround - need to fix
+       # from http://stackoverflow.com/questions/1500718/what-is-the-right-way-to-override-the-copy-deepcopy-operations-on-an-object-in-p
+       pass
+
 
     def __repr__(self):
         description = self.id or self.description

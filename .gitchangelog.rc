@@ -53,15 +53,23 @@
 ## Any commit having its full commit message matching any regexp listed here
 ## will be ignored and won't be reported in the changelog.
 ##
+
+import os
+INCLUDE_DEV = os.environ.get('GITCHANGELOG_DEV', False)
+INCLUDE_DEV = bool(INCLUDE_DEV)
+
+
 ignore_regexps = [
         r'@minor'   ,
         r'@cosmetic',
         r'@refactor',
         r'@wip',
         r'^([cC]hg|[fF]ix|[nN]ew)\s*:\s*[p|P]kg:',
-        r'^([cC]hg|[fF]ix|[nN]ew)\s*:\s*[d|D]ev:',
         r'^Bump version\: \d+\.\d+\.\d+ \xe2\x86\x92 (\d+\.\d+\.\d+)$',
   ]
+
+if not INCLUDE_DEV:
+    ignore_regexps.append(r'^([cC]hg|[fF]ix|[nN]ew)\s*:\s*[d|D]ev:')
 
 
 ##

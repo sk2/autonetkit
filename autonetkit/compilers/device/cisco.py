@@ -447,6 +447,7 @@ class IosClassicCompiler(IosBaseCompiler):
         self.mpls_te(node)
         self.mpls_oam(node)
         self.gre(node)
+        self.l2tp_v3(node)
 
         phy_node = self.anm['phy'].node(node)
         if phy_node.device_subtype == 'IOSv':
@@ -522,6 +523,57 @@ class IosClassicCompiler(IosBaseCompiler):
                 stanza.use_ipv6 = True
 
             node.gre_tunnels.append(stanza)
+
+    def l2tp_v3(self, node):
+        node.l2tp_classes = []
+        node.pseudowire_classes = []
+        if not self.anm.has_overlay('l2tp_v3'):
+            return
+
+        g_l2tp_v3 = self.anm['l2tp_v3']
+        g_phy = self.anm['phy']
+        if node not in g_l2tp_v3:
+            return   # no l2tp_v3 for node
+
+        l2tp_v3_node = g_l2tp_v3.node(node)
+        if l2tp_v3_node.role != "tunnel":
+            return # nothing to configure
+
+        node.l2tp_classes = list(l2tp_v3_node.l2tp_classes)
+        for l2tp_class in l2tp_v3_node.l2tp_classes:
+            node.l2tp_classes
+
+        node.pseudowire_classes = []
+        for pwc in l2tp_v3_node.pseudowire_classes:
+            stanza = ConfigStanza()
+            stanza.name = pwc['name']
+            stanza.encapsulation = pwc['encapsulation']
+            stanza.protocol = pwc['protocol']
+            stanza.l2tp_class_name = pwc['l2tp_class_name']
+            local_interface = pwc['local_interface']
+
+            # Lookup the interface ID allocated for this loopback by compiler
+            local_interface_id = node.interface(local_interface).id
+            stanza.local_interface = local_interface_id
+
+            node.pseudowire_classes.append(stanza)
+
+        for interface in node.physical_interfaces():
+            phy_int = g_phy.interface(interface)
+            if phy_int.xconnect_encapsulation != "l2tpv3":
+                continue # no l2tpv3 encap, no need to do anything
+
+            tunnel_int = l2tp_v3_node.interface(interface)
+            stanza = ConfigStanza()
+            stanza.remote_ip = tunnel_int.xconnect_remote_ip
+            stanza.vc_id = tunnel_int.xconnect_vc_id
+            stanza.encapsulation = "l2tpv3"
+            #TODO: need to be conscious of support for other xconnect types
+            # in templates since pw_class may not apply if not l2tpv3, et
+            stanza.pw_class = tunnel_int.xconnect_pw_class
+
+            interface.xconnect = stanza
+
 
     def mpls_te(self, node):
         super(IosClassicCompiler, self).mpls_te(node)
