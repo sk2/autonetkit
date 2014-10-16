@@ -29,6 +29,13 @@ class NmPort(object):
 
         return hash(self.__key())
 
+
+    def __deepcopy__(self, memo):
+        #TODO: workaround - need to fix
+       # from http://stackoverflow.com/questions/1500718/what-is-the-right-way-to-override-the-copy-deepcopy-operations-on-an-object-in-p
+       pass
+
+
     def __repr__(self):
         description = self.id or self.description
         return '%s.%s' % (description, self.node)
