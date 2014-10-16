@@ -129,16 +129,16 @@ class NmNode(object):
 
         return (i for i in self.interfaces('is_loopback_zero')).next()
 
-    def physical_interfaces(self):
+    def physical_interfaces(self, *args, **kwargs):
         """"""
+        kwargs['category'] = "physical"
+        return self.interfaces(*args, **kwargs)
 
-        return self.interfaces(category='physical')
-
-    def loopback_interfaces(self):
+    def loopback_interfaces(self, *args, **kwargs):
         #TODO: allow abiility to skip loopback zero
         """"""
-
-        return self.interfaces(category='loopback')
+        kwargs['category'] = "loopback"
+        return self.interfaces(*args, **kwargs)
 
     def is_multigraph(self):
         return self._graph.is_multigraph()
