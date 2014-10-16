@@ -318,13 +318,6 @@ class RouterCompiler(DeviceCompiler):
 
                 interfaces_by_area[area].append(stanza)
 
-        for interface in node.loopback_interfaces():
-            if not interface.inject_to_igp:
-                continue
-
-            else:
-                print "advertise", interface
-
         loopback_zero = node.loopback_zero
         ospf_loopback_zero = g_ospf.interface(loopback_zero)
         router_area = ospf_loopback_zero.area  # area assigned to router
@@ -341,6 +334,8 @@ class RouterCompiler(DeviceCompiler):
         for interface in node.physical_interfaces():
             if interface.exclude_igp:
                 continue  # don't configure IGP for this interface
+            if not interface.use_ipv4:
+                continue
             ipv4_int = g_ipv4.interface(interface)
             ospf_int = g_ospf.interface(interface)
             if not ospf_int.is_bound:
@@ -357,12 +352,32 @@ class RouterCompiler(DeviceCompiler):
             interface.ospf_cost = ospf_cost
             network = ipv4_int.subnet
 
+            #TODO: refactor to allow injecting loopback IPs, etc into IGP
             if ospf_int and ospf_int.is_bound and network \
                     not in added_networks:  # don't add more than once
                 added_networks.add(network)
                 link_stanza = ConfigStanza(
                     network=network, interface=interface, area=ospf_int.area)
                 node.ospf.ospf_links.append(link_stanza)
+
+        for interface in node.loopback_interfaces():
+            phy_int = self.anm['phy'].interface(interface)
+            ipv4_int = g_ipv4.interface(interface)
+            if not phy_int.inject_to_igp:
+                #TODO: need to confirm which area to use
+                continue
+
+            network = ipv4_int.subnet
+            if network in added_networks:
+                #TODO: may want to warn here
+                continue # already advertised ("how?")
+
+            # Use the same area as Loopback Zero
+            area = node.ospf.loopback_area
+
+            link_stanza = ConfigStanza(
+             network=network, interface=interface, area=area)
+            node.ospf.ospf_links.append(link_stanza)
 
             # also add networks for subnets to servers in the same AS
 
