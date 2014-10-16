@@ -52,6 +52,10 @@ class AnkEncoder(json.JSONEncoder):
         if isinstance(obj, autonetkit.nidb.DmInterface):
             # TODO: check this is consistent with deserialization
             return str(obj)
+
+        if isinstance(obj, autonetkit.anm.interface.NmPort):
+                # TODO: check this is consistent with deserialization
+                return str(obj)
         if isinstance(obj, nx.classes.Graph):
             # TODO: remove now?
             return json_graph.node_link_data(obj)
