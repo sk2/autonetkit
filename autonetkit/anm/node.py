@@ -58,7 +58,7 @@ class NmNode(object):
 
         """
 
-        return self.interfaces(category='physical')
+        return iter(self.interfaces(category='physical'))
 
     def __len__(self):
         """Number of phyiscal interfaces of a node
