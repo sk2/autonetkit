@@ -232,7 +232,6 @@ def build_ipv4(anm, infrastructure=True):
             unallocated += sorted([i for i in node.physical_interfaces()
                                    if i.is_bound and not i.ipv4_address
                                    and i['ipv4'].is_bound])
-            print node, unallocated
 
         # TODO: what if IP is set but not a prefix?
         if len(allocated):
