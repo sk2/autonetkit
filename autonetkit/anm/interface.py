@@ -80,6 +80,10 @@ class NmPort(object):
 
             # try from phy
 
+            if not self.node['phy']:
+                # node not in phy
+                return
+
             try:
                 #return self.anm.overlay_nx_graphs['phy'].node[self.node_id]['asn']
                 return self['phy'].id
