@@ -128,7 +128,7 @@ def validate_ipv4(anm):
     all_ints = [i for n in g_ipv4.l3devices()
                 for i in n.physical_interfaces()
                 if i.is_bound]  # don't include unbound interfaces
-    all_int_ips = [i.ip_address for i in all_ints]
+    all_int_ips = [i.ip_address for i in all_ints if i.ip_address]
 
     if all_unique(all_int_ips):
         g_ipv4.log.debug("All interface IPs globally unique")
@@ -142,9 +142,14 @@ def validate_ipv4(anm):
                                for i in duplicate_ints)
         g_ipv4.log.warning("Global duplicate IP addresses %s" % duplicates)
 
-    for cd in g_ipv4.nodes("broadcast_domain"):
-        cd.log.debug("Verifying subnet and interface IPs")
-        neigh_ints = list(cd.neighbor_interfaces())
+    for bc in g_ipv4.nodes("broadcast_domain"):
+        bc.log.debug("Verifying subnet and interface IPs")
+        if not bc.allocate:
+            log.info("Skipping validation of manually allocated broadcast"
+                "domain %s" % bc)
+            continue
+
+        neigh_ints = list(bc.neighbor_interfaces())
         neigh_ints = [i for i in neigh_ints if i.node.is_l3device()]
         neigh_int_subnets = [i.subnet for i in neigh_ints]
         if all_same(neigh_int_subnets):
