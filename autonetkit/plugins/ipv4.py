@@ -584,6 +584,7 @@ class IpTree(object):
             cd.host.subnet = cd.subnet
 
         interfaces = [n for n in self if n.is_interface()]
+        loopback_255 = netaddr.IPNetwork("0.0.0.0/32")
         for n in interfaces:
             interface = n.host
             if interface.is_loopback and interface.is_loopback_zero:
@@ -597,7 +598,7 @@ class IpTree(object):
                 # secondary loopback
 
                 interface.loopback = n.ip_address
-                interface.subnet = n.subnet
+                interface.subnet = loopback_255
             elif interface.is_physical:
                 interface.ip_address = n.ip_address
                 interface.subnet = n.subnet
