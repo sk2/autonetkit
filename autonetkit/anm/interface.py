@@ -80,6 +80,10 @@ class NmPort(object):
 
             # try from phy
 
+            if not self.node['phy']:
+                # node not in phy
+                return
+
             try:
                 #return self.anm.overlay_nx_graphs['phy'].node[self.node_id]['asn']
                 return self['phy'].id
@@ -116,7 +120,6 @@ class NmPort(object):
         except KeyError:
             if not self.node_id in self._graph:
                 # node not in overlay
-                print "bal"
                 return
                 log.warning("Unable to access interface %s in %s",
                             "node %s not present in overlay" % (self.interface_id,
@@ -129,13 +132,9 @@ class NmPort(object):
 
     @property
     def phy(self):
-
-        # check overlay requested exists
-
         if self.overlay_id == 'phy':
             return self
-        return NmPort(self.anm, 'phy', self.node_id,
-                      self.interface_id)
+        return NmPort(self.anm, 'phy', self.node_id, self.interface_id)
 
     def __getitem__(self, overlay_id):
         """Returns corresponding interface in specified overlay"""

@@ -114,7 +114,7 @@ def allocate_infra(g_ip, address_block=None):
                                   infra_blocks.items())
 
 
-def allocate_vrf_loopbacks(g_ip, address_block=None):
+def allocate_secondary_loopbacks(g_ip, address_block=None):
     secondary_loopback_blocks = {}
     secondary_loopback_pool = address_block.subnet(80)
     # consume the first address as it is the network address
@@ -149,4 +149,4 @@ def allocate_ips(G_ip, infra_block=None, loopback_block=None, secondary_loopback
 
     allocate_loopbacks(sorted(G_ip), loopback_block)
     allocate_infra(sorted(G_ip), infra_block)
-    allocate_vrf_loopbacks(sorted(G_ip), secondary_loopback_block)
+    allocate_secondary_loopbacks(sorted(G_ip), secondary_loopback_block)

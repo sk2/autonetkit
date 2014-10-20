@@ -270,10 +270,7 @@ class NmEdge(object):
 
         """
 
-        try:
-            dst_int_id = self._ports[self.dst_id]
-        except KeyError:
-            log.warn("Remove interface not present for %s" % self)
+        dst_int_id = self._ports[self.dst_id]
         return NmPort(self.anm, self.overlay_id,
                       self.dst_id, dst_int_id)
 

@@ -574,6 +574,13 @@ class IosClassicCompiler(IosBaseCompiler):
 
             interface.xconnect = stanza
 
+    def eigrp(self, node):
+        super(IosClassicCompiler, self).eigrp(node)
+        # Numeric process IDs use "old-style" non-ipv6 EIGRP stanzas
+        process_id = node.eigrp.process_id
+        if str(process_id).isdigit():
+            process_id = "as%s" % process_id
+        node.eigrp.process_id = process_id
 
     def mpls_te(self, node):
         super(IosClassicCompiler, self).mpls_te(node)

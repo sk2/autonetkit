@@ -263,7 +263,7 @@ def build_ipv4(anm, infrastructure=True):
     # TODO: need to also support secondary_loopbacks for IPv6
     # TODO: only call if secondaries are set
 
-    ipv4.allocate_vrf_loopbacks(g_ipv4, vrf_loopback_block)
+    ipv4.allocate_secondary_loopbacks(g_ipv4, vrf_loopback_block)
 
     # TODO: replace this with direct allocation to interfaces in ip alloc plugin
     # TODO: add option for nonzero interfaces on node - ie

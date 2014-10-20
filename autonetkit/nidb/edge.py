@@ -1,5 +1,6 @@
 import logging
 from autonetkit.nidb.node import DmNode
+from autonetkit.nidb.interface import DmInterface
 from autonetkit.log import CustomAdapter
 import autonetkit.log as log
 
@@ -42,6 +43,16 @@ class DmEdge(object):
     @property
     def src(self):
         return DmNode(self.nidb, self.src_id)
+
+    @property
+    def src_int(self):
+        src_int_id = self._ports[self.src_id]
+        return DmInterface(self.nidb, self.src_id, src_int_id)
+
+    @property
+    def dst_int(self):
+        dst_int_id = self._ports[self.dst_id]
+        return DmInterface(self.nidb, self.dst_id, dst_int_id)
 
     def __eq__(self, other):
         """"""
