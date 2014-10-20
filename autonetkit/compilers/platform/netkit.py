@@ -22,6 +22,8 @@ class NetkitCompiler(PlatformCompiler):
         return "eth%s" % index
 
     def compile(self):
+        self.copy_across_ip_addresses()
+
         log.info("Compiling Netkit for %s" % self.host)
         g_phy = self.anm['phy']
         quagga_compiler = QuaggaCompiler(self.nidb, self.anm)
