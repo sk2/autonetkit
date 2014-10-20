@@ -114,7 +114,7 @@ def build_ibgp(anm):
     if 0 < len(non_ibgp_nodes) < 10:
         log.info("Skipping iBGP for iBGP disabled nodes: %s", non_ibgp_nodes)
     elif len(non_ibgp_nodes) >= 10:
-        log.info("Skipping iBGP for more than 10 iBGP disabled nodes:",
+        log.info("Skipping iBGP for more than 10 iBGP disabled nodes:"
                  "refer to visualization for resulting topology.")
 
     # warn for any nodes that have RR set but no rr_cluster, or HRR set and no
