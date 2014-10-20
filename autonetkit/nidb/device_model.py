@@ -69,19 +69,38 @@ class DmLabTopology(object):
 
 class DeviceModel(DmBase):
 
-    def __init__(self):
+    def __init__(self, network_model=None):
         super(DeviceModel, self).__init__()
         # only for connectivity, any other information stored on node
-        self._graph = nx.Graph()
+        if network_model and network_model['phy'].is_multigraph:
+            self._graph = nx.MultiGraph()
+        else:
+            self._graph = nx.Graph()
+
         self._graph.graph['topologies'] = collections.defaultdict(dict)
         self._graph.graph['timestamp'] = time.strftime(
             "%Y%m%d_%H%M%S", time.localtime())
+
+        if network_model:
+            self._build_from_anm(network_model)
+
+    def _build_from_anm(self, network_model):
+        #TODO: Allow to specify which attributes to copy across
+        #TODO: provide another function to copy across attributes post-creation
+        g_phy = network_model['phy']
+        g_graphics = network_model['graphics']
+        self.add_nodes_from(g_phy, retain=['label', 'host', 'platform',
+                                           'Network', 'update', 'asn', ])
+
+        self.add_edges_from(g_phy.edges())
+        self.copy_graphics(g_graphics)
 
     def topology(self, key):
         return DmLabTopology(self, key)
 
     def topologies(self):
-        return iter(DmLabTopology(self, key) for key in self._graph.graph['topologies'].keys())
+        return iter(DmLabTopology(self, key)
+                    for key in self._graph.graph['topologies'].keys())
 
     @property
     def timestamp(self):
@@ -94,12 +113,14 @@ class DeviceModel(DmBase):
     def boundary_nodes(self, nbunch, nbunch2=None):
         nbunch = (n.node_id for n in nbunch)  # only store the id in overlay
         return iter(DmNode(self, node)
-                    for node in nx.node_boundary(self._graph, nbunch, nbunch2))
+                    for node in nx.node_boundary(self._graph,
+                                                 nbunch, nbunch2))
 
     def boundary_edges(self, nbunch, nbunch2=None):
         nbunch = (n.node_id for n in nbunch)  # only store the id in overlay
         return iter(DmEdge(self, src, dst)
-                    for (src, dst) in nx.edge_boundary(self._graph, nbunch, nbunch2))
+                    for (src, dst) in nx.edge_boundary(self._graph,
+                                                       nbunch, nbunch2))
 
 
 class DmSubgraph(DmBase):

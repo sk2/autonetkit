@@ -13,6 +13,8 @@ from autonetkit.nidb import DeviceModel
 import cProfile
 
 # from https://zapier.com/engineering/profiling-python-boss/
+
+
 def do_cprofile(func):
     def profiled_func(*args, **kwargs):
         profile = cProfile.Profile()
@@ -22,7 +24,7 @@ def do_cprofile(func):
             profile.disable()
             return result
         finally:
-            #profile.print_stats()
+            # profile.print_stats()
             profile.dump_stats("profile")
     return profiled_func
 
@@ -41,21 +43,10 @@ def file_monitor(filename):
 
 
 #@do_cprofile
-def manage_network(
-    input_graph_string,
-    timestamp,
-    build = True,
-    visualise = True,
-    compile = True,
-    validate = True,
-    render = True,
-    monitor = False,
-    deploy = False,
-    measure = False,
-    diff = False,
-    archive = False,
-    grid=None,
-    ):
+def manage_network(input_graph_string, timestamp, build=True,
+                   visualise=True, compile=True, validate=True, render=True,
+                   monitor=False, deploy=False, measure=False, diff=False,
+                   archive=False, grid=None, ):
     """Build, compile, render network as appropriate"""
 
     # import build_network_simple as build_network
@@ -68,7 +59,7 @@ def manage_network(
         elif grid:
             graph = build_network.grid_2d(grid)
 
-        #TODO: integrate the code to visualise on error (enable in config)
+        # TODO: integrate the code to visualise on error (enable in config)
         anm = None
         try:
             anm = build_network.build(graph)
@@ -90,7 +81,7 @@ def manage_network(
                 autonetkit.update_vis(anm)
 
         if not compile:
-            #autonetkit.update_vis(anm)
+            # autonetkit.update_vis(anm)
             pass
 
         if validate:
@@ -119,11 +110,11 @@ def manage_network(
             import time
             #start = time.clock()
             autonetkit.render.render(nidb)
-            #print time.clock() - start
+            # print time.clock() - start
             #import autonetkit.render2
             #start = time.clock()
-            #autonetkit.render2.render(nidb)
-            #print time.clock() - start
+            # autonetkit.render2.render(nidb)
+            # print time.clock() - start
 
     if not (build or compile):
 
@@ -167,22 +158,22 @@ def compile_network(anm):
         if platform == 'netkit':
             import autonetkit.compilers.platform.netkit as pl_netkit
             platform_compiler = pl_netkit.NetkitCompiler(nidb, anm,
-                    host)
+                                                         host)
         elif platform == 'VIRL':
             try:
                 import autonetkit_cisco.compilers.platform.cisco as pl_cisco
                 platform_compiler = pl_cisco.CiscoCompiler(nidb, anm,
-                        host)
+                                                           host)
             except ImportError:
                 log.debug('Unable to load VIRL platform compiler')
         elif platform == 'dynagen':
             import autonetkit.compilers.platform.dynagen as pl_dynagen
             platform_compiler = pl_dynagen.DynagenCompiler(nidb, anm,
-                    host)
+                                                           host)
         elif platform == 'junosphere':
             import autonetkit.compilers.platform.junosphere as pl_junosphere
             platform_compiler = pl_junosphere.JunosphereCompiler(nidb,
-                    anm, host)
+                                                                 anm, host)
 
         if any(g_phy.nodes(host=host, platform=platform)):
             log.info('Compiling configurations for %s on %s'
@@ -197,28 +188,11 @@ def compile_network(anm):
 def create_nidb(anm):
 
     # todo: refactor this now with the layer2/layer2_bc graphs - what does nidb need?
-    # probably just layer2, and then allow compiled to access layer2_bc if need (eg netkit?)
+    # probably just layer2, and then allow compiled to access layer2_bc if
+    # need (eg netkit?)
 
-    nidb = DeviceModel()
-    g_phy = anm['phy']
-    g_graphics = anm['graphics']
-    nidb.add_nodes_from(g_phy, retain=[
-        'label',
-        'host',
-        'platform',
-        'Network',
-        'update',
-        'asn',
-        ])
+    nidb = DeviceModel(anm)
 
-    # cd_nodes = [n for n in g_ip.nodes("broadcast_domain") if not n.is_switch()]  # Only add created cds - otherwise overwrite host of switched
-    # also copy virtual switches
-    # TODO: refactor this
-    # nidb.add_nodes_from(cd_nodes, retain=['label', 'host'], broadcast_domain=True)
-
-    nidb.add_edges_from(g_phy.edges())
-
-    nidb.copy_graphics(g_graphics)
 
     return nidb
 
@@ -232,12 +206,12 @@ def deploy_network(anm, nidb, input_graph_string=None):
         for (platform, platform_data) in host_data.items():
             if not any(nidb.nodes(host=hostname, platform=platform)):
                 log.debug('No hosts for (host, platform) (%s, %s), skipping deployment'
-                           % (hostname, platform))
+                          % (hostname, platform))
                 continue
 
             if not platform_data['deploy']:
                 log.debug('Not deploying to %s on %s' % (platform,
-                          hostname))
+                                                         hostname))
                 continue
 
             config_path = os.path.join('rendered', hostname, platform)
@@ -256,10 +230,10 @@ def deploy_network(anm, nidb, input_graph_string=None):
 
                     if create_new_xml:
                         cisco_deploy.create_xml(anm, nidb,
-                                input_graph_string)
+                                                input_graph_string)
                     else:
                         cisco_deploy.package(nidb, config_path,
-                                input_graph_string)
+                                             input_graph_string)
                 continue
 
             username = platform_data['username']
@@ -270,7 +244,7 @@ def deploy_network(anm, nidb, input_graph_string=None):
                 import autonetkit.deploy.netkit as netkit_deploy
                 tar_file = netkit_deploy.package(config_path, 'nklab')
                 netkit_deploy.transfer(host, username, tar_file,
-                        tar_file, key_file)
+                                       tar_file, key_file)
                 netkit_deploy.extract(
                     host,
                     username,
@@ -279,7 +253,7 @@ def deploy_network(anm, nidb, input_graph_string=None):
                     timeout=60,
                     key_filename=key_file,
                     parallel_count=10,
-                    )
+                )
                 if platform == 'VIRL':
 
                     # TODO: check why using nklab here

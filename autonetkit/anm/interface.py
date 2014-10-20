@@ -62,6 +62,30 @@ class NmPort(object):
         return (self.node, self.interface_id) < (other.node,
                                                  other.interface_id)
 
+
+    @property
+    def id(self):
+        """Returns  id of node, falls-through to phy if not set on this overlay
+
+        """
+        #TODO: make generic function for fall-through properties stored on the anm
+        key = "id"
+        if key in self._interface:
+                return self._interface.get(key)
+        else:
+            if self.overlay_id == "input":
+                return  # Don't fall upwards from input -> phy as may not exist
+            if self.overlay_id == "phy":
+                return  # Can't fall from phy -> phy (loop)
+
+            # try from phy
+
+            try:
+                #return self.anm.overlay_nx_graphs['phy'].node[self.node_id]['asn']
+                return self['phy'].id
+            except KeyError:
+                return # can't get from this overlay or phy -> not found
+
     @property
     def is_bound(self):
         # TODO: make this a function

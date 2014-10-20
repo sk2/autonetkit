@@ -35,6 +35,13 @@ class PlatformCompiler(object):
                 phy_int = phy_node.interface(interface)
                 if phy_node.use_ipv4:
                     ipv4_int = phy_int['ipv4']
+
+
+                    """
+                    TODO: refactor this logic (and for ipv6) to only check if None
+                    then compilers are more pythonic - test for IP is None
+                    rather than bound etc - simplifies logic
+                    """
                     if node.is_server() and interface.is_loopback:
                         continue
                     if interface.is_physical and not interface.is_bound:
@@ -42,6 +49,12 @@ class PlatformCompiler(object):
 
                     # permit unbound ip interfaces (e.g. if skipped for l2 encap)
                     if interface.is_physical and not ipv4_int.is_bound:
+                        log.info("%s", interface)
+                        interface.use_ipv4 = False
+                        continue
+
+                    if ipv4_int.ip_address is None:
+                        log.info("No IP address allocated on %s", interface)
                         interface.use_ipv4 = False
                         continue
 
@@ -66,6 +79,10 @@ class PlatformCompiler(object):
                         continue
                     # permit unbound ip interfaces (e.g. if skipped for l2 encap)
                     if interface.is_physical and not ipv6_int.is_bound:
+                        interface.use_ipv6 = False
+                        continue
+                    if ipv6_int.ip_address is None:
+                        log.info("No IP address allocated on %s", interface)
                         interface.use_ipv6 = False
                         continue
                     try:

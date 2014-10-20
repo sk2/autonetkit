@@ -624,7 +624,9 @@ def allocate_infra(g_ip, address_block=None):
     log.info('Allocating v4 Infrastructure IPs')
     ip_tree = IpTree(address_block)
     assign_asn_to_interasn_cds(g_ip)
-    ip_tree.add_nodes(sorted(g_ip.nodes('broadcast_domain')))
+    nodes_to_allocate = sorted(n for n in g_ip.nodes('broadcast_domain')
+        if n.allocate)
+    ip_tree.add_nodes(nodes_to_allocate)
     ip_tree.build()
 
     # cd_tree = ip_tree.json()
