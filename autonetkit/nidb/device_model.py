@@ -99,7 +99,8 @@ class DeviceModel(DmBase):
         return DmLabTopology(self, key)
 
     def topologies(self):
-        return iter(DmLabTopology(self, key) for key in self._graph.graph['topologies'].keys())
+        return iter(DmLabTopology(self, key)
+                    for key in self._graph.graph['topologies'].keys())
 
     @property
     def timestamp(self):
@@ -112,12 +113,14 @@ class DeviceModel(DmBase):
     def boundary_nodes(self, nbunch, nbunch2=None):
         nbunch = (n.node_id for n in nbunch)  # only store the id in overlay
         return iter(DmNode(self, node)
-                    for node in nx.node_boundary(self._graph, nbunch, nbunch2))
+                    for node in nx.node_boundary(self._graph,
+                                                 nbunch, nbunch2))
 
     def boundary_edges(self, nbunch, nbunch2=None):
         nbunch = (n.node_id for n in nbunch)  # only store the id in overlay
         return iter(DmEdge(self, src, dst)
-                    for (src, dst) in nx.edge_boundary(self._graph, nbunch, nbunch2))
+                    for (src, dst) in nx.edge_boundary(self._graph,
+                                                       nbunch, nbunch2))
 
 
 class DmSubgraph(DmBase):

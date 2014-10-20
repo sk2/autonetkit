@@ -139,15 +139,8 @@ class NetworkModel(object):
         graph = nx.Graph(graph)
         g_graphics = self['graphics']
         g_in = self.add_overlay('input', graph=graph, directed=False)
-        g_graphics.add_nodes_from(g_in, retain=[
-            'x',
-            'y',
-            'device_type',
-            'device_subtype',
-            'pop',
-            'label',
-            'asn',
-        ])
+        g_graphics.add_nodes_from(g_in, retain=['x', 'y', 'device_type',
+                                                'device_subtype', 'pop', 'label', 'asn'])
         return g_in
 
     def initialise_input(self, graph):
@@ -160,15 +153,8 @@ class NetworkModel(object):
         overlay.allocate_input_interfaces()
         return overlay
 
-    def add_overlay(
-        self,
-        name,
-        nodes=None,
-        graph=None,
-        directed=False,
-        multi_edge=False,
-        retain=None,
-    ):
+    def add_overlay(self, name, nodes=None, graph=None,
+                    directed=False, multi_edge=False, retain=None):
         """Adds overlay graph of name name"""
         # TODO: refactor this logic
         log.debug("Adding overlay %s" % name)
@@ -209,7 +195,7 @@ class NetworkModel(object):
         return iter(NmGraph(self, name) for name in self.overlays())
 
     def overlays(self):
-        #TODO: rename to overlay ids
+        # TODO: rename to overlay ids
         """"""
 
         return self._overlays.keys()
