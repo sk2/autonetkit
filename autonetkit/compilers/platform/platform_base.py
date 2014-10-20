@@ -49,7 +49,6 @@ class PlatformCompiler(object):
 
                     # permit unbound ip interfaces (e.g. if skipped for l2 encap)
                     if interface.is_physical and not ipv4_int.is_bound:
-                        log.info("%s", interface)
                         interface.use_ipv4 = False
                         continue
 
