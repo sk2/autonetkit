@@ -662,7 +662,7 @@ def allocate_secondary_loopbacks(g_ip, address_block=None):
     if not address_block:
         address_block = netaddr.IPNetwork('172.16.0.0/24')
 
-    secondary_loopbacks = [i for n in g_ip.nodes() for i in
+    secondary_loopbacks = [i for n in g_ip.l3devices() for i in
                            n.loopback_interfaces()
                            if not i.is_loopback_zero]
 
