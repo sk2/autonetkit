@@ -36,11 +36,11 @@ class PlatformCompiler(object):
                 if phy_node.use_ipv4:
                     ipv4_int = phy_int['ipv4']
 
-
                     """
                     TODO: refactor this logic (and for ipv6) to only check if None
                     then compilers are more pythonic - test for IP is None
                     rather than bound etc - simplifies logic
+                    make try to copy, and if fail then warn and set use_ipv4 to False
                     """
                     if node.is_server() and interface.is_loopback:
                         continue
