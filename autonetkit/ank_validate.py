@@ -160,7 +160,7 @@ def validate_ipv4(anm):
                                 for i in neigh_int_subnets)
             tests_passed = False
             log.warning("Different subnets on %s. %s" %
-                        (cd, subnets))
+                        (bc, subnets))
             # log warning
 
         ip_subnet_mismatches = [i for i in neigh_ints
@@ -170,14 +170,14 @@ def validate_ipv4(anm):
             mismatches = ", ".join("%s not in %s on %s" %
                                    (i.ip_address, i.subnet, i.node)
                                    for i in ip_subnet_mismatches)
-            cd.log.warning("Mismatched IP subnets: %s" %
+            bc.log.warning("Mismatched IP subnets: %s" %
                            mismatches)
         else:
-            cd.log.debug("All subnets match")
+            bc.log.debug("All subnets match")
 
         neigh_int_ips = [i.ip_address for i in neigh_ints]
         if all_unique(neigh_int_ips):
-            cd.log.debug("All interface IP addresses are unique")
+            bc.log.debug("All interface IP addresses are unique")
             duplicates = duplicate_items(neigh_int_ips)
         else:
             tests_passed = False
@@ -186,7 +186,7 @@ def validate_ipv4(anm):
                               if n.ip_address in duplicate_ips]
             duplicates = ", ".join("%s: %s" % (i.node, i.ip_address)
                                    for i in duplicate_ints)
-            cd.log.warning("Duplicate IP addresses: %s" % duplicates)
+            bc.log.warning("Duplicate IP addresses: %s" % duplicates)
 
     if tests_passed:
         g_ipv4.log.debug("All IP tests passed.")
