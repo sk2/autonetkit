@@ -69,7 +69,7 @@ class DmLabTopology(object):
 
 class DeviceModel(DmBase):
 
-    def __init__(self):
+    def __init__(self, network_model=None):
         super(DeviceModel, self).__init__()
         # only for connectivity, any other information stored on node
         if network_model and network_model['phy'].is_multigraph:

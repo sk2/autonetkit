@@ -197,28 +197,11 @@ def compile_network(anm):
 def create_nidb(anm):
 
     # todo: refactor this now with the layer2/layer2_bc graphs - what does nidb need?
-    # probably just layer2, and then allow compiled to access layer2_bc if need (eg netkit?)
+    # probably just layer2, and then allow compiled to access layer2_bc if
+    # need (eg netkit?)
 
-    nidb = DeviceModel()
-    g_phy = anm['phy']
-    g_graphics = anm['graphics']
-    nidb.add_nodes_from(g_phy, retain=[
-        'label',
-        'host',
-        'platform',
-        'Network',
-        'update',
-        'asn',
-        ])
+    nidb = DeviceModel(anm)
 
-    # cd_nodes = [n for n in g_ip.nodes("broadcast_domain") if not n.is_switch()]  # Only add created cds - otherwise overwrite host of switched
-    # also copy virtual switches
-    # TODO: refactor this
-    # nidb.add_nodes_from(cd_nodes, retain=['label', 'host'], broadcast_domain=True)
-
-    nidb.add_edges_from(g_phy.edges())
-
-    nidb.copy_graphics(g_graphics)
 
     return nidb
 
@@ -232,12 +215,12 @@ def deploy_network(anm, nidb, input_graph_string=None):
         for (platform, platform_data) in host_data.items():
             if not any(nidb.nodes(host=hostname, platform=platform)):
                 log.debug('No hosts for (host, platform) (%s, %s), skipping deployment'
-                           % (hostname, platform))
+                          % (hostname, platform))
                 continue
 
             if not platform_data['deploy']:
                 log.debug('Not deploying to %s on %s' % (platform,
-                          hostname))
+                                                         hostname))
                 continue
 
             config_path = os.path.join('rendered', hostname, platform)
@@ -256,7 +239,7 @@ def deploy_network(anm, nidb, input_graph_string=None):
 
                     if create_new_xml:
                         cisco_deploy.create_xml(anm, nidb,
-                                input_graph_string)
+                                                input_graph_string)
                     else:
                         cisco_deploy.package(nidb, config_path,
                                 input_graph_string)
