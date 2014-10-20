@@ -83,7 +83,8 @@ def allocate_infra(g_ip, address_block=None):
         subnets.next()  # network address
         ptp_subnet = subnets.next().subnet(126)
         ptp_subnet.next()  # network address
-        all_bcs = set(d for d in devices if d.broadcast_domain)
+        all_bcs = set(d for d in devices if d.broadcast_domain
+            and d.allocate)
         ptp_bcs = [bc for bc in all_bcs if bc.degree() == 2]
 
         for bc in sorted(ptp_bcs):

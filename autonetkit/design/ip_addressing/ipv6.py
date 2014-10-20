@@ -173,7 +173,8 @@ def build_ipv6(anm):
     g_ip = anm['ip']
     g_in = anm['input']
     # retain if collision domain or not
-    g_ipv6.add_nodes_from(g_ip, retain=['label', 'asn', 'broadcast_domain'])
+    g_ipv6.add_nodes_from(g_ip, retain=['label', 'asn', 'allocate',
+        'broadcast_domain'])
     g_ipv6.add_edges_from(g_ip.edges())
 
     # TODO: tidy up naming consitency of secondary_loopback_block and
