@@ -145,7 +145,7 @@ def validate_ipv4(anm):
     for bc in g_ipv4.nodes("broadcast_domain"):
         bc.log.debug("Verifying subnet and interface IPs")
         if not bc.allocate:
-            log.info("Skipping validation of manually allocated broadcast"
+            log.info("Skipping validation of manually allocated broadcast "
                 "domain %s" % bc)
             continue
 
