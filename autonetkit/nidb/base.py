@@ -247,7 +247,7 @@ class DmBase(object):
             valid_edges = list((src, dst, default_key) for (src, dst) in
                                self._graph.edges(nbunch))
 
-        all_edges = [DmEdge(self, src, dst)
+        all_edges = [DmEdge(self, src, dst, key)
                      for src, dst, key in valid_edges]
         return (edge for edge in all_edges if filter_func(edge))
 
