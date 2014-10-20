@@ -658,7 +658,7 @@ def allocate_loopbacks(g_ip, address_block=None):
     g_ip.data.loopback_blocks = ip_tree.group_allocations()
 
 
-def allocate_vrf_loopbacks(g_ip, address_block=None):
+def allocate_secondary_loopbacks(g_ip, address_block=None):
     if not address_block:
         address_block = netaddr.IPNetwork('172.16.0.0/24')
 
@@ -669,12 +669,13 @@ def allocate_vrf_loopbacks(g_ip, address_block=None):
     if not len(secondary_loopbacks):
         return   # nothing to set
     log.info('Allocating v4 Secondary Host loopback IPs')
+    log.debug('Allocating v4 Secondary Host loopback IPs to %s',
+        secondary_loopbacks)
     ip_tree = IpTree(address_block)
 
-    vrf_loopbacks = [i for i in secondary_loopbacks if i['vrf'
-                                                         ].vrf_name]
+    #vrf_loopbacks = [i for i in secondary_loopbacks if i['vrf'].vrf_name]
 
-    ip_tree.add_nodes(sorted(vrf_loopbacks))
+    ip_tree.add_nodes(sorted(secondary_loopbacks))
 
     ip_tree.build()
 

@@ -260,7 +260,7 @@ def build_ipv6(anm):
                     interface.ip_address = edge.ip
                     interface.subnet = edge.dst.subnet  # from collision domain
 
-    ipv6.allocate_vrf_loopbacks(g_ipv6, secondary_loopback_block)
+    ipv6.allocate_secondary_loopbacks(g_ipv6, secondary_loopback_block)
     for node in g_ipv6:
         node.static_routes = []
 
