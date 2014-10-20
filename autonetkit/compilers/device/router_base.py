@@ -306,6 +306,11 @@ class RouterCompiler(DeviceCompiler):
             # Use the same area as Loopback Zero
             area = node.ospf.loopback_area
 
+            if not network:
+                log.info("Not injecting unset network on loopback %s"
+                    "to IGP", interface)
+                continue
+
             link_stanza = ConfigStanza(
              network=network, interface=interface, area=area)
             node.ospf.ospf_links.append(link_stanza)
