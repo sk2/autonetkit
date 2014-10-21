@@ -304,6 +304,12 @@ def build_phy(anm):
             if specified_id:
                 interface.specified_id = specified_id  # map across
 
+    for node in g_phy:
+        for interface in node:
+            remote_edges = interface.edges()
+            if len(remote_edges):
+                interface.description = 'to %s' \
+                % remote_edges[0].dst.label
 
 
 def build_conn(anm):

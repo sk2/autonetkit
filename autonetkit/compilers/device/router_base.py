@@ -194,10 +194,6 @@ class RouterCompiler(DeviceCompiler):
             interface.custom_config = phy_int.custom_config
 
             interface.description = phy_int.description
-            remote_edges = phy_int.edges()
-            if len(remote_edges):
-                interface.description = 'to %s' \
-                    % remote_edges[0].dst.label
 
             continue
 
