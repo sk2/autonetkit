@@ -33,6 +33,9 @@ class PlatformCompiler(object):
 
             for interface in node.interfaces:
                 phy_int = phy_node.interface(interface)
+                if phy_int.exclude_igp is not None:
+                    interface.exclude_igp = phy_int.exclude_igp
+
                 if phy_node.use_ipv4:
                     ipv4_int = phy_int['ipv4']
 
