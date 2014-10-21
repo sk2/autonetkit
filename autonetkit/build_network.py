@@ -268,45 +268,6 @@ def build(input_graph):
     anm = apply_design_rules(anm)
     return anm
 
-
-def remove_parallel_switch_links(anm):
-    return
-    g_phy = anm['phy']
-    subs = ank_utils.connected_subgraphs(g_phy, g_phy.switches())
-    for component in subs:
-        log.debug(
-            "Checking for multiple links to switch cluster %s", str(sorted(component)))
-
-        # Collect all links into this cluster
-        external_edges = []
-        for switch in component:
-            for edge in switch.edges():
-                if edge.dst not in component:
-                    external_edges.append(edge)
-
-        # Group by the node they link to
-        from collections import defaultdict
-        check_dict = defaultdict(list)
-        for edge in external_edges:
-            check_dict[edge.dst].append(edge)
-
-        # Check to see if any nodes have more than one link into this aggregate
-        for dst, edges in check_dict.items():
-            if len(edges) > 1:
-                edges_to_remove = sorted(edges)[1:]  # remove all but first
-                interfaces = ", ".join(
-                    sorted(str(edge.dst_int['phy']) for edge in edges))
-                interfaces_to_disconnect = ", ".join(sorted(str(e.dst_int['phy'])
-                                                            for e in edges_to_remove))
-                dst.log.warning(
-                    "Multiple edges exist to same switch cluster: "
-                    " %s (%s). Removing edges from interfaces %s" % (
-                        str(sorted(component)), interfaces,
-                        interfaces_to_disconnect))
-
-                g_phy.remove_edges_from(edges_to_remove)
-
-
 def build_phy(anm):
     """Build physical overlay"""
     g_in = anm['input']
@@ -343,7 +304,6 @@ def build_phy(anm):
             if specified_id:
                 interface.specified_id = specified_id  # map across
 
-    remove_parallel_switch_links(anm)
 
 
 def build_conn(anm):
