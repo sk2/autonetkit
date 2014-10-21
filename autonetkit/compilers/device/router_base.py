@@ -301,13 +301,13 @@ class RouterCompiler(DeviceCompiler):
             network = ipv4_int.subnet
             if network in added_networks:
                 #TODO: may want to warn here
-                continue # already advertised ("how?")
+                continue # already advertised ("how? - warn if so!)
 
             # Use the same area as Loopback Zero
             area = node.ospf.loopback_area
 
             if not network:
-                log.info("Not injecting unset network on loopback %s"
+                log.info("Not injecting unset network on loopback %s "
                     "to IGP", interface)
                 continue
 
