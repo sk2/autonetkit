@@ -53,7 +53,6 @@ class UbuntuCompiler(ServerCompiler):
 
         for gateway in sorted(gateway_list):
             for gateway_edge_l3 in g_l3.edges(node, gateway):
-            #gateway_edge_l3 = self.anm['layer3'].edge(node, gateway)
                 server_interface = gateway_edge_l3.src_int
                 server_interface_id = self.nidb.interface(server_interface).id
 
