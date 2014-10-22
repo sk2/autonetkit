@@ -28,7 +28,7 @@ def build_ip(anm):
         # Encapsulated if any neighbor interface has
         for edge in bc.edges():
             if edge.dst_int['phy'].l2_encapsulated:
-                log.info("Removing IP allocation for broadcast_domain %s "
+                log.debug("Removing IP allocation for broadcast_domain %s "
                          "as neighbor %s is L2 encapsulated", bc, edge.dst)
 
                 #g_ip.remove_node(bc)

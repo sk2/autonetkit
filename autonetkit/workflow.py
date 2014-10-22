@@ -142,7 +142,7 @@ def manage_network(input_graph_string, timestamp, build=True,
     if deploy:
         deploy_network(anm, nidb, input_graph_string)
 
-    # log.info('Finished')  # TODO: finished what?
+    log.info('Configuration engine completed')  # TODO: finished what?
 
 
 #@do_cprofile
