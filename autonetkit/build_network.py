@@ -146,7 +146,7 @@ def check_server_asns(anm):
 
 def apply_design_rules(anm):
     """Applies appropriate design rules to ANM"""
-    log.info("Building overlay topologies")
+    # log.info("Building overlay topologies")
     g_in = anm['input']
 
     build_phy(anm)
@@ -162,7 +162,7 @@ def apply_design_rules(anm):
     from autonetkit.design.osi_layers import (build_layer2,
                                               check_layer2, build_layer2_broadcast,
                                               build_layer3)
-    log.info("Building layer2")
+    # log.info("Building layer2")
     build_layer2(anm)
 
     try:
@@ -174,7 +174,7 @@ def apply_design_rules(anm):
 
     check_layer2(anm)
     build_layer2_broadcast(anm)
-    log.info("Building layer3")
+    # log.info("Building layer3")
     build_layer3(anm)
 
     check_server_asns(anm)
@@ -183,7 +183,7 @@ def apply_design_rules(anm):
     build_vrf(anm)  # do before to add loopbacks before ip allocations
     from autonetkit.design.ip import build_ip, build_ipv4, build_ipv6
     # TODO: replace this with layer2 overlay topology creation
-    log.info("Allocating IP addresses")
+    # log.info("Allocating IP addresses")
     build_ip(anm)  # ip infrastructure topology
 
     address_family = g_in.data.address_family or "v4"  # default is v4
@@ -229,11 +229,11 @@ def apply_design_rules(anm):
     else:
         cisco_build_network.pre_design(anm)
 
-    log.info("Building IGP")
+    # log.info("Building IGP")
     from autonetkit.design.igp import build_igp
     build_igp(anm)
 
-    log.info("Building BGP")
+    # log.info("Building BGP")
     from autonetkit.design.bgp import build_bgp
     build_bgp(anm)
     # autonetkit.update_vis(anm)
@@ -257,7 +257,7 @@ def apply_design_rules(anm):
     else:
         cisco_build_network.post_design(anm)
 
-    log.info("Finished building network")
+    # log.info("Finished building network")
     return anm
 
 

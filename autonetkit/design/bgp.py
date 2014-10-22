@@ -235,7 +235,7 @@ def build_bgp(anm):
     ank_utils.copy_attr_from(
         g_in, g_bgp, "custom_config_bgp", dst_attr="custom_config")
 
-    log.info("Building eBGP")
+    # log.info("Building eBGP")
     ebgp_nodes = [d for d in g_bgp if any(
         edge.type == 'ebgp' for edge in d.edges())]
     g_bgp.update(ebgp_nodes, ebgp=True)
@@ -256,7 +256,7 @@ def build_bgp(anm):
         for interface in node.interfaces():
             interface.multipoint = any(e.multipoint for e in interface.edges())
 
-    log.info("Building iBGP")
+    # log.info("Building iBGP")
     build_ibgp(anm)
     build_ibgp_v4(anm)
     build_ibgp_v6(anm)

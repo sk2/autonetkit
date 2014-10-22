@@ -76,7 +76,7 @@ def manage_network(input_graph_string, timestamp, build=True,
             raise  # raise the original exception
         else:
             if visualise:
-                log.info("Visualising network")
+                # log.info("Visualising network")
                 import autonetkit
                 autonetkit.update_vis(anm)
 
@@ -132,7 +132,7 @@ def manage_network(input_graph_string, timestamp, build=True,
         nidb_diff = autonetkit.diff.nidb_diff()
         import json
         data = json.dumps(nidb_diff, cls=ank_json.AnkEncoder, indent=4)
-        log.info('Wrote diff to diff.json')
+        # log.info('Wrote diff to diff.json')
 
         # TODO: make file specified in config
 
@@ -142,15 +142,15 @@ def manage_network(input_graph_string, timestamp, build=True,
     if deploy:
         deploy_network(anm, nidb, input_graph_string)
 
-    log.info('Finished')  # TODO: finished what?
+    # log.info('Finished')  # TODO: finished what?
 
 
 #@do_cprofile
 def compile_network(anm):
-    log.info("Creating base network model")
+    # log.info("Creating base network model")
     nidb = create_nidb(anm)
     g_phy = anm['phy']
-    log.info("Compiling to targets")
+    # log.info("Compiling to targets")
 
     for target_data in config.settings['Compile Targets'].values():
         host = target_data['host']
@@ -176,8 +176,8 @@ def compile_network(anm):
                                                                  anm, host)
 
         if any(g_phy.nodes(host=host, platform=platform)):
-            log.info('Compiling configurations for %s on %s'
-                     % (platform, host))
+            # log.info('Compiling configurations for %s on %s'
+                     # % (platform, host))
             platform_compiler.compile()  # only compile if hosts set
         else:
             log.debug('No devices set for %s on %s' % (platform, host))
@@ -199,7 +199,7 @@ def create_nidb(anm):
 
 def deploy_network(anm, nidb, input_graph_string=None):
 
-    log.info('Deploying Network')
+    # log.info('Deploying Network')
 
     deploy_hosts = config.settings['Deploy Hosts']
     for (hostname, host_data) in deploy_hosts.items():

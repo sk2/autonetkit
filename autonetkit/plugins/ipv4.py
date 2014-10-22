@@ -622,7 +622,7 @@ def assign_asn_to_interasn_cds(g_ip, address_block=None):
 def allocate_infra(g_ip, address_block=None):
     if not address_block:
         address_block = netaddr.IPNetwork('10.0.0.0/8')
-    log.info('Allocating v4 Infrastructure IPs')
+    log.debug('Allocating v4 Infrastructure IPs')
     ip_tree = IpTree(address_block)
     assign_asn_to_interasn_cds(g_ip)
     nodes_to_allocate = sorted(n for n in g_ip.nodes('broadcast_domain')
@@ -647,7 +647,7 @@ def allocate_infra(g_ip, address_block=None):
 def allocate_loopbacks(g_ip, address_block=None):
     if not address_block:
         address_block = netaddr.IPNetwork('192.168.0.0/22')
-    log.info('Allocating v4 Primary Host loopback IPs')
+    log.debug('Allocating v4 Primary Host loopback IPs')
     ip_tree = IpTree(address_block)
     ip_tree.add_nodes(sorted(g_ip.l3devices()))
     ip_tree.build()
@@ -668,7 +668,7 @@ def allocate_secondary_loopbacks(g_ip, address_block=None):
 
     if not len(secondary_loopbacks):
         return   # nothing to set
-    log.info('Allocating v4 Secondary Host loopback IPs')
+    log.debug('Allocating v4 Secondary Host loopback IPs')
     log.debug('Allocating v4 Secondary Host loopback IPs to %s',
         secondary_loopbacks)
     ip_tree = IpTree(address_block)

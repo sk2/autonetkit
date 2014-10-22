@@ -166,7 +166,8 @@ class NetworkModel(object):
                 if multi_edge:
                     new_graph = nx.MultiGraph(graph)
                 else:
-                    log.info('Converting graph %s to undirected' % name)
+                    #TODO: put into dev log
+                    log.debug('Converting graph %s to undirected' % name)
                     new_graph = nx.Graph(graph)
             else:
                 new_graph = nx.Graph(graph)
