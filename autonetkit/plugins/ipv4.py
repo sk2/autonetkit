@@ -234,6 +234,7 @@ class IpTree(object):
                     subgraphs.append(subgraph)
                     subgraph.graph['root'] = root_node
                     subgraph.node[root_node]['group_attr'] = attr_value
+                    subgraph.node[root_node]['prefixlen'] = 24
                     # finished for loopbacks, continue only for collision
                     # domains
                     continue
