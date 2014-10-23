@@ -665,7 +665,7 @@ def allocate_secondary_loopbacks(g_ip, address_block=None):
 
     secondary_loopbacks = [i for n in g_ip.l3devices() for i in
                            n.loopback_interfaces()
-                           if not i.is_loopback_zero]
+                           if not i.is_loopback_zero and i['ip'].allocate is not False]
 
     if not len(secondary_loopbacks):
         return   # nothing to set

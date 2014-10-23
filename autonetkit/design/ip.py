@@ -16,6 +16,7 @@ SETTINGS = autonetkit.config.settings
 def build_ip(anm):
     g_ip = anm.add_overlay('ip')
     g_l2_bc = anm['layer2_bc']
+    g_phy = anm['phy']
     # Retain arbitrary ASN allocation for IP addressing
     g_ip.add_nodes_from(g_l2_bc, retain=["asn", "broadcast_domain"])
     g_ip.add_edges_from(g_l2_bc.edges())
@@ -41,6 +42,14 @@ def build_ip(anm):
                 break
 
 
+    # copy over skipped loopbacks
+    #TODO: check if loopbck copy attr
+    for node in g_ip.l3devices():
+        for interface in node.loopback_interfaces():
+            if interface['phy'].allocate is not None:
+                interface['ip'].allocate = interface['phy'].allocate
+
+
 def build_ipv4(anm, infrastructure=True):
     import autonetkit.design.ip_addressing.ipv4
     autonetkit.design.ip_addressing.ipv4.build_ipv4(
@@ -49,7 +58,5 @@ def build_ipv4(anm, infrastructure=True):
 def build_ipv6(anm):
     #TODO: check why ipv6 doesn't take infrastructure
     import autonetkit.design.ip_addressing.ipv6
-    autonetkit.design.ip_addressing.ipv6.build_ipv6(
-        anm)
-
+    autonetkit.design.ip_addressing.ipv6.build_ipv6(anm)
 #@call_log
