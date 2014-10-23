@@ -1,21 +1,45 @@
 import autonetkit.ank as ank_utils
 import autonetkit.config
 import autonetkit.log as log
+from autonetkit.ank import sn_preflen_to_network
+from netaddr import IPAddress
 
 SETTINGS = autonetkit.config.settings
 
 #@call_log
+
+
 def manual_ipv6_loopback_allocation(anm):
     """Applies manual IPv6 allocation"""
 
     import netaddr
     g_ipv6 = anm['ipv6']
+    g_in = anm['input']
 
     for l3_device in g_ipv6.l3devices():
-        l3_device.loopback = l3_device['input'].loopback_v6
+        try:
+            l3_device.loopback = IPAddress(l3_device['input'].loopback_v6)
+        except netaddr.AddrFormatError:
+            log.debug("Unable to parse IP address %s on %s",
+                l3_device['input'].loopback_v6, l3_device)
 
     # also need to form aggregated IP blocks (used for e.g. routing prefix
     # advertisement)
+    try:
+        loopback_subnet = g_in.data.ipv6_loopback_subnet
+        loopback_prefix = g_in.data.ipv6_loopback_prefix
+        loopback_block = sn_preflen_to_network(loopback_subnet,
+                                               loopback_prefix)
+    except Exception, e:
+        log.info("Unable to parse specified ipv4 loopback subnets %s/%s")
+    else:
+        mismatched_nodes = [n for n in g_ipv6.l3devices()
+                            if n.loopback and
+                            n.loopback not in loopback_block]
+        if len(mismatched_nodes):
+            log.warning("IPv6 loopbacks set on nodes %s are not in global "
+                        "loopback allocation block %s"
+                        % (sorted(mismatched_nodes), loopback_block))
 
     loopback_blocks = {}
     for (asn, devices) in g_ipv6.groupby('asn').items():
@@ -24,6 +48,8 @@ def manual_ipv6_loopback_allocation(anm):
         loopback_blocks[asn] = netaddr.cidr_merge(loopbacks)
 
     g_ipv6.data.loopback_blocks = loopback_blocks
+    # formatted = {key: [str(v) for v in val] for key, val in loopback_blocks.items()}
+    # log.info("Found loopback IP blocks %s", formatted)
 
 #@call_log
 
@@ -94,6 +120,7 @@ def manual_ipv6_infrastructure_allocation(anm):
 
     import netaddr
     g_ipv6 = anm['ipv6']
+    g_in = anm['input']
     log.info('Using specified IPv6 infrastructure allocation')
 
     for node in g_ipv6.l3devices():
@@ -115,12 +142,27 @@ def manual_ipv6_infrastructure_allocation(anm):
     # TODO: allow this to work with specified ip_address/subnet as well as
     # ip_address/prefixlen
 
+    global_infra_block = None
+    try:
+        # Note this is only pickling up if explictly set in g_in
+        infra_subnet = g_in.data.ipv6_infra_subnet
+        infra_prefix = g_in.data.ipv6_infra_prefix
+        global_infra_block = sn_preflen_to_network(infra_subnet, infra_prefix)
+    except Exception, e:
+        log.info("Unable to parse specified ipv4 infra subnets %s/%s")
+
     from netaddr import IPNetwork
+    mismatched_interfaces = []
+
     for coll_dom in broadcast_domains:
         connected_interfaces = [edge.dst_int for edge in
                                 coll_dom.edges()]
         cd_subnets = [IPNetwork('%s/%s' % (i.subnet.network,
                                            i.prefixlen)) for i in connected_interfaces]
+
+        if global_infra_block is not None:
+            mismatched_interfaces += [i for i in connected_interfaces
+            if i.ip_address not in global_infra_block]
 
         if len(cd_subnets) == 0:
             log.warning("Collision domain %s is not connected to any nodes",
@@ -133,8 +175,8 @@ def manual_ipv6_infrastructure_allocation(anm):
             mismatch_subnets = '; '.join('%s: %s/%s' % (i,
                                                         i.subnet.network, i.prefixlen) for i in
                                          connected_interfaces)
-            log.warning(
-                'Non matching subnets from collision domain %s: %s', coll_dom, mismatch_subnets)
+            log.warning('Non matching subnets from collision domain %s: %s',
+                        coll_dom, mismatch_subnets)
         else:
             coll_dom.subnet = cd_subnets[0]  # take first entry
 
@@ -147,6 +189,10 @@ def manual_ipv6_infrastructure_allocation(anm):
     # advertisement)
     # import autonetkit
     # autonetkit.update_vis(anm)
+    if len(mismatched_interfaces):
+        log.warning("IPv6 Infrastructure IPs %s are not in global "
+                    "loopback allocation block %s"
+                    % (sorted(mismatched_interfaces), global_infra_block))
 
     infra_blocks = {}
     for (asn, devices) in g_ipv6.groupby('asn').items():
@@ -156,6 +202,9 @@ def manual_ipv6_infrastructure_allocation(anm):
         infra_blocks[asn] = netaddr.cidr_merge(subnets)
 
     g_ipv6.data.infra_blocks = infra_blocks
+    # formatted = {key: [str(v) for v in val] for key, val in infra_blocks.items()}
+    # log.info("Found loopback IP blocks %s", formatted)
+
 
 #@call_log
 
@@ -174,7 +223,7 @@ def build_ipv6(anm):
     g_in = anm['input']
     # retain if collision domain or not
     g_ipv6.add_nodes_from(g_ip, retain=['label', 'asn', 'allocate',
-        'broadcast_domain'])
+                                        'broadcast_domain'])
     g_ipv6.add_edges_from(g_ip.edges())
 
     # TODO: tidy up naming consitency of secondary_loopback_block and
@@ -212,12 +261,16 @@ def build_ipv6(anm):
         physical_interfaces = list(device.physical_interfaces())
         allocated = list(
             interface.ipv6_address for interface in physical_interfaces
-            if interface.is_bound and interface['ipv6'].is_bound)
+            if interface.is_bound and interface['ipv6'].is_bound
+            and interface['ip'].allocate is not False)
 
+        #TODO: check for repeated code
+
+#TODO: copy allocate from g_ip to g_ipv6
         if all(interface.ipv6_address for interface in
                physical_interfaces if interface.is_bound
-               and interface['ipv6'].is_bound):
-
+               and interface['ipv6'].is_bound
+               and interface['ip'].allocate is not False):
             # add as a manual allocated device
             manual_alloc_devices.add(device)
 

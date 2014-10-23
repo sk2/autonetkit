@@ -34,6 +34,10 @@ def build_ip(anm):
                 #g_ip.remove_node(bc)
                 bc.allocate = False
 
+                # and mark on connected interfaces
+                for neigh_int in bc.neighbor_interfaces():
+                    neigh_int.allocate = False
+
                 break
 
 
