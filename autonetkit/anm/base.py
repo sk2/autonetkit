@@ -14,8 +14,9 @@ from autonetkit.exception import OverlayNotFound
 # TODO: check if this is still a performance hit
 from autonetkit.log import CustomAdapter
 
+from autonetkit.anm.ank_element import AnkElement
 
-class OverlayBase(object):
+class OverlayBase(AnkElement):
 
     '''Base class for overlays - overlay graphs, subgraphs, projections, etc'''
 
@@ -33,6 +34,7 @@ class OverlayBase(object):
         logstring = 'Overlay: %s' % str(overlay_id)
         logger = CustomAdapter(logger, {'item': logstring})
         object.__setattr__(self, 'log', logger)
+        self.init_logging("graph")
 
     def __repr__(self):
         """

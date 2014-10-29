@@ -2,9 +2,10 @@ import logging
 
 import autonetkit.log as log
 from autonetkit.log import CustomAdapter
+from autonetkit.anm.ank_element import AnkElement
 
 
-class NmPort(object):
+class NmPort(AnkElement):
 
     def __init__(self, anm, overlay_id, node_id, interface_id):
         object.__setattr__(self, 'anm', anm)
@@ -16,6 +17,8 @@ class NmPort(object):
         #logger = CustomAdapter(logger, {'item': logstring})
         logger = log
         object.__setattr__(self, 'log', logger)
+        self.init_logging("port")
+
 
     def __key(self):
         """Note: key doesn't include overlay_id to allow fast cross-layer comparisons"""

@@ -6,10 +6,12 @@ import autonetkit
 import autonetkit.log as log
 from autonetkit.anm.interface import NmPort
 from autonetkit.log import CustomAdapter
+from autonetkit.anm.ank_element import AnkElement
+
 
 
 @total_ordering
-class NmNode(object):
+class NmNode(AnkElement):
 
     """NmNode"""
 
@@ -26,6 +28,7 @@ class NmNode(object):
         #logger = CustomAdapter(logger, {'item': logstring})
         logger = log
         object.__setattr__(self, 'log', logger)
+        self.init_logging("node")
 
     def __hash__(self):
         """"""
@@ -394,6 +397,7 @@ class NmNode(object):
         False
 
         """
+        self.log_info("add int")
 
         return self.device_type == 'router' or self['phy'].device_type \
             == 'router'
@@ -678,15 +682,17 @@ class NmNode(object):
                 result = node_data[key]
                 return result
             except KeyError:
+                #TODO: check if in self['phy'[ here]
+
                 if key == "device_type":
                     return self['phy'].device_type
                 if key == "device_subtype":
                     return self['phy'].device_subtype
 
                 # from http://stackoverflow.com/q/2654113
-                self.log.debug(
-                    "Accessing unset attribute %s in %s" % (key,
-                                                            self.overlay_id))
+                #self.log.debug(
+                    #"Accessing unset attribute %s in %s" % (key,
+                                                            #self.overlay_id))
                 return
 
         # map through to phy

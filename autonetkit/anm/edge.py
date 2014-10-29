@@ -7,9 +7,10 @@ from autonetkit.anm.interface import NmPort
 from autonetkit.anm.node import NmNode
 from autonetkit.log import CustomAdapter
 
+from autonetkit.anm.ank_element import AnkElement
 
 @total_ordering
-class NmEdge(object):
+class NmEdge(AnkElement):
 
     """API to access link in network"""
 
@@ -25,6 +26,8 @@ class NmEdge(object):
         #logger = CustomAdapter(logger, {'item': logstring})
         logger = log
         object.__setattr__(self, 'log', logger)
+        self.init_logging("edge")
+
 
     def __key(self):
         """Note: key doesn't include overlay_id to allow fast cross-layer comparisons"""
