@@ -1,0 +1,16 @@
+[
+    {
+        "then": [
+            "reject", 
+            "setLP 100"
+        ], 
+        "match": [
+            "prefix_list ccc"
+        ], 
+        "else": [
+            "reject", 
+            "setMED 240", 
+            "setLP 210"
+        ]
+    }
+]
