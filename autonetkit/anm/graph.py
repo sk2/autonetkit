@@ -50,13 +50,8 @@ class NmGraph(OverlayBase):
                 edge = (overlay_id, self._overlay_id)
                 g_deps.add_edges_from([edge])
 
-    def add_nodes_from(
-        self,
-        nbunch,
-        retain=None,
-        update=False,
-        **kwargs
-    ):
+    def add_nodes_from( self, nbunch, retain=None, update=False,
+        **kwargs):
         """Update won't append data (which could clobber) if node exists"""
         nbunch = list(nbunch)  # listify in case consumed in try/except
 
@@ -178,7 +173,7 @@ class NmGraph(OverlayBase):
         nbunch = [node]
         self.add_nodes_from(nbunch,
                             retain, **kwargs)
-
+        #TODO: test what this code is meant to do
         try:
             node_id = node.id
         except AttributeError:

@@ -114,9 +114,9 @@ class CiscoCompiler(PlatformCompiler):
 
         to_memory, use_mgmt_interfaces, dst_folder = self._parameters()
         if use_mgmt_interfaces:
-            log.info("Allocating VIRL management interfaces")
+            log.debug("Allocating VIRL management interfaces")
         else:
-            log.info("Not allocating VIRL management interfaces")
+            log.debug("Not allocating VIRL management interfaces")
 # TODO: need to copy across the interface name from edge to the interface
 
 # TODO: merge common router code, so end up with three loops: routers, ios
@@ -128,7 +128,7 @@ class CiscoCompiler(PlatformCompiler):
     # allocation
 
         # store autonetkit_cisco version
-        log.info("Generating device configurations")
+        log.debug("Generating device configurations")
         from pkg_resources import get_distribution
 
         # Copy across indices for external connectors (e.g may want to copy

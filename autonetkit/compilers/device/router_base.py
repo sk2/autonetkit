@@ -194,10 +194,6 @@ class RouterCompiler(DeviceCompiler):
             interface.custom_config = phy_int.custom_config
 
             interface.description = phy_int.description
-            remote_edges = phy_int.edges()
-            if len(remote_edges):
-                interface.description = 'to %s' \
-                    % remote_edges[0].dst.label
 
             continue
 
@@ -301,13 +297,13 @@ class RouterCompiler(DeviceCompiler):
             network = ipv4_int.subnet
             if network in added_networks:
                 #TODO: may want to warn here
-                continue # already advertised ("how?")
+                continue # already advertised ("how? - warn if so!)
 
             # Use the same area as Loopback Zero
             area = node.ospf.loopback_area
 
             if not network:
-                log.info("Not injecting unset network on loopback %s"
+                log.info("Not injecting unset network on loopback %s "
                     "to IGP", interface)
                 continue
 

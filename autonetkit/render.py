@@ -228,7 +228,7 @@ def render_node(node):
 
 def render(nidb):
     # TODO: config option for single or multi threaded
-    log.info("Rendering Configuration Files")
+    log.debug("Rendering Configuration Files")
     render_single(nidb)
     render_topologies(nidb)
 

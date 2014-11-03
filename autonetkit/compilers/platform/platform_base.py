@@ -19,7 +19,7 @@ class PlatformCompiler(object):
         pass
 
     def copy_across_ip_addresses(self):
-        log.info("Copying IP addresses to device model")
+        # log.info("Copying IP addresses to device model")
         # TODO: try/except and raise SystemError as fatal error if cant copy
         from autonetkit.ank import sn_preflen_to_network
 
@@ -33,6 +33,9 @@ class PlatformCompiler(object):
 
             for interface in node.interfaces:
                 phy_int = phy_node.interface(interface)
+                if phy_int.exclude_igp is not None:
+                    interface.exclude_igp = phy_int.exclude_igp
+
                 if phy_node.use_ipv4:
                     ipv4_int = phy_int['ipv4']
 
@@ -53,7 +56,8 @@ class PlatformCompiler(object):
                         continue
 
                     if ipv4_int.ip_address is None:
-                        log.info("No IP address allocated on %s", interface)
+                        #TODO: put into dev log
+                        log.debug("No IP address allocated on %s", interface)
                         interface.use_ipv4 = False
                         continue
 
@@ -81,7 +85,8 @@ class PlatformCompiler(object):
                         interface.use_ipv6 = False
                         continue
                     if ipv6_int.ip_address is None:
-                        log.info("No IP address allocated on %s", interface)
+                        #TODO: put into dev log
+                        log.debug("No IP address allocated on %s", interface)
                         interface.use_ipv6 = False
                         continue
                     try:

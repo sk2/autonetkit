@@ -146,7 +146,7 @@ def check_server_asns(anm):
 
 def apply_design_rules(anm):
     """Applies appropriate design rules to ANM"""
-    log.info("Building overlay topologies")
+    # log.info("Building overlay topologies")
     g_in = anm['input']
 
     build_phy(anm)
@@ -162,7 +162,7 @@ def apply_design_rules(anm):
     from autonetkit.design.osi_layers import (build_layer2,
                                               check_layer2, build_layer2_broadcast,
                                               build_layer3)
-    log.info("Building layer2")
+    # log.info("Building layer2")
     build_layer2(anm)
 
     try:
@@ -174,7 +174,7 @@ def apply_design_rules(anm):
 
     check_layer2(anm)
     build_layer2_broadcast(anm)
-    log.info("Building layer3")
+    # log.info("Building layer3")
     build_layer3(anm)
 
     check_server_asns(anm)
@@ -183,7 +183,7 @@ def apply_design_rules(anm):
     build_vrf(anm)  # do before to add loopbacks before ip allocations
     from autonetkit.design.ip import build_ip, build_ipv4, build_ipv6
     # TODO: replace this with layer2 overlay topology creation
-    log.info("Allocating IP addresses")
+    # log.info("Allocating IP addresses")
     build_ip(anm)  # ip infrastructure topology
 
     address_family = g_in.data.address_family or "v4"  # default is v4
@@ -229,11 +229,11 @@ def apply_design_rules(anm):
     else:
         cisco_build_network.pre_design(anm)
 
-    log.info("Building IGP")
+    # log.info("Building IGP")
     from autonetkit.design.igp import build_igp
     build_igp(anm)
 
-    log.info("Building BGP")
+    # log.info("Building BGP")
     from autonetkit.design.bgp import build_bgp
     build_bgp(anm)
     # autonetkit.update_vis(anm)
@@ -257,7 +257,7 @@ def apply_design_rules(anm):
     else:
         cisco_build_network.post_design(anm)
 
-    log.info("Finished building network")
+    # log.info("Finished building network")
     return anm
 
 
@@ -267,45 +267,6 @@ def build(input_graph):
     anm = initialise(input_graph)
     anm = apply_design_rules(anm)
     return anm
-
-
-def remove_parallel_switch_links(anm):
-    return
-    g_phy = anm['phy']
-    subs = ank_utils.connected_subgraphs(g_phy, g_phy.switches())
-    for component in subs:
-        log.debug(
-            "Checking for multiple links to switch cluster %s", str(sorted(component)))
-
-        # Collect all links into this cluster
-        external_edges = []
-        for switch in component:
-            for edge in switch.edges():
-                if edge.dst not in component:
-                    external_edges.append(edge)
-
-        # Group by the node they link to
-        from collections import defaultdict
-        check_dict = defaultdict(list)
-        for edge in external_edges:
-            check_dict[edge.dst].append(edge)
-
-        # Check to see if any nodes have more than one link into this aggregate
-        for dst, edges in check_dict.items():
-            if len(edges) > 1:
-                edges_to_remove = sorted(edges)[1:]  # remove all but first
-                interfaces = ", ".join(
-                    sorted(str(edge.dst_int['phy']) for edge in edges))
-                interfaces_to_disconnect = ", ".join(sorted(str(e.dst_int['phy'])
-                                                            for e in edges_to_remove))
-                dst.log.warning(
-                    "Multiple edges exist to same switch cluster: "
-                    " %s (%s). Removing edges from interfaces %s" % (
-                        str(sorted(component)), interfaces,
-                        interfaces_to_disconnect))
-
-                g_phy.remove_edges_from(edges_to_remove)
-
 
 def build_phy(anm):
     """Build physical overlay"""
@@ -343,7 +304,12 @@ def build_phy(anm):
             if specified_id:
                 interface.specified_id = specified_id  # map across
 
-    remove_parallel_switch_links(anm)
+    for node in g_phy:
+        for interface in node:
+            remote_edges = interface.edges()
+            if len(remote_edges):
+                interface.description = 'to %s' \
+                % remote_edges[0].dst.label
 
 
 def build_conn(anm):

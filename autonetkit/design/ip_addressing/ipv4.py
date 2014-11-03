@@ -1,15 +1,19 @@
 import autonetkit.ank as ank_utils
 import autonetkit.config
 import autonetkit.log as log
+from netaddr import IPAddress
+from autonetkit.ank import sn_preflen_to_network
 
 SETTINGS = autonetkit.config.settings
+
+
+# TODO: add unit tests for each function here and in ipv6
 
 def extract_ipv4_blocks(anm):
 
     # TODO: set all these blocks globally in config file, rather than repeated
     # in load, build_network, compile, etc
 
-    from autonetkit.ank import sn_preflen_to_network
     from netaddr import IPNetwork
     g_in = anm['input']
     ipv4_defaults = SETTINGS["IP Addressing"]["v4"]
@@ -61,12 +65,12 @@ def extract_ipv4_blocks(anm):
     return (infra_block, loopback_block, vrf_loopback_block)
 
 
-
 def manual_ipv4_infrastructure_allocation(anm):
     """Applies manual IPv4 allocation"""
 
     import netaddr
     g_ipv4 = anm['ipv4']
+    g_in = anm['input']
     log.info('Using specified IPv4 infrastructure allocation')
 
     for node in g_ipv4.l3devices():
@@ -75,7 +79,9 @@ def manual_ipv4_infrastructure_allocation(anm):
                 continue  # unbound interface
             if not interface['ipv4'].is_bound:
                 continue
-
+            if interface['ip'].allocate is False:
+                # TODO: copy interface allocate attribute across
+                continue
 
             ip_address = netaddr.IPAddress(interface['input'
                                                      ].ipv4_address)
@@ -90,9 +96,22 @@ def manual_ipv4_infrastructure_allocation(anm):
     # TODO: allow this to work with specified ip_address/subnet as well as
     # ip_address/prefixlen
 
+    global_infra_block = None
+    try:
+        # Note this is only pickling up if explictly set in g_in
+        infra_subnet = g_in.data.ipv4_infra_subnet
+        infra_prefix = g_in.data.ipv4_infra_prefix
+        global_infra_block = sn_preflen_to_network(infra_subnet, infra_prefix)
+    except Exception, e:
+        log.info("Unable to parse specified ipv4 infra subnets %s/%s")
+
+    mismatched_interfaces = []
     from netaddr import IPNetwork
     for coll_dom in broadcast_domains:
-        # TODO: add neighbor_ints to API?
+        if coll_dom.allocate is False:
+            continue
+
+        # TODO: use neighbor_interfaces()
         connected_interfaces = [edge.dst_int for edge in
                                 coll_dom.edges()]
 
@@ -100,7 +119,14 @@ def manual_ipv4_infrastructure_allocation(anm):
                                 if i.node.is_l3device()]
 
         cd_subnets = [IPNetwork('%s/%s' % (i.subnet.network,
-                                           i.prefixlen)) for i in connected_interfaces]
+                                           i.prefixlen)) for i in connected_interfaces
+                      if i['ip'].allocate is not False]
+
+        # mismatched_interfaces += [i for i in connected_interfaces
+        # if i.
+        if global_infra_block is not None:
+            mismatched_interfaces += [i for i in connected_interfaces
+                                      if i.ip_address not in global_infra_block]
 
         if len(cd_subnets) == 0:
             log.warning(
@@ -127,6 +153,10 @@ def manual_ipv4_infrastructure_allocation(anm):
     # advertisement)
     # import autonetkit
     # autonetkit.update_vis(anm)
+    if len(mismatched_interfaces):
+        log.warning("IPv4 Infrastructure IPs %s are not in global "
+                    "loopback allocation block %s"
+                    % (sorted(mismatched_interfaces), global_infra_block))
 
     infra_blocks = {}
     for (asn, devices) in g_ipv4.groupby('asn').items():
@@ -135,6 +165,8 @@ def manual_ipv4_infrastructure_allocation(anm):
                    if cd.subnet is not None]  # only if subnet is set
         infra_blocks[asn] = netaddr.cidr_merge(subnets)
 
+    # formatted = {key: [str(v) for v in val] for key, val in infra_blocks.items()}
+    # log.info("Found infrastructure IP blocks %s", formatted)
     g_ipv4.data.infra_blocks = infra_blocks
 
 
@@ -144,9 +176,31 @@ def manual_ipv4_loopback_allocation(anm):
 
     import netaddr
     g_ipv4 = anm['ipv4']
+    g_in = anm['input']
 
     for l3_device in g_ipv4.l3devices():
-        l3_device.loopback = l3_device['input'].loopback_v4
+        try:
+            l3_device.loopback = IPAddress(l3_device['input'].loopback_v4)
+        except netaddr.AddrFormatError:
+            log.debug("Unable to parse IP address %s on %s",
+                      l3_device['input'].loopback_v6, l3_device)
+
+    try:
+        loopback_subnet = g_in.data.ipv4_loopback_subnet
+        loopback_prefix = g_in.data.ipv4_loopback_prefix
+        loopback_block = sn_preflen_to_network(loopback_subnet,
+                                               loopback_prefix)
+    except Exception, e:
+        log.info("Unable to parse specified ipv4 loopback subnets %s/%s")
+    else:
+        mismatched_nodes = [n for n in g_ipv4.l3devices()
+                            if n.loopback and n.loopback not in loopback_block]
+        if len(mismatched_nodes):
+            log.warning("IPv4 loopbacks set on nodes %s are not in global "
+                        "loopback allocation block %s"
+                        % (sorted(mismatched_nodes), loopback_block))
+
+    # mismatch = [n for n in g_ipv4.l3devices() if n.loopback not in
 
     # also need to form aggregated IP blocks (used for e.g. routing prefix
     # advertisement)
@@ -158,7 +212,8 @@ def manual_ipv4_loopback_allocation(anm):
         loopback_blocks[asn] = netaddr.cidr_merge(loopbacks)
 
     g_ipv4.data.loopback_blocks = loopback_blocks
-
+    # formatted = {key: [str(v) for v in val] for key, val in loopback_blocks.items()}
+    #log.info("Found loopback IP blocks %s", formatted)
 
 
 #@call_log
@@ -172,7 +227,7 @@ def build_ipv4(anm, infrastructure=True):
     g_in = anm['input']
     # retain if collision domain or not
     g_ipv4.add_nodes_from(g_ip, retain=['label', 'allocate',
-        'broadcast_domain'])
+                                        'broadcast_domain'])
 
     # Copy ASN attribute chosen for collision domains (used in alloc algorithm)
 
@@ -202,19 +257,19 @@ def build_ipv4(anm, infrastructure=True):
     # can map back to  self overlay first then phy???
     l3_devices = [d for d in g_in if d.device_type in ('router', 'server')]
 
-    #TODO: create internal fucntion to determine if interface is bound
-    # across both phy and ipv4
+    # TODO: need to account for devices whose interfaces are in only e.g. vpns
 
     manual_alloc_devices = set()
     for device in l3_devices:
         physical_interfaces = list(device.physical_interfaces())
         allocated = list(
             interface.ipv4_address for interface in physical_interfaces
-             if interface.is_bound
+            if interface.is_bound and interface['ipv4'].allocate is not False
             and interface['ipv4'].is_bound)
         if all(interface.ipv4_address for interface in
                physical_interfaces if interface.is_bound
-               and interface['ipv4'].is_bound):
+               and interface['ip'].allocate is not False
+               and interface['ip'].is_bound):
             # add as a manual allocated device
             manual_alloc_devices.add(device)
 
@@ -227,7 +282,7 @@ def build_ipv4(anm, infrastructure=True):
         allocated = []
         unallocated = []
         for node in l3_devices:
-            #TODO: make these inverse sets
+            # TODO: make these inverse sets
             allocated += sorted([i for i in node.physical_interfaces()
                                  if i.is_bound and i.ipv4_address])
             unallocated += sorted([i for i in node.physical_interfaces()

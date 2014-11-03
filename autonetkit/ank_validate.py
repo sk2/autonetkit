@@ -7,7 +7,7 @@ import autonetkit.log as log
 
 
 def validate(anm):
-    log.info("Validating overlay topologies")
+    log.debug("Validating overlay topologies")
     tests_passed = True
     tests_passed = validate_ipv4(anm) and tests_passed
 
@@ -24,7 +24,7 @@ def validate(anm):
     all_nodes_have_asn(anm)
 
     if tests_passed:
-        log.info("All validation tests passed.")
+        log.debug("All validation tests passed.")
     else:
         log.warning("Some validation tests failed.")
 
@@ -145,7 +145,7 @@ def validate_ipv4(anm):
     for bc in g_ipv4.nodes("broadcast_domain"):
         bc.log.debug("Verifying subnet and interface IPs")
         if not bc.allocate:
-            log.info("Skipping validation of manually allocated broadcast "
+            log.debug("Skipping validation of manually allocated broadcast "
                 "domain %s" % bc)
             continue
 
