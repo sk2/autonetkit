@@ -6,7 +6,16 @@ class AnkElement(object):
 
     #TODO: put this into parent __init__?
     def init_logging(self, my_type):
-        log_extra={"type": my_type, "id": str(self)}
+        try:
+            self_id = str(self)
+        except Exception, e:
+            #TODO: log warning here
+            import autonetkit.log as log
+            log.warning("Unable to set per-element logger %s", e)
+            self_id = ""
+
+
+        log_extra={"type": my_type, "id": self_id}
         object.__setattr__(self, 'log_extra', log_extra)
 
         #self.log_info = partial(ank_logger_2.info, extra=extra)
