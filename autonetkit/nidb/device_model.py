@@ -93,7 +93,7 @@ class DeviceModel(DmBase):
                                            'Network', 'update', 'asn', ])
 
         self.add_edges_from(g_phy.edges())
-        self.copy_graphics(g_graphics)
+        self.copy_graphics(network_model)
 
     def topology(self, key):
         return DmLabTopology(self, key)

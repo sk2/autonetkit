@@ -683,11 +683,11 @@ class NmNode(AnkElement):
                 return result
             except KeyError:
                 #TODO: check if in self['phy'[ here]
-
-                if key == "device_type":
-                    return self['phy'].device_type
-                if key == "device_subtype":
-                    return self['phy'].device_subtype
+                if self.overlay_id != "phy":
+                    if key == "device_type":
+                        return self['phy'].device_type
+                    if key == "device_subtype":
+                        return self['phy'].device_subtype
 
                 # from http://stackoverflow.com/q/2654113
                 #self.log.debug(
