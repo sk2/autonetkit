@@ -165,14 +165,17 @@ class NetworkModel(AnkElement):
 
         if graph:
             if not directed and graph.is_directed():
-                if multi_edge:
+                if multi_edge or graph.is_multigraph():
                     new_graph = nx.MultiGraph(graph)
                 else:
                     # TODO: put into dev log
                     log.debug('Converting graph %s to undirected' % name)
                     new_graph = nx.Graph(graph)
             else:
-                new_graph = nx.Graph(graph)
+                if multi_edge or graph.is_multigraph():
+                    new_graph = nx.MultiGraph(graph)
+                else:
+                    new_graph = nx.Graph(graph)
         elif directed:
 
             if multi_edge:

@@ -105,7 +105,7 @@ def multi_edge():
     graph = json_graph.node_link_graph(data)
     anm = autonetkit.anm.NetworkModel()
     g_in = anm.add_overlay("input")
-    g_in._replace_graph(nx.Graph(graph))
+    g_in._replace_graph(nx.MultiGraph(graph))
     # TODO: check if should build overlays here rather than clone in?
     g_phy = anm["phy"]
     g_phy._replace_graph(graph)
