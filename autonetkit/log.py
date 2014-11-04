@@ -13,7 +13,7 @@ if not ank_logger.handlers:
     ch = logging.StreamHandler()
     #ch.setLevel(logging.INFO)
     ch.setFormatter(console_formatter)
-    ch.setLevel(logging.INFO)
+    ch.setLevel(logging.DEBUG)
     ank_logger.addHandler(ch)
 
     file_logging = config.settings['Logging']['file']

@@ -397,7 +397,7 @@ class NmNode(AnkElement):
         False
 
         """
-        self.log_info("add int")
+        #self.log_info("add int")
 
         return self.device_type == 'router' or self['phy'].device_type \
             == 'router'
