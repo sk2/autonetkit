@@ -147,10 +147,10 @@ def load_json(input_data):
         if key not in edge_defaults or edge_defaults[key] == 'None':
             edge_defaults[key] = val
 
-    for (src, dst) in graph.edges():
-        for (key, val) in edge_defaults.items():
-            if key not in graph[src][dst]:
-                graph[src][dst][key] = val
+    for src, dst, data in graph.edges(data=True):
+        for key, val in edge_defaults.items():
+            if key not in data:
+                data[key] = val
 
     graph.graph['address_family'] = 'v4'
     graph.graph['enable_routing'] = True
