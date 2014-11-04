@@ -81,7 +81,6 @@ icon.graffle
 .ipynb_checkpoints/Untitled0-checkpoint.ipynb
 
 autonetkit.sublime-project
-<<<<<<< HEAD
 
 .coverage
 
@@ -90,5 +89,11 @@ Untitled0.ipynb
 autonetkit/parsing/quagga.conf
 
 test.txt
-=======
->>>>>>> FETCH_HEAD
+
+htmlcov/*
+
+docs/*
+
+tutorial/router.mako
+
+tutorial/topology.mako
