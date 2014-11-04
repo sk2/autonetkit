@@ -414,6 +414,9 @@ class NmGraph(OverlayBase):
                 if bidirectional:
                     edges_to_add.append((dst, src, dict(data)))
 
+
+            #TODO: warn if not multigraph
+
             self._graph.add_edges_from(edges_to_add)
 
     def update(self, nbunch=None, **kwargs):
