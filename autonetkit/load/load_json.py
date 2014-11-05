@@ -115,48 +115,50 @@ def simple_to_nx(j_data):
     return json_graph.node_link_graph(j_data)
 
 
-def load_json(input_data):
+def load_json(input_data, defaults = True):
     import json
     data = json.loads(input_data)
     graph = simple_to_nx(data)
     # TODO: any required pre-processing goes here
 
-    ank_graph_defaults = settings['JSON']['Graph Defaults']
-    for (key, val) in ank_graph_defaults.items():
-        if key not in graph.graph:
-            graph.graph[key] = val
+    if defaults:
+        ank_graph_defaults = settings['JSON']['Graph Defaults']
+        for (key, val) in ank_graph_defaults.items():
+            if key not in graph.graph:
+                graph.graph[key] = val
 
-    ank_node_defaults = settings['JSON']['Node Defaults']
-    node_defaults = graph.graph.get("node_default", {})
-    for (key, val) in node_defaults.items():
-        if val == 'False':
-            node_defaults[key] = False
-
-    for (key, val) in ank_node_defaults.items():
-        if key not in node_defaults or node_defaults[key] == 'None':
-            node_defaults[key] = val
-
-    for node in graph:
+        ank_node_defaults = settings['JSON']['Node Defaults']
+        node_defaults = graph.graph.get("node_default", {})
         for (key, val) in node_defaults.items():
-            if key not in graph.node[node]:
-                graph.node[node][key] = val
+            if val == 'False':
+                node_defaults[key] = False
 
-    ank_edge_defaults = settings['Graphml']['Edge Defaults']
-    edge_defaults = graph.graph.get('edge_default', {})
-    for (key, val) in ank_edge_defaults.items():
-        if key not in edge_defaults or edge_defaults[key] == 'None':
-            edge_defaults[key] = val
+        for (key, val) in ank_node_defaults.items():
+            if key not in node_defaults or node_defaults[key] == 'None':
+                node_defaults[key] = val
 
-    for src, dst, data in graph.edges(data=True):
-        for key, val in edge_defaults.items():
-            if key not in data:
-                data[key] = val
+        for node in graph:
+            for (key, val) in node_defaults.items():
+                if key not in graph.node[node]:
+                    graph.node[node][key] = val
 
-    graph.graph['address_family'] = 'v4'
-    graph.graph['enable_routing'] = True
+        ank_edge_defaults = settings['Graphml']['Edge Defaults']
+        edge_defaults = graph.graph.get('edge_default', {})
+        for (key, val) in ank_edge_defaults.items():
+            if key not in edge_defaults or edge_defaults[key] == 'None':
+                edge_defaults[key] = val
 
-    for node in sorted(graph):
-        graph.node[node]['asn'] = int(graph.node[node]['asn'])
+        for src, dst, data in graph.edges(data=True):
+            for key, val in edge_defaults.items():
+                if key not in data:
+                    data[key] = val
+
+        graph.graph['address_family'] = 'v4'
+        graph.graph['enable_routing'] = True
+
+        #TODO: move out of defaults boolean, and try/catch
+        for node in sorted(graph):
+            graph.node[node]['asn'] = int(graph.node[node]['asn'])
 
     # TODO: set default x/y if not set - or else json export will do it
     graph.graph['file_type'] = 'json'

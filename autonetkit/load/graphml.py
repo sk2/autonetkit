@@ -16,7 +16,7 @@ settings = autonetkit.config.settings
 
 # TODO: fallback to python if cStringIO version is not available
 
-def load_graphml(input_data):
+def load_graphml(input_data, defaults = True):
 
 
     # TODO: allow default properties to be passed in as dicts
@@ -141,27 +141,28 @@ def load_graphml(input_data):
 
 # TODO: store these in config file
 
-    ank_node_defaults = settings['Graphml']['Node Defaults']
-    node_defaults = graph.graph['node_default']  # update with defaults from graphml
-    for (key, val) in node_defaults.items():
-        if val == 'False':
-            node_defaults[key] = False
+    if defaults:
+        ank_node_defaults = settings['Graphml']['Node Defaults']
+        node_defaults = graph.graph['node_default']  # update with defaults from graphml
+        for (key, val) in node_defaults.items():
+            if val == 'False':
+                node_defaults[key] = False
 
     # TODO: do a dict update before applying so only need to iterate nodes once
 
-    for (key, val) in ank_node_defaults.items():
-        if key not in node_defaults or node_defaults[key] == 'None':
-            node_defaults[key] = val
+        for (key, val) in ank_node_defaults.items():
+            if key not in node_defaults or node_defaults[key] == 'None':
+                node_defaults[key] = val
 
-    for node in graph:
-        for (key, val) in node_defaults.items():
-            if key not in graph.node[node]:
-                graph.node[node][key] = val
+        for node in graph:
+            for (key, val) in node_defaults.items():
+                if key not in graph.node[node]:
+                    graph.node[node][key] = val
 
     # set address family
 
-    graph.graph['address_family'] = 'v4'
-    graph.graph['enable_routing'] = True
+        graph.graph['address_family'] = 'v4'
+        graph.graph['enable_routing'] = True
 
     # map lat/lon from zoo to crude x/y approximation
 
@@ -226,16 +227,17 @@ def load_graphml(input_data):
             graph.node[node]['label'] = '%s_%s' \
                 % (label_prefixes[device_type], unique_label.next())
 
-    ank_edge_defaults = settings['Graphml']['Edge Defaults']
-    edge_defaults = graph.graph['edge_default']
-    for (key, val) in ank_edge_defaults.items():
-        if key not in edge_defaults or edge_defaults[key] == 'None':
-            edge_defaults[key] = val
+    if defaults:
+        ank_edge_defaults = settings['Graphml']['Edge Defaults']
+        edge_defaults = graph.graph['edge_default']
+        for (key, val) in ank_edge_defaults.items():
+            if key not in edge_defaults or edge_defaults[key] == 'None':
+                edge_defaults[key] = val
 
-    for (src, dst) in graph.edges():
-        for (key, val) in edge_defaults.items():
-            if key not in graph[src][dst]:
-                graph[src][dst][key] = val
+        for (src, dst) in graph.edges():
+            for (key, val) in edge_defaults.items():
+                if key not in graph[src][dst]:
+                    graph[src][dst][key] = val
 
 # apply defaults
 # relabel nodes
