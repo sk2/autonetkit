@@ -15,15 +15,15 @@ SETTINGS = autonetkit.config.settings
 __all__ = ['build']
 
 
-def load(input_graph_string):
+def load(input_graph_string, defaults = True):
     # TODO: look at XML header for file type
     import autonetkit.load.graphml as graphml
     import autonetkit.load.load_json as load_json
     try:
-        input_graph = graphml.load_graphml(input_graph_string)
+        input_graph = graphml.load_graphml(input_graph_string, defaults=defaults)
     except autonetkit.exception.AnkIncorrectFileFormat:
         try:
-            input_graph = load_json.load_json(input_graph_string)
+            input_graph = load_json.load_json(input_graph_string, defaults=defaults)
         except (ValueError, autonetkit.exception.AnkIncorrectFileFormat):
             # try a different reader
             try:
@@ -103,7 +103,8 @@ def initialise(input_graph):
     # TODO: is this used?
     g_in.update(g_in.servers(platform="netkit"), syntax="quagga")
 
-    autonetkit.ank.set_node_default(g_in, specified_int_names=None)
+    #TODO: check this is needed
+    #autonetkit.ank.set_node_default(g_in, specified_int_names=None)
 
     g_graphics = anm.add_overlay("graphics")  # plotting data
     g_graphics.add_nodes_from(g_in, retain=['x', 'y', 'device_type',
@@ -161,16 +162,11 @@ def apply_design_rules(anm):
     g_phy = anm['phy']
     from autonetkit.design.osi_layers import (build_layer2,
                                               check_layer2, build_layer2_broadcast,
-                                              build_layer3)
+                                              build_vlans, build_layer3)
     # log.info("Building layer2")
     build_layer2(anm)
 
-    try:
-        from autonetkit_cisco import build_network as cisco_build_network
-    except ImportError:
-        pass
-    else:
-        cisco_build_network.apply_vlans(anm)
+    build_vlans(anm)
 
     check_layer2(anm)
     build_layer2_broadcast(anm)
