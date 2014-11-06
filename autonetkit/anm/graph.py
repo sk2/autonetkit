@@ -299,6 +299,8 @@ class NmGraph(OverlayBase):
             pass  # already a list
 
         # TODO: this needs to support parallel links
+
+        all_edges = []
         for in_edge in ebunch:
             """Edge could be one of:
             - NmEdge
@@ -419,13 +421,14 @@ class NmGraph(OverlayBase):
             #TODO: warn if not multigraph
 
             self._graph.add_edges_from(edges_to_add)
-            #TODO: return the edges
-            if self.is_multigraph():
-                return [NmEdge(self.anm, self._overlay_id, src, dst, ekey)
-                for src, dst, ekey, _ in edges_to_add]
-            else:
-                return [NmEdge(self.anm, self._overlay_id, src, dst)
-                for src, dst, _ in edges_to_add]
+            all_edges += edges_to_add
+
+        if self.is_multigraph():
+            return [NmEdge(self.anm, self._overlay_id, src, dst, ekey)
+            for src, dst, ekey, _ in all_edges]
+        else:
+            return [NmEdge(self.anm, self._overlay_id, src, dst)
+            for src, dst, _ in all_edges]
 
     def update(self, nbunch=None, **kwargs):
         """Sets property defined in kwargs to all nodes in nbunch"""
