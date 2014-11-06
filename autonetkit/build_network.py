@@ -16,6 +16,7 @@ __all__ = ['build']
 
 
 def load(input_graph_string, defaults = True):
+
     # TODO: look at XML header for file type
     import autonetkit.load.graphml as graphml
     import autonetkit.load.load_json as load_json
@@ -160,16 +161,10 @@ def apply_design_rules(anm):
         cisco_build_network.post_phy(anm)
 
     g_phy = anm['phy']
-    from autonetkit.design.osi_layers import (build_layer2,
-                                              check_layer2, build_layer2_broadcast,
-                                              build_vlans, build_layer3)
+    from autonetkit.design.osi_layers import build_layer2, build_layer3
     # log.info("Building layer2")
     build_layer2(anm)
 
-    build_vlans(anm)
-
-    check_layer2(anm)
-    build_layer2_broadcast(anm)
     # log.info("Building layer3")
     build_layer3(anm)
 

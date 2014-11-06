@@ -9,7 +9,7 @@ def build_layer2(anm):
     build_layer2_broadcast(anm)
 
 def build_layer2_base(anm):
-    g_l2 = anm.add_overlay('layer2_base')
+    g_l2 = anm.add_overlay('layer2')
     g_phy = anm['phy']
     g_l2.add_nodes_from(g_phy)
     g_l2.add_edges_from(g_phy.edges())
@@ -28,7 +28,7 @@ def build_layer2_base(anm):
 def check_layer2(anm):
     """Sanity checks on topology"""
     from collections import defaultdict
-    g_l2 = anm['layer2_base']
+    g_l2 = anm['layer2']
 
     # check for igp and ebgp on same switch
     for switch in sorted(g_l2.switches()):
@@ -56,7 +56,7 @@ def check_layer2(anm):
                             len(edges), switch, neighbor)
 
 def build_layer2_broadcast(anm):
-    g_l2 = anm['layer2_base']
+    g_l2 = anm['layer2']
     g_phy = anm['phy']
     g_graphics = anm['graphics']
     g_l2_bc = anm.add_overlay('layer2_bc')
@@ -97,13 +97,13 @@ def build_layer2_broadcast(anm):
 
     # also allocate an ASN for virtual switches
     vswitches = [n for n in g_l2_bc.nodes()
-                 if n['layer2_base'].device_type == "switch"
-                 and n['layer2_base'].device_subtype == "virtual"]
+                 if n['layer2'].device_type == "switch"
+                 and n['layer2'].device_subtype == "virtual"]
     for node in vswitches:
         # TODO: refactor neigh_most_frequent to allow fallthrough attributes
         # asn = ank_utils.neigh_most_frequent(g_l2_bc, node, 'asn', g_l2)  #
         # arbitrary choice
-        asns = [n['layer2_base'].asn for n in node.neighbors()]
+        asns = [n['layer2'].asn for n in node.neighbors()]
         asns = [x for x in asns if x is not None]
         asn = ank_utils.most_frequent(asns)
         node.asn = asn  # need to use asn in IP overlay for aggregating subnets
@@ -167,7 +167,7 @@ def build_layer2_broadcast(anm):
 def build_vlans(anm):
     import itertools
     from collections import defaultdict
-    g_l2 = anm['layer2_base']
+    g_l2 = anm['layer2']
     g_vlan_trunk = anm.add_overlay('vlan_trunk')
     g_vlans = anm.add_overlay('vlans')
     managed_switches = [n for n in g_l2.switches()
