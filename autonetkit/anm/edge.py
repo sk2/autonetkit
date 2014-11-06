@@ -117,10 +117,10 @@ class NmEdge(AnkElement):
     def __repr__(self):
         """String of node"""
         if self.is_multigraph():
-            return '%s: (%s, %s, %s)' % (self.overlay_id, self.src,
+            return '(%s, %s, %s)' % (self.src,
                                          self.dst, self.ekey)
 
-        return '%s: (%s, %s)' % (self.overlay_id, self.src, self.dst)
+        return '(%s, %s)' % (self.src, self.dst)
 
     def __getitem__(self, key):
         """"""

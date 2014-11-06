@@ -333,6 +333,11 @@ class NmNode(AnkElement):
         if len(search):
             return search[0]  # first result
 
+        search = list(self.interfaces(description=key))
+        # TODO: warn if more than one match ie len > 1
+        if len(search):
+            return search[0]  # first result
+
     def _interface_ids(self):
         """Returns interface ids for this node"""
         # TODO: use from this layer, otherwise can get errors iterating when eg

@@ -249,7 +249,8 @@ class NmGraph(OverlayBase):
             retain = [retain]  # was a string, put into list
         except AttributeError:
             pass  # already a list
-        self.add_edges_from([(src, dst)], retain, **kwargs)
+        retval = self.add_edges_from([(src, dst)], retain, **kwargs)
+        return retval[0]
 
     def remove_edges_from(self, ebunch):
         """Removes set of edges from ebunch"""
@@ -418,6 +419,13 @@ class NmGraph(OverlayBase):
             #TODO: warn if not multigraph
 
             self._graph.add_edges_from(edges_to_add)
+            #TODO: return the edges
+            if self.is_multigraph():
+                return [NmEdge(self.anm, self._overlay_id, src, dst, ekey)
+                for src, dst, ekey, _ in edges_to_add]
+            else:
+                return [NmEdge(self.anm, self._overlay_id, src, dst)
+                for src, dst, _ in edges_to_add]
 
     def update(self, nbunch=None, **kwargs):
         """Sets property defined in kwargs to all nodes in nbunch"""
