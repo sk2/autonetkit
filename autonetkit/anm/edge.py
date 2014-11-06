@@ -193,7 +193,7 @@ class NmEdge(AnkElement):
 
     @property
     def _data(self):
-        """Return data the node belongs to"""
+        """Return data the edge belongs to"""
         if self.is_multigraph():
             return self._graph[self.src_id][self.dst_id][self.ekey]
 
