@@ -640,10 +640,10 @@ class NmNode(AnkElement):
         >>> anm = autonetkit.topos.house()
         >>> r1 = anm['phy'].node("r1")
         >>> r1.edges()
-        [phy: (r1, r2), phy: (r1, r3)]
+        [(r1, r2), (r1, r3)]
         >>> r2 = anm['phy'].node("r2")
         >>> r2.edges()
-        [phy: (r2, r4), phy: (r2, r1), phy: (r2, r3)]
+        [(r2, r4), (r2, r1), (r2, r3)]
 
         """
 
