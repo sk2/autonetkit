@@ -72,7 +72,7 @@ class NmEdge(AnkElement):
         Can also compare across layers
         >>> e2 = anm['input'].edge("r1", "r2")
         >>> e2
-        input: (r1, r2)
+        (r1, r2)
         >>> e1 == e2
         True
 
@@ -171,8 +171,7 @@ class NmEdge(AnkElement):
 
         """
         if self.is_multigraph():
-            return self._graph.has_edge(self.src_id, self.dst_id,
-                                        key=self.ekey)
+            return self._graph.has_edge(self.src_id, self.dst_id, key=self.ekey)
 
         return self._graph.has_edge(self.src_id, self.dst_id)
 
