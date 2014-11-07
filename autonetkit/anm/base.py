@@ -37,7 +37,7 @@ class OverlayBase(AnkElement):
         #self.init_logging("graph")
         logger = log
         object.__setattr__(self, 'log', logger)
-        self.init_logging("edge")
+        self.init_logging("graph")
 
     def __repr__(self):
         """
