@@ -117,6 +117,14 @@ class OverlayBase(AnkElement):
         >>> e1 == e2
         False
 
+        >>> autonetkit.update_http(anm)
+        >>> eth0_r1 = anm["phy"].node("r1").interface("eth0")
+        >>> eth3_r1 = anm["phy"].node("r1").interface("eth3")
+        >>> eth0_r2 = anm["phy"].node("r2").interface("eth0")
+        >>> anm["phy"].has_edge(eth0_r1, eth0_r2)
+        True
+        >>> anm["phy"].has_edge(eth3_r1, eth0_r2)
+        False
 
         '''
 
@@ -149,48 +157,68 @@ class OverlayBase(AnkElement):
                 if dst == dst_id:
                     return NmEdge(self._anm, self._overlay_id, src, dst)
 
-        # TODO: tidy this logic up
+        # from here on look for (src, dst) pairs
+        src = edge_to_find
+        dst = dst_to_find
 
-        try:
-            src = edge_to_find
-            dst = dst_to_find
-            src.lower()
-            dst.lower()
+        if (isinstance(src, basestring) and isinstance(dst, basestring)):
+            src = src.lower()
+            dst = dst.lower()
             if self.is_multigraph():
                 if self._graph.has_edge(src, dst, key=key):
                     return NmEdge(self._anm, self._overlay_id, src,
                                   dst, key)
+            elif self._graph.has_edge(src, dst):
+                return NmEdge(self._anm, self._overlay_id, src, dst)
+
+        if isinstance(src, NmNode) and isinstance(dst, NmNode):
+            src_id = src.node_id
+            dst_id = dst.node_id
+
+            if self.is_multigraph():
+                if self._graph.has_edge(src_id, dst_id, key):
+                    return NmEdge(self._anm, self._overlay_id, src, dst, key)
+
             else:
-
-                 # Single graph
-
-                if self._graph.has_edge(src, dst):
+                if self._graph.has_edge(src_id, dst_id):
                     return NmEdge(self._anm, self._overlay_id, src, dst)
-        except AttributeError:
-            pass  # not strings
-        except TypeError:
-            pass
 
-        try:
-            src_id = edge_to_find.node_id
-            dst_id = dst_to_find.node_id
-        except AttributeError:
-            pass  # not nodes
-        else:
+
+        if isinstance(src, NmPort) and isinstance(dst, NmPort):
+            # further filter result by ports
+            src_id = src.node_id
+            dst_id = dst.node_id
+            src_int = src.interface_id
+            dst_int = dst.interface_id
+
 
             # TODO: combine duplicated logic from above
+            #TODO: test with directed graph
 
-            search_key = key
             if self.is_multigraph():
-                for (src, dst, rkey) in self._graph.edges(src_id,
-                                                          keys=True):
-                    if dst == dst_id and rkey == search_key:
-                        return NmEdge(self._anm, self._overlay_id, src,
-                                      dst, search_key)
+                # search edges from src to dst
+                for src, iter_dst, iter_key in self._graph.edges(src_id, keys=True):
+                    if iter_dst != dst_id:
+                        continue # to a different node
 
-            for (src, dst) in self._graph.edges(src_id):
-                if dst == dst_id:
-                    return NmEdge(self._anm, self._overlay_id, src, dst)
+                    ports = self._graph[src][iter_dst][iter_key]["_ports"]
+                    if ports[src_id] == src_int and ports[dst_id] == dst_int:
+                        return NmEdge(self._anm, self._overlay_id, src_id, dst_id, iter_key)
+
+            else:
+                #TODO: add test case for here
+                for src, iter_dst in self._graph.edges(src_id):
+                    if iter_dst != dst_id:
+                        continue # to a different node
+
+                    ports = self._graph[src][iter_dst]["_ports"]
+                    if ports[src_id] == src_int and ports[dst_id] == dst_int:
+                        return NmEdge(self._anm, self._overlay_id, src_id, dst_id)
+
+
+
+
+
 
     def __getitem__(self, key):
         """"""
@@ -257,13 +285,32 @@ class OverlayBase(AnkElement):
 
         return repr(NmNode(self._anm, self._overlay_id, node))
 
-    def has_edge(self, edge):
-        """Tests if edge in graph"""
+    def has_edge(self, edge_to_find, dst_to_find=None,):
+        """Tests if edge in graph
+        >>> anm = autonetkit.topos.house()
+        >>> g_phy = anm['phy']
+        >>> r1 = g_phy.node("r1")
+        >>> r2 = g_phy.node("r2")
+        >>> r5 = g_phy.node("r5")
+        >>> g_phy.has_edge(r1, r2)
+        True
+        >>> g_phy.has_edge(r1, r5)
+        False
 
-        if self.is_multigraph():
-            return self._graph.has_edge(edge.src, edge.dst, edge.ekey)
+        >>> e_r1_r2 = anm['input'].edge(r1, r2)
+        >>> g_phy.has_edge(e_r1_r2)
+        True
+        """
 
-        return self._graph.has_edge(edge.src, edge.dst)
+        if dst_to_find is None:
+            if self.is_multigraph():
+                return self._graph.has_edge(edge_to_find.src,
+                    edge_to_find.dst, edge_to_find.ekey)
+
+            return self._graph.has_edge(edge_to_find.src, edge_to_find.dst)
+
+        else:
+            return bool(self.edge(edge_to_find, dst_to_find))
 
     def __iter__(self):
         """"""
@@ -407,11 +454,11 @@ class OverlayBase(AnkElement):
         >>> anm = autonetkit.topos.house()
         >>> g_phy = anm['phy']
         >>> g_phy.edges()
-        [phy: (r4, r5), phy: (r4, r2), phy: (r5, r3), phy: (r1, r2), phy: (r1, r3), phy: (r2, r3)]
+        [(r4, r5), (r4, r2), (r5, r3), (r1, r2), (r1, r3), (r2, r3)]
 
         >>> g_phy.edge("r1", "r2").color = "red"
         >>> g_phy.edges(color = "red")
-        [phy: (r1, r2)]
+        [(r1, r2)]
 
         """
 
