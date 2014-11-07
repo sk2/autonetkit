@@ -16,7 +16,11 @@ Contents:
 Extending tutorial:
 
     :doc:`extending`
-    
+
+Topologies:
+
+    :doc:`topologies`
+
 Indices and tables
 ==================
 
