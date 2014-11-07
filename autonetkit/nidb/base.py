@@ -93,17 +93,22 @@ class DmBase(object):
         """Returns the underlying NetworkX graph"""
         return self._graph
 
-    def copy_graphics(self, G_graphics):
+    def copy_graphics(self, network_model):
         """Transfers graphics data from anm to nidb"""
         for node in self:
             node.add_stanza("graphics")
-            graphics_node = G_graphics.node(node)
-            node.graphics.x = graphics_node.x
-            node.graphics.y = graphics_node.y
-            node.graphics.device_type = graphics_node.device_type
-            node.graphics.device_subtype = graphics_node.device_subtype
-            node.device_type = graphics_node.device_type
-            node.device_subtype = graphics_node.device_subtype
+            #TODO: deprecate g_graphics overlay, store on phy
+            if (network_model.has_overlay("graphics")
+                and node in network_model['graphics']):
+                source_node = network_model['graphics'].node(node)
+            else:
+                source_node = network_model['phy'].node(node)
+            node.graphics.x = source_node.x
+            node.graphics.y = source_node.y
+            node.graphics.device_type = source_node.device_type
+            node.graphics.device_subtype = source_node.device_subtype
+            node.device_type = source_node.device_type
+            node.device_subtype = source_node.device_subtype
 
     def __len__(self):
         return len(self._graph)

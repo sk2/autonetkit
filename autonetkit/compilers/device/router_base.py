@@ -139,27 +139,29 @@ class RouterCompiler(DeviceCompiler):
 
     def static_routes(self, node):
         node.ipv4_static_routes = []
-        ipv4_node = self.anm['ipv4'].node(node)
-        if ipv4_node and ipv4_node.static_routes:
-            for route in ipv4_node.static_routes:
-                stanza = ConfigStanza(
-                    prefix=route.prefix,
-                    netmask=route.netmask,
-                    nexthop=route.nexthop,
-                    metric=route.metric,
-                )
-                node.ipv4_static_routes.append(stanza)
+        if self.anm.has_overlay("ipv4"):
+            ipv4_node = self.anm['ipv4'].node(node)
+            if ipv4_node and ipv4_node.static_routes:
+                for route in ipv4_node.static_routes:
+                    stanza = ConfigStanza(
+                        prefix=route.prefix,
+                        netmask=route.netmask,
+                        nexthop=route.nexthop,
+                        metric=route.metric,
+                    )
+                    node.ipv4_static_routes.append(stanza)
 
         node.ipv6_static_routes = []
-        ipv6_node = self.anm['ipv6'].node(node)
-        if ipv6_node and ipv6_node.static_routes:
-            for route in ipv6_node.static_routes:
-                stanza = ConfigStanza(
-                    prefix=route.prefix,
-                    nexthop=route.nexthop,
-                    metric=route.metric,
-                )
-                node.ipv6_static_routes.append(stanza)
+        if self.anm.has_overlay("ipv6"):
+            ipv6_node = self.anm['ipv6'].node(node)
+            if ipv6_node and ipv6_node.static_routes:
+                for route in ipv6_node.static_routes:
+                    stanza = ConfigStanza(
+                        prefix=route.prefix,
+                        nexthop=route.nexthop,
+                        metric=route.metric,
+                    )
+                    node.ipv6_static_routes.append(stanza)
 
     def interfaces(self, node):
         node.interfaces = []
@@ -233,8 +235,13 @@ class RouterCompiler(DeviceCompiler):
                 area = str(area)  # can't serialize IPAddress object to JSON
                 # TODO: put in interface rather than interface.id for
                 # consistency
+                try:
+                    cost = int(ospf_int.cost)
+                except TypeError:
+                    #TODO: log warning here
+                    cost = 1
                 stanza = ConfigStanza(id=interface.id,
-                                      cost=int(ospf_int.cost), passive=False)
+                                      cost=cost, passive=False)
 
                 if node.ip.use_ipv4:
                     stanza.ipv4_address = ospf_int['ipv4'].ip_address
@@ -321,7 +328,10 @@ class RouterCompiler(DeviceCompiler):
         asn = phy_node.asn
         node.asn = asn
         bgp_stanza = node.add_stanza("bgp")
-        bgp_stanza.custom_config = phy_node['bgp'].custom_config
+        if self.anm.has_overlay("bgp"):
+            bgp_stanza.custom_config = phy_node['bgp'].custom_config
+        else:
+            bgp_stanza.custom_config = ""
 
         node.bgp.ipv4_advertise_subnets = []
         if node.ip.use_ipv4:

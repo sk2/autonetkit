@@ -249,7 +249,8 @@ class NmGraph(OverlayBase):
             retain = [retain]  # was a string, put into list
         except AttributeError:
             pass  # already a list
-        self.add_edges_from([(src, dst)], retain, **kwargs)
+        retval = self.add_edges_from([(src, dst)], retain, **kwargs)
+        return retval[0]
 
     def remove_edges_from(self, ebunch):
         """Removes set of edges from ebunch"""
@@ -297,7 +298,12 @@ class NmGraph(OverlayBase):
         except AttributeError:
             pass  # already a list
 
-        # TODO: this needs to support parallel links
+        if self.is_multigraph():
+            #used_keys = self._graph.adj[u][v]
+            from collections import defaultdict
+            used_keys = defaultdict(dict)
+
+        all_edges = []
         for in_edge in ebunch:
             """Edge could be one of:
             - NmEdge
@@ -402,7 +408,25 @@ class NmGraph(OverlayBase):
 
             # TODO: warn if not multigraph and edge already exists - don't
             # add/clobber
+            #TODO: double check this logic + add test case
             data.update(**kwargs)
+            if self.is_multigraph() and ekey is None:
+                # specifically allocate a key
+                if src in used_keys and dst in used_keys[src]:
+                    pass # already established
+                else:
+                    try:
+                        used_keys[src][dst] = self._graph.adj[src][dst].keys()
+                    except KeyError:
+                        # no edges exist
+                        used_keys[src][dst] = []
+
+                # now have the keys mapping
+                ekey=len(used_keys[src][dst])
+                while ekey in used_keys[src][dst]:
+                    ekey+=1
+
+                used_keys[src][dst].append(ekey)
 
             edges_to_add = []
             if self.is_multigraph():
@@ -418,6 +442,16 @@ class NmGraph(OverlayBase):
             #TODO: warn if not multigraph
 
             self._graph.add_edges_from(edges_to_add)
+            all_edges += edges_to_add
+
+        if self.is_multigraph():
+            return [
+            NmEdge(self.anm, self._overlay_id, src, dst, ekey) if ekey
+            else NmEdge(self.anm, self._overlay_id, src, dst) # default no ekey set
+            for src, dst, ekey, _ in all_edges]
+        else:
+            return [NmEdge(self.anm, self._overlay_id, src, dst)
+            for src, dst, _ in all_edges]
 
     def update(self, nbunch=None, **kwargs):
         """Sets property defined in kwargs to all nodes in nbunch"""

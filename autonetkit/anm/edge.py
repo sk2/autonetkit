@@ -72,7 +72,7 @@ class NmEdge(AnkElement):
         Can also compare across layers
         >>> e2 = anm['input'].edge("r1", "r2")
         >>> e2
-        input: (r1, r2)
+        (r1, r2)
         >>> e1 == e2
         True
 
@@ -117,10 +117,10 @@ class NmEdge(AnkElement):
     def __repr__(self):
         """String of node"""
         if self.is_multigraph():
-            return '%s: (%s, %s, %s)' % (self.overlay_id, self.src,
+            return '(%s, %s, %s)' % (self.src,
                                          self.dst, self.ekey)
 
-        return '%s: (%s, %s)' % (self.overlay_id, self.src, self.dst)
+        return '(%s, %s)' % (self.src, self.dst)
 
     def __getitem__(self, key):
         """"""
@@ -171,8 +171,7 @@ class NmEdge(AnkElement):
 
         """
         if self.is_multigraph():
-            return self._graph.has_edge(self.src_id, self.dst_id,
-                                        key=self.ekey)
+            return self._graph.has_edge(self.src_id, self.dst_id, key=self.ekey)
 
         return self._graph.has_edge(self.src_id, self.dst_id)
 
@@ -193,7 +192,7 @@ class NmEdge(AnkElement):
 
     @property
     def _data(self):
-        """Return data the node belongs to"""
+        """Return data the edge belongs to"""
         if self.is_multigraph():
             return self._graph[self.src_id][self.dst_id][self.ekey]
 

@@ -333,6 +333,11 @@ class NmNode(AnkElement):
         if len(search):
             return search[0]  # first result
 
+        search = list(self.interfaces(description=key))
+        # TODO: warn if more than one match ie len > 1
+        if len(search):
+            return search[0]  # first result
+
     def _interface_ids(self):
         """Returns interface ids for this node"""
         # TODO: use from this layer, otherwise can get errors iterating when eg
@@ -635,10 +640,10 @@ class NmNode(AnkElement):
         >>> anm = autonetkit.topos.house()
         >>> r1 = anm['phy'].node("r1")
         >>> r1.edges()
-        [phy: (r1, r2), phy: (r1, r3)]
+        [(r1, r2), (r1, r3)]
         >>> r2 = anm['phy'].node("r2")
         >>> r2.edges()
-        [phy: (r2, r4), phy: (r2, r1), phy: (r2, r3)]
+        [(r2, r4), (r2, r1), (r2, r3)]
 
         """
 
@@ -683,11 +688,11 @@ class NmNode(AnkElement):
                 return result
             except KeyError:
                 #TODO: check if in self['phy'[ here]
-
-                if key == "device_type":
-                    return self['phy'].device_type
-                if key == "device_subtype":
-                    return self['phy'].device_subtype
+                if self.overlay_id != "phy":
+                    if key == "device_type":
+                        return self['phy'].device_type
+                    if key == "device_subtype":
+                        return self['phy'].device_subtype
 
                 # from http://stackoverflow.com/q/2654113
                 #self.log.debug(

@@ -265,7 +265,7 @@ def wrap_edges(nm_graph, edges):
     The edges are now NetworkModel edge objects
 
     >>> edges
-    [phy: (r1, r2), phy: (r2, r3)]
+    [(r1, r2), (r2, r3)]
 
     """
 
@@ -427,7 +427,7 @@ def explode_nodes(nm_graph, nodes, retain=None):
     >>> switches = g_phy.switches()
     >>> exploded_edges = explode_nodes(g_phy, switches)
     >>> exploded_edges
-    [phy: (r1, r2)]
+    [(r1, r2)]
 
 
     Or to explode a specific node
@@ -438,17 +438,17 @@ def explode_nodes(nm_graph, nodes, retain=None):
     [r4, r5, r1, r2, r3]
 
     >>> sorted(g_phy.edges())
-    [phy: (r1, r2), phy: (r1, r3), phy: (r2, r3), phy: (r4, r2), phy: (r4, r5), phy: (r5, r3)]
+    [(r1, r2), (r1, r3), (r2, r3), (r4, r2), (r4, r5), (r5, r3)]
 
     >>> r2 = g_phy.node("r2")
     >>> exploded_edges = explode_nodes(g_phy, r2)
     >>> exploded_edges
-    [phy: (r1, r4), phy: (r3, r4), phy: (r1, r3)]
+    [(r1, r4), (r3, r4), (r1, r3)]
     >>> g_phy.nodes()
     [r4, r5, r1, r3]
 
     >>> sorted(g_phy.edges())
-    [phy: (r1, r3), phy: (r4, r1), phy: (r4, r3), phy: (r4, r5), phy: (r5, r3)]
+    [(r1, r3), (r4, r1), (r4, r3), (r4, r5), (r5, r3)]
 
     """
     if retain is None:
