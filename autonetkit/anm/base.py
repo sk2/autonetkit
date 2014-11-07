@@ -30,9 +30,12 @@ class OverlayBase(AnkElement):
 
         self._overlay_id = overlay_id
         self._anm = anm
-        logger = logging.getLogger('ANK')
-        logstring = 'Overlay: %s' % str(overlay_id)
-        logger = CustomAdapter(logger, {'item': logstring})
+        #logger = logging.getLogger('ANK')
+        #logstring = 'Overlay: %s' % str(overlay_id)
+        #logger = CustomAdapter(logger, {'item': logstring})
+        #object.__setattr__(self, 'log', logger)
+        #self.init_logging("graph")
+        logger = log
         object.__setattr__(self, 'log', logger)
         self.init_logging("graph")
 
@@ -287,6 +290,7 @@ class OverlayBase(AnkElement):
 
     def has_edge(self, edge_to_find, dst_to_find=None,):
         """Tests if edge in graph
+
         >>> anm = autonetkit.topos.house()
         >>> g_phy = anm['phy']
         >>> r1 = g_phy.node("r1")
