@@ -79,14 +79,19 @@ def build_layer2_broadcast(anm):
 
     # TODO: if parallel nodes, offset
     # TODO: remove graphics, assign directly
+    if len(g_graphics):
+        co_ords_overlay = g_graphics # source from graphics overlay
+    else:
+        co_ords_overlay = g_phy # source from phy overlay
+
     for node in split_created_nodes:
         node['graphics'].x = ank_utils.neigh_average(g_l2_bc, node, 'x',
-                                                     g_graphics) + 0.1
+                                                     co_ords_overlay) + 0.1
 
         # temporary fix for gh-90
 
         node['graphics'].y = ank_utils.neigh_average(g_l2_bc, node, 'y',
-                                                     g_graphics) + 0.1
+                                                     co_ords_overlay) + 0.1
 
         # temporary fix for gh-90
 
