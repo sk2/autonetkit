@@ -4,7 +4,6 @@ import autonetkit.ank as ank_utils
 def build_layer2(anm):
     import autonetkit.design.layer2
     autonetkit.design.layer2.build_layer2(anm)
-    autonetkit.update_http(anm)
 
 def build_layer3(anm):
     """ l3_connectivity graph: switch nodes aggregated and exploded"""
