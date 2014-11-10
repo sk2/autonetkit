@@ -277,7 +277,12 @@ def jsonify_anm_with_graphics(anm, nidb=None):
                          key=lambda x: nodes_by_layer.get(x, 0))
 
     for overlay_id in overlay_ids:
-        nm_graph = anm[overlay_id]._graph.copy()
+        try:
+            nm_graph = anm[overlay_id]._graph.copy()
+        except Exception, e:
+            log.warning("Unable to copy overlay %s: %s", overlay_id, e)
+            continue
+
         if overlay_id == "_dependencies":
             # convert to undirected for visual clarify
             nm_graph = nx.Graph(nm_graph)
