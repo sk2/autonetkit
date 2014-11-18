@@ -1,6 +1,10 @@
 import autonetkit.log as log
 import autonetkit.ank as ank_utils
 
+def build_layer1(anm):
+    import autonetkit.design.layer1
+    autonetkit.design.layer1.build_layer1(anm)
+
 def build_layer2(anm):
     import autonetkit.design.layer2
     autonetkit.design.layer2.build_layer2(anm)

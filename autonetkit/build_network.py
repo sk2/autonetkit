@@ -161,8 +161,9 @@ def apply_design_rules(anm):
         cisco_build_network.post_phy(anm)
 
     g_phy = anm['phy']
-    from autonetkit.design.osi_layers import build_layer2, build_layer3
+    from autonetkit.design.osi_layers import build_layer1, build_layer2, build_layer3
     # log.info("Building layer2")
+    build_layer1(anm)
     build_layer2(anm)
 
     # log.info("Building layer3")
