@@ -5,6 +5,8 @@ import autonetkit.log as log
 def build_layer2(anm):
     build_layer2_base(anm)
     build_vlans(anm)
+    build_layer2_conn(anm)
+
     check_layer2(anm)
     build_layer2_broadcast(anm)
 
@@ -28,7 +30,6 @@ def build_layer2_base(anm):
     else:
         cisco_build_network.post_layer2(anm)
 
-    build_layer2_conn(anm)
 
     # Note: layer 2 base is much simpler since most is inherited from layer 1
     # cds
@@ -247,12 +248,16 @@ def build_vlans(anm):
 
     # TODO: aggregate managed switches
 
+    bcs_to_trim = set()
+
     subs = ank_utils.connected_subgraphs(g_l1_conn, managed_switches)
     for sub in subs:
         # identify the VLANs on these switches
         vlans = defaultdict(list)
         sub_neigh_ints = set()
         for switch in sub:
+            l2_switch = switch['layer2']
+            bcs_to_trim.update(l2_switch.neighbors())
             neigh_ints = {iface for iface in switch.neighbor_interfaces()
                           if iface.node.is_l3device()
                           and iface.node not in sub}
@@ -289,27 +294,17 @@ def build_vlans(anm):
 
             g_l2.add_node(vswitch)
             vswitch['layer2'].broadcast_domain = True
+            vswitch['layer2'].vlan = vlan
 
             # and connect from vswitch to the interfaces
             edges_to_add = [(vswitch, iface) for iface in interfaces]
             g_l2.add_edges_from(edges_to_add)
 
         # remove the physical switches
+        g_l2.remove_nodes_from(bcs_to_trim)
         g_l2.remove_nodes_from(sub)
         # TODO: also remove any broadcast domains no longer connected
 
-        # tidying
-        disconnected_bcs = [n for n in g_l2.nodes(broadcast_domain=True)
-                            if n.degree() <= 1]
-                            #TODO: if was connected to a managed switch in phy
-
-        for bc in disconnected_bcs:
-            if bc not in g_phy:
-                continue
-            neighs = bc['phy'].neighbors()
-            if any(neigh.is_switch() and neigh.device_subtype == "managed"
-                for neigh in neighs):
-                g_l2.remove_node(bc)
 
         # g_l2.remove_nodes_from(disconnected_bcs)
 
@@ -323,5 +318,5 @@ def build_vlans(anm):
         edges_to_add = list(itertools.combinations(vswitches, 2))
         # TODO: ensure only once
         # TODO: filter so only one direction
-        g_l2.add_edges_from(edges_to_add, trunk=True)
+        g_vlans.add_edges_from(edges_to_add, trunk=True)
         g_vlan_trunk.add_edges_from(edges_to_add, trunk=True)
