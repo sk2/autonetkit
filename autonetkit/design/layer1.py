@@ -12,13 +12,14 @@ def build_layer1(anm):
     hubs = g_l1.nodes(device_type="hub")
     ank_utils.aggregate_nodes(g_l1, hubs)
     # TODO: remove aggregated and disconnected nodes
+    # refresh hubs list
+    hubs = g_l1.nodes(device_type="hub")
 
     for hub in hubs:
         hub.collision_domain = True
 
     split_ptp(anm)
     build_layer1_conn(anm)
-
 
 def build_layer1_conn(anm):
     g_l1 = anm['layer1']
