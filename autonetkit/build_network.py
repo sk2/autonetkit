@@ -165,6 +165,8 @@ def apply_design_rules(anm):
     # log.info("Building layer2")
     build_layer1(anm)
     build_layer2(anm)
+    autonetkit.update_http(anm)
+    raise SystemExit
 
     # log.info("Building layer3")
     build_layer3(anm)
@@ -296,6 +298,7 @@ def build_phy(anm):
             if specified_id:
                 interface.specified_id = specified_id  # map across
 
+    #TODO: tidy this code up
     for node in g_phy:
         for interface in node:
             remote_edges = interface.edges()

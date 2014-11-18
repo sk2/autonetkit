@@ -8,15 +8,18 @@ def build_layer2(anm):
     check_layer2(anm)
     build_layer2_broadcast(anm)
 
+
 def build_layer2_base(anm):
     g_l2 = anm.add_overlay('layer2')
-    g_phy = anm['phy']
-    g_l2.add_nodes_from(g_phy)
-    g_l2.add_edges_from(g_phy.edges())
+    g_l1 = anm['layer1']
+
+    g_l2.add_nodes_from(g_l1)
+    g_l2.add_edges_from(g_l1.edges())
     # Don't aggregate managed switches
-    unmanaged_switches = [n for n in g_l2.switches()
-                          if n.device_subtype != "managed"]
-    ank_utils.aggregate_nodes(g_l2, unmanaged_switches)
+    for node in g_l2:
+        if node['layer1'].collision_domain == True:
+            node.broadcast_domain = True
+            node.device_type = "broadcast_domain"
 
     try:
         from autonetkit_cisco import build_network as cisco_build_network
@@ -24,6 +27,28 @@ def build_layer2_base(anm):
         pass
     else:
         cisco_build_network.post_layer2(anm)
+
+    build_layer2_conn(anm)
+
+    # Note: layer 2 base is much simpler since most is inherited from layer 1
+    # cds
+
+
+def build_layer2_conn(anm):
+    g_l2 = anm['layer2']
+    g_l2_conn = anm.add_overlay('layer2_conn')
+    g_l2_conn.add_nodes_from(g_l2, retain="broadcast_domain")
+    g_l2_conn.add_edges_from(g_l2.edges())
+
+    broadcast_domains = g_l2_conn.nodes(broadcast_domain=True)
+    exploded_edges = ank_utils.explode_nodes(g_l2_conn, broadcast_domains)
+
+    # explode each seperately?
+    for edge in exploded_edges:
+        edge.multipoint = True
+        edge.src_int.multipoint = True
+        edge.dst_int.multipoint = True
+
 
 def check_layer2(anm):
     """Sanity checks on topology"""
@@ -55,6 +80,7 @@ def check_layer2(anm):
                 log.warning("Multiple edges (%s) between %s and device %s",
                             len(edges), switch, neighbor)
 
+
 def build_layer2_broadcast(anm):
     g_l2 = anm['layer2']
     g_phy = anm['phy']
@@ -69,7 +95,6 @@ def build_layer2_broadcast(anm):
     edges_to_split = [edge for edge in g_l2_bc.edges()
                       if edge.src.is_l3device() and edge.dst.is_l3device()]
     # TODO: debug the edges to split
-    # print "edges to split", edges_to_split
     for edge in edges_to_split:
         edge.split = True  # mark as split for use in building nidb
 
@@ -80,9 +105,9 @@ def build_layer2_broadcast(anm):
     # TODO: if parallel nodes, offset
     # TODO: remove graphics, assign directly
     if len(g_graphics):
-        co_ords_overlay = g_graphics # source from graphics overlay
+        co_ords_overlay = g_graphics  # source from graphics overlay
     else:
-        co_ords_overlay = g_phy # source from phy overlay
+        co_ords_overlay = g_phy  # source from phy overlay
 
     for node in split_created_nodes:
         node['graphics'].x = ank_utils.neigh_average(g_l2_bc, node, 'x',
@@ -169,36 +194,75 @@ def build_layer2_broadcast(anm):
         node.broadcast_domain = True
 
 
+def pre_vlan_check(anm, default_vlan=1):
+    # TODO: rename to "mark_defaults_vlan" or similar
+    # checks all links to managed switches have vlans
+    g_l2 = anm['layer2']
+    g_l1_conn = anm['layer1_conn']
+    managed_switches = [n for n in g_l2.switches()
+                        if n.device_subtype == "managed"]
+
+    no_vlan_ints = []
+    for switch in managed_switches:
+        l2_conn_switch = g_l1_conn.node(switch)
+        for neigh_int in switch['layer1_conn'].neighbor_interfaces():
+            if not neigh_int.node.is_l3device():
+                # Don't set for layer 2 devices
+                # TODO: check other devices to exclude - SNAT?
+                continue
+
+            if neigh_int['input'].vlan is None:
+                neigh_int['layer2'].vlan = default_vlan
+                no_vlan_ints.append(neigh_int)
+            else:
+                neigh_int['layer2'].vlan = neigh_int['input'].vlan
+
+    # map to layer 2 interfaces
+    log.info("Setting default VLAN %s to interfaces connected to a managed "
+             "switch with no VLAN: %s", default_vlan, no_vlan_ints)
+
+
 def build_vlans(anm):
+    pre_vlan_check(anm)
     import itertools
     from collections import defaultdict
     g_l2 = anm['layer2']
+    g_l1_conn = anm['layer1_conn']
+    g_phy = anm['phy']
+
     g_vlan_trunk = anm.add_overlay('vlan_trunk')
     g_vlans = anm.add_overlay('vlans')
     managed_switches = [n for n in g_l2.switches()
                         if n.device_subtype == "managed"]
 
+    # import ipdb
+    # ipdb.set_trace()
+
     # copy across vlans from input graph
     for router in g_l2.routers():
         for interface in router.physical_interfaces():
-            interface.vlan = interface['input'].vlan
-            if not interface.vlan:
-                pass
-                # check if connectde to a managed switch, if so, warn
+            interface.vlan = interface['layer2'].vlan
 
     vswitch_id_counter = itertools.count(1)
 
-    subs = ank_utils.connected_subgraphs(g_l2, managed_switches)
+    # TODO: aggregate managed switches
+
+    subs = ank_utils.connected_subgraphs(g_l1_conn, managed_switches)
     for sub in subs:
         # identify the VLANs on these switches
         vlans = defaultdict(list)
+        sub_neigh_ints = set()
         for switch in sub:
-            neigh_ints = [i.neighbors()[0] for i in switch.interfaces()
-                          if i.is_bound]
-            router_ints = [i for i in neigh_ints if i.node.is_router()]
-            for interface in router_ints:
-                # store keyed by vlan id
-                vlans[interface.vlan].append(interface)
+            neigh_ints = {iface for iface in switch.neighbor_interfaces()
+                          if iface.node.is_l3device()
+                          and iface.node not in sub}
+
+            sub_neigh_ints.update(neigh_ints)
+
+        for interface in sub_neigh_ints:
+            # store keyed by vlan id
+            vlan = interface['layer2'].vlan
+            vlans[vlan].append(interface)
 
         # create a virtual switch for each
         # TODO: naming: if this is the only pair then name after these, else
@@ -209,6 +273,8 @@ def build_vlans(anm):
             # create a virtual switch
             vswitch_id = "vswitch%s" % vswitch_id_counter.next()
             vswitch = g_vlans.add_node(vswitch_id)
+            # TODO: check of switch or just broadcast_domain for higher layer
+            # purposes
             vswitch.device_type = "switch"
             vswitch.device_subtype = "virtual"
             vswitches.append(vswitch)
@@ -221,7 +287,8 @@ def build_vlans(anm):
                 i.node['phy'].y for i in interfaces) / len(interfaces) + 50
             vswitch.vlan = vlan
 
-            g_vlan_trunk.add_node(vswitch)
+            g_l2.add_node(vswitch)
+            vswitch['layer2'].broadcast_domain = True
 
             # and connect from vswitch to the interfaces
             edges_to_add = [(vswitch, iface) for iface in interfaces]
@@ -229,6 +296,22 @@ def build_vlans(anm):
 
         # remove the physical switches
         g_l2.remove_nodes_from(sub)
+        # TODO: also remove any broadcast domains no longer connected
+
+        # tidying
+        disconnected_bcs = [n for n in g_l2.nodes(broadcast_domain=True)
+                            if n.degree() <= 1]
+                            #TODO: if was connected to a managed switch in phy
+
+        for bc in disconnected_bcs:
+            if bc not in g_phy:
+                continue
+            neighs = bc['phy'].neighbors()
+            if any(neigh.is_switch() and neigh.device_subtype == "managed"
+                for neigh in neighs):
+                g_l2.remove_node(bc)
+
+        # g_l2.remove_nodes_from(disconnected_bcs)
 
         # Note: we don't store the interface names as ciuld clobber
         # eg came from two physical switches, each on gige0
