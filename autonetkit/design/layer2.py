@@ -239,7 +239,7 @@ def build_vlans(anm):
     g_phy = anm['phy']
 
     g_vtp = anm.add_overlay('vtp')
-    g_vlan = anm.add_overlay('vlan')
+    # g_vlan = anm.add_overlay('vlan')
     managed_switches = [n for n in g_l2.switches()
                         if n.device_subtype == "managed"]
 
@@ -294,7 +294,8 @@ def build_vlans(anm):
         for vlan, interfaces in vlans.items():
             # create a virtual switch
             vswitch_id = "vswitch%s" % vswitch_id_counter.next()
-            vswitch = g_vlan.add_node(vswitch_id)
+            # vswitch = g_vlan.add_node(vswitch_id)
+            vswitch = g_l2.add_node(vswitch_id)
             # TODO: check of switch or just broadcast_domain for higher layer
             # purposes
             vswitch.device_type = "switch"
@@ -309,7 +310,6 @@ def build_vlans(anm):
                 i.node['phy'].y for i in interfaces) / len(interfaces) + 50
             vswitch.vlan = vlan
 
-            g_l2.add_node(vswitch)
             vswitch['layer2'].broadcast_domain = True
             vswitch['layer2'].vlan = vlan
 
@@ -335,5 +335,5 @@ def build_vlans(anm):
         edges_to_add = list(itertools.combinations(vswitches, 2))
         # TODO: ensure only once
         # TODO: filter so only one direction
-        g_vlan.add_edges_from(edges_to_add, trunk=True)
+        # g_vlan.add_edges_from(edges_to_add, trunk=True)
         g_vtp.add_edges_from(edges_to_add, trunk=True)
