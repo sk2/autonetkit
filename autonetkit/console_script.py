@@ -150,7 +150,7 @@ def main(options):
                        grid=options.grid, **build_options)
     except Exception, err:
         log.error(
-            "Error generating network configurations: %s. More information may be available in the debug log." % err)
+            "Error generating network configurations: %s" % err)
         log.debug("Error generating network configurations", exc_info=True)
         if settings['General']['stack_trace']:
             print traceback.print_exc()
