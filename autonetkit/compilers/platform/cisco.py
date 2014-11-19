@@ -139,6 +139,13 @@ class CiscoCompiler(PlatformCompiler):
             DmNode = self.nidb.node(phy_node)
             DmNode.indices = phy_node.indices
 
+        managed_switches = [n for n in g_phy.switches()
+        if n.host == self.host
+        and n.device_subtype == "managed"]
+        for phy_node in managed_switches:
+            DmNode = self.nidb.node(phy_node)
+            DmNode.indices = phy_node.indices
+
         for phy_node in g_phy.l3devices(host=self.host):
             loopback_ids = self.loopback_interface_ids()
             # allocate loopbacks to routes (same for all ios variants)
