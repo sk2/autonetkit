@@ -15,7 +15,7 @@ SETTINGS = autonetkit.config.settings
 #@call_log
 def build_ip(anm):
     g_ip = anm.add_overlay('ip')
-    g_l2_bc = anm['layer2_bc']
+    g_l2_bc = anm['layer2']
     g_phy = anm['phy']
     # Retain arbitrary ASN allocation for IP addressing
     g_ip.add_nodes_from(g_l2_bc, retain=["asn", "broadcast_domain"])
