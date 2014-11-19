@@ -166,7 +166,6 @@ def apply_design_rules(anm):
     build_layer1(anm)
     build_layer2(anm)
     autonetkit.update_http(anm)
-    raise SystemExit
 
     # log.info("Building layer3")
     build_layer3(anm)
