@@ -195,28 +195,36 @@ def build_layer2_broadcast(anm):
         node.broadcast_domain = True
 
 
-def pre_vlan_check(anm, default_vlan=1):
+def set_default_vlans(anm, default_vlan=1):
     # TODO: rename to "mark_defaults_vlan" or similar
     # checks all links to managed switches have vlans
+    g_vtp = anm['vtp']
     g_l2 = anm['layer2']
     g_l1_conn = anm['layer1_conn']
-    managed_switches = [n for n in g_l2.switches()
+    managed_switches = [n for n in g_vtp.switches()
                         if n.device_subtype == "managed"]
 
     no_vlan_ints = []
     for switch in managed_switches:
-        l2_conn_switch = g_l1_conn.node(switch)
-        for neigh_int in switch['layer1_conn'].neighbor_interfaces():
-            if not neigh_int.node.is_l3device():
-                # Don't set for layer 2 devices
-                # TODO: check other devices to exclude - SNAT?
+        for edge in switch.edges():
+            neigh_int = edge.dst_int
+            local_int = edge.src_int
+            if neigh_int.node in managed_switches:
+                neigh_int.trunk = True
                 continue
 
             if neigh_int['input'].vlan is None:
-                neigh_int['layer2'].vlan = default_vlan
+                vlan = default_vlan
                 no_vlan_ints.append(neigh_int)
             else:
-                neigh_int['layer2'].vlan = neigh_int['input'].vlan
+                vlan = neigh_int['input'].vlan
+
+            neigh_int.vlan = vlan
+            local_int.vlan = vlan
+
+        for interface in switch:
+            if interface.vlan and interface.trunk:
+                log.warning("Interface %s set to trunk and vlan", interface)
 
     # map to layer 2 interfaces
     log.info("Setting default VLAN %s to interfaces connected to a managed "
@@ -224,33 +232,42 @@ def pre_vlan_check(anm, default_vlan=1):
 
 
 def build_vlans(anm):
-    pre_vlan_check(anm)
     import itertools
     from collections import defaultdict
     g_l2 = anm['layer2']
     g_l1_conn = anm['layer1_conn']
     g_phy = anm['phy']
 
-    g_vlan_trunk = anm.add_overlay('vlan_trunk')
-    g_vlans = anm.add_overlay('vlans')
+    g_vtp = anm.add_overlay('vtp')
+    g_vlan = anm.add_overlay('vlan')
     managed_switches = [n for n in g_l2.switches()
                         if n.device_subtype == "managed"]
 
+    g_vtp.add_nodes_from(g_l1_conn)
+    g_vtp.add_edges_from(g_l1_conn.edges())
+
+    # remove anything not a managed_switch or connected to a managed_switch
+    keep = set()
+    keep.update(managed_switches)
+    for switch in managed_switches:
+        keep.update(switch['vtp'].neighbors())
+
+    remove = set(g_vtp) - keep
+    g_vtp.remove_nodes_from(remove)
+
     # import ipdb
     # ipdb.set_trace()
+    set_default_vlans(anm)
+
 
     # copy across vlans from input graph
-    for router in g_l2.routers():
-        for interface in router.physical_interfaces():
-            interface.vlan = interface['layer2'].vlan
-
     vswitch_id_counter = itertools.count(1)
 
     # TODO: aggregate managed switches
 
     bcs_to_trim = set()
 
-    subs = ank_utils.connected_subgraphs(g_l1_conn, managed_switches)
+    subs = ank_utils.connected_subgraphs(g_vtp, managed_switches)
     for sub in subs:
         # identify the VLANs on these switches
         vlans = defaultdict(list)
@@ -266,7 +283,7 @@ def build_vlans(anm):
 
         for interface in sub_neigh_ints:
             # store keyed by vlan id
-            vlan = interface['layer2'].vlan
+            vlan = interface['vtp'].vlan
             vlans[vlan].append(interface)
 
         # create a virtual switch for each
@@ -277,7 +294,7 @@ def build_vlans(anm):
         for vlan, interfaces in vlans.items():
             # create a virtual switch
             vswitch_id = "vswitch%s" % vswitch_id_counter.next()
-            vswitch = g_vlans.add_node(vswitch_id)
+            vswitch = g_vlan.add_node(vswitch_id)
             # TODO: check of switch or just broadcast_domain for higher layer
             # purposes
             vswitch.device_type = "switch"
@@ -318,5 +335,5 @@ def build_vlans(anm):
         edges_to_add = list(itertools.combinations(vswitches, 2))
         # TODO: ensure only once
         # TODO: filter so only one direction
-        g_vlans.add_edges_from(edges_to_add, trunk=True)
-        g_vlan_trunk.add_edges_from(edges_to_add, trunk=True)
+        g_vlan.add_edges_from(edges_to_add, trunk=True)
+        g_vtp.add_edges_from(edges_to_add, trunk=True)
