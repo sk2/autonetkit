@@ -30,7 +30,6 @@ def build_layer2_base(anm):
     else:
         cisco_build_network.post_layer2(anm)
 
-
     # Note: layer 2 base is much simpler since most is inherited from layer 1
     # cds
 
@@ -195,7 +194,8 @@ def build_layer2_broadcast(anm):
         node.broadcast_domain = True
 
 
-def set_default_vlans(anm, default_vlan=1):
+def set_default_vlans(anm, default_vlan=2):
+    #TODO: read default vlan from global input config (eg from .virl)
     # TODO: rename to "mark_defaults_vlan" or similar
     # checks all links to managed switches have vlans
     g_vtp = anm['vtp']
