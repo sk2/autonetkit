@@ -123,6 +123,7 @@ def check_server_asns(anm):
     g_phy = anm['phy']
 
     for server in g_phy.servers():
+        #TODO: remove now have external_connector device_type?
         if server.device_subtype in ("SNAT", "FLAT"):
             continue  # Don't warn on ASN for NAT elements
         l3_neighbors = list(server['layer3'].neighbors())
