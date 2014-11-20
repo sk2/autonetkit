@@ -255,10 +255,13 @@ def build_vlans(anm):
     remove = set(g_vtp) - keep
     g_vtp.remove_nodes_from(remove)
 
+    edges_to_remove = [e for e in g_vtp.edges()
+                       if not(e.src in managed_switches or e.dst in managed_switches)]
+    g_vtp.remove_edges_from(edges_to_remove)
+
     # import ipdb
     # ipdb.set_trace()
     set_default_vlans(anm)
-
 
     # copy across vlans from input graph
     vswitch_id_counter = itertools.count(1)
@@ -321,7 +324,6 @@ def build_vlans(anm):
         g_l2.remove_nodes_from(bcs_to_trim)
         g_l2.remove_nodes_from(sub)
         # TODO: also remove any broadcast domains no longer connected
-
 
         # g_l2.remove_nodes_from(disconnected_bcs)
 
