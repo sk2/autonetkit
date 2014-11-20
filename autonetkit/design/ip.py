@@ -15,17 +15,30 @@ SETTINGS = autonetkit.config.settings
 #@call_log
 def build_ip(anm):
     g_ip = anm.add_overlay('ip')
-    g_l2_bc = anm['layer2']
+    g_l2 = anm['layer2']
     g_phy = anm['phy']
     # Retain arbitrary ASN allocation for IP addressing
-    g_ip.add_nodes_from(g_l2_bc, retain=["asn", "broadcast_domain"])
-    g_ip.add_edges_from(g_l2_bc.edges())
+    g_ip.add_nodes_from(g_l2, retain=["asn", "broadcast_domain"])
+    g_ip.add_edges_from(g_l2.edges())
 
     #TODO:
     for bc in g_ip.nodes("broadcast_domain"):
         bc.allocate = True
 
     for bc in g_ip.nodes("broadcast_domain"):
+        if bc.asn is None:
+            # arbitrary choice
+            asn = ank_utils.neigh_most_frequent( g_l2, bc, 'asn', g_phy)
+            bc.asn = asn
+
+        for neigh in bc.neighbors():
+            if (neigh.device_type == "external_connector"
+                and neigh.device_subtype in ("FLAT", "SNAT")):
+                bc.allocate = False
+
+                for neigh_int in bc.neighbor_interfaces():
+                    neigh_int.allocate = False
+
         # Encapsulated if any neighbor interface has
         for edge in bc.edges():
             if edge.dst_int['phy'].l2_encapsulated:
@@ -40,7 +53,6 @@ def build_ip(anm):
                     neigh_int.allocate = False
 
                 break
-
 
     # copy over skipped loopbacks
     #TODO: check if loopbck copy attr
