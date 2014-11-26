@@ -219,6 +219,13 @@ def set_default_vlans(anm, default_vlan=2):
             else:
                 vlan = neigh_int['input'].vlan
 
+            try:
+                vlan = int(vlan)
+            except TypeError:
+                log.warning("Non-integer vlan %s for %s. Using default %s",
+                    vlan, neigh_int, default_vlan)
+                vlan = default_vlan
+
             neigh_int.vlan = vlan
             local_int.vlan = vlan
 
@@ -227,8 +234,9 @@ def set_default_vlans(anm, default_vlan=2):
                 log.warning("Interface %s set to trunk and vlan", interface)
 
     # map to layer 2 interfaces
-    log.info("Setting default VLAN %s to interfaces connected to a managed "
-             "switch with no VLAN: %s", default_vlan, no_vlan_ints)
+    if len(no_vlan_ints):
+        log.info("Setting default VLAN %s to interfaces connected to a managed "
+           "switch with no VLAN: %s", default_vlan, no_vlan_ints)
 
 
 def build_vlans(anm):
@@ -289,6 +297,7 @@ def build_vlans(anm):
             vlan = interface['vtp'].vlan
             vlans[vlan].append(interface)
 
+        log.debug("Vlans for sub %s are %s", sub, vlans)
         # create a virtual switch for each
         # TODO: naming: if this is the only pair then name after these, else
         # use the switch names too
