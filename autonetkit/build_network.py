@@ -166,7 +166,7 @@ def apply_design_rules(anm):
     # log.info("Building layer2")
     build_layer1(anm)
     build_layer2(anm)
-    autonetkit.update_http(anm)
+    # autonetkit.update_http(anm)
 
     # log.info("Building layer3")
     build_layer3(anm)
