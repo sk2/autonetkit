@@ -66,9 +66,11 @@ def manage_network(input_graph_string, timestamp, build=True,
         except Exception, e:
             # Send the visualisation to help debugging
             try:
-                if visualise:
-                    import autonetkit
-                    autonetkit.update_vis(anm)
+                # if visualise:
+                    # import autonetkit
+                    # autonetkit.update_vis(anm)
+                    #TODO: refactor so only update if config or compile not both
+                    pass
             except Exception, e:
                 # problem with vis -> could be coupled with original exception -
                 # raise original
@@ -77,11 +79,12 @@ def manage_network(input_graph_string, timestamp, build=True,
         else:
             if visualise:
                 # log.info("Visualising network")
-                import autonetkit
-                autonetkit.update_vis(anm)
+                # import autonetkit
+                # autonetkit.update_vis(anm)
+                pass
 
-        if not compile:
-            # autonetkit.update_vis(anm)
+        if not compile and visualise:
+            autonetkit.update_vis(anm)
             pass
 
         if validate:
