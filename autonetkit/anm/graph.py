@@ -192,6 +192,9 @@ class NmGraph(OverlayBase):
                     self.edges()):
             log.debug("Input interfaces allocated")
             return  # interfaces allocated
+        elif self.data.interfaces_allocated == True:
+            # explicitly flagged as allocated
+            return
         else:
             log.info('Automatically assigning input interfaces')
 

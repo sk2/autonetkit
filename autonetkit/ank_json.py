@@ -15,6 +15,7 @@ import netaddr
 import networkx as nx
 from networkx.readwrite import json_graph
 from autonetkit.render2 import NodeRender, PlatformRender
+from autonetkit.ank import shallow_copy_nx_graph
 
 
 class AnkEncoder(json.JSONEncoder):
@@ -277,7 +278,15 @@ def jsonify_anm_with_graphics(anm, nidb=None):
                          key=lambda x: nodes_by_layer.get(x, 0))
 
     for overlay_id in overlay_ids:
-        nm_graph = anm[overlay_id]._graph.copy()
+        try:
+            #make a shallow copy
+            # input_graph = anm[overlay_id]._graph
+            # nm_graph = shallow_copy_nx_graph(input_graph)
+            nm_graph = anm[overlay_id]._graph.copy()
+        except Exception, e:
+            log.warning("Unable to copy overlay %s: %s", overlay_id, e)
+            continue
+
         if overlay_id == "_dependencies":
             # convert to undirected for visual clarify
             nm_graph = nx.Graph(nm_graph)
@@ -334,12 +343,6 @@ def jsonify_anm_with_graphics(anm, nidb=None):
 
             # store on graph
             nm_graph.node[node] = node_data
-
-            if nm_graph.is_multigraph():
-                for u, v, k in nm_graph.edges(keys=True):
-                    # Store key: nx node_link_data ignores it
-                    #anm_graph[u][v][k]['_key'] = k
-                    pass  # is this needed? as key itself holds no value?
 
             try:
                 del nm_graph.node[node]['id']

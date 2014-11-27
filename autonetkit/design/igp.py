@@ -10,10 +10,11 @@ def build_igp(anm):
     build_ospf(anm)
     build_eigrp(anm)
     build_isis(anm)
+    build_rip(anm)
 
     # Build a protocol summary graph
     g_igp = anm.add_overlay("igp")
-    igp_protocols = ["ospf", "eigrp", "isis"]
+    igp_protocols = ["ospf", "eigrp", "isis", "rip"]
     for protocol in igp_protocols:
         g_protocol = anm[protocol]
         g_igp.add_nodes_from(g_protocol, igp=protocol)
@@ -243,6 +244,43 @@ def build_network_entity_title(anm):
     for node in g_isis.routers():
         ip_node = g_ipv4.node(node)
         node.net = ip_to_net_ent_title_ios(ip_node.loopback)
+
+
+def build_rip(anm):
+    """Build rip overlay"""
+    g_in = anm['input']
+    g_l3 = anm['layer3']
+    g_rip = anm.add_overlay("rip")
+    g_phy = anm['phy']
+
+    if not anm['phy'].data.enable_routing:
+        g_rip.log.info("Routing disabled, not configuring rip")
+        return
+
+    if not any(n.igp == "rip" for n in g_phy):
+        log.debug("No rip nodes")
+        return
+    rip_nodes = [n for n in g_l3 if n['phy'].igp == "rip"]
+    g_rip.add_nodes_from(rip_nodes)
+    g_rip.add_edges_from(g_l3.edges(), warn=False)
+    ank_utils.copy_int_attr_from(g_l3, g_rip, "multipoint")
+
+    ank_utils.copy_attr_from(
+        g_in, g_rip, "custom_config_rip", dst_attr="custom_config")
+
+    g_rip.remove_edges_from(
+        [link for link in g_rip.edges() if link.src.asn != link.dst.asn])
+
+    for node in g_rip:
+        node.process_id = node.asn
+
+    for link in g_rip.edges():
+        link.metric = 1  # default
+
+    for edge in g_rip.edges():
+        for interface in edge.interfaces():
+            interface.metric = edge.metric
+            interface.multipoint = edge.multipoint
 
 
 def build_isis(anm):

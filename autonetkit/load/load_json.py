@@ -66,6 +66,8 @@ def nx_to_simple(graph):
 def simple_to_nx(j_data):
     port_to_index_mapping = defaultdict(dict)
     for node in j_data['nodes']:
+        if not "ports" in node:
+            continue
         node_id = node['id']
         # first check for loopback zero
         ports = node['ports']
@@ -93,23 +95,24 @@ def simple_to_nx(j_data):
 
     unmapped_links = []
 
-    mapped_links = j_data['links']
+    if "links" in j_data:
+        mapped_links = j_data['links']
 
-    for link in mapped_links:
-        src = link['src']
-        dst = link['dst']
-        src_pos = nodes_by_id[src]
-        dst_pos = nodes_by_id[dst]
-        src_port_id = port_to_index_mapping[src][link['src_port']]
-        dst_port_id = port_to_index_mapping[dst][link['dst_port']]
+        for link in mapped_links:
+            src = link['src']
+            dst = link['dst']
+            src_pos = nodes_by_id[src]
+            dst_pos = nodes_by_id[dst]
+            src_port_id = port_to_index_mapping[src][link['src_port']]
+            dst_port_id = port_to_index_mapping[dst][link['dst_port']]
 
-        interfaces = {src: src_port_id,
-                      dst: dst_port_id}
+            interfaces = {src: src_port_id,
+                          dst: dst_port_id}
 
-        unmapped_links.append({'source': src_pos,
-                               'target': dst_pos,
-                               '_ports': interfaces
-                               })
+            unmapped_links.append({'source': src_pos,
+                                   'target': dst_pos,
+                                   '_ports': interfaces
+                                   })
 
     j_data['links'] = unmapped_links
     return json_graph.node_link_graph(j_data)

@@ -26,6 +26,9 @@ class NmGraphData(object):
 
         return self.anm.overlay_nx_graphs[self.overlay_id]
 
+    def __contains__(self, key):
+        return key in self._graph.graph
+
     def __getattr__(self, key):
         return self._graph.graph.get(key)
 

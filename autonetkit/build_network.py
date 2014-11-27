@@ -123,6 +123,7 @@ def check_server_asns(anm):
     g_phy = anm['phy']
 
     for server in g_phy.servers():
+        #TODO: remove now have external_connector device_type?
         if server.device_subtype in ("SNAT", "FLAT"):
             continue  # Don't warn on ASN for NAT elements
         l3_neighbors = list(server['layer3'].neighbors())
@@ -161,9 +162,11 @@ def apply_design_rules(anm):
         cisco_build_network.post_phy(anm)
 
     g_phy = anm['phy']
-    from autonetkit.design.osi_layers import build_layer2, build_layer3
+    from autonetkit.design.osi_layers import build_layer1, build_layer2, build_layer3
     # log.info("Building layer2")
+    build_layer1(anm)
     build_layer2(anm)
+    # autonetkit.update_http(anm)
 
     # log.info("Building layer3")
     build_layer3(anm)
@@ -295,6 +298,7 @@ def build_phy(anm):
             if specified_id:
                 interface.specified_id = specified_id  # map across
 
+    #TODO: tidy this code up
     for node in g_phy:
         for interface in node:
             remote_edges = interface.edges()

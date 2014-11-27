@@ -407,6 +407,15 @@ class NmNode(AnkElement):
         return self.device_type == 'router' or self['phy'].device_type \
             == 'router'
 
+    def is_hub(self):
+        """Either from this graph or the physical graph
+
+        """
+        #self.log_info("add int")
+
+        return self.device_type == 'hub' or self['phy'].device_type \
+            == 'hub'
+
     def is_device_type(self, device_type):
         """Generic user-defined cross-overlay search for device_type
         either from this graph or the physical graph"""

@@ -138,7 +138,7 @@ def build_ibgp_vpn_v4(anm):
     CE nodes are excluded from RR hierarchy ibgp creation through pre-process step
 
     """
-    # TODO: remove the bgp layer and have just ibgp and ebgp
+        # TODO: remove the bgp layer and have just ibgp and ebgp
     # TODO: build from design rules, currently just builds from ibgp links in
     # bgp layer
     g_bgp = anm['bgp']
@@ -166,6 +166,7 @@ def build_ibgp_vpn_v4(anm):
 
     # TODO: extend this to only connect nodes which are connected in VRFs, so
     # don't set to others
+
 
     ibgp_vpn_v4_nodes = (n for n in ibgp_v4_nodes
                          if n not in ce_nodes)

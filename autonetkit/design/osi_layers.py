@@ -1,19 +1,22 @@
 import autonetkit.log as log
 import autonetkit.ank as ank_utils
 
+def build_layer1(anm):
+    import autonetkit.design.layer1
+    autonetkit.design.layer1.build_layer1(anm)
+
 def build_layer2(anm):
     import autonetkit.design.layer2
     autonetkit.design.layer2.build_layer2(anm)
-    autonetkit.update_http(anm)
 
 def build_layer3(anm):
     """ l3_connectivity graph: switch nodes aggregated and exploded"""
     g_in = anm['input']
-    g_l2 = anm['layer2']
+    gl2_conn = anm['layer2_conn']
     g_l3 = anm.add_overlay("layer3")
-    g_l3.add_nodes_from(g_l2, retain=['label'])
+    g_l3.add_nodes_from(gl2_conn, retain=['label'])
     g_l3.add_nodes_from(g_in.switches(), retain=['asn'])
-    g_l3.add_edges_from(g_l2.edges())
+    g_l3.add_edges_from(gl2_conn.edges())
 
     switches = g_l3.switches()
 

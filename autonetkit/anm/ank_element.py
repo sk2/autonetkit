@@ -6,6 +6,7 @@ class AnkElement(object):
 
     #TODO: put this into parent __init__?
     def init_logging(self, my_type):
+        return
         try:
             self_id = str(self)
         except Exception, e:
