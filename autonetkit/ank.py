@@ -767,3 +767,53 @@ def boundary_nodes(nm_graph, nodes):
     assert all(n in nbunch for n in internal_nodes)  # check internal
 
     return wrap_nodes(nm_graph, internal_nodes)
+
+def shallow_copy_nx_graph(nx_graph):
+    """Convenience wrapper for nx shallow copy
+
+   >>> import networkx
+   >>> G = nx.Graph()
+   >>> H = shallow_copy_nx_graph(G)
+   >>> isinstance(H, nx.Graph)
+   True
+   >>> isinstance(H, nx.DiGraph)
+   False
+   >>> isinstance(H, nx.MultiGraph)
+   False
+   >>> isinstance(H, nx.MultiDiGraph)
+   False
+
+   >>> G = nx.DiGraph()
+   >>> H = shallow_copy_nx_graph(G)
+   >>> isinstance(H, nx.DiGraph)
+   True
+
+   >>> G = nx.MultiGraph()
+   >>> H = shallow_copy_nx_graph(G)
+   >>> isinstance(H, nx.MultiGraph)
+   True
+
+   >>> G = nx.MultiDiGraph()
+   >>> H = shallow_copy_nx_graph(G)
+   >>> isinstance(H, nx.MultiDiGraph)
+   True
+
+    """
+    import networkx
+    directed = nx_graph.is_directed()
+    multi = nx_graph.is_multigraph()
+
+    if directed:
+        if multi:
+            return nx.MultiDiGraph(nx_graph)
+        else:
+            return nx.DiGraph(nx_graph)
+    else:
+        if multi:
+            return nx.MultiGraph(nx_graph)
+        else:
+            return nx.Graph(nx_graph)
+
+
+
+
