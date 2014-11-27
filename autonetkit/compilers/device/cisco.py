@@ -50,6 +50,11 @@ class IosBaseCompiler(RouterCompiler):
             node.isis.use_ipv4 = phy_node.use_ipv4
             node.isis.use_ipv6 = phy_node.use_ipv6
 
+        if node in self.anm['rip']:
+            node.add_stanza("rip")
+            node.rip.use_ipv4 = phy_node.use_ipv4
+            node.rip.use_ipv6 = phy_node.use_ipv6            
+
         super(IosBaseCompiler, self).compile(node)
         if node in self.anm['isis']:
             self.isis(node)
@@ -339,6 +344,25 @@ class IosBaseCompiler(RouterCompiler):
             node.mpls.enabled = True
             node.mpls.router_id = node.loopback_zero.id
 
+    def rip(self, node):
+    #Inheriting from base compiler. Adding in interface stanza.
+        super(IosBaseCompiler, self).rip(node)
+        for interface in node.physical_interfaces():
+            phy_int = self.anm['phy'].interface(interface)
+
+            rip_int = phy_int['rip']
+            if rip_int and rip_int.is_bound:
+                if interface.exclude_igp:
+                    continue  
+
+                interface.rip = {
+                    'cost': rip_int.cost,
+                    'area': rip_int.area,
+                    'process_id': node.rip.process_id,
+                    'use_ipv4': node.ip.use_ipv4,
+                    'use_ipv6': node.ip.use_ipv6,
+                }
+
     def ospf(self, node):
         super(IosBaseCompiler, self).ospf(node)
         for interface in node.physical_interfaces():
@@ -474,6 +498,9 @@ class IosClassicCompiler(IosBaseCompiler):
                 'tnhtc92DXBhelxjYk8LWJrPV36S2i4ntXrpb4RFmfqY'
             node.exclude_phy_int_auto_speed_duplex = True
             node.no_service_config = True
+
+    def rip(self, node):
+        super(IosClassicCompiler, self).rip(node)
 
     def ospf(self, node):
         super(IosClassicCompiler, self).ospf(node)
@@ -722,6 +749,32 @@ class IosXrCompiler(IosBaseCompiler):
         node.add_stanza("rsvp")
         node.rsvp.interfaces = rsvp_interfaces
         node.mpls.te_interfaces = mpls_te_interfaces
+   
+    def rip(self, node):
+        super(IosXrCompiler, self).rip(node)
+
+        g_rip = self.anm['rip']
+        ipv4_interfaces = []
+
+        for interface in node.physical_interfaces():
+            if interface.exclude_igp:
+                continue  # discontinue configuring IGP for this interface
+
+            rip_int = g_rip.interface(interface)
+            if rip_int and rip_int.is_bound:
+                data = {'id': interface.id, 'passive': False}
+                stanza = ConfigStanza(**data)
+                if node.rip.use_ipv4:
+                    ipv4_interfaces.append(stanza)
+
+        loopback_zero = node.loopback_zero
+        data = {'id': node.loopback_zero.id, 'passive': True}
+        stanza = ConfigStanza(**data)
+        if node.rip.use_ipv4:
+            ipv4_interfaces.append(stanza)
+
+
+        node.rip.ipv4_interfaces = ipv4_interfaces
 
     def ospf(self, node):
         super(IosXrCompiler, self).ospf(node)
@@ -822,6 +875,13 @@ class NxOsCompiler(IosBaseCompiler):
         # need to aggregate areas
 
         super(NxOsCompiler, self).interfaces(node)
+
+    def rip(self, node):
+        super(NxOsCompiler, self).rip(node)
+        loopback_zero = node.loopback_zero
+        loopback_zero.rip = {'use_ipv4': node.ip.use_ipv4,
+                            'process_id': node.rip.process_id}     
+
 
     def ospf(self, node):
         super(NxOsCompiler, self).ospf(node)

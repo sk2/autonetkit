@@ -123,6 +123,9 @@ class RouterCompiler(DeviceCompiler):
             self.isis(node)
         if self.anm.has_overlay('eigrp') and node in self.anm['eigrp']:
             self.eigrp(node)
+        ###self.rip(node)
+        if self.anm.has_overlay('rip') and node in self.anm['rip']:
+            self.rip(node)
         # TODO: drop bgp overlay
         bgp_overlays = ["bgp", "ebgp_v4", "ibgp_v4", "ebgp_v6", "ibgp_v6"]
         use_bgp = False
@@ -411,31 +414,28 @@ class RouterCompiler(DeviceCompiler):
 
         return
 
-    def eigrp(self, node):
-
-        g_eigrp = self.anm['eigrp']
+    def rip(self, node):
+        g_rip = self.anm['rip']
         g_ipv4 = self.anm['ipv4']
-        eigrp_node = self.anm['eigrp'].node(node)
-        node.eigrp.process_id = eigrp_node.process_id
-        node.eigrp.custom_config = eigrp_node.custom_config
+        rip_node = self.anm['rip'].node(node)
+        node.rip.process_id = rip_node.process_id
+        node.rip.custom_config = rip_node.custom_config
 
         ipv4_networks = set()
         for interface in node.physical_interfaces():
             if interface.exclude_igp:
-                continue  # don't configure IGP for this interface
+                continue  # discontinue configuring IGP for this interface. 
             ipv4_int = g_ipv4.interface(interface)
-            eigrp_int = g_eigrp.interface(interface)
-            if not eigrp_int.is_bound:
-                continue  # not an EIGRP interface
+            rip_int = g_rip.interface(interface)
+            if not rip_int.is_bound:
+                continue  # not an rip interface
             network = ipv4_int.subnet
-            if eigrp_int and eigrp_int.is_bound and interface.use_ipv4:
+            if rip_int and rip_int.is_bound and interface.use_ipv4:
                 ipv4_networks.add(network)
 
-        # Loopback zero subnet
-
         ipv4_networks.add(node.loopback_zero.ipv4_cidr)
+        node.rip.ipv4_networks = sorted(list(ipv4_networks))
 
-        node.eigrp.ipv4_networks = sorted(list(ipv4_networks))
 
     def isis(self, node):
         g_isis = self.anm['isis']
@@ -480,3 +480,30 @@ class RouterCompiler(DeviceCompiler):
                                    'use_ipv6': node.ip.use_ipv6}
 
         # TODO: add wrapper for this
+
+    def eigrp(self, node):
+
+        g_eigrp = self.anm['eigrp']
+        g_ipv4 = self.anm['ipv4']
+        eigrp_node = self.anm['eigrp'].node(node)
+        node.eigrp.process_id = eigrp_node.process_id
+        node.eigrp.custom_config = eigrp_node.custom_config
+
+        ipv4_networks = set()
+        for interface in node.physical_interfaces():
+            if interface.exclude_igp:
+                continue  # don't configure IGP for this interface
+            ipv4_int = g_ipv4.interface(interface)
+            eigrp_int = g_eigrp.interface(interface)
+            if not eigrp_int.is_bound:
+                continue  # not an EIGRP interface
+            network = ipv4_int.subnet
+            if eigrp_int and eigrp_int.is_bound and interface.use_ipv4:
+                ipv4_networks.add(network)
+
+        # Loopback zero subnet
+
+
+        ipv4_networks.add(node.loopback_zero.ipv4_cidr)
+
+        node.eigrp.ipv4_networks = sorted(list(ipv4_networks))
