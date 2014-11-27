@@ -133,6 +133,13 @@ interface ${interface.id}
   % if interface.use_cdp:
   cdp enable
   %endif
+  
+  % if interface.rip:
+    %if interface.rip.use_ipv6:
+    ipv6 rip {node.rip.process_id} enable
+    %endif
+  %endif
+
   % if interface.ospf:
     %if interface.ospf.use_ipv4:
       %if not interface.ospf.multipoint:
@@ -242,6 +249,22 @@ router ospfv3 ${node.ospf.process_id}
   exit-address-family
 % endif
 % endif
+
+## RIP
+% if node.rip:
+router rip
+version 2
+no auto-summary
+  % if node.rip.custom_config:
+  ${node.rip.custom_config}
+  % endif
+% if node.rip.use_ipv4:
+  % for subnet in node.rip.ipv4_networks:
+  network ${subnet.network}  
+  %endfor
+  %endif
+%endif
+
 ## ISIS
 % if node.isis:
 router isis ${node.isis.process_id}
