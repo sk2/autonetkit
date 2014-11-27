@@ -85,12 +85,13 @@ class DeviceModel(DmBase):
             self._build_from_anm(network_model)
 
     def _build_from_anm(self, network_model):
-        #TODO: Allow to specify which attributes to copy across
-        #TODO: provide another function to copy across attributes post-creation
+        # TODO: Allow to specify which attributes to copy across
+        # TODO: provide another function to copy across attributes
+        # post-creation
         g_phy = network_model['phy']
         g_graphics = network_model['graphics']
         self.add_nodes_from(g_phy, retain=['label', 'host', 'platform',
-                                           'Network', 'update', 'asn', ])
+                                           "syntax", 'Network', 'update', 'asn', ])
 
         self.add_edges_from(g_phy.edges())
         self.copy_graphics(network_model)
