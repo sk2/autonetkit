@@ -19,7 +19,6 @@ class NmPort(AnkElement):
         object.__setattr__(self, 'log', logger)
         self.init_logging("port")
 
-
     def __key(self):
         """Note: key doesn't include overlay_id to allow fast cross-layer comparisons"""
 
@@ -32,16 +31,20 @@ class NmPort(AnkElement):
 
         return hash(self.__key())
 
-
     def __deepcopy__(self, memo):
-        #TODO: workaround - need to fix
-       # from http://stackoverflow.com/questions/1500718/what-is-the-right-way-to-override-the-copy-deepcopy-operations-on-an-object-in-p
-       pass
-
+        # TODO: workaround - need to fix
+        # from
+        # http://stackoverflow.com/questions/1500718/what-is-the-right-way-to-override-the-copy-deepcopy-operations-on-an-object-in-p
+        pass
 
     def __repr__(self):
-        description = self.id or self.description
-        return '%s.%s' % (description, self.node)
+        try:
+            description = self.id or self.description
+            return '%s.%s' % (description, self.node)
+        except TypeError:
+            return ""
+            log.warning("No label for %s %s" %
+                        (self.interface_id, self.node_id))
 
     def __eq__(self, other):
         return self.__key() == other.__key()
@@ -50,6 +53,8 @@ class NmPort(AnkElement):
 
         # TODO: work out why description and category being set/copied to each
         # overlay
+        if self.interface_id not in self.node.raw_interfaces:
+            return False
 
         try:
             interface = self._interface
@@ -65,16 +70,16 @@ class NmPort(AnkElement):
         return (self.node, self.interface_id) < (other.node,
                                                  other.interface_id)
 
-
     @property
     def id(self):
         """Returns  id of node, falls-through to phy if not set on this overlay
 
         """
-        #TODO: make generic function for fall-through properties stored on the anm
+        # TODO: make generic function for fall-through properties stored on the
+        # anm
         key = "id"
         if key in self._interface:
-                return self._interface.get(key)
+            return self._interface.get(key)
         else:
             if self.overlay_id == "input":
                 return  # Don't fall upwards from input -> phy as may not exist
@@ -88,10 +93,11 @@ class NmPort(AnkElement):
                 return
 
             try:
-                #return self.anm.overlay_nx_graphs['phy'].node[self.node_id]['asn']
+                # return
+                # self.anm.overlay_nx_graphs['phy'].node[self.node_id]['asn']
                 return self['phy'].id
             except KeyError:
-                return # can't get from this overlay or phy -> not found
+                return  # can't get from this overlay or phy -> not found
 
     @property
     def is_bound(self):
@@ -120,7 +126,7 @@ class NmPort(AnkElement):
         """Return data dict for the interface"""
         try:
             return self.node.raw_interfaces[self.interface_id]
-        except KeyError:
+        except (KeyError, IndexError):
             if not self.node_id in self._graph:
                 # node not in overlay
                 return
@@ -143,13 +149,13 @@ class NmPort(AnkElement):
         """Returns corresponding interface in specified overlay"""
 
         if not self.anm.has_overlay(overlay_id):
-            log.warning('Trying to access interface %s for non-existent overlay %s'
-                        , self, overlay_id)
+            log.warning(
+                'Trying to access interface %s for non-existent overlay %s', self, overlay_id)
             return None
 
         if not self.node_id in self.anm.overlay_nx_graphs[overlay_id]:
-            log.debug('Trying to access interface %s for non-existent node %s in overlay %s'
-                      , self, self.node_id, self.overlay_id)
+            log.debug('Trying to access interface %s for non-existent node %s in overlay %s',
+                      self, self.node_id, self.overlay_id)
             return None
 
         try:
@@ -234,7 +240,14 @@ class NmPort(AnkElement):
         """For consistency, node.get(key) is neater
         than getattr(interface, key)"""
 
-        return getattr(self, key)
+        try:
+            return getattr(self, key)
+        except AttributeError, exc:
+            if self._interface is None:
+                raise KeyError("Interface %s not found on node %s" %
+                               (self.interface_id, self.node_id))
+
+            raise exc
 
     def __setattr__(self, key, val):
         """Sets interface property"""
