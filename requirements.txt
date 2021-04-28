@@ -1,0 +1,6 @@
+setuptools~=53.0.0
+networkx~=2.5
+pip~=21.0.1
+Jinja2~=2.11.3
+aiohttp~=3.7.3
+requests~=2.25.1

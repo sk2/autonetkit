@@ -33,59 +33,179 @@ AutoNetkit 0.9 allows for JSON input. An example JSON input is:
 
 ```JSON
 {
-    "directed": false, "graph": [], "multigraph": false,
-    "links": [
-    {"dst": "r2", "dst_port": "eth0", "src": "r1", "src_port": "eth0"},
-    {"dst": "r3", "dst_port": "eth0", "src": "r1", "src_port": "eth1"},
-    {"dst": "r3", "dst_port": "eth1", "src": "r2", "src_port": "eth1"},
-    {"dst": "r2", "dst_port": "eth2", "src": "r4", "src_port": "eth0"},
-    {"dst": "r5", "dst_port": "eth0", "src": "r4", "src_port": "eth1"},
-    {"dst": "r3", "dst_port": "eth2", "src": "r5", "src_port": "eth1"}
-    ],
-    "nodes": [
+  "directed": false,
+  "graph": [],
+  "multigraph": false,
+  "links": [
     {
-        "asn": 1, "device_type": "router", "id": "r1", "x": 350, "y": 400,
-        "ports": [
-        {"category": "loopback", "description": null, "id": "Loopback0"},
-        {"category": "physical", "description": "r1 to r2", "id": "eth0"},
-        {"category": "physical", "description": "r1 to r3", "id": "eth1"}
-        ]
+      "dst": "r2",
+      "dst_port": "eth0",
+      "src": "r1",
+      "src_port": "eth0"
     },
     {
-        "asn": 1, "device_type": "router", "id": "r2", "x": 500, "y": 300,
-        "ports": [
-        {"category": "loopback", "description": null, "id": "Loopback0"},
-        {"category": "physical", "description": "r2 to r1", "id": "eth0"},
-        {"category": "physical", "description": "r2 to r3", "id": "eth1"},
-        {"category": "physical", "description": "r2 to r4", "id": "eth2"}
-        ]
+      "dst": "r3",
+      "dst_port": "eth0",
+      "src": "r1",
+      "src_port": "eth1"
     },
     {
-        "asn": 1, "device_type": "router", "id": "r3", "x": 500, "y": 500,
-        "ports": [
-        {"category": "loopback", "description": null, "id": "Loopback0"},
-        {"category": "physical", "description": "r3 to r1", "id": "eth0"},
-        {"category": "physical", "description": "r3 to r2", "id": "eth1"},
-        {"category": "physical", "description": "r3 to r5", "id": "eth2"}
-        ]
+      "dst": "r3",
+      "dst_port": "eth1",
+      "src": "r2",
+      "src_port": "eth1"
     },
     {
-        "asn": 2, "device_type": "router", "id": "r4", "x": 675, "y": 300,
-        "ports": [
-        {"category": "loopback", "description": null, "id": "Loopback0"},
-        {"category": "physical", "description": "r4 to r2", "id": "eth0"},
-        {"category": "physical", "description": "r4 to r5", "id": "eth1"}
-        ]
+      "dst": "r2",
+      "dst_port": "eth2",
+      "src": "r4",
+      "src_port": "eth0"
     },
     {
-        "asn": 2, "device_type": "router", "id": "r5", "x": 675, "y": 500,
-        "ports": [
-        {"category": "loopback", "description": null, "id": "Loopback0"},
-        {"category": "physical", "description": "r5 to r4", "id": "eth0"},
-        {"category": "physical", "description": "r5 to r3", "id": "eth1"}
-        ]
+      "dst": "r5",
+      "dst_port": "eth0",
+      "src": "r4",
+      "src_port": "eth1"
+    },
+    {
+      "dst": "r3",
+      "dst_port": "eth2",
+      "src": "r5",
+      "src_port": "eth1"
     }
-    ]
+  ],
+  "nodes": [
+    {
+      "asn": 1,
+      "device_type": "router",
+      "id": "r1",
+      "x": 350,
+      "y": 400,
+      "ports": [
+        {
+          "category": "loopback",
+          "description": null,
+          "id": "Loopback0"
+        },
+        {
+          "category": "physical",
+          "description": "r1 to r2",
+          "id": "eth0"
+        },
+        {
+          "category": "physical",
+          "description": "r1 to r3",
+          "id": "eth1"
+        }
+      ]
+    },
+    {
+      "asn": 1,
+      "device_type": "router",
+      "id": "r2",
+      "x": 500,
+      "y": 300,
+      "ports": [
+        {
+          "category": "loopback",
+          "description": null,
+          "id": "Loopback0"
+        },
+        {
+          "category": "physical",
+          "description": "r2 to r1",
+          "id": "eth0"
+        },
+        {
+          "category": "physical",
+          "description": "r2 to r3",
+          "id": "eth1"
+        },
+        {
+          "category": "physical",
+          "description": "r2 to r4",
+          "id": "eth2"
+        }
+      ]
+    },
+    {
+      "asn": 1,
+      "device_type": "router",
+      "id": "r3",
+      "x": 500,
+      "y": 500,
+      "ports": [
+        {
+          "category": "loopback",
+          "description": null,
+          "id": "Loopback0"
+        },
+        {
+          "category": "physical",
+          "description": "r3 to r1",
+          "id": "eth0"
+        },
+        {
+          "category": "physical",
+          "description": "r3 to r2",
+          "id": "eth1"
+        },
+        {
+          "category": "physical",
+          "description": "r3 to r5",
+          "id": "eth2"
+        }
+      ]
+    },
+    {
+      "asn": 2,
+      "device_type": "router",
+      "id": "r4",
+      "x": 675,
+      "y": 300,
+      "ports": [
+        {
+          "category": "loopback",
+          "description": null,
+          "id": "Loopback0"
+        },
+        {
+          "category": "physical",
+          "description": "r4 to r2",
+          "id": "eth0"
+        },
+        {
+          "category": "physical",
+          "description": "r4 to r5",
+          "id": "eth1"
+        }
+      ]
+    },
+    {
+      "asn": 2,
+      "device_type": "router",
+      "id": "r5",
+      "x": 675,
+      "y": 500,
+      "ports": [
+        {
+          "category": "loopback",
+          "description": null,
+          "id": "Loopback0"
+        },
+        {
+          "category": "physical",
+          "description": "r5 to r4",
+          "id": "eth0"
+        },
+        {
+          "category": "physical",
+          "description": "r5 to r3",
+          "id": "eth1"
+        }
+      ]
+    }
+  ]
 }
 ```
 
@@ -100,7 +220,6 @@ Examples of topology files can be found in the example directory.
     INFO All validation tests passed.
     INFO Rendering Configuration Files
     INFO Finished
-
 
 This will generate Quagga configurations and Netkit topology files.:
 
@@ -148,9 +267,8 @@ and an example of the resulting configuration file:
       network 192.168.0.1/32 area 0
     !
 
-
-
 ## Visualization
+
 You can start the visualization webserver, and topologies will automatically be sent:
 
     $ ank_webserver --ank_vis
@@ -164,7 +282,6 @@ Physical topology:
 Physical topology with interfaces:
 
 ![phy interfaces](http://sk2.github.io/autonetkit/json_house/phy_int.png)
-
 
 IPv4 topology:
 
@@ -182,10 +299,10 @@ eBGP topology:
 
 ![ebgp](http://sk2.github.io/autonetkit/json_house/ebgp.png)
 
-
 ## Extending
-A tutorial on extending using the API can be found [here](http://sk2.github.io/autonetkit/tutorial/extending.html) or as an iPython Notebook  [here](http://sk2.github.io/autonetkit/tutorial/extending.ipynb).
 
+A tutorial on extending using the API can be found [here](http://sk2.github.io/autonetkit/tutorial/extending.html) or as
+an iPython Notebook  [here](http://sk2.github.io/autonetkit/tutorial/extending.ipynb).
 
 # Users
 
@@ -195,16 +312,17 @@ Users from industry, academia, and university teaching.
 
 More information on AutoNetkit:
 
-*  [AutoNetkit YouTube Channel](http://www.youtube.com/autonetkit)
-*  [CoNEXT 2013 Slides](https://db.tt/JkRrU5q5) (Dec 13)
-*  [CoNext 2013 Conference Paper](http://conferences.sigcomm.org/co-next/2013/program/p235.pdf)
-*  [Extended recording of CoNext Slides](https://www.youtube.com/watch?v=0W73HLdlwOs)
-*  [PyCon Australia 2013 Presentation on Autonetkit](http://t.co/H4NWROoAJK) [(Slides)](http://t.co/x0NXLMATEq) (July 13)
+* [AutoNetkit YouTube Channel](http://www.youtube.com/autonetkit)
+* [CoNEXT 2013 Slides](https://db.tt/JkRrU5q5) (Dec 13)
+* [CoNext 2013 Conference Paper](http://conferences.sigcomm.org/co-next/2013/program/p235.pdf)
+* [Extended recording of CoNext Slides](https://www.youtube.com/watch?v=0W73HLdlwOs)
+* [PyCon Australia 2013 Presentation on Autonetkit](http://t.co/H4NWROoAJK) [(Slides)](http://t.co/x0NXLMATEq) (July 13)
 
-*  [API Documentation](https://autonetkit.readthedocs.org/)
-*  [AutoNetkit website](http://www.autonetkit.org)
+* [API Documentation](https://autonetkit.readthedocs.org/)
+* [AutoNetkit website](http://www.autonetkit.org)
 
 # Contact
-*  [Twitter](https://twitter.com/autonetkit)
-*  [Mailing list](https://groups.google.com/group/autonetkit)
+
+* [Twitter](https://twitter.com/autonetkit)
+* [Mailing list](https://groups.google.com/group/autonetkit)
 
