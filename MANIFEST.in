@@ -1,4 +1,3 @@
-include autonetkit/templates/*.mako
-recursive-include autonetkit/templates/quagga *
-recursive-include autonetkit/templates/linux *
-include autonetkit/config/configspec.cfg
+recursive-include autonetkit/render/templates/*
+recursive-include autonetkit/webserver/static/*
+recursive-include autonetkit/webserver/templates/*
