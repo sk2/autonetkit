@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Topology View: {{ topology_name }}</title>
+
+    <style>
+
+        #vis {
+            padding: 20px;
+            margin: 20px;
+        }
+
+        div.tooltip {
+            text-align: left;
+            position: absolute;
+            font: 14px sans-serif;
+            border: 1px solid black;
+            padding: 10px;
+            background: white;
+            pointer-events: none;
+        }
+
+        body {
+            font-family: Helvetica;
+        }
+
+        #nodes circle {
+            fill: #369;
+        }
+
+        #nodes circle:hover {
+            fill: orange;
+        }
+
+
+        #nodes text {
+            font-size: 14px;
+            fill: slategray;
+            background: red;
+            dominant-baseline: middle;
+        }
+
+        #ports circle {
+            fill: lightslategray;
+        }
+
+        #ports circle:hover {
+            fill: orange;
+        }
+
+        #ports text {
+            font-size: 12px
+        }
+
+        #links line {
+            stroke: slategray;
+            opacity: 0.8;
+        }
+
+        #links line:hover {
+            stroke: orange;
+            stroke-width: 2;
+        }
+
+
+    </style>
+
+</head>
+<body>
+
+<script src="https://d3js.org/d3.v6.min.js"></script>
+<script src="https://unpkg.com/underscore@1.12.0/underscore-min.js"></script>
+
+
+<div>
+    <label for="selectButton">Topology</label>
+    <select id="selectButton"></select>
+</div>
+<div id="vis"></div>
+
+<script src="static/render.js"></script>
+<script>
+
+
+    var div = d3.select("body").append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0);
+
+
+    var svg = d3.select("body").append("svg")
+        .attr("class", "vis")
+        .attr("width", window.innerWidth)
+        .attr("height", window.innerHeight - 200)
+
+    svg.append("g").attr("id", "links")
+    svg.append("g").attr("id", "ports")
+    svg.append("g").attr("id", "nodes")
+
+    let topology = {{  topology | tojson }}
+        render(topology, div, svg)
+
+
+    const socket = new WebSocket('ws://localhost:8080/ws');
+
+    socket.addEventListener('open', function () {
+        socket.send('Hello Server!');
+    });
+
+    socket.addEventListener('message', function (event) {
+        if (event.data === "Updated") {
+            d3.json("data")
+                .then(d => {
+                    render(d[topology_name], div, svg)
+                })
+
+        }
+    });
+
+
+    let options = {{ topology_names | tojson }};
+    let topology_name = {{ topology_name | tojson }};
+
+    d3.select("#selectButton")
+        .selectAll('myOptions')
+        .data(options)
+        .enter()
+        .append('option')
+        .text(function (d) {
+            return d;
+        }) // text showed in the menu
+        .attr("value", function (d) {
+            return d;
+        }) // corresponding
+        .attr("selected", function (d) {
+            return d === topology_name ? true : null
+        })
+
+
+    d3.select("#selectButton").on("change", function () {
+        var selectedOption = d3.select(this).property("value")
+        location.href = location.origin + "/?topology=" + selectedOption
+    })
+
+
+</script>
+
+
+</body>
+</html>

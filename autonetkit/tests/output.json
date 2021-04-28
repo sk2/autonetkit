@@ -1,0 +1,574 @@
+{
+  "nodes": {
+    "n0": {
+      "type": "ROUTER",
+      "label": "as1r1",
+      "x": 369.54470198675494,
+      "y": 1.0,
+      "asn": 1,
+      "target": "quagga",
+      "lo0_id": "p0",
+      "ospf_area": 0
+    },
+    "n1": {
+      "type": "ROUTER",
+      "label": "as20r3",
+      "x": 168.79470198675494,
+      "y": 25.62280831747489,
+      "asn": 20,
+      "target": "quagga",
+      "lo0_id": "p4",
+      "ospf_area": 0
+    },
+    "n2": {
+      "type": "ROUTER",
+      "label": "as20r2",
+      "x": 108.79470198675494,
+      "y": 85.62280831747489,
+      "asn": 20,
+      "target": "quagga",
+      "lo0_id": "p8",
+      "ospf_area": 0
+    },
+    "n3": {
+      "type": "ROUTER",
+      "label": "as20r1",
+      "x": 228.79470198675494,
+      "y": 85.62280831747489,
+      "asn": 20,
+      "target": "quagga",
+      "lo0_id": "p12",
+      "ospf_area": 0
+    },
+    "n4": {
+      "type": "ROUTER",
+      "label": "as100r1",
+      "x": 108.79470198675494,
+      "y": 298.6922905224054,
+      "asn": 100,
+      "target": "quagga",
+      "lo0_id": "p18",
+      "ospf_area": 0
+    },
+    "n5": {
+      "type": "ROUTER",
+      "label": "as100r3",
+      "x": 48.794701986754944,
+      "y": 358.6922905224054,
+      "asn": 100,
+      "target": "quagga",
+      "lo0_id": "p23",
+      "ospf_area": 0
+    },
+    "n6": {
+      "type": "ROUTER",
+      "label": "as100r2",
+      "x": 1.0,
+      "y": 298.6922905224054,
+      "asn": 100,
+      "target": "quagga",
+      "lo0_id": "p26",
+      "ospf_area": 0
+    },
+    "n7": {
+      "type": "ROUTER",
+      "label": "as200r1",
+      "x": 258.0,
+      "y": 298.6922905224054,
+      "asn": 200,
+      "target": "quagga",
+      "lo0_id": "p29",
+      "ospf_area": 0
+    },
+    "n8": {
+      "type": "ROUTER",
+      "label": "as30r1",
+      "x": 407.8973509933775,
+      "y": 189.81486129760742,
+      "asn": 30,
+      "target": "quagga",
+      "lo0_id": "p31",
+      "ospf_area": 0
+    },
+    "n9": {
+      "type": "ROUTER",
+      "label": "as40r1",
+      "x": 534.794701986755,
+      "y": 189.81486129760742,
+      "asn": 40,
+      "target": "quagga",
+      "lo0_id": "p34",
+      "ospf_area": 0
+    },
+    "n10": {
+      "type": "ROUTER",
+      "label": "test",
+      "x": 399.16496614181324,
+      "y": 335.18572222475973,
+      "asn": 200,
+      "target": "quagga",
+      "lo0_id": "p37",
+      "ospf_area": 0
+    },
+    "n11": {
+      "type": "ROUTER",
+      "label": "as300r4",
+      "x": 599.7690846015074,
+      "y": 373.18572222475973,
+      "asn": 300,
+      "target": "quagga",
+      "lo0_id": "p39",
+      "ospf_area": 0
+    },
+    "n12": {
+      "type": "ROUTER",
+      "label": "as300r2",
+      "x": 599.7690846015074,
+      "y": 298.6922905224054,
+      "asn": 300,
+      "target": "quagga",
+      "lo0_id": "p42",
+      "ospf_area": 0
+    },
+    "n13": {
+      "type": "ROUTER",
+      "label": "as300r3",
+      "x": 505.16496614181324,
+      "y": 373.18572222475973,
+      "asn": 300,
+      "target": "quagga",
+      "lo0_id": "p45",
+      "ospf_area": 0
+    },
+    "n14": {
+      "type": "ROUTER",
+      "label": "as300r1",
+      "x": 505.16496614181324,
+      "y": 298.6922905224054,
+      "asn": 300,
+      "target": "quagga",
+      "lo0_id": "p49",
+      "ospf_area": 0
+    }
+  },
+  "links": {
+    "l0": {
+      "p1": "p2",
+      "p2": "p5",
+      "n1": "n0",
+      "n2": "n1"
+    },
+    "l1": {
+      "p1": "p3",
+      "p2": "p35",
+      "n1": "n0",
+      "n2": "n9"
+    },
+    "l2": {
+      "p1": "p7",
+      "p2": "p9",
+      "n1": "n1",
+      "n2": "n2"
+    },
+    "l3": {
+      "p1": "p10",
+      "p2": "p13",
+      "n1": "n2",
+      "n2": "n3"
+    },
+    "l4": {
+      "p1": "p11",
+      "p2": "p19",
+      "n1": "n2",
+      "n2": "n4"
+    },
+    "l5": {
+      "p1": "p16",
+      "p2": "p6",
+      "n1": "n3",
+      "n2": "n1"
+    },
+    "l6": {
+      "p1": "p17",
+      "p2": "p32",
+      "n1": "n3",
+      "n2": "n8"
+    },
+    "l7": {
+      "p1": "p21",
+      "p2": "p14",
+      "n1": "n4",
+      "n2": "n3"
+    },
+    "l8": {
+      "p1": "p22",
+      "p2": "p24",
+      "n1": "n4",
+      "n2": "n5"
+    },
+    "l9": {
+      "p1": "p25",
+      "p2": "p27",
+      "n1": "n5",
+      "n2": "n6"
+    },
+    "l10": {
+      "p1": "p28",
+      "p2": "p20",
+      "n1": "n6",
+      "n2": "n4"
+    },
+    "l11": {
+      "p1": "p30",
+      "p2": "p15",
+      "n1": "n7",
+      "n2": "n3"
+    },
+    "l12": {
+      "p1": "p33",
+      "p2": "p1",
+      "n1": "n8",
+      "n2": "n0"
+    },
+    "l13": {
+      "p1": "p36",
+      "p2": "p43",
+      "n1": "n9",
+      "n2": "n12"
+    },
+    "l14": {
+      "p1": "p38",
+      "p2": "p46",
+      "n1": "n10",
+      "n2": "n13"
+    },
+    "l15": {
+      "p1": "p41",
+      "p2": "p44",
+      "n1": "n11",
+      "n2": "n12"
+    },
+    "l16": {
+      "p1": "p48",
+      "p2": "p40",
+      "n1": "n13",
+      "n2": "n11"
+    },
+    "l17": {
+      "p1": "p50",
+      "p2": "p47",
+      "n1": "n14",
+      "n2": "n13"
+    }
+  },
+  "ports": {
+    "p0": {
+      "type": "LOGICAL",
+      "label": "lo0",
+      "slot": null,
+      "node": "n0"
+    },
+    "p1": {
+      "type": "PHYSICAL",
+      "label": "eth0",
+      "slot": 0,
+      "node": "n0"
+    },
+    "p2": {
+      "type": "PHYSICAL",
+      "label": "eth1",
+      "slot": 1,
+      "node": "n0"
+    },
+    "p3": {
+      "type": "PHYSICAL",
+      "label": "eth2",
+      "slot": 2,
+      "node": "n0"
+    },
+    "p4": {
+      "type": "LOGICAL",
+      "label": "lo0",
+      "slot": null,
+      "node": "n1"
+    },
+    "p5": {
+      "type": "PHYSICAL",
+      "label": "eth0",
+      "slot": 0,
+      "node": "n1"
+    },
+    "p6": {
+      "type": "PHYSICAL",
+      "label": "eth1",
+      "slot": 1,
+      "node": "n1"
+    },
+    "p7": {
+      "type": "PHYSICAL",
+      "label": "eth2",
+      "slot": 2,
+      "node": "n1"
+    },
+    "p8": {
+      "type": "LOGICAL",
+      "label": "lo0",
+      "slot": null,
+      "node": "n2"
+    },
+    "p9": {
+      "type": "PHYSICAL",
+      "label": "eth0",
+      "slot": 0,
+      "node": "n2"
+    },
+    "p10": {
+      "type": "PHYSICAL",
+      "label": "eth1",
+      "slot": 1,
+      "node": "n2"
+    },
+    "p11": {
+      "type": "PHYSICAL",
+      "label": "eth2",
+      "slot": 2,
+      "node": "n2"
+    },
+    "p12": {
+      "type": "LOGICAL",
+      "label": "lo0",
+      "slot": null,
+      "node": "n3"
+    },
+    "p13": {
+      "type": "PHYSICAL",
+      "label": "eth0",
+      "slot": 0,
+      "node": "n3"
+    },
+    "p14": {
+      "type": "PHYSICAL",
+      "label": "eth1",
+      "slot": 1,
+      "node": "n3"
+    },
+    "p15": {
+      "type": "PHYSICAL",
+      "label": "eth2",
+      "slot": 2,
+      "node": "n3"
+    },
+    "p16": {
+      "type": "PHYSICAL",
+      "label": "eth3",
+      "slot": 3,
+      "node": "n3"
+    },
+    "p17": {
+      "type": "PHYSICAL",
+      "label": "eth4",
+      "slot": 4,
+      "node": "n3"
+    },
+    "p18": {
+      "type": "LOGICAL",
+      "label": "lo0",
+      "slot": null,
+      "node": "n4"
+    },
+    "p19": {
+      "type": "PHYSICAL",
+      "label": "eth0",
+      "slot": 0,
+      "node": "n4"
+    },
+    "p20": {
+      "type": "PHYSICAL",
+      "label": "eth1",
+      "slot": 1,
+      "node": "n4"
+    },
+    "p21": {
+      "type": "PHYSICAL",
+      "label": "eth2",
+      "slot": 2,
+      "node": "n4"
+    },
+    "p22": {
+      "type": "PHYSICAL",
+      "label": "eth3",
+      "slot": 3,
+      "node": "n4"
+    },
+    "p23": {
+      "type": "LOGICAL",
+      "label": "lo0",
+      "slot": null,
+      "node": "n5"
+    },
+    "p24": {
+      "type": "PHYSICAL",
+      "label": "eth0",
+      "slot": 0,
+      "node": "n5"
+    },
+    "p25": {
+      "type": "PHYSICAL",
+      "label": "eth1",
+      "slot": 1,
+      "node": "n5"
+    },
+    "p26": {
+      "type": "LOGICAL",
+      "label": "lo0",
+      "slot": null,
+      "node": "n6"
+    },
+    "p27": {
+      "type": "PHYSICAL",
+      "label": "eth0",
+      "slot": 0,
+      "node": "n6"
+    },
+    "p28": {
+      "type": "PHYSICAL",
+      "label": "eth1",
+      "slot": 1,
+      "node": "n6"
+    },
+    "p29": {
+      "type": "LOGICAL",
+      "label": "lo0",
+      "slot": null,
+      "node": "n7"
+    },
+    "p30": {
+      "type": "PHYSICAL",
+      "label": "eth0",
+      "slot": 0,
+      "node": "n7"
+    },
+    "p31": {
+      "type": "LOGICAL",
+      "label": "lo0",
+      "slot": null,
+      "node": "n8"
+    },
+    "p32": {
+      "type": "PHYSICAL",
+      "label": "eth0",
+      "slot": 0,
+      "node": "n8"
+    },
+    "p33": {
+      "type": "PHYSICAL",
+      "label": "eth1",
+      "slot": 1,
+      "node": "n8"
+    },
+    "p34": {
+      "type": "LOGICAL",
+      "label": "lo0",
+      "slot": null,
+      "node": "n9"
+    },
+    "p35": {
+      "type": "PHYSICAL",
+      "label": "eth0",
+      "slot": 0,
+      "node": "n9"
+    },
+    "p36": {
+      "type": "PHYSICAL",
+      "label": "eth1",
+      "slot": 1,
+      "node": "n9"
+    },
+    "p37": {
+      "type": "LOGICAL",
+      "label": "lo0",
+      "slot": null,
+      "node": "n10"
+    },
+    "p38": {
+      "type": "PHYSICAL",
+      "label": "eth0",
+      "slot": 0,
+      "node": "n10"
+    },
+    "p39": {
+      "type": "LOGICAL",
+      "label": "lo0",
+      "slot": null,
+      "node": "n11"
+    },
+    "p40": {
+      "type": "PHYSICAL",
+      "label": "eth0",
+      "slot": 0,
+      "node": "n11"
+    },
+    "p41": {
+      "type": "PHYSICAL",
+      "label": "eth1",
+      "slot": 1,
+      "node": "n11"
+    },
+    "p42": {
+      "type": "LOGICAL",
+      "label": "lo0",
+      "slot": null,
+      "node": "n12"
+    },
+    "p43": {
+      "type": "PHYSICAL",
+      "label": "eth0",
+      "slot": 0,
+      "node": "n12"
+    },
+    "p44": {
+      "type": "PHYSICAL",
+      "label": "eth1",
+      "slot": 1,
+      "node": "n12"
+    },
+    "p45": {
+      "type": "LOGICAL",
+      "label": "lo0",
+      "slot": null,
+      "node": "n13"
+    },
+    "p46": {
+      "type": "PHYSICAL",
+      "label": "eth0",
+      "slot": 0,
+      "node": "n13"
+    },
+    "p47": {
+      "type": "PHYSICAL",
+      "label": "eth1",
+      "slot": 1,
+      "node": "n13"
+    },
+    "p48": {
+      "type": "PHYSICAL",
+      "label": "eth2",
+      "slot": 2,
+      "node": "n13"
+    },
+    "p49": {
+      "type": "LOGICAL",
+      "label": "lo0",
+      "slot": null,
+      "node": "n14"
+    },
+    "p50": {
+      "type": "PHYSICAL",
+      "label": "eth0",
+      "slot": 0,
+      "node": "n14"
+    }
+  },
+  "node_paths": {},
+  "port_paths": {}
+}

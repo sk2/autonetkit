@@ -1,0 +1,12 @@
+{% for interface in data.interfaces %}
+{% if interface.connected %}
+ifconfig {{interface.label }} {{ interface.ip}} netmask {{interface.netmask}} up
+{% else %}
+ifconfig {{interface.label }} down
+{% endif %}
+{% endfor %}
+{% if data.services.zebra %}
+
+/etc/init.d/zebra start
+{% endif %}
+

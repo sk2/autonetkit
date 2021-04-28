@@ -1,0 +1,25 @@
+vlan example
+
+delta changes in web ui (map on id) for fade in/out
+
+basic MPLS from earlier work
+
+bgp policy from thesis
+
+speed test for nren1400
+
+add docstrings
+
+add more test cases
+
+add more sample topologies
+
+support physical inventory with slots and naming, lo0 name, capabilities, etc
+
+simple platform packager - just render the node configs to file
+
+draw path in ui
+
+make web all static - may switch to fastapi?
+
+finish tutorial for routing protocols
