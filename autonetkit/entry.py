@@ -1,3 +1,5 @@
+import sys
+
 from autonetkit.workflow.workflow import BaseWorkflow
 
 
@@ -12,5 +14,5 @@ def main(filename):
 
 
 if __name__ == '__main__':
-    filename = "example/mixed.graphml"
+    filename = sys.argv[1]
     main(filename)

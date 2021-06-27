@@ -12,26 +12,6 @@ from autonetkit.network_model.topology import Topology
 from autonetkit.network_model.types import DeviceType, PortType, LAYER3_DEVICES
 
 
-def normalise_node_locations(topology: Topology) -> None:
-    """
-
-    @param topology:
-    """
-    x_min = min(n.get("x") for n in topology.nodes())
-    y_min = min(n.get("y") for n in topology.nodes())
-
-    x_offset = y_offset = 0
-    if x_min < 0:
-        x_offset = 1 - x_min
-    if y_min < 0:
-        y_offset = 1 - y_min
-
-    if x_offset or y_offset:
-        for node in topology.nodes():
-            node.set("x", node.get("x") + x_offset)
-            node.set("y", node.get("y") + y_offset)
-
-
 def label_physical_ports(topology: Topology, port_prefix) -> None:
     """
 

@@ -2,20 +2,20 @@ from collections import defaultdict
 
 import networkx as nx
 
-from autonetkit.load.common import normalise_node_locations, add_loopback
+from autonetkit.load.common import add_loopback
+from autonetkit.design.utils.graph_utils import normalise_node_locations
 from autonetkit.load.model import StructuredNode, StructuredPort, StructuredTopology, StructuredLink
 from autonetkit.load.preprocess import process_structured_topology
 from autonetkit.network_model.network_model import NetworkModel
 from autonetkit.network_model.types import PortType, DeviceType
 
 
-def import_from_graphml(filename: str) -> NetworkModel:
+def import_from_graphml(filename: str, network_model_cls= NetworkModel) -> NetworkModel:
     """
 
     @param filename:
     @return:
     """
-    network_model = NetworkModel()
     with open(filename) as fh:
         graph = nx.read_graphml(fh)
 
@@ -24,8 +24,17 @@ def import_from_graphml(filename: str) -> NetworkModel:
 
     topology = StructuredTopology()
 
+    reserved_node_keys = {"x", "y", "device_type", "label" "asn", "target"}
+    reserved_edge_keys = {}
+
     for nx_node_id, node_data in graph.nodes(data=True):
         label = node_data.get("label").strip()
+
+        node_metadata = {}
+
+        for key, val in node_data.items():
+            if key not in reserved_node_keys:
+                node_metadata[key] = val
 
         # create loopback zero
         device_type = node_data.get("device_type").title()
@@ -36,6 +45,7 @@ def import_from_graphml(filename: str) -> NetworkModel:
                               y=node_data.get("y"),
                               asn=node_data.get("asn"),
                               target=node_data.get("target"),
+                              data = node_metadata
                               )
 
         topology.nodes.append(node)
@@ -52,17 +62,24 @@ def import_from_graphml(filename: str) -> NetworkModel:
             edge_id = edge_data["id"]
             node_port_map[nx_node_id][edge_id] = port
 
-    for src, dst, node_data in graph.edges(data=True):
-        edge_id = node_data["id"]
+    for src, dst, edge_data in graph.edges(data=True):
+        edge_id = edge_data["id"]
         n1 = node_map[src].label
         n2 = node_map[dst].label
         p1 = node_port_map[src][edge_id].slot
         p2 = node_port_map[dst][edge_id].slot
-        link = StructuredLink(n1=n1, n2=n2, p1=p1, p2=p2)
+
+        edge_metadata = {}
+
+        for key, val in edge_data.items():
+            if key not in reserved_edge_keys:
+                edge_metadata[key] = val
+
+        link = StructuredLink(n1=n1, n2=n2, p1=p1, p2=p2, data=edge_metadata)
         topology.links.append(link)
 
     # TODO: later match this to the YAML physical inventory etc
-    network_model = process_structured_topology(topology)
+    network_model = process_structured_topology(topology, network_model_cls)
     t_in = network_model.get_topology("input")
 
     normalise_node_locations(t_in)

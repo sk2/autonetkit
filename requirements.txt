@@ -4,3 +4,5 @@ pip~=21.0.1
 Jinja2~=2.11.3
 aiohttp~=3.7.3
 requests~=2.25.1
+pydantic~=1.8
+autonetkit~=0.12.1

@@ -3,6 +3,7 @@ from enum import Enum
 
 from autonetkit.design.utils import filters
 from autonetkit.network_model.network_model import NetworkModel
+from autonetkit.network_model.port import Port
 from autonetkit.network_model.topology import Topology
 from autonetkit.network_model.types import DeviceType
 
@@ -50,6 +51,14 @@ def allocate_asns(topology: Topology):
         node.set("asn", asn)
 
 
+def _sort_ports_by_routers(port: Port):
+    # sorts so that routers are allocated the first ip from block
+    if port.node.type == DeviceType.ROUTER:
+        return 1
+    else:
+        return 2
+
+
 def map_blocks_to_ports(topology):
     """
 
@@ -59,7 +68,9 @@ def map_blocks_to_ports(topology):
     for bc_node in bc_nodes:
         subnet = bc_node.get("network")
         hosts = subnet.hosts()
-        for peer_port in bc_node.peer_ports():
+        ports = bc_node.peer_ports()
+        ports = sorted(ports, key=lambda x: _sort_ports_by_routers(x))
+        for peer_port in ports:
             peer_port.set("network", subnet)
             host_ip = next(hosts)
             peer_port.set("ip", host_ip)
