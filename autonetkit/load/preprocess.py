@@ -7,13 +7,14 @@ from autonetkit.network_model.network_model import NetworkModel
 from autonetkit.network_model.types import PortType, NodeId, LinkId, PortId, DeviceType
 
 
-def process_structured_topology(structure_topology: StructuredTopology) -> NetworkModel:
+def process_structured_topology(structure_topology: StructuredTopology, network_model_cls: NetworkModel) -> NetworkModel:
     """
 
     @param structure_topology:
     @return:
     """
-    network_model = NetworkModel()
+    network_model = network_model_cls()
+    print("created", network_model)
 
     t_in = network_model.get_topology("input")
     for node in structure_topology.nodes:

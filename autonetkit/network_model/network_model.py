@@ -2,6 +2,8 @@ import itertools
 from collections import defaultdict
 from typing import Dict
 
+import typing
+
 from autonetkit.network_model.exceptions import TopologyNotFound
 from autonetkit.network_model.topology import Topology
 from autonetkit.network_model.types import TopologyId, NodeId, PortId, LinkId, PathId
@@ -121,3 +123,5 @@ class NetworkModel:
             result[name] = topology.export()
 
         return result
+
+NM = typing.TypeVar('NM', bound=NetworkModel)

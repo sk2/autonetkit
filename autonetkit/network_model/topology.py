@@ -1,10 +1,11 @@
 import logging
 import typing
 from collections import defaultdict
-from typing import List, Dict
+from typing import List, Dict, Generic
 
 from autonetkit.network_model.exceptions import NodeNotFound, LinkNotFound, PortNotFound, PortIdInUse, LinkIdInUse, \
     NodeIdInUse, PathIdInUse, NumericNodeId
+from autonetkit.network_model.generics import N, L, P, NP, PP
 from autonetkit.network_model.link import Link
 from autonetkit.network_model.node import Node
 from autonetkit.network_model.path import NodePath, PortPath
@@ -17,12 +18,13 @@ if typing.TYPE_CHECKING:
     from autonetkit.network_model.network_model import NetworkModel
 
 
-class Topology:
+class Topology(Generic[N, L, P]):
     """
 
     """
 
-    def __init__(self, network_model, id: TopologyId):
+    def __init__(self, network_model, id: TopologyId,
+                 node_cls=Node, link_cls=Link, port_cls=Port):
         self.id: TopologyId = id
         self.network_model: NetworkModel = network_model
         self._nodes: Dict[NodeId: Node] = {}
@@ -31,13 +33,17 @@ class Topology:
         self._node_paths: Dict[PathId, NodePath] = {}
         self._port_paths: Dict[PathId, PortPath] = {}
 
-        self._cache_ports_for_node: Dict[NodeId, List[Port]] = defaultdict(list)
-        self._cache_links_for_node: Dict[NodeId, List[Link]] = defaultdict(list)
+        self._cache_ports_for_node: Dict[NodeId, List[P]] = defaultdict(list)
+        self._cache_links_for_node: Dict[NodeId, List[L]] = defaultdict(list)
+
+        self._node_cls = node_cls
+        self._link_cls = link_cls
+        self._port_cls = port_cls
 
         self._data = {}
 
     def create_node(self, type: DeviceType, label: typing.Optional[str] = None,
-                    id: typing.Optional[NodeId] = None) -> 'Node':
+                    id: typing.Optional[NodeId] = None) -> N:
         """
 
         @param type:
@@ -61,13 +67,13 @@ class Topology:
 
         return node
 
-    def _create_node(self, node_id):
+    def _create_node(self, node_id) -> N:
         node = Node(self, node_id)
         self._nodes[node_id] = node
         return node
 
-    def create_port(self, node: 'Node', type: PortType, label: typing.Optional[str] = None,
-                    id: typing.Optional[PortId] = None) -> 'Port':
+    def create_port(self, node: N, type: PortType, label: typing.Optional[str] = None,
+                    id: typing.Optional[PortId] = None) -> P:
         """
 
         @param node:
@@ -91,14 +97,14 @@ class Topology:
 
         return port
 
-    def _create_port(self, node, port_id):
+    def _create_port(self, node: N, port_id: PortId):
         port = Port(node, port_id)
         self._cache_ports_for_node[port.node.id].append(port)
         self._ports[port_id] = port
         return port
 
-    def create_link(self, p1: 'Port', p2: 'Port',
-                    id: typing.Optional[LinkId] = None) -> 'Link':
+    def create_link(self, p1: P, p2: P,
+                    id: typing.Optional[LinkId] = None) -> L:
         """
 
         @param p1:
@@ -118,7 +124,7 @@ class Topology:
 
         return link
 
-    def _create_link(self, link_id, p1, p2):
+    def _create_link(self, link_id, p1: P, p2: P) -> L:
         # TODO: warn if port types are not the same
         link = Link(self, link_id, p1, p2)
         self._links[link_id] = link
@@ -126,7 +132,7 @@ class Topology:
         self._cache_links_for_node[link.n2.id].append(link)
         return link
 
-    def create_node_path(self, nodes: List[Node], id=None) -> NodePath:
+    def create_node_path(self, nodes: List[N], id=None) -> NP:
         """
 
         @param nodes:
@@ -145,7 +151,7 @@ class Topology:
         self._node_paths[path_id] = path
         return path
 
-    def create_port_path(self, ports: List[Port], id=None) -> PortPath:
+    def create_port_path(self, ports: List[P], id=None) -> PP:
         """
 
         @param ports:
@@ -165,8 +171,8 @@ class Topology:
         self._port_paths[path_id] = path
         return path
 
-    def add_nodes_from(self, nodes: List['Node'], with_ports: bool = True,
-                       ports: typing.Optional[typing.Iterable['Port']] = None):
+    def add_nodes_from(self, nodes: List[N], with_ports: bool = True,
+                       ports: typing.Optional[typing.Iterable[P]] = None):
         """
 
         @param nodes:
@@ -190,7 +196,7 @@ class Topology:
             for port in ports_to_copy:
                 self._create_port(node, port.id)
 
-    def add_links_from(self, links: List["Link"], raise_if_port_not_found=False):
+    def add_links_from(self, links: List[L], raise_if_port_not_found=False):
         """
 
         @param links:
@@ -208,7 +214,7 @@ class Topology:
 
             self._create_link(link.id, p1, p2)
 
-    def remove_nodes_from(self, nodes: List['Node']) -> None:
+    def remove_nodes_from(self, nodes: List[N]) -> None:
         """
 
         @param nodes:
@@ -216,7 +222,7 @@ class Topology:
         for node in nodes:
             self.remove_node(node)
 
-    def remove_links_from(self, links: List['Link']) -> None:
+    def remove_links_from(self, links: List[L]) -> None:
         """
 
         @param links:
@@ -224,7 +230,7 @@ class Topology:
         for link in links:
             self.remove_link(link)
 
-    def remove_node(self, node: 'Node') -> None:
+    def remove_node(self, node: N) -> None:
         """
 
         @param node:
@@ -248,7 +254,7 @@ class Topology:
         except KeyError:
             pass  # already removed
 
-    def remove_link(self, link: 'Link') -> None:
+    def remove_link(self, link: L) -> None:
         """
 
         @param link:
@@ -269,7 +275,7 @@ class Topology:
         except ValueError:
             pass  # already removed
 
-    def remove_port(self, port: 'Port') -> None:
+    def remove_port(self, port: P) -> None:
         """
 
         @param port:
@@ -289,7 +295,7 @@ class Topology:
         except ValueError:
             pass  # already removed
 
-    def remove_node_path(self, path: 'NodePath') -> None:
+    def remove_node_path(self, path: NP) -> None:
         """
 
         @param path:
@@ -299,7 +305,7 @@ class Topology:
         except KeyError:
             pass  # already removed
 
-    def remove_port_path(self, path: 'PortPath') -> None:
+    def remove_port_path(self, path: PP) -> None:
         """
 
         @param path:
@@ -329,14 +335,14 @@ class Topology:
         except KeyError:
             return default
 
-    def nodes(self) -> typing.List['Node']:
+    def nodes(self) -> typing.List[P]:
         """
 
         @return:
         """
         return list(self._nodes.values())
 
-    def ports(self, node: typing.Optional['Node'] = None) -> typing.List['Port']:
+    def ports(self, node: typing.Optional[N] = None) -> typing.List[P]:
         """
 
         @param node:
@@ -347,7 +353,7 @@ class Topology:
         else:
             return list(self._ports.values())
 
-    def links(self, node: typing.Optional['Node'] = None) -> typing.List['Link']:
+    def links(self, node: typing.Optional[N] = None) -> typing.List[L]:
         """
 
         @param node:
@@ -358,14 +364,14 @@ class Topology:
         else:
             return list(self._links.values())
 
-    def node_paths(self) -> typing.List['NodePath']:
+    def node_paths(self) -> typing.List[NP]:
         """
 
         @return:
         """
         return list(self._node_paths.values())
 
-    def port_paths(self) -> typing.List['PortPath']:
+    def port_paths(self) -> typing.List[PP]:
         """
 
         @return:
@@ -402,7 +408,7 @@ class Topology:
 
         return result
 
-    def get_node_by_id(self, nid: NodeId) -> 'Node':
+    def get_node_by_id(self, nid: NodeId) -> N:
         """
 
         @param nid:
@@ -418,7 +424,7 @@ class Topology:
 
             raise NodeNotFound(nid)
 
-    def get_link_by_id(self, lid: LinkId) -> 'Link':
+    def get_link_by_id(self, lid: LinkId) -> L:
         """
 
         @param lid:
@@ -429,7 +435,7 @@ class Topology:
         except KeyError:
             raise LinkNotFound(lid)
 
-    def get_port_by_id(self, pid: PortId) -> 'Port':
+    def get_port_by_id(self, pid: PortId) -> P:
         """
 
         @param pid:

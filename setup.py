@@ -3,15 +3,14 @@ from setuptools import setup, find_packages
 
 setup(
     name="autonetkit",
-    version="1.0.0",
+    version="0.12.3",
     description='Automatic configuration generation',
     long_description='Automatic configuration generation',
 
     entry_points={
         'console_scripts': [
-            'autonetkit = autonetkit.console_script:console_entry',
-            'ank_webserver = autonetkit.webserver:main',
-            'ank_collect_server = autonetkit.collection.server:main',
+            'autonetkit = autonetkit.console:main',
+            'autonetkit_webserver = autonetkit.webserver.webserver:main',
         ],
     },
 
@@ -28,11 +27,16 @@ setup(
     install_requires=[
         'netaddr',
         'networkx',
+        'Jinja2',
+        'aiohttp',
+        'aiohttp_jinja2',
+        'requests',
+        'pydantic'
     ],
 
     classifiers=[
         "Programming Language :: Python",
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Science/Research",
         "Intended Audience :: System Administrators",
         "Intended Audience :: Telecommunications Industry",

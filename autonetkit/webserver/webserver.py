@@ -3,6 +3,7 @@ import logging
 import aiohttp
 import aiohttp_jinja2
 import jinja2
+import pkg_resources
 from aiohttp import web
 
 logger = logging.getLogger(__name__)
@@ -88,10 +89,15 @@ def main():
     app.add_routes([web.post('/data', post_handler)])
     app.add_routes([web.get('/ws', websocket_handler)])
 
-    aiohttp_jinja2.setup(app,
-                         loader=jinja2.FileSystemLoader('templates'))
+    resource_package = __name__
+    path_to_template_folder = pkg_resources.resource_filename(resource_package, 'templates')
+    path_to_static_folder = pkg_resources.resource_filename(resource_package, 'static')
 
-    path_to_static_folder = "static"
+
+    aiohttp_jinja2.setup(app,
+                         loader=jinja2.FileSystemLoader(path_to_template_folder))
+
+
 
     app.add_routes([web.static('/static', path_to_static_folder)])
 
