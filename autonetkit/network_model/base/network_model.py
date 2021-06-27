@@ -2,11 +2,10 @@ import itertools
 from collections import defaultdict
 from typing import Dict
 
-import typing
-
-from autonetkit.network_model.exceptions import TopologyNotFound
-from autonetkit.network_model.topology import Topology
-from autonetkit.network_model.types import TopologyId, NodeId, PortId, LinkId, PathId
+from autonetkit.network_model.base.exceptions import TopologyNotFound
+from autonetkit.network_model.base.generics import T
+from autonetkit.network_model.base.topology import Topology
+from autonetkit.network_model.base.types import TopologyId, NodeId, PortId, LinkId, PathId
 
 
 class NetworkModel:
@@ -15,17 +14,19 @@ class NetworkModel:
     """
 
     def __init__(self):
-        self._topologies: Dict[TopologyId, Topology] = {}
+        self._topologies: Dict[TopologyId, T] = {}
 
         # create mandatory topologies
+        # TODO refactor to be specific/custom then
         self.create_topology("input")
         self.create_topology("physical")
 
         self.node_globals: Dict[NodeId, Dict] = defaultdict(dict)
         self.port_globals: Dict[PortId, Dict] = defaultdict(dict)
 
-        self.node_global_keys = {"type", "label", "asn", "x", "y", "target", "lo0_id"}
-        self.port_global_keys = {"type", "label", "slot"}
+        # TODO: deprecate these -> move to
+        self.node_global_keys = frozenset(["type", "label", "asn", "x", "y", "target", "lo0_id"])
+        self.port_global_keys = frozenset(["type", "label", "slot"])
 
         self.used_node_ids = set()
         self.used_link_ids = set()
@@ -64,7 +65,7 @@ class NetworkModel:
                 self.used_path_ids.add(candidate)
                 yield candidate
 
-    def get_topology(self, name) -> Topology:
+    def get_topology(self, name) -> T:
         """
 
         @param name:
@@ -75,7 +76,7 @@ class NetworkModel:
         except KeyError:
             raise TopologyNotFound(name)
 
-    def create_topology(self, name) -> Topology:
+    def create_topology(self, name) -> T:
         """
 
         @param name:
@@ -119,9 +120,11 @@ class NetworkModel:
         @return:
         """
         result = {}
-        for name, topology in self._topologies.items():
-            result[name] = topology.export()
+        # for name, topology in self._topologies.items():
+        #     result[name] = topology.export()
+
+        for key, val in self.__dict__.items():
+            if isinstance(val, Topology):
+                result[key] = val.export()
 
         return result
-
-NM = typing.TypeVar('NM', bound=NetworkModel)

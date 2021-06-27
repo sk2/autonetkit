@@ -2,7 +2,7 @@ from typing import List, Optional, Dict
 
 from pydantic import BaseModel
 
-from autonetkit.network_model.types import DeviceType, PortType, LinkId, PortId, NodeId
+from autonetkit.network_model.base.types import DeviceType, PortType, LinkId, PortId, NodeId
 
 
 class StructuredPort(BaseModel):

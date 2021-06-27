@@ -1,19 +1,16 @@
-import typing
+from typing import Generic, Dict, List
 
-from autonetkit.network_model.types import PortType, PortId
-
-if typing.TYPE_CHECKING:
-    from autonetkit.network_model.link import Link
-    from autonetkit.network_model.node import Node
+from autonetkit.network_model.base.generics import N, L, P, T
+from autonetkit.network_model.base.types import PortType, PortId
 
 
-class Port:
+class Port(Generic[T, L, P]):
     """
 
     """
 
-    def __init__(self, node: 'Node', id):
-        self._node: Node = node
+    def __init__(self, node: N, id):
+        self._node: N = node
         self.id: PortId = id
         self._data = {}
 
@@ -21,7 +18,7 @@ class Port:
         return f"P {self.get('label')}"
 
     @property
-    def local_data(self) -> typing.Dict:
+    def local_data(self) -> Dict:
         """
 
         @return:
@@ -53,7 +50,7 @@ class Port:
         return self.get("slot")
 
     @property
-    def global_data(self) -> typing.Dict:
+    def global_data(self) -> Dict:
         """
 
         @return:
@@ -61,7 +58,7 @@ class Port:
         return self._node.topology.network_model.port_globals[self.id]
 
     @property
-    def node(self) -> 'Node':
+    def node(self) -> N:
         """
 
         @return:
@@ -94,19 +91,27 @@ class Port:
         except KeyError:
             return default
 
-    def export(self) -> typing.Dict:
+    def export(self) -> Dict:
         """
 
         @return:
         """
         data = self.global_data.copy()
+
+
+        #TODO: deprecate this
         data.update(self._data.copy())
+
+        skip = {"topology", "_node"}
+        for key, val in self.__dict__.items():
+            if key not in skip:
+                data[key] = val
 
         data["node"] = self._node.id
 
         return data
 
-    def links(self) -> typing.List['Link']:
+    def links(self) -> List[L]:
         """
 
         @return:
@@ -116,7 +121,7 @@ class Port:
                   or l.p2 == self]
         return result
 
-    def peer_nodes(self, unique=True) -> typing.List['Node']:
+    def peer_nodes(self, unique=True) -> List[N]:
         """
 
         @param unique:
@@ -134,7 +139,7 @@ class Port:
 
         return result
 
-    def peer_ports(self, unique=True) -> typing.List['Port']:
+    def peer_ports(self, unique=True) -> List[P]:
         """
 
         @param unique:

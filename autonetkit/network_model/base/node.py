@@ -1,26 +1,22 @@
-import typing
+from typing import Generic, Dict, List
 
-from autonetkit.network_model.exceptions import PortNotFound
-from autonetkit.network_model.types import NodeId, DeviceType, PortType
-
-if typing.TYPE_CHECKING:
-    from autonetkit.network_model.topology import Topology
-    from autonetkit.network_model.port import Port
-    from autonetkit.network_model.link import Link
+from autonetkit.network_model.base.exceptions import PortNotFound
+from autonetkit.network_model.base.generics import N, L, P, T
+from autonetkit.network_model.base.types import NodeId, DeviceType, PortType
 
 
-class Node:
+class Node(Generic[T, L, P]):
     """
 
     """
 
-    def __init__(self, topology: 'Topology', id):
-        self.topology: Topology = topology
+    def __init__(self, topology: T, id):
+        self.topology: T = topology
         self.id: NodeId = id
-        self._data = {}
+        self._data: Dict = {}
 
     @property
-    def local_data(self) -> typing.Dict:
+    def local_data(self) -> Dict:
         """
 
         @return:
@@ -28,23 +24,7 @@ class Node:
         return self._data
 
     @property
-    def label(self) -> str:
-        """
-
-        @return:
-        """
-        return self.get("label")
-
-    @property
-    def type(self) -> DeviceType:
-        """
-
-        @return:
-        """
-        return self.get("type")
-
-    @property
-    def global_data(self) -> typing.Dict:
+    def global_data(self) -> Dict:
         """
 
         @return:
@@ -54,21 +34,21 @@ class Node:
     def __repr__(self):
         return f"N {self.get('label')}"
 
-    def ports(self) -> typing.List['Port']:
+    def ports(self) -> List[P]:
         """
 
         @return:
         """
         return self.topology.ports(node=self)
 
-    def links(self) -> typing.List['Link']:
+    def links(self) -> List[L]:
         """
 
         @return:
         """
         return self.topology.links(node=self)
 
-    def create_port(self, type: PortType) -> 'Port':
+    def create_port(self, type: PortType) -> P:
         """
 
         @param type:
@@ -103,16 +83,42 @@ class Node:
         except KeyError:
             return default
 
-    def export(self) -> typing.Dict:
+    def gget(self, key, default=None):
+        if key in self.topology.network_model.node_global_keys:
+            try:
+                return self.global_data[key]
+            except KeyError:
+                return default
+        else:
+            # TODO: make proper exception
+            raise KeyError("Key is not global")
+
+    def gset(self, key, val):
+        if key in self.topology.network_model.node_global_keys:
+            self.global_data[key] = val
+        else:
+            # TODO: make proper exception
+            raise KeyError("Key is not global")
+
+    def export(self) -> Dict:
         """
 
         @return:
         """
+
         data = self.global_data.copy()
+
+        # TODO: deprecate this
         data.update(self._data.copy())
+
+        skip = {"topology"}
+        for key, val in self.__dict__.items():
+            if key not in skip:
+                data[key] = val
+
         return data
 
-    def peer_nodes(self) -> typing.List['Node']:
+    def peer_nodes(self) -> List[N]:
         """
 
         @return:
@@ -124,7 +130,7 @@ class Node:
 
         return result
 
-    def peer_ports(self) -> typing.List['Port']:
+    def peer_ports(self) -> List[P]:
         """
 
         @return:
@@ -145,7 +151,7 @@ class Node:
         """
         return len(self.links())
 
-    def loopback_zero(self) -> 'Port':
+    def loopback_zero(self) -> P:
         """
 
         @return:
@@ -155,3 +161,27 @@ class Node:
             raise PortNotFound("loopback_zero")
         else:
             return self.topology.get_port_by_id(lo0_id)
+
+    @property
+    def type(self) -> DeviceType:
+        return self.global_data["type"]
+
+    @type.setter
+    def type(self, value):
+        self.global_data["type"] = value
+
+    @property
+    def label(self) -> str:
+        return self.global_data["label"]
+
+    @label.setter
+    def label(self, value):
+        self.global_data["label"] = value
+
+    @property
+    def asn(self) -> int:
+        return self.global_data["asn"]
+
+    @asn.setter
+    def asn(self, value):
+        self.global_data["asn"] = value

@@ -1,23 +1,21 @@
-import typing
+from typing import Dict, List, Generic
 
-if typing.TYPE_CHECKING:
-    from autonetkit.network_model.port import Port
-    from autonetkit.network_model.node import Node
+from autonetkit.network_model.base.generics import T, N, P
 
 
-class NodePath:
+class NodePath(Generic[T, N, P]):
     """
 
     """
 
-    def __init__(self, topology, id, nodes: typing.List['Node']):
+    def __init__(self, topology, id, nodes: List[N]):
         self.id = id
         self.topology = topology
-        self.nodes: typing.List['Node'] = nodes
-        self._data = {}
+        self.nodes: List[N] = nodes
+        self._data: Dict = {}
 
     @property
-    def local_data(self) -> typing.Dict:
+    def local_data(self) -> Dict:
         """
 
         @return:
@@ -47,7 +45,7 @@ class NodePath:
         except KeyError:
             return default
 
-    def export(self) -> typing.Dict:
+    def export(self) -> Dict:
         """
 
         @return:
@@ -57,19 +55,19 @@ class NodePath:
         return data
 
 
-class PortPath:
+class PortPath(Generic[T, N, P]):
     """
 
     """
 
-    def __init__(self, topology, id, ports: typing.List['Port']):
+    def __init__(self, topology, id, ports: List[P]):
         self.id = id
         self.topology = topology
-        self.ports: typing.List['Port'] = ports
+        self.ports: List[P] = ports
         self._data = {}
 
     @property
-    def local_data(self) -> typing.Dict:
+    def local_data(self) -> Dict:
         """
 
         @return:
@@ -99,7 +97,7 @@ class PortPath:
         except KeyError:
             return default
 
-    def export(self) -> typing.Dict:
+    def export(self) -> Dict:
         """
 
         @return:

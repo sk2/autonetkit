@@ -3,10 +3,10 @@ from typing import Dict, List
 
 from autonetkit.compile.platform.base import BasePlatformCompiler
 from autonetkit.design.utils import filters
-from autonetkit.network_model.exceptions import PortNotFound
-from autonetkit.network_model.network_model import NetworkModel
-from autonetkit.network_model.node import Node
-from autonetkit.network_model.types import DeviceType
+from autonetkit.network_model.base.exceptions import PortNotFound
+from autonetkit.network_model.base.network_model import NetworkModel
+from autonetkit.network_model.base.node import Node
+from autonetkit.network_model.base.types import DeviceType
 
 logger = logging.getLogger(__name__)
 

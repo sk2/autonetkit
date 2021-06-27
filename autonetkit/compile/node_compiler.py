@@ -5,8 +5,8 @@ from autonetkit.compile.node.linux_host import LinuxHostCompiler
 from autonetkit.compile.node.quagga import QuaggaCompiler
 
 if typing.TYPE_CHECKING:
-    from autonetkit.network_model.network_model import NetworkModel
-    from autonetkit.network_model.node import Node
+    from autonetkit.network_model.base.network_model import NetworkModel
+    from autonetkit.network_model.base.node import Node
 
 
 class TargetCompilerNotFound(Exception):

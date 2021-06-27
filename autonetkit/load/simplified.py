@@ -2,7 +2,7 @@ from typing import Optional, List, Dict, Tuple
 
 from pydantic import BaseModel
 
-from autonetkit.network_model.types import DeviceType
+from autonetkit.network_model.base.types import DeviceType
 
 
 class SimplifiedNode(BaseModel):

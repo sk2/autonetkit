@@ -3,8 +3,8 @@ from collections import defaultdict
 
 from autonetkit.design.utils import filters
 from autonetkit.load.model import StructuredTopology
-from autonetkit.network_model.network_model import NetworkModel
-from autonetkit.network_model.types import PortType, NodeId, LinkId, PortId, DeviceType
+from autonetkit.network_model.base.network_model import NetworkModel
+from autonetkit.network_model.base.types import PortType, NodeId, LinkId, PortId, DeviceType
 
 
 def process_structured_topology(structure_topology: StructuredTopology, network_model_cls: NetworkModel) -> NetworkModel:

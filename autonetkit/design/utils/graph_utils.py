@@ -4,15 +4,15 @@ from typing import Optional, List, NamedTuple
 
 import networkx as nx
 
-from autonetkit.network_model.types import DeviceType, PortType, NodeId
+from autonetkit.network_model.base.types import DeviceType, PortType, NodeId
 
 logger = logging.getLogger(__name__)
 
 if typing.TYPE_CHECKING:
-    from autonetkit.network_model.node import Node
-    from autonetkit.network_model.port import Port
-    from autonetkit.network_model.link import Link
-    from autonetkit.network_model.topology import Topology
+    from autonetkit.network_model.base.node import Node
+    from autonetkit.network_model.base.port import Port
+    from autonetkit.network_model.base.link import Link
+    from autonetkit.network_model.base.topology import Topology
 
 
 class BoundaryData(NamedTuple):

@@ -1,8 +1,8 @@
 from typing import Dict
 
 from autonetkit.compile.node.base import BaseCompiler
-from autonetkit.network_model.network_model import NetworkModel
-from autonetkit.network_model.node import Node
+from autonetkit.network_model.base.network_model import NetworkModel
+from autonetkit.network_model.base.node import Node
 
 
 class LinuxHostCompiler(BaseCompiler):

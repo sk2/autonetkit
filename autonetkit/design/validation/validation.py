@@ -2,8 +2,8 @@ import logging
 
 from autonetkit.design.utils import filters
 from autonetkit.design.utils.graph_utils import connected_components
-from autonetkit.network_model.topology import Topology
-from autonetkit.network_model.types import DeviceType
+from autonetkit.network_model.base.topology import Topology
+from autonetkit.network_model.base.types import DeviceType
 
 logger = logging.getLogger(__name__)
 

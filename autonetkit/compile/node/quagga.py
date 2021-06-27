@@ -2,9 +2,9 @@ from typing import Dict, List
 
 from autonetkit.compile.node.base import BaseCompiler
 from autonetkit.design.utils import filters
-from autonetkit.network_model.exceptions import NodeNotFound
-from autonetkit.network_model.network_model import NetworkModel
-from autonetkit.network_model.node import Node
+from autonetkit.network_model.base.exceptions import NodeNotFound
+from autonetkit.network_model.base.network_model import NetworkModel
+from autonetkit.network_model.base.node import Node
 
 
 class QuaggaCompiler(BaseCompiler):

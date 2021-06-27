@@ -1,24 +1,20 @@
 import typing
 
-from autonetkit.network_model.exceptions import NodeNotFound
-from autonetkit.network_model.types import LinkId
-
-if typing.TYPE_CHECKING:
-    from autonetkit.network_model.port import Port
-    from autonetkit.network_model.node import Node
-    from autonetkit.network_model.topology import Topology
+from autonetkit.network_model.base.exceptions import NodeNotFound
+from autonetkit.network_model.base.generics import N, P, T
+from autonetkit.network_model.base.types import LinkId
 
 
-class Link:
+class Link(typing.Generic[T, N, P]):
     """
 
     """
 
-    def __init__(self, topology, id, p1: 'Port', p2: 'Port'):
-        self.topology: Topology = topology
+    def __init__(self, topology: T, id: LinkId, p1: P, p2: P):
+        self.topology: T = topology
         self.id: LinkId = id
-        self.p1: Port = p1
-        self.p2: Port = p2
+        self.p1: P = p1
+        self.p2: P = p2
         self._data = {}
 
     @property
@@ -62,10 +58,20 @@ class Link:
         data["p2"] = self.p2.id
         data["n1"] = self.p1.node.id
         data["n2"] = self.p2.node.id
+
+
+        #TODO: deprecate this
+        data.update(self._data.copy())
+
+        skip = {"topology", "p1", "p2", "n1", "n2"}
+        for key, val in self.__dict__.items():
+            if key not in skip:
+                data[key] = val
+
         return data
 
     @property
-    def n1(self) -> 'Node':
+    def n1(self) -> N:
         """
 
         @return:
@@ -73,14 +79,14 @@ class Link:
         return self.p1.node
 
     @property
-    def n2(self) -> 'Node':
+    def n2(self) -> N:
         """
 
         @return:
         """
         return self.p2.node
 
-    def other_node(self, node: 'Node') -> 'Node':
+    def other_node(self, node: N) -> N:
         """
 
         @param node:

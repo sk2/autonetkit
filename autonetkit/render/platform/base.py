@@ -3,7 +3,7 @@ from typing import List
 
 from jinja2 import Environment
 
-from autonetkit.network_model.node import Node
+from autonetkit.network_model.base.node import Node
 from autonetkit.render.types import RenderedFileEntry
 
 

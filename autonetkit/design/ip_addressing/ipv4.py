@@ -3,7 +3,7 @@ from collections import defaultdict
 
 from autonetkit.design.utils import filters
 from autonetkit.design.utils.general import group_by
-from autonetkit.network_model.types import LAYER3_DEVICES
+from autonetkit.network_model.base.types import LAYER3_DEVICES
 
 
 def assign_loopbacks(topology):

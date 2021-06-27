@@ -1,13 +1,13 @@
 import typing
 from typing import List
 
-from autonetkit.network_model.exceptions import NodeNotFound
-from autonetkit.network_model.types import DeviceType, PortType
+from autonetkit.network_model.base.exceptions import NodeNotFound
+from autonetkit.network_model.base.types import DeviceType, PortType
 
 if typing.TYPE_CHECKING:
-    from autonetkit.network_model.port import Port
-    from autonetkit.network_model.node import Node
-    from autonetkit.network_model.topology import Topology
+    from autonetkit.network_model.base.port import Port
+    from autonetkit.network_model.base.node import Node
+    from autonetkit.network_model.base.topology import Topology
 
 
 def filter_nodes(topology: 'Topology', **kwargs) -> List['Node']:

@@ -4,8 +4,8 @@ from autonetkit.design.utils import filters
 from autonetkit.design.utils.filters import find_node_by_label
 from autonetkit.design.utils.general import group_by
 from autonetkit.design.utils.graph_utils import topology_to_nx_graph, wrap_node_ids
-from autonetkit.network_model.network_model import NetworkModel
-from autonetkit.network_model.types import DeviceType, PortType
+from autonetkit.network_model.base.network_model import NetworkModel
+from autonetkit.network_model.base.types import DeviceType, PortType
 from autonetkit.webserver.publish import publish_model_to_webserver
 
 network_model = NetworkModel()

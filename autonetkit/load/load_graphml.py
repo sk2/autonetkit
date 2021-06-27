@@ -6,8 +6,8 @@ from autonetkit.load.common import add_loopback
 from autonetkit.design.utils.graph_utils import normalise_node_locations
 from autonetkit.load.model import StructuredNode, StructuredPort, StructuredTopology, StructuredLink
 from autonetkit.load.preprocess import process_structured_topology
-from autonetkit.network_model.network_model import NetworkModel
-from autonetkit.network_model.types import PortType, DeviceType
+from autonetkit.network_model.base.network_model import NetworkModel
+from autonetkit.network_model.base.types import PortType, DeviceType
 
 
 def import_from_graphml(filename: str, network_model_cls= NetworkModel) -> NetworkModel:

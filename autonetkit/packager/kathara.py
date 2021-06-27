@@ -3,7 +3,7 @@ import os
 
 from autonetkit.compile.node_compiler import TargetCompilerNotFound, NodeCompiler
 from autonetkit.compile.platform.kathara import KatharaCompiler
-from autonetkit.network_model.network_model import NetworkModel
+from autonetkit.network_model.base.network_model import NetworkModel
 from autonetkit.packager.base import AbstractPlatformPackager
 from autonetkit.packager.utils import write_rendered_to_file
 from autonetkit.render.exceptions import RenderException

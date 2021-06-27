@@ -1,7 +1,7 @@
 import abc
 from typing import Dict
 
-from autonetkit.network_model.network_model import NetworkModel
+from autonetkit.network_model.base.network_model import NetworkModel
 
 
 class BasePlatformCompiler:

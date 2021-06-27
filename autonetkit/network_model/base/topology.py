@@ -1,44 +1,42 @@
 import logging
 import typing
 from collections import defaultdict
-from typing import List, Dict, Generic
+from typing import List, Dict
 
-from autonetkit.network_model.exceptions import NodeNotFound, LinkNotFound, PortNotFound, PortIdInUse, LinkIdInUse, \
-    NodeIdInUse, PathIdInUse, NumericNodeId
-from autonetkit.network_model.generics import N, L, P, NP, PP
-from autonetkit.network_model.link import Link
-from autonetkit.network_model.node import Node
-from autonetkit.network_model.path import NodePath, PortPath
-from autonetkit.network_model.port import Port
-from autonetkit.network_model.types import DeviceType, NodeId, TopologyId, LinkId, PortId, PortType, PathId
+import autonetkit.network_model.base.exceptions as exceptions
+from autonetkit.network_model.base.generics import N, L, P, NP, PP
+from autonetkit.network_model.base.link import Link
+from autonetkit.network_model.base.node import Node
+from autonetkit.network_model.base.path import NodePath, PortPath
+from autonetkit.network_model.base.port import Port
+from autonetkit.network_model.base.types import DeviceType, NodeId, TopologyId, LinkId, PortId, PortType, PathId
 
 logger = logging.getLogger(__name__)
 
 if typing.TYPE_CHECKING:
-    from autonetkit.network_model.network_model import NetworkModel
+    from autonetkit.network_model.base.network_model import NetworkModel
 
 
-class Topology(Generic[N, L, P]):
+class Topology(typing.Generic[N, L, P]):
+    _node_cls = Node
+    _link_cls = Link
+    _port_cls = Port
+
     """
 
     """
 
-    def __init__(self, network_model, id: TopologyId,
-                 node_cls=Node, link_cls=Link, port_cls=Port):
+    def __init__(self, network_model, id: TopologyId):
         self.id: TopologyId = id
         self.network_model: NetworkModel = network_model
-        self._nodes: Dict[NodeId: Node] = {}
-        self._links: Dict[LinkId: Link] = {}
-        self._ports: Dict[PortId, Port] = {}
-        self._node_paths: Dict[PathId, NodePath] = {}
-        self._port_paths: Dict[PathId, PortPath] = {}
+        self._nodes: Dict[NodeId: N] = {}
+        self._links: Dict[LinkId: L] = {}
+        self._ports: Dict[PortId, P] = {}
+        self._node_paths: Dict[PathId, NP] = {}
+        self._port_paths: Dict[PathId, PP] = {}
 
         self._cache_ports_for_node: Dict[NodeId, List[P]] = defaultdict(list)
         self._cache_links_for_node: Dict[NodeId, List[L]] = defaultdict(list)
-
-        self._node_cls = node_cls
-        self._link_cls = link_cls
-        self._port_cls = port_cls
 
         self._data = {}
 
@@ -53,7 +51,7 @@ class Topology(Generic[N, L, P]):
         """
         if id is not None:
             if id in self.network_model.used_node_ids:
-                raise NodeIdInUse(id)
+                raise exceptions.NodeIdInUse(id)
             else:
                 self.network_model.used_node_ids.add(id)
                 node_id = id
@@ -68,7 +66,7 @@ class Topology(Generic[N, L, P]):
         return node
 
     def _create_node(self, node_id) -> N:
-        node = Node(self, node_id)
+        node = self._node_cls(self, node_id)
         self._nodes[node_id] = node
         return node
 
@@ -84,7 +82,7 @@ class Topology(Generic[N, L, P]):
         """
         if id is not None:
             if id in self.network_model.used_port_ids:
-                raise PortIdInUse(id)
+                raise exceptions.PortIdInUse(id)
             else:
                 self.network_model.used_port_ids.add(id)
                 port_id = id
@@ -98,7 +96,7 @@ class Topology(Generic[N, L, P]):
         return port
 
     def _create_port(self, node: N, port_id: PortId):
-        port = Port(node, port_id)
+        port = self._port_cls(node, port_id)
         self._cache_ports_for_node[port.node.id].append(port)
         self._ports[port_id] = port
         return port
@@ -114,7 +112,7 @@ class Topology(Generic[N, L, P]):
         """
         if id is not None:
             if id in self.network_model.used_link_ids:
-                raise LinkIdInUse(id)
+                raise exceptions.LinkIdInUse(id)
             else:
                 self.network_model.used_link_ids.add(id)
                 link_id = id
@@ -126,47 +124,49 @@ class Topology(Generic[N, L, P]):
 
     def _create_link(self, link_id, p1: P, p2: P) -> L:
         # TODO: warn if port types are not the same
-        link = Link(self, link_id, p1, p2)
+        link = self._link_cls(self, link_id, p1, p2)
         self._links[link_id] = link
         self._cache_links_for_node[link.n1.id].append(link)
         self._cache_links_for_node[link.n2.id].append(link)
         return link
 
-    def create_node_path(self, nodes: List[N], id=None) -> NP:
+    def create_node_path(self, nodes: List[N], id=None, cls=NodePath) -> NP:
         """
 
         @param nodes:
         @param id:
         @return:
         """
+        # TODO: allow specifying the class type
         if id is not None:
             if id in self.network_model.used_path_ids:
-                raise PathIdInUse(id)
+                raise exceptions.PathIdInUse(id)
             else:
                 self.network_model.used_path_ids.add(id)
                 path_id = id
         else:
             path_id = self.network_model.generate_path_id()
-        path = NodePath(self, path_id, nodes)
+        path = cls(self, path_id, nodes)
         self._node_paths[path_id] = path
         return path
 
-    def create_port_path(self, ports: List[P], id=None) -> PP:
+    def create_port_path(self, ports: List[P], id=None, cls=PortPath) -> PP:
         """
 
         @param ports:
         @param id:
         @return:
         """
+        # TODO: allow specifying the class type
         if id is not None:
             if id in self.network_model.used_path_ids:
-                raise PathIdInUse(id)
+                raise exceptions.PathIdInUse(id)
             else:
                 self.network_model.used_path_ids.add(id)
                 path_id = id
         else:
             path_id = self.network_model.generate_path_id()
-        path = PortPath(self, path_id, ports)
+        path = cls(self, path_id, ports)
 
         self._port_paths[path_id] = path
         return path
@@ -206,7 +206,7 @@ class Topology(Generic[N, L, P]):
             try:
                 p1 = self.get_port_by_id(link.p1.id)
                 p2 = self.get_port_by_id(link.p2.id)
-            except PortNotFound:
+            except exceptions.PortNotFound:
                 if raise_if_port_not_found:
                     raise
                 else:
@@ -335,7 +335,7 @@ class Topology(Generic[N, L, P]):
         except KeyError:
             return default
 
-    def nodes(self) -> typing.List[P]:
+    def nodes(self) -> typing.List[N]:
         """
 
         @return:
@@ -420,9 +420,9 @@ class Topology(Generic[N, L, P]):
             if isinstance(nid, int):
                 # may be from networkx
                 message = f"Attempting to search for node by numeric id, cast to a string {nid}"
-                raise NumericNodeId(message)
+                raise exceptions.NumericNodeId(message)
 
-            raise NodeNotFound(nid)
+            raise exceptions.NodeNotFound(nid)
 
     def get_link_by_id(self, lid: LinkId) -> L:
         """
@@ -433,7 +433,7 @@ class Topology(Generic[N, L, P]):
         try:
             return self._links[lid]
         except KeyError:
-            raise LinkNotFound(lid)
+            raise exceptions.LinkNotFound(lid)
 
     def get_port_by_id(self, pid: PortId) -> P:
         """
@@ -444,4 +444,4 @@ class Topology(Generic[N, L, P]):
         try:
             return self._ports[pid]
         except KeyError:
-            raise PortNotFound(pid)
+            raise exceptions.PortNotFound(pid)

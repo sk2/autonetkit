@@ -3,7 +3,7 @@ from typing import Dict
 
 from jinja2 import Environment
 
-from autonetkit.network_model.node import Node
+from autonetkit.network_model.base.node import Node
 
 
 class NodeRenderer:

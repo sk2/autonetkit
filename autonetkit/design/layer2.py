@@ -3,8 +3,8 @@ import itertools
 from autonetkit.design.utils import filters
 from autonetkit.design.utils.general import move_to_average_peer_locations
 from autonetkit.design.utils.graph_utils import connected_components, merge_nodes, split_link, explode_node
-from autonetkit.network_model.network_model import NetworkModel
-from autonetkit.network_model.types import DeviceType, LAYER3_DEVICES
+from autonetkit.network_model.base.network_model import NetworkModel
+from autonetkit.network_model.base.types import DeviceType, LAYER3_DEVICES
 
 
 def build_l2(network_model: NetworkModel):

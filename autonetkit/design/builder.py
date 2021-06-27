@@ -1,7 +1,7 @@
 from autonetkit.design.layer2 import build_l2, build_l2_conn
 from autonetkit.design.routing import build_ospf, build_ebgp, build_ibgp
 from autonetkit.design.validation.validation import check_layer2_conn
-from autonetkit.network_model.network_model import NetworkModel
+from autonetkit.network_model.base.network_model import NetworkModel
 
 
 class Builder:

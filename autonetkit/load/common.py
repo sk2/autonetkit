@@ -7,9 +7,9 @@ from autonetkit.design.utils import filters
 from autonetkit.load.model import StructuredTopology, StructuredNode, StructuredPort, StructuredLink
 from autonetkit.load.preprocess import process_structured_topology
 from autonetkit.load.simplified import SimplifiedTopology
-from autonetkit.network_model.network_model import NetworkModel
-from autonetkit.network_model.topology import Topology
-from autonetkit.network_model.types import DeviceType, PortType, LAYER3_DEVICES
+from autonetkit.network_model.base.network_model import NetworkModel
+from autonetkit.network_model.base.topology import Topology
+from autonetkit.network_model.base.types import DeviceType, PortType, LAYER3_DEVICES
 
 
 def label_physical_ports(topology: Topology, port_prefix) -> None:

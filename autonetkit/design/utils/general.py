@@ -4,7 +4,7 @@ import typing
 from collections import defaultdict
 
 if typing.TYPE_CHECKING:
-    from autonetkit.network_model.node import Node
+    from autonetkit.network_model.base.node import Node
 
 
 def move_to_average_peer_locations(node: 'Node') -> None:

@@ -1,16 +1,13 @@
 from typing import Generic
 
-import typing
-
 from autonetkit.design.builder import Builder
 from autonetkit.load.load_graphml import import_from_graphml
 from autonetkit.load.validation import validate
-from autonetkit.network_model.network_model import NetworkModel
+from autonetkit.network_model.base.generics import NM
+from autonetkit.network_model.base.network_model import NetworkModel
 from autonetkit.packager.mapping import get_platform_builder
 from autonetkit.webserver.publish import publish_model_to_webserver
 
-
-NM = typing.TypeVar('NM', bound=NetworkModel)
 
 
 class BaseWorkflow(Generic[NM]):
@@ -33,7 +30,7 @@ class BaseWorkflow(Generic[NM]):
         self.render(network_model, target_platform)
         self.publish(network_model)
 
-    def load(self, input_file, network_model_cls: NM) -> NetworkModel:
+    def load(self, input_file, network_model_cls: NM) -> NM:
         """
 
         @param input_file:

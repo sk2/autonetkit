@@ -1,7 +1,7 @@
 from autonetkit.design.utils import filters
-from autonetkit.network_model.network_model import NetworkModel
-from autonetkit.network_model.topology import Topology
-from autonetkit.network_model.types import DeviceType
+from autonetkit.network_model.base.network_model import NetworkModel
+from autonetkit.network_model.base.topology import Topology
+from autonetkit.network_model.base.types import DeviceType
 
 
 def _build_igp_base(network_model: NetworkModel, topology: Topology):
