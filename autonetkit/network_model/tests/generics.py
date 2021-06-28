@@ -1,9 +1,13 @@
+import json
+import pprint
+
 from autonetkit.network_model.base.link import Link
 from autonetkit.network_model.base.network_model import NetworkModel
 from autonetkit.network_model.base.node import Node
 from autonetkit.network_model.base.port import Port
 from autonetkit.network_model.base.topology import Topology
 from autonetkit.network_model.base.types import DeviceType, PortType
+from autonetkit.network_model.base.utils import import_data
 from autonetkit.workflow.workflow import BaseWorkflow
 
 # TODO: extend the code for NodePaths and PortPaths
@@ -14,6 +18,9 @@ PL = 'PhysicalLink'
 PP = 'PhysicalPort'
 PN = 'PhysicalNode'
 
+
+#TODO: document that should set defaults in init -> not on the class variable itself
+# TODO: document that must set the type or it wont be imported/exported
 
 class PhysicalNode(Node[PT, PL, PP]):
     test3: int = 123
@@ -27,7 +34,7 @@ class PhysicalLink(Link[PT, PN, PP]):
 
 
 class PhysicalPort(Port[PT, PL, PP]):
-    port_test = 567
+    port_test: float = 567
 
 
 class PhysicalTopology(Topology[PN, PL, PP]):
@@ -43,7 +50,7 @@ class CustomNetworkModel(NetworkModel):
 
 def test_generic_workflow():
     # TODO: see how to specify as return value
-    workflow = BaseWorkflow[CustomNetworkModel]()
+    workflow = BaseWorkflow()
     filename = "../../example/small_internet.graphml"
     network_model: CustomNetworkModel = workflow.load(filename, CustomNetworkModel)
     network_model.create_topology("1234")
@@ -78,15 +85,25 @@ def test_generic_workflow():
     l1 = network_model.test_phy.create_link(r1.create_port(PortType.PHYSICAL), r2.create_port(PortType.PHYSICAL))
     l1.link_test = 2333332
 
+    import_data(r1, {"test3": 50})
+
+    pprint.pprint(r1.export())
+
+
+
+
     t2 = network_model.test_phy
     for node in t2.nodes():
         print(node.val2, node.type, node.test3)
         for port in node.ports():
-            print(port, port)
+            print(port, port, port.port_test)
 
     for link in t2.links():
         print("link", link, link.n1.val2, link.link_test)
 
-    exported = network_model.export()
-    import pprint
-    pprint.pprint(exported)
+    # exported = network_model.export()
+    # print(json.dumps(exported, default=str, indent=2))
+
+
+
+

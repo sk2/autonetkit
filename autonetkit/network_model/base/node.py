@@ -111,11 +111,6 @@ class Node(Generic[T, L, P]):
         @return:
         """
 
-        print("node self", type(self))
-        type_hints = typing.get_type_hints(self)
-        print("node hints", type_hints)
-
-
         skip = {"topology"}
         data = export_data(self, skip)
 

@@ -1,4 +1,4 @@
-import typing
+from typing import Generic, Dict
 
 from autonetkit.network_model.base.exceptions import NodeNotFound
 from autonetkit.network_model.base.generics import N, P, T
@@ -6,7 +6,8 @@ from autonetkit.network_model.base.types import LinkId
 from autonetkit.network_model.base.utils import export_data
 
 
-class Link(typing.Generic[T, N, P]):
+class Link(Generic[T, N, P]):
+    link_basic: float = 20
     """
 
     """
@@ -19,7 +20,7 @@ class Link(typing.Generic[T, N, P]):
         self._data = {}
 
     @property
-    def local_data(self) -> typing.Dict:
+    def local_data(self) -> Dict:
         """
 
         @return:
@@ -49,7 +50,7 @@ class Link(typing.Generic[T, N, P]):
         except KeyError:
             return default
 
-    def export(self) -> typing.Dict:
+    def export(self) -> Dict:
         """
 
         @return:
@@ -60,13 +61,8 @@ class Link(typing.Generic[T, N, P]):
         data["n1"] = self.p1.node.id
         data["n2"] = self.p2.node.id
 
-        # print("link self", type(self))
-        #
-        # type_hints = typing.get_type_hints(self)
-        # print("link hints", type_hints)
-        #
-        # skip = {"topology", "p1", "p2", "n1", "n2"}
-        # data = export_data(self, skip)
+        skip = {"topology", "p1", "p2", "n1", "n2"}
+        data = export_data(self, skip)
 
         return data
 

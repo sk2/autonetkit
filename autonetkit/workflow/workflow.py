@@ -1,4 +1,4 @@
-from typing import Generic
+from typing import Callable
 
 from autonetkit.design.builder import Builder
 from autonetkit.load.load_graphml import import_from_graphml
@@ -9,8 +9,7 @@ from autonetkit.packager.mapping import get_platform_builder
 from autonetkit.webserver.publish import publish_model_to_webserver
 
 
-
-class BaseWorkflow(Generic[NM]):
+class BaseWorkflow():
     """
 
     """
@@ -30,7 +29,7 @@ class BaseWorkflow(Generic[NM]):
         self.render(network_model, target_platform)
         self.publish(network_model)
 
-    def load(self, input_file, network_model_cls: NM) -> NM:
+    def load(self, input_file, network_model_cls: Callable) -> NM:
         """
 
         @param input_file:

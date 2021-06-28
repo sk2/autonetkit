@@ -2,9 +2,11 @@ from typing import Generic, Dict, List
 
 from autonetkit.network_model.base.generics import N, L, P, T
 from autonetkit.network_model.base.types import PortType, PortId
+from autonetkit.network_model.base.utils import export_data
 
 
 class Port(Generic[T, L, P]):
+    some_port_test = 123
     """
 
     """
@@ -96,16 +98,9 @@ class Port(Generic[T, L, P]):
 
         @return:
         """
-        data = self.global_data.copy()
-
-
-        #TODO: deprecate this
-        data.update(self._data.copy())
-
+        print("exporting port")
         skip = {"topology", "_node"}
-        for key, val in self.__dict__.items():
-            if key not in skip:
-                data[key] = val
+        data = export_data(self, skip)
 
         data["node"] = self._node.id
 
