@@ -3,6 +3,7 @@ import typing
 from autonetkit.network_model.base.exceptions import NodeNotFound
 from autonetkit.network_model.base.generics import N, P, T
 from autonetkit.network_model.base.types import LinkId
+from autonetkit.network_model.base.utils import export_data
 
 
 class Link(typing.Generic[T, N, P]):
@@ -59,14 +60,13 @@ class Link(typing.Generic[T, N, P]):
         data["n1"] = self.p1.node.id
         data["n2"] = self.p2.node.id
 
-
-        #TODO: deprecate this
-        data.update(self._data.copy())
-
-        skip = {"topology", "p1", "p2", "n1", "n2"}
-        for key, val in self.__dict__.items():
-            if key not in skip:
-                data[key] = val
+        # print("link self", type(self))
+        #
+        # type_hints = typing.get_type_hints(self)
+        # print("link hints", type_hints)
+        #
+        # skip = {"topology", "p1", "p2", "n1", "n2"}
+        # data = export_data(self, skip)
 
         return data
 

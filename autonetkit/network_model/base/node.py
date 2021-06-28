@@ -1,11 +1,16 @@
 from typing import Generic, Dict, List
 
+import typing
+
 from autonetkit.network_model.base.exceptions import PortNotFound
 from autonetkit.network_model.base.generics import N, L, P, T
 from autonetkit.network_model.base.types import NodeId, DeviceType, PortType
+from autonetkit.network_model.base.utils import export_data
 
 
 class Node(Generic[T, L, P]):
+    test_inside: str = "testing"
+    test333: int = 123
     """
 
     """
@@ -106,17 +111,17 @@ class Node(Generic[T, L, P]):
         @return:
         """
 
-        data = self.global_data.copy()
+        print("node self", type(self))
+        type_hints = typing.get_type_hints(self)
+        print("node hints", type_hints)
 
-        # TODO: deprecate this
-        data.update(self._data.copy())
 
         skip = {"topology"}
-        for key, val in self.__dict__.items():
-            if key not in skip:
-                data[key] = val
+        data = export_data(self, skip)
 
         return data
+
+
 
     def peer_nodes(self) -> List[N]:
         """

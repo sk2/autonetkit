@@ -3,6 +3,8 @@ import typing
 from collections import defaultdict
 from typing import List, Dict
 
+from pydantic import BaseModel
+
 import autonetkit.network_model.base.exceptions as exceptions
 from autonetkit.network_model.base.generics import N, L, P, NP, PP
 from autonetkit.network_model.base.link import Link
@@ -10,6 +12,8 @@ from autonetkit.network_model.base.node import Node
 from autonetkit.network_model.base.path import NodePath, PortPath
 from autonetkit.network_model.base.port import Port
 from autonetkit.network_model.base.types import DeviceType, NodeId, TopologyId, LinkId, PortId, PortType, PathId
+
+BaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +30,7 @@ class Topology(typing.Generic[N, L, P]):
 
     """
 
-    def __init__(self, network_model, id: TopologyId):
+    def __init__(self, network_model: int, id: TopologyId):
         self.id: TopologyId = id
         self.network_model: NetworkModel = network_model
         self._nodes: Dict[NodeId: N] = {}
@@ -39,6 +43,7 @@ class Topology(typing.Generic[N, L, P]):
         self._cache_links_for_node: Dict[NodeId, List[L]] = defaultdict(list)
 
         self._data = {}
+
 
     def create_node(self, type: DeviceType, label: typing.Optional[str] = None,
                     id: typing.Optional[NodeId] = None) -> N:

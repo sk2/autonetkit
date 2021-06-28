@@ -1,4 +1,5 @@
 import itertools
+import typing
 from collections import defaultdict
 from typing import Dict
 
@@ -9,6 +10,8 @@ from autonetkit.network_model.base.types import TopologyId, NodeId, PortId, Link
 
 
 class NetworkModel:
+    t_base: Topology
+
     """
 
     """
@@ -32,6 +35,19 @@ class NetworkModel:
         self.used_link_ids = set()
         self.used_port_ids = set()
         self.used_path_ids = set()
+
+        # TODO: enforce structure of t_ and then strip the t_ for naming
+        # instantiate defined topologies
+        for base in self.__class__.__bases__:
+            type_hints = typing.get_type_hints(base)
+            for key, val in type_hints.items():
+                print(key, val)
+                setattr(self, key, val(self, key))
+
+        type_hints = typing.get_type_hints(self)
+        for key, val in type_hints.items():
+            print(key, val)
+            setattr(self, key, val(self, key))
 
     @property
     def _node_ids(self):

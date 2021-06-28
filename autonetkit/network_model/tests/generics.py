@@ -6,40 +6,39 @@ from autonetkit.network_model.base.topology import Topology
 from autonetkit.network_model.base.types import DeviceType, PortType
 from autonetkit.workflow.workflow import BaseWorkflow
 
-
-#TODO: extend the code for NodePaths and PortPaths
-
-class PhysicalNode(Node['PhysicalTopology', 'PhysicalLink', 'PhysicalPort']):
-    def __init__(self, topology: 'Topology', id):
-        super().__init__(topology, id)
-        self.testing_val = 123
-        self.val2: int = 122333
+# TODO: extend the code for NodePaths and PortPaths
 
 
-class PhysicalLink(Link['PhysicalTopology', 'PhysicalNode', 'PhysicalPort']):
-    def __init__(self, topology, id, p1: 'P', p2: 'P'):
-        super().__init__(topology, id, p1, p2)
-        self.link_test = 345
+PT = 'PhysicalTopology'
+PL = 'PhysicalLink'
+PP = 'PhysicalPort'
+PN = 'PhysicalNode'
 
 
-class PhysicalPort(Port['PhysicalTopology', 'PhysicalLink', 'PhysicalPort']):
-    def __init__(self, node: 'Node', id):
-        super().__init__(node, id)
-        self.port_test = 567
+class PhysicalNode(Node[PT, PL, PP]):
+    test3: int = 123
+    testing_val = 123
+    val2: int = 122333
 
 
-class PhysicalTopology(Topology['PhysicalNode', 'PhysicalLink', 'PhysicalPort']):
+class PhysicalLink(Link[PT, PN, PP]):
+    link_test = 345
+    link_bc = 21
+
+
+class PhysicalPort(Port[PT, PL, PP]):
+    port_test = 567
+
+
+class PhysicalTopology(Topology[PN, PL, PP]):
     _node_cls = PhysicalNode
     _link_cls = PhysicalLink
     _port_cls = PhysicalPort
 
 
 class CustomNetworkModel(NetworkModel):
-    def __init__(self):
-        super().__init__()
-
-        self.test_phy = PhysicalTopology(self, "phy2")
-        self.test2 = 123
+    test_phy: PhysicalTopology
+    test2 = 123
 
 
 def test_generic_workflow():
@@ -48,6 +47,16 @@ def test_generic_workflow():
     filename = "../../example/small_internet.graphml"
     network_model: CustomNetworkModel = workflow.load(filename, CustomNetworkModel)
     network_model.create_topology("1234")
+
+    t_base = network_model.t_base
+    t_phy3 = network_model.test_phy
+    t_phy3.create_node(DeviceType.ROUTER)
+
+    print(t_base.id)
+    print(t_phy3.id)
+
+    for node in t_phy3.nodes():
+        print("HERE type", type(node))
 
     # t_phy = network_model.get_topology("physical")
 
@@ -62,13 +71,16 @@ def test_generic_workflow():
     r1 = network_model.test_phy.create_node(DeviceType.ROUTER, "r1")
     r2 = network_model.test_phy.create_node(DeviceType.ROUTER, "r2")
     r1.val2 = "def"
+    print(r1.val2)
+    r1.test3 = 23444544
+    r1.test_inside = 999
 
     l1 = network_model.test_phy.create_link(r1.create_port(PortType.PHYSICAL), r2.create_port(PortType.PHYSICAL))
     l1.link_test = 2333332
 
     t2 = network_model.test_phy
     for node in t2.nodes():
-        print(node.val2, node.type)
+        print(node.val2, node.type, node.test3)
         for port in node.ports():
             print(port, port)
 
