@@ -1,5 +1,6 @@
 import json
 import pprint
+from typing import Optional
 
 from autonetkit.common.utils import CustomJsonEncoder
 from autonetkit.network_model.base.link import Link
@@ -8,7 +9,8 @@ from autonetkit.network_model.base.node import Node
 from autonetkit.network_model.base.port import Port
 from autonetkit.network_model.base.topology import Topology
 from autonetkit.network_model.base.types import DeviceType, PortType
-from autonetkit.network_model.base.utils import import_data, restore_topology
+from autonetkit.network_model.base.utils import import_data
+from autonetkit.network_model.base.import_export import restore_topology
 from autonetkit.workflow.workflow import BaseWorkflow
 
 # TODO: extend the code for NodePaths and PortPaths
@@ -28,6 +30,7 @@ class PhysicalNode(Node[PT, PL, PP]):
     testing_val = 123
     val2: int = 122333
     val92: str
+    link_test: Optional[PL]
 
 
 class PhysicalLink(Link[PT, PN, PP]):

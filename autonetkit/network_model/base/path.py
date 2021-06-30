@@ -1,10 +1,11 @@
 from typing import Dict, List, Generic
 
 from autonetkit.network_model.base.generics import T, N, P
+from autonetkit.network_model.base.topology_element import TopologyElement
 from autonetkit.network_model.base.utils import initialise_annotation_defaults
 
 
-class NodePath(Generic[T, N, P]):
+class NodePath(TopologyElement, Generic[T, N, P]):
     """
 
     """
@@ -58,7 +59,7 @@ class NodePath(Generic[T, N, P]):
         return data
 
 
-class PortPath(Generic[T, N, P]):
+class PortPath(TopologyElement, Generic[T, N, P]):
     """
 
     """

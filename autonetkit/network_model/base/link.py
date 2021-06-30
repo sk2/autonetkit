@@ -2,11 +2,12 @@ from typing import Generic, Dict
 
 from autonetkit.network_model.base.exceptions import NodeNotFound
 from autonetkit.network_model.base.generics import N, P, T
+from autonetkit.network_model.base.topology_element import TopologyElement
 from autonetkit.network_model.base.types import LinkId
 from autonetkit.network_model.base.utils import export_data, initialise_annotation_defaults
 
 
-class Link(Generic[T, N, P]):
+class Link(TopologyElement, Generic[T, N, P]):
     link_basic: float = 20
     abc: str
     """
