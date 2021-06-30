@@ -3,16 +3,19 @@ from typing import Generic, Dict
 from autonetkit.network_model.base.exceptions import NodeNotFound
 from autonetkit.network_model.base.generics import N, P, T
 from autonetkit.network_model.base.types import LinkId
-from autonetkit.network_model.base.utils import export_data
+from autonetkit.network_model.base.utils import export_data, initialise_annotation_defaults
 
 
 class Link(Generic[T, N, P]):
     link_basic: float = 20
+    abc: str
     """
 
     """
 
     def __init__(self, topology: T, id: LinkId, p1: P, p2: P):
+        initialise_annotation_defaults(self)
+
         self.topology: T = topology
         self.id: LinkId = id
         self.p1: P = p1

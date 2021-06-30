@@ -2,7 +2,7 @@ from typing import Generic, Dict, List
 
 from autonetkit.network_model.base.generics import N, L, P, T
 from autonetkit.network_model.base.types import PortType, PortId
-from autonetkit.network_model.base.utils import export_data
+from autonetkit.network_model.base.utils import export_data, initialise_annotation_defaults
 
 
 class Port(Generic[T, L, P]):
@@ -12,6 +12,8 @@ class Port(Generic[T, L, P]):
     """
 
     def __init__(self, node: N, id):
+        initialise_annotation_defaults(self)
+
         self._node: N = node
         self.id: PortId = id
         self._data = {}
@@ -98,7 +100,6 @@ class Port(Generic[T, L, P]):
 
         @return:
         """
-        print("exporting port")
         skip = {"topology", "_node"}
         data = export_data(self, skip)
 

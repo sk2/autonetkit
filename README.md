@@ -23,6 +23,11 @@ For an example of using the API, please see the tutorial, and for an end-to-end 
 
 # Users
 
+
+## Tips
+
+Best to use ids rather than objects in data structures
+
 Users from industry, academia, and university teaching.
 
 # Further information

@@ -1,12 +1,12 @@
 import itertools
-import typing
 from collections import defaultdict
-from typing import Dict
+from typing import Dict, List
 
 from autonetkit.network_model.base.exceptions import TopologyNotFound
 from autonetkit.network_model.base.generics import T
 from autonetkit.network_model.base.topology import Topology
 from autonetkit.network_model.base.types import TopologyId, NodeId, PortId, LinkId, PathId
+from autonetkit.network_model.base.utils import get_annotations
 
 
 class NetworkModel:
@@ -37,17 +37,16 @@ class NetworkModel:
         self.used_path_ids = set()
 
         # TODO: enforce structure of t_ and then strip the t_ for naming
-        # instantiate defined topologies
-        for base in self.__class__.__bases__:
-            type_hints = typing.get_type_hints(base)
-            for key, val in type_hints.items():
-                print(key, val)
-                setattr(self, key, val(self, key))
+        # instantiate defined values
+        # and store these topologies for the lookup accessor
+        self._class_topologies = {}
 
-        type_hints = typing.get_type_hints(self)
-        for key, val in type_hints.items():
-            print(key, val)
-            setattr(self, key, val(self, key))
+        for key, cls in get_annotations(self).items():
+            if issubclass(cls, Topology):
+                topology = cls(self, key)
+                setattr(self, key, topology)
+                self._class_topologies[key] = topology
+
 
     @property
     def _node_ids(self):
@@ -88,9 +87,12 @@ class NetworkModel:
         @return:
         """
         try:
-            return self._topologies[name]
+            return self._class_topologies[name]
         except KeyError:
-            raise TopologyNotFound(name)
+            try:
+                return self._topologies[name]
+            except KeyError:
+                raise TopologyNotFound(name)
 
     def create_topology(self, name) -> T:
         """
@@ -130,6 +132,11 @@ class NetworkModel:
         """
         return PathId(next(self._path_ids))
 
+    def topologies(self) -> List[Topology]:
+        result = list(self._topologies.values())
+        result += list(self._class_topologies.values())
+        return result
+
     def export(self) -> Dict:
         """
 
@@ -139,8 +146,9 @@ class NetworkModel:
         # for name, topology in self._topologies.items():
         #     result[name] = topology.export()
 
-        for key, val in self.__dict__.items():
-            if isinstance(val, Topology):
-                result[key] = val.export()
+        #TODO: rework this to export from the two topology dictionaries
+
+        for topology in self.topologies():
+            result[topology.id] = topology.export()
 
         return result

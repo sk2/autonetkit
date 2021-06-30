@@ -14,7 +14,6 @@ def process_structured_topology(structure_topology: StructuredTopology, network_
     @return:
     """
     network_model = network_model_cls()
-    print("created", network_model)
 
     t_in = network_model.get_topology("input")
     for node in structure_topology.nodes:

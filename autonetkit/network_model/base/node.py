@@ -1,11 +1,9 @@
 from typing import Generic, Dict, List
 
-import typing
-
 from autonetkit.network_model.base.exceptions import PortNotFound
 from autonetkit.network_model.base.generics import N, L, P, T
 from autonetkit.network_model.base.types import NodeId, DeviceType, PortType
-from autonetkit.network_model.base.utils import export_data
+from autonetkit.network_model.base.utils import export_data, initialise_annotation_defaults
 
 
 class Node(Generic[T, L, P]):
@@ -16,9 +14,12 @@ class Node(Generic[T, L, P]):
     """
 
     def __init__(self, topology: T, id):
+        initialise_annotation_defaults(self)
+
         self.topology: T = topology
         self.id: NodeId = id
         self._data: Dict = {}
+
 
     @property
     def local_data(self) -> Dict:
@@ -115,8 +116,6 @@ class Node(Generic[T, L, P]):
         data = export_data(self, skip)
 
         return data
-
-
 
     def peer_nodes(self) -> List[N]:
         """

@@ -1,6 +1,7 @@
 from typing import Dict, List, Generic
 
 from autonetkit.network_model.base.generics import T, N, P
+from autonetkit.network_model.base.utils import initialise_annotation_defaults
 
 
 class NodePath(Generic[T, N, P]):
@@ -9,6 +10,8 @@ class NodePath(Generic[T, N, P]):
     """
 
     def __init__(self, topology, id, nodes: List[N]):
+        initialise_annotation_defaults(self)
+
         self.id = id
         self.topology = topology
         self.nodes: List[N] = nodes
@@ -61,6 +64,8 @@ class PortPath(Generic[T, N, P]):
     """
 
     def __init__(self, topology, id, ports: List[P]):
+        initialise_annotation_defaults(self)
+
         self.id = id
         self.topology = topology
         self.ports: List[P] = ports

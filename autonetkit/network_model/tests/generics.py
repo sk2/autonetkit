@@ -1,13 +1,14 @@
 import json
 import pprint
 
+from autonetkit.common.utils import CustomJsonEncoder
 from autonetkit.network_model.base.link import Link
 from autonetkit.network_model.base.network_model import NetworkModel
 from autonetkit.network_model.base.node import Node
 from autonetkit.network_model.base.port import Port
 from autonetkit.network_model.base.topology import Topology
 from autonetkit.network_model.base.types import DeviceType, PortType
-from autonetkit.network_model.base.utils import import_data
+from autonetkit.network_model.base.utils import import_data, restore_topology
 from autonetkit.workflow.workflow import BaseWorkflow
 
 # TODO: extend the code for NodePaths and PortPaths
@@ -19,13 +20,14 @@ PP = 'PhysicalPort'
 PN = 'PhysicalNode'
 
 
-#TODO: document that should set defaults in init -> not on the class variable itself
+# TODO: document that should set defaults in init -> not on the class variable itself
 # TODO: document that must set the type or it wont be imported/exported
 
 class PhysicalNode(Node[PT, PL, PP]):
     test3: int = 123
     testing_val = 123
     val2: int = 122333
+    val92: str
 
 
 class PhysicalLink(Link[PT, PN, PP]):
@@ -59,11 +61,11 @@ def test_generic_workflow():
     t_phy3 = network_model.test_phy
     t_phy3.create_node(DeviceType.ROUTER)
 
-    print(t_base.id)
-    print(t_phy3.id)
-
-    for node in t_phy3.nodes():
-        print("HERE type", type(node))
+    # print(t_base.id)
+    # print(t_phy3.id)
+    #
+    # for node in t_phy3.nodes():
+    #     print("HERE type", type(node))
 
     # t_phy = network_model.get_topology("physical")
 
@@ -75,35 +77,57 @@ def test_generic_workflow():
 
     assert (len(t_ibgp.links()) == 26)
 
+    print("len", len(network_model.test_phy.nodes()))
+
     r1 = network_model.test_phy.create_node(DeviceType.ROUTER, "r1")
     r2 = network_model.test_phy.create_node(DeviceType.ROUTER, "r2")
-    r1.val2 = "def"
-    print(r1.val2)
+    # r1.val2 = "def"
+    # print(r1.val2)
     r1.test3 = 23444544
     r1.test_inside = 999
 
     l1 = network_model.test_phy.create_link(r1.create_port(PortType.PHYSICAL), r2.create_port(PortType.PHYSICAL))
     l1.link_test = 2333332
 
-    import_data(r1, {"test3": 50})
+    # import_data(r1, {"test3": 50})
 
-    pprint.pprint(r1.export())
+    exported = network_model.export()
 
+    data = json.dumps(exported, cls=CustomJsonEncoder, indent=2)
+
+    # with open("test.json", "w") as fh:
+    #     fh.write(data)
+
+    parsed = json.loads(data)
+
+    # pprint.pprint(exported)
+
+    # test casting - this should be cast to an int
+    parsed["test_phy"]["nodes"]["n34"]["test3"] = "12345"
+
+
+    nm2 = restore_topology(CustomNetworkModel, parsed)
+
+    # export now
+    exported2 = nm2.export()
+
+    assert exported2["test_phy"]["nodes"]["n34"]["test3"] != "12345"
+    assert exported2["test_phy"]["nodes"]["n34"]["test3"] == 12345
+
+
+
+    pprint.pprint(exported2["test_phy"])
 
 
 
     t2 = network_model.test_phy
-    for node in t2.nodes():
-        print(node.val2, node.type, node.test3)
-        for port in node.ports():
-            print(port, port, port.port_test)
-
-    for link in t2.links():
-        print("link", link, link.n1.val2, link.link_test)
+    # for node in t2.nodes():
+    #     print(node.val2, node.type, node.test3)
+    #     for port in node.ports():
+    #         print(port, port, port.port_test)
+    #
+    # for link in t2.links():
+    #     print("link", link, link.n1.val2, link.link_test)
 
     # exported = network_model.export()
     # print(json.dumps(exported, default=str, indent=2))
-
-
-
-

@@ -44,9 +44,8 @@ class Topology(typing.Generic[N, L, P]):
 
         self._data = {}
 
-
-    def create_node(self, type: DeviceType, label: typing.Optional[str] = None,
-                    id: typing.Optional[NodeId] = None) -> N:
+    def create_node(self, type: DeviceType, label: str = "",
+                    id: typing.Optional[NodeId] = None, warn_if_id_in_use=True) -> N:
         """
 
         @param type:
@@ -55,7 +54,7 @@ class Topology(typing.Generic[N, L, P]):
         @return:
         """
         if id is not None:
-            if id in self.network_model.used_node_ids:
+            if id in self.network_model.used_node_ids and warn_if_id_in_use:
                 raise exceptions.NodeIdInUse(id)
             else:
                 self.network_model.used_node_ids.add(id)
@@ -65,8 +64,8 @@ class Topology(typing.Generic[N, L, P]):
 
         node = self._create_node(node_id)
         node.set("type", type)
-        if label:
-            node.set("label", label)
+
+        node.set("label", label)
 
         return node
 
@@ -76,7 +75,7 @@ class Topology(typing.Generic[N, L, P]):
         return node
 
     def create_port(self, node: N, type: PortType, label: typing.Optional[str] = None,
-                    id: typing.Optional[PortId] = None) -> P:
+                    id: typing.Optional[PortId] = None, warn_if_id_in_use = False) -> P:
         """
 
         @param node:
@@ -86,7 +85,7 @@ class Topology(typing.Generic[N, L, P]):
         @return:
         """
         if id is not None:
-            if id in self.network_model.used_port_ids:
+            if id in self.network_model.used_port_ids and warn_if_id_in_use:
                 raise exceptions.PortIdInUse(id)
             else:
                 self.network_model.used_port_ids.add(id)
@@ -107,7 +106,7 @@ class Topology(typing.Generic[N, L, P]):
         return port
 
     def create_link(self, p1: P, p2: P,
-                    id: typing.Optional[LinkId] = None) -> L:
+                    id: typing.Optional[LinkId] = None, warn_if_id_in_use=False) -> L:
         """
 
         @param p1:
@@ -116,7 +115,7 @@ class Topology(typing.Generic[N, L, P]):
         @return:
         """
         if id is not None:
-            if id in self.network_model.used_link_ids:
+            if id in self.network_model.used_link_ids and warn_if_id_in_use:
                 raise exceptions.LinkIdInUse(id)
             else:
                 self.network_model.used_link_ids.add(id)
