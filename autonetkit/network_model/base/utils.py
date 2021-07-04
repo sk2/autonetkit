@@ -1,3 +1,4 @@
+import dataclasses
 import typing
 from typing import Dict
 
@@ -22,18 +23,22 @@ def export_data(cls, skip: set) -> Dict:
     data.update(cls._data.copy())
 
     # Get any annotated fields
-    for base in reversed(cls.__class__.__mro__):
-        annotations = base.__dict__.get('__annotations__', {})
-        for key, val in annotations.items():
-            try:
-                data[key] = getattr(cls, key)
-            except AttributeError:
-                # may not have been initialised
-                pass
+    fields = dataclasses.fields(cls)
+    for field in fields:
+        key = field.name
+        if key in skip:
+            continue
 
-    for key, val in cls.__dict__.items():
-        if key not in skip:
-            data[key] = val
+        try:
+            data[key] = getattr(cls, key)
+        except AttributeError:
+            #TODO: see if can still reach here with
+            # may not have been initialised
+            pass
+
+    # for key, val in cls.__dict__.items():
+    #     if key not in skip:
+    #         data[key] = val
 
     return data
 

@@ -53,10 +53,6 @@ def build_ibgp(network_model: NetworkModel):
     routers = filters.routers(t_l2_conn)
     t_ibgp.add_nodes_from(routers)
 
-    for node in t_ibgp.nodes():
-        print("node", "asn", node.get("asn"))
-
-
     pairs = [(s, t)
              for s in t_ibgp.nodes()
              for t in t_ibgp.nodes()

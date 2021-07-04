@@ -100,8 +100,6 @@ def restore_topology(model_constructor: 'NM', exported: Dict) -> NM:
 
             link = topology.create_link(p1, p2, id=link_id, warn_if_id_in_use=False)
 
-            print("created link", link_id)
-
             _map_annotations(forward_refs, link, link_data, topology_constructors)
 
             pass
@@ -148,8 +146,10 @@ def restore_topology(model_constructor: 'NM', exported: Dict) -> NM:
 
     return model
 
-
 def _map_annotations(forward_refs, element: TopologyElement, element_data: Dict, topology_constructors):
+    print("map", element)
+
+def _map_annotations2(forward_refs, element: TopologyElement, element_data: Dict, topology_constructors):
     for key, constructor in get_annotations(element).items():
         try:
             val = element_data[key]

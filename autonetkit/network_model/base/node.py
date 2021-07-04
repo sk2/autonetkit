@@ -5,7 +5,7 @@ from autonetkit.network_model.base.exceptions import PortNotFound
 from autonetkit.network_model.base.generics import N, L, P, T
 from autonetkit.network_model.base.topology_element import TopologyElement
 from autonetkit.network_model.base.types import NodeId, DeviceType, PortType
-from autonetkit.network_model.base.utils import export_data, initialise_annotation_defaults
+from autonetkit.network_model.base.utils import export_data
 
 
 @dataclass

@@ -1,6 +1,7 @@
 import logging
 import typing
 from collections import defaultdict
+from dataclasses import dataclass
 from typing import List, Dict
 
 import autonetkit.network_model.base.exceptions as exceptions
@@ -17,7 +18,12 @@ logger = logging.getLogger(__name__)
 if typing.TYPE_CHECKING:
     from autonetkit.network_model.base.network_model import NetworkModel
 
+
+@dataclass
 class Topology(BaseTopology, typing.Generic[N, L, P]):
+    network_model: N = None
+    id: TopologyId = None
+
     _node_cls = Node
     _link_cls = Link
     _port_cls = Port
@@ -26,18 +32,25 @@ class Topology(BaseTopology, typing.Generic[N, L, P]):
 
     """
 
-    def __init__(self, network_model: int, id: TopologyId):
-        self.id: TopologyId = id
-        self.network_model: NetworkModel = network_model
+    def __init__(self, network_model: N, id: TopologyId):
+        # This is called if created not from dataclass init but from "regular" create_topology
+        #TODO: replace once all are created direct on topology
+        self.network_model = network_model
+        self.id = id
+
+        self._initialise()
+
+    def __post_init__(self):
+        self._initialise()
+
+    def _initialise(self):
         self._nodes: Dict[NodeId: N] = {}
         self._links: Dict[LinkId: L] = {}
         self._ports: Dict[PortId, P] = {}
         self._node_paths: Dict[PathId, NP] = {}
         self._port_paths: Dict[PathId, PP] = {}
-
         self._cache_ports_for_node: Dict[NodeId, List[P]] = defaultdict(list)
         self._cache_links_for_node: Dict[NodeId, List[L]] = defaultdict(list)
-
         self._data = {}
 
     def create_node(self, type: DeviceType, label: str = "",

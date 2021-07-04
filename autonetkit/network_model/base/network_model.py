@@ -1,5 +1,7 @@
+import dataclasses
 import itertools
 from collections import defaultdict
+from dataclasses import dataclass, field
 from typing import Dict, List, Generic
 
 from autonetkit.network_model.base.exceptions import TopologyNotFound
@@ -7,21 +9,19 @@ from autonetkit.network_model.base.generics import T
 from autonetkit.network_model.base.topology import Topology
 from autonetkit.network_model.base.topology_element import BaseTopology
 from autonetkit.network_model.base.types import TopologyId, NodeId, PortId, LinkId, PathId
-from autonetkit.network_model.base.utils import get_annotations
 
 
+@dataclass
 class NetworkModel(Generic[T]):
-    t_base: Topology
-
     """
 
     """
 
-    def __init__(self):
-        self._topologies: Dict[TopologyId, T] = {}
-
+    def __post_init__(self):
         # create mandatory topologies
         # TODO refactor to be specific/custom then
+        self._topologies: Dict[TopologyId, T] = {}
+
         self.create_topology("input")
         self.create_topology("physical")
 
@@ -41,12 +41,15 @@ class NetworkModel(Generic[T]):
         # instantiate defined values
         # and store these topologies for the lookup accessor
         self._class_topologies = {}
+        print("init class topo", self._class_topologies)
 
-        for key, cls in get_annotations(self).items():
-            if issubclass(cls, Topology):
-                topology = cls(self, key)
-                setattr(self, key, topology)
-                self._class_topologies[key] = topology
+        #TODO: do this from the fields
+        for field in dataclasses.fields(self):
+            if issubclass(field.type, BaseTopology):
+                print("init topology", field.type)
+                topology = field.type(network_model=self, id=field.name)
+                setattr(self, field.name, topology)
+                self._class_topologies[field.name] = topology
 
 
     @property
@@ -81,7 +84,7 @@ class NetworkModel(Generic[T]):
                 self.used_path_ids.add(candidate)
                 yield candidate
 
-    def get_topology(self, name) -> BaseTopology:
+    def get_topology(self, name) -> Topology:
         """
 
         @param name:
@@ -101,7 +104,7 @@ class NetworkModel(Generic[T]):
         @param name:
         @return:
         """
-        topology = Topology(self, name)
+        topology = Topology(network_model=self, id=name)
         self._topologies[name] = topology
         return topology
 

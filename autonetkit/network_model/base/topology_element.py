@@ -6,6 +6,7 @@ from typing import Dict
 class TopologyElement:
     _data: Dict = field(default_factory=dict)
 
+@dataclass
 class BaseTopology:
     pass
     # _data: Dict = field(default_factory=dict)
