@@ -18,6 +18,9 @@ class Node(TopologyElement, Generic[T, L, P]):
     def __eq__(self, other):
         return self.id == other.id
 
+    def __hash__(self):
+        return hash(self.id)
+
     @property
     def local_data(self) -> Dict:
         """

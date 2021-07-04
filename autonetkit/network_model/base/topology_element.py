@@ -6,6 +6,9 @@ from typing import Dict
 class TopologyElement:
     _data: Dict = field(default_factory=dict)
 
+    def __hash__(self):
+        return hash(self.id)
+
 @dataclass
 class BaseTopology:
     pass

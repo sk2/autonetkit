@@ -43,16 +43,6 @@ def export_data(cls, skip: set) -> Dict:
     return data
 
 
-def import_data(cls, data):
-    for base in reversed(cls.__class__.__mro__):
-        annotations = base.__dict__.get('__annotations__', {})
-        for key, type_to_cast in annotations.items():
-            if key in data:
-                # TODO: catch cast error
-                val = type_to_cast(data[key])
-                setattr(cls, key, val)
-
-
 def get_annotations(cls) -> Dict:
     result = {}
     for base in reversed(cls.__class__.__mro__):
@@ -106,7 +96,7 @@ def get_optional_value(constructor):
         raise TypeError
 
 
-def get_topology_constructors(topology: 'Topology') -> set:
+def get_topology_constructors(topology: 'Topology') -> Dict:
     # returns list of all element constructors
     result = set()
     base_classes = list(reversed(topology.__class__.__mro__))
@@ -127,7 +117,8 @@ def get_topology_constructors(topology: 'Topology') -> set:
         except AttributeError:
             pass
 
-    return result
+    # map to dict keyed by name for easy lookup later
+    return {x.__name__: x for x in result}
 
 
 def get_forward_ref_value(forward_ref: typing.ForwardRef) -> str:

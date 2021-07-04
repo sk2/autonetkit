@@ -41,7 +41,6 @@ class NetworkModel(Generic[T]):
         # instantiate defined values
         # and store these topologies for the lookup accessor
         self._class_topologies = {}
-        print("init class topo", self._class_topologies)
 
         #TODO: do this from the fields
         for field in dataclasses.fields(self):

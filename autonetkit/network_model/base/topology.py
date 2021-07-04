@@ -16,7 +16,7 @@ from autonetkit.network_model.base.types import DeviceType, NodeId, TopologyId, 
 logger = logging.getLogger(__name__)
 
 if typing.TYPE_CHECKING:
-    from autonetkit.network_model.base.network_model import NetworkModel
+    pass
 
 
 @dataclass
@@ -34,7 +34,7 @@ class Topology(BaseTopology, typing.Generic[N, L, P]):
 
     def __init__(self, network_model: N, id: TopologyId):
         # This is called if created not from dataclass init but from "regular" create_topology
-        #TODO: replace once all are created direct on topology
+        # TODO: replace once all are created direct on topology
         self.network_model = network_model
         self.id = id
 

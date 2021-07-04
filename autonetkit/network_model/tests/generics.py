@@ -26,7 +26,20 @@ PN = 'PhysicalNode'
 # TODO: document that should set defaults in init -> not on the class variable itself
 # TODO: document that must set the type or it wont be imported/exported
 
-@dataclass
+# TODO: note eq set false so inherit rather than generate own eq and then hash functions
+
+
+"""
+TODO:
+
+1. support NodePath and PortPath end to end - inc as custom on layer
+
+2. diff exported first iteration and exported after export/import step
+
+"""
+
+
+@dataclass(eq=False)
 class PhysicalNode(Node[PT, PL, PP]):
     link_test: Optional[PL] = None
     val92: str = None
@@ -36,13 +49,14 @@ class PhysicalNode(Node[PT, PL, PP]):
     val2: int = 122333
 
 
-@dataclass
+
+@dataclass(eq=False)
 class PhysicalLink(Link[PT, PN, PP]):
     link_test = 345
     link_bc = 21
 
 
-@dataclass
+@dataclass(eq=False)
 class PhysicalPort(Port[PT, PL, PP]):
     port_test: float = 567
 
@@ -117,8 +131,8 @@ def test_generic_workflow():
     r2.link_test = l1
 
     # copy nodes into test phy
-    network_model.test_phy.add_nodes_from(t_phy.nodes())
-    print("test nodes", network_model.test_phy.nodes())
+    # network_model.test_phy.add_nodes_from(t_phy.nodes())
+    # print("test nodes", network_model.test_phy.nodes())
 
     publish_model_to_webserver(network_model)
     # import_data(r1, {"test3": 50})
@@ -135,15 +149,19 @@ def test_generic_workflow():
     pprint.pprint(parsed["test_phy"])
 
     # test casting - this should be cast to an int
-    parsed["test_phy"]["nodes"]["n34"]["test3"] = "12345"
+    # TODO: may need to double check with dacite to enforce casting
+    parsed["test_phy"]["nodes"]["n34"]["test3"] = 12345
 
     nm2 = restore_topology(CustomNetworkModel, parsed)
 
     # export now
     exported2 = nm2.export()
+    print(exported2["test_phy"]["nodes"][r1.id])
 
-    assert exported2["test_phy"]["nodes"]["n34"]["test3"] != "12345"
-    assert exported2["test_phy"]["nodes"]["n34"]["test3"] == 12345
+    assert exported2["test_phy"]["nodes"][r1.id]["test3"] != "12345"
+    assert exported2["test_phy"]["nodes"][r1.id]["test3"] == 12345
+
+    assert isinstance(exported2["test_phy"]["nodes"][r1.id]["port_test"], PhysicalPort)
 
     # get items
     nm2_r1 = nm2.test_phy.get_node_by_id(r1.id)
