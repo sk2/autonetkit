@@ -3,25 +3,21 @@ import typing
 from collections import defaultdict
 from typing import List, Dict
 
-from pydantic import BaseModel
-
 import autonetkit.network_model.base.exceptions as exceptions
 from autonetkit.network_model.base.generics import N, L, P, NP, PP
 from autonetkit.network_model.base.link import Link
 from autonetkit.network_model.base.node import Node
 from autonetkit.network_model.base.path import NodePath, PortPath
 from autonetkit.network_model.base.port import Port
+from autonetkit.network_model.base.topology_element import BaseTopology
 from autonetkit.network_model.base.types import DeviceType, NodeId, TopologyId, LinkId, PortId, PortType, PathId
-
-BaseModel
 
 logger = logging.getLogger(__name__)
 
 if typing.TYPE_CHECKING:
     from autonetkit.network_model.base.network_model import NetworkModel
 
-
-class Topology(typing.Generic[N, L, P]):
+class Topology(BaseTopology, typing.Generic[N, L, P]):
     _node_cls = Node
     _link_cls = Link
     _port_cls = Port
@@ -70,12 +66,12 @@ class Topology(typing.Generic[N, L, P]):
         return node
 
     def _create_node(self, node_id) -> N:
-        node = self._node_cls(self, node_id)
+        node = self._node_cls(topology=self, id=node_id)
         self._nodes[node_id] = node
         return node
 
-    def create_port(self, node: N, type: PortType, label: typing.Optional[str] = None,
-                    id: typing.Optional[PortId] = None, warn_if_id_in_use = False) -> P:
+    def create_port(self, node: N, type: PortType, label: str = "",
+                    id: typing.Optional[PortId] = None, warn_if_id_in_use=False) -> P:
         """
 
         @param node:
@@ -94,13 +90,12 @@ class Topology(typing.Generic[N, L, P]):
             port_id = self.network_model.generate_port_id()
         port = self._create_port(node, port_id)
         port.set("type", type)
-        if label:
-            port.set("label", label)
+        port.set("label", label)
 
         return port
 
     def _create_port(self, node: N, port_id: PortId):
-        port = self._port_cls(node, port_id)
+        port = self._port_cls(node=node, id=port_id)
         self._cache_ports_for_node[port.node.id].append(port)
         self._ports[port_id] = port
         return port
@@ -128,7 +123,7 @@ class Topology(typing.Generic[N, L, P]):
 
     def _create_link(self, link_id, p1: P, p2: P) -> L:
         # TODO: warn if port types are not the same
-        link = self._link_cls(self, link_id, p1, p2)
+        link = self._link_cls(topology=self, id=link_id, p1=p1, p2=p2)
         self._links[link_id] = link
         self._cache_links_for_node[link.n1.id].append(link)
         self._cache_links_for_node[link.n2.id].append(link)

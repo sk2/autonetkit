@@ -1,3 +1,4 @@
+import dataclasses
 import json
 import pprint
 from typing import Optional
@@ -11,7 +12,11 @@ from autonetkit.network_model.base.topology import Topology
 from autonetkit.network_model.base.types import DeviceType, PortType
 from autonetkit.network_model.base.utils import import_data
 from autonetkit.network_model.base.import_export import restore_topology
+from autonetkit.webserver.publish import publish_model_to_webserver
 from autonetkit.workflow.workflow import BaseWorkflow
+
+from dataclasses import dataclass
+
 
 # TODO: extend the code for NodePaths and PortPaths
 
@@ -25,23 +30,28 @@ PN = 'PhysicalNode'
 # TODO: document that should set defaults in init -> not on the class variable itself
 # TODO: document that must set the type or it wont be imported/exported
 
+@dataclass
 class PhysicalNode(Node[PT, PL, PP]):
+    link_test: Optional[PL] = None
+    val92: str = None
+    port_test: PP = None
     test3: int = 123
     testing_val = 123
     val2: int = 122333
-    val92: str
-    link_test: Optional[PL]
 
 
+@dataclass
 class PhysicalLink(Link[PT, PN, PP]):
     link_test = 345
     link_bc = 21
 
 
+@dataclass
 class PhysicalPort(Port[PT, PL, PP]):
     port_test: float = 567
 
 
+# @dataclass
 class PhysicalTopology(Topology[PN, PL, PP]):
     _node_cls = PhysicalNode
     _link_cls = PhysicalLink
@@ -53,6 +63,11 @@ class CustomNetworkModel(NetworkModel):
     test2 = 123
 
 
+# import pprint
+# pprint.pprint(dataclasses.fields(PhysicalNode))
+# print("---")
+
+
 def test_generic_workflow():
     # TODO: see how to specify as return value
     workflow = BaseWorkflow()
@@ -62,7 +77,12 @@ def test_generic_workflow():
 
     t_base = network_model.t_base
     t_phy3 = network_model.test_phy
+    print("phy3", t_phy3, type(t_phy3))
+    print("----")
+
     t_phy3.create_node(DeviceType.ROUTER)
+    print("----")
+
 
     # print(t_base.id)
     # print(t_phy3.id)
@@ -73,6 +93,19 @@ def test_generic_workflow():
     # t_phy = network_model.get_topology("physical")
 
     workflow.build(network_model)
+
+    publish_model_to_webserver(network_model)
+
+
+    t_phy = network_model.get_topology("physical")
+    #TODO: fix so network model topology returns a topology with generic
+    print("nodes", t_phy.nodes())
+    print("links", t_phy.links())
+    for node in t_phy.nodes():
+        print(node)
+
+
+
     t_ebgp = network_model.get_topology("ebgp")
     t_ibgp = network_model.get_topology("ibgp")
     # DO basic check: ebgp and ibgp links should only be setup if rest working
@@ -84,13 +117,23 @@ def test_generic_workflow():
 
     r1 = network_model.test_phy.create_node(DeviceType.ROUTER, "r1")
     r2 = network_model.test_phy.create_node(DeviceType.ROUTER, "r2")
+
     # r1.val2 = "def"
     # print(r1.val2)
     r1.test3 = 23444544
     r1.test_inside = 999
 
-    l1 = network_model.test_phy.create_link(r1.create_port(PortType.PHYSICAL), r2.create_port(PortType.PHYSICAL))
+
+    p1 = r1.create_port(PortType.PHYSICAL)
+    p2 = r2.create_port(PortType.PHYSICAL)
+    l1 = network_model.test_phy.create_link(p1, p2)
     l1.link_test = 2333332
+
+    #test advanced annotations
+    r1.port_test = p1
+    r2.port_test = p2
+    r1.link_test = l1
+    r2.link_test = l1
 
     # import_data(r1, {"test3": 50})
 
@@ -103,7 +146,7 @@ def test_generic_workflow():
 
     parsed = json.loads(data)
 
-    # pprint.pprint(exported)
+    pprint.pprint(parsed["test_phy"])
 
     # test casting - this should be cast to an int
     parsed["test_phy"]["nodes"]["n34"]["test3"] = "12345"
@@ -116,6 +159,10 @@ def test_generic_workflow():
 
     assert exported2["test_phy"]["nodes"]["n34"]["test3"] != "12345"
     assert exported2["test_phy"]["nodes"]["n34"]["test3"] == 12345
+
+    # get items
+    nm2_r1 = nm2.test_phy.get_node_by_id(r1.id)
+    print(nm2_r1, nm2_r1.link_test)
 
 
 

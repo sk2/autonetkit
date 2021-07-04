@@ -2,10 +2,10 @@ import typing
 from typing import Dict
 
 if typing.TYPE_CHECKING:
-    pass
+    from autonetkit.network_model.base.topology import Topology
 
 
-#TODO: see if should from future_import etc
+# TODO: see if should from future_import etc
 
 
 def export_data(cls, skip: set) -> Dict:
@@ -58,6 +58,7 @@ def get_annotations(cls) -> Dict:
 
 
 def initialise_annotation_defaults(obj) -> None:
+    return
     for key, constructor in get_annotations(obj).items():
         try:
             val = getattr(obj, key)
@@ -70,7 +71,11 @@ def initialise_value(obj, constructor, key):
     if is_optional(constructor):
         setattr(obj, key, None)
     else:
-        setattr(obj, key, constructor())
+        if is_forward_ref(constructor):
+            # Don't initialise this value
+            pass
+        else:
+            setattr(obj, key, constructor())
 
 
 def is_optional(constructor):
@@ -83,6 +88,7 @@ def is_optional(constructor):
 
 
 def get_optional_value(constructor):
+
     if typing.get_origin(constructor) == typing.Union:
         args = typing.get_args(constructor)
         args = set(args)
@@ -90,10 +96,57 @@ def get_optional_value(constructor):
         args.remove(type(None))
         # return the remaining (non None) value
         result = args.pop()
-        print(type(result))
-        if isinstance(result, typing.ForwardRef):
-            args = typing.get_args(result)
-            print("forward ref", args)
         return result
     else:
         raise TypeError
+
+
+def get_topology_constructors(topology: 'Topology') -> set:
+    # returns list of all element constructors
+    result = set()
+    base_classes = list(reversed(topology.__class__.__mro__))
+    for base in base_classes:
+        # TODO: refactor this technique - it's a little hacky as will try for non-topology classes like Generic, Object etc
+        try:
+            result.add(base._node_cls)
+        except AttributeError:
+            pass
+
+        try:
+            result.add(base._link_cls)
+        except AttributeError:
+            pass
+
+        try:
+            result.add(base._port_cls)
+        except AttributeError:
+            pass
+
+    return result
+
+
+def get_forward_ref_value(forward_ref: typing.ForwardRef) -> str:
+    return forward_ref.__forward_arg__
+
+
+def is_forward_ref(constructor):
+    if isinstance(constructor, typing.ForwardRef):
+        return True
+
+    # TODO: rename function for this logic - if an alias
+    if isinstance(constructor, str):
+        return True
+
+        # #TODO: see if better method to get ref value than string cast
+        # res: typing.ForwardRef = result
+        # print("name", res.__forward_arg__)
+        # # constructor = types.new_class(name)
+        # # print("got", constructor)
+        #
+        # # globalns = sys.modules[constructor.__module__].__dict__.copy()
+        # # globalns.setdefault(constructor.__name__, constructor)
+        # # return result._evaluate(globalns=globalns, localns=None)
+        # test: typing.ForwardRef = result
+        # print("val", result.__dict__)
+        # args = typing.get_args(result)
+        # print("forward ref", args, dir(args))

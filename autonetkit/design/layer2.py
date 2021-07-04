@@ -57,6 +57,9 @@ def build_l2_conn(network_model):
     t_l2_conn.add_nodes_from(t_l2.nodes())
     t_l2_conn.add_links_from(t_l2.links())
     bc_nodes = filters.broadcast_domains(t_l2_conn)
+    print("bc nodes", bc_nodes)
 
     for node in bc_nodes:
         explode_node(t_l2_conn, node)
+
+    print("exploded", t_l2_conn.links())

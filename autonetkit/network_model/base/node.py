@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Generic, Dict, List
 
 from autonetkit.network_model.base.exceptions import PortNotFound
@@ -7,20 +8,15 @@ from autonetkit.network_model.base.types import NodeId, DeviceType, PortType
 from autonetkit.network_model.base.utils import export_data, initialise_annotation_defaults
 
 
+@dataclass
 class Node(TopologyElement, Generic[T, L, P]):
+    topology: T = None
+    id: NodeId = None
     test_inside: str = "testing"
     test333: int = 123
-    """
 
-    """
-
-    def __init__(self, topology: T, id):
-        initialise_annotation_defaults(self)
-
-        self.topology: T = topology
-        self.id: NodeId = id
-        self._data: Dict = {}
-
+    def __eq__(self, other):
+        return self.id == other.id
 
     @property
     def local_data(self) -> Dict:

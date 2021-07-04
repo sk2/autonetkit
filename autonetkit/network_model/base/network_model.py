@@ -1,15 +1,16 @@
 import itertools
 from collections import defaultdict
-from typing import Dict, List
+from typing import Dict, List, Generic
 
 from autonetkit.network_model.base.exceptions import TopologyNotFound
 from autonetkit.network_model.base.generics import T
 from autonetkit.network_model.base.topology import Topology
+from autonetkit.network_model.base.topology_element import BaseTopology
 from autonetkit.network_model.base.types import TopologyId, NodeId, PortId, LinkId, PathId
 from autonetkit.network_model.base.utils import get_annotations
 
 
-class NetworkModel:
+class NetworkModel(Generic[T]):
     t_base: Topology
 
     """
@@ -80,7 +81,7 @@ class NetworkModel:
                 self.used_path_ids.add(candidate)
                 yield candidate
 
-    def get_topology(self, name) -> T:
+    def get_topology(self, name) -> BaseTopology:
         """
 
         @param name:

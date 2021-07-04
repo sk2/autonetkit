@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Generic, Dict
 
 from autonetkit.network_model.base.exceptions import NodeNotFound
@@ -7,21 +8,21 @@ from autonetkit.network_model.base.types import LinkId
 from autonetkit.network_model.base.utils import export_data, initialise_annotation_defaults
 
 
+@dataclass
 class Link(TopologyElement, Generic[T, N, P]):
+    topology: T = None
+    id: LinkId = None
+    p1: P = None
+    p2: P = None
+
+    abc: str = None
     link_basic: float = 20
-    abc: str
     """
 
     """
 
-    def __init__(self, topology: T, id: LinkId, p1: P, p2: P):
-        initialise_annotation_defaults(self)
-
-        self.topology: T = topology
-        self.id: LinkId = id
-        self.p1: P = p1
-        self.p2: P = p2
-        self._data = {}
+    def __eq__(self, other):
+        return self.id == other.id
 
     @property
     def local_data(self) -> Dict:
@@ -59,14 +60,15 @@ class Link(TopologyElement, Generic[T, N, P]):
 
         @return:
         """
-        data = self._data.copy()
+        skip = {"topology", "p1", "p2", "n1", "n2"}
+        data = export_data(self, skip)
+
+        #TODO: check if need to update with local data too
+        # data = self._data.copy()
         data["p1"] = self.p1.id
         data["p2"] = self.p2.id
         data["n1"] = self.p1.node.id
         data["n2"] = self.p2.node.id
-
-        skip = {"topology", "p1", "p2", "n1", "n2"}
-        data = export_data(self, skip)
 
         return data
 

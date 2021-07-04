@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Generic, Dict, List
 
 from autonetkit.network_model.base.generics import N, L, P, T
@@ -5,22 +6,23 @@ from autonetkit.network_model.base.topology_element import TopologyElement
 from autonetkit.network_model.base.types import PortType, PortId
 from autonetkit.network_model.base.utils import export_data, initialise_annotation_defaults
 
-
+@dataclass
 class Port(TopologyElement, Generic[T, L, P]):
+    node: N = None
+    id: PortId = None
+
+
     some_port_test = 123
     """
 
     """
 
-    def __init__(self, node: N, id):
-        initialise_annotation_defaults(self)
-
-        self._node: N = node
-        self.id: PortId = id
-        self._data = {}
 
     def __repr__(self):
         return f"P {self.get('label')}"
+
+    def __eq__(self, other):
+        return self.id == other.id
 
     @property
     def local_data(self) -> Dict:
@@ -60,15 +62,7 @@ class Port(TopologyElement, Generic[T, L, P]):
 
         @return:
         """
-        return self._node.topology.network_model.port_globals[self.id]
-
-    @property
-    def node(self) -> N:
-        """
-
-        @return:
-        """
-        return self._node
+        return self.node.topology.network_model.port_globals[self.id]
 
     def set(self, key, val) -> None:
         """
@@ -104,7 +98,7 @@ class Port(TopologyElement, Generic[T, L, P]):
         skip = {"topology", "_node"}
         data = export_data(self, skip)
 
-        data["node"] = self._node.id
+        data["node"] = self.node.id
 
         return data
 
