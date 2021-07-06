@@ -50,6 +50,7 @@ class PhysicalNode(Node[PT, PL, PP]):
     test3: int = 123
     testing_val = 123
     val2: int = 122333
+    node_test: PN = None
 
 
 
@@ -135,6 +136,10 @@ def test_generic_workflow():
     r1.link_test = l1
     r2.link_test = l1
 
+    # even crazier - nodes that refer to nodes to restore with forward references
+    r1.node_test = r2
+    r2.node_test = r1
+
     # copy nodes into test phy
     # network_model.test_phy.add_nodes_from(t_phy.nodes())
     # print("test nodes", network_model.test_phy.nodes())
@@ -159,17 +164,34 @@ def test_generic_workflow():
 
     nm2 = restore_topology(CustomNetworkModel, parsed)
 
+    nm2_r1 = nm2.test_phy.get_node_by_id(r1.id)
+    nm2_r2 = nm2.test_phy.get_node_by_id(r2.id)
+
+    assert nm2_r1.node_test == nm2_r2
+    assert nm2_r2.node_test == nm2_r1
+
+    # and check correctly restored to the correct Node type
+    assert isinstance(nm2_r1.node_test, PhysicalNode)
+    assert isinstance(nm2_r2.node_test, PhysicalNode)
+    assert not isinstance(nm2_r1.node_test, str)
+
     # export now
     exported2 = nm2.export()
+
+
+
     print(exported2["test_phy"]["nodes"][r1.id])
 
     assert exported2["test_phy"]["nodes"][r1.id]["test3"] != "12345"
     assert exported2["test_phy"]["nodes"][r1.id]["test3"] == 12345
 
+
+
     assert isinstance(exported2["test_phy"]["nodes"][r1.id]["port_test"], PhysicalPort)
 
     # get items
     nm2_r1 = nm2.test_phy.get_node_by_id(r1.id)
+    print("link test", type(nm2_r1.link_test))
     print(nm2_r1, nm2_r1.link_test)
 
     pprint.pprint(exported2["test_phy"])
