@@ -215,7 +215,7 @@ def _restore_nodes(dacite_config: dacite.Config, topology: Topology, topology_da
 
 
 def get_field_values(element: TopologyElement, element_data: Dict):
-    # TODO: return as a namedtuple
+    #TODO: pass skip as a parameter - as node is not reserved on link for instance
     skip = {"topology", "id", "_data", "node"}
     fields = dataclasses.fields(element)
 

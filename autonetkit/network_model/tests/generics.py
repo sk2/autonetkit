@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from autonetkit.common.utils import CustomJsonEncoder
+from autonetkit.network_model.base.generics import ank_element_dataclass
 from autonetkit.network_model.base.import_export import restore_topology
 from autonetkit.network_model.base.link import Link
 from autonetkit.network_model.base.network_model import NetworkModel
@@ -17,16 +18,8 @@ from autonetkit.workflow.workflow import BaseWorkflow
 # TODO: extend the code for NodePaths and PortPaths
 
 
-PT = 'PhysicalTopology'
-PL = 'PhysicalLink'
-PP = 'PhysicalPort'
-PN = 'PhysicalNode'
-
-
-# TODO: document that should set defaults in init -> not on the class variable itself
 # TODO: document that must set the type or it wont be imported/exported
 
-# TODO: note eq set false so inherit rather than generate own eq and then hash functions
 
 
 """
@@ -40,9 +33,13 @@ TODO:
 
 """
 
-# TODO: see if can create a standard decorator/partial that init eq and repr false
+PT = 'PhysicalTopology'
+PL = 'PhysicalLink'
+PP = 'PhysicalPort'
+PN = 'PhysicalNode'
 
-@dataclass(eq=False, repr=False)
+
+@ank_element_dataclass
 class PhysicalNode(Node[PT, PL, PP]):
     link_test: Optional[PL] = None
     val92: str = None
@@ -53,20 +50,19 @@ class PhysicalNode(Node[PT, PL, PP]):
     node_test: PN = None
 
 
-
-@dataclass(eq=False, repr=False)
+@ank_element_dataclass
 class PhysicalLink(Link[PT, PN, PP]):
     link_test = 345
     link_bc = 21
     node_test: PN = None
 
 
-@dataclass(eq=False, repr=False)
+@ank_element_dataclass
 class PhysicalPort(Port[PT, PL, PP]):
     port_test: float = 567
 
 
-@dataclass
+@ank_element_dataclass
 class PhysicalTopology(Topology[PN, PL, PP]):
     _node_cls = PhysicalNode
     _link_cls = PhysicalLink
@@ -115,6 +111,8 @@ def test_generic_workflow():
     assert (len(t_ibgp.links()) == 26)
 
     r1 = network_model.test_phy.create_node(DeviceType.ROUTER, "r1")
+
+    print("PRINT", r1, repr(r1))
 
     r1.set("x", 100)
     r1.set("y", 100)
@@ -178,14 +176,10 @@ def test_generic_workflow():
     # export now
     exported2 = nm2.export()
 
-
-
     print(exported2["test_phy"]["nodes"][r1.id])
 
     assert exported2["test_phy"]["nodes"][r1.id]["test3"] != "12345"
     assert exported2["test_phy"]["nodes"][r1.id]["test3"] == 12345
-
-
 
     assert isinstance(exported2["test_phy"]["nodes"][r1.id]["port_test"], PhysicalPort)
 
