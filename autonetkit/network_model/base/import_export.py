@@ -15,43 +15,6 @@ from autonetkit.network_model.base.types import DeviceType, PortType, LinkId, No
 logger = logging.getLogger(__name__)
 
 
-def node_hook(topology: Topology, key: NodeId):
-    if key:
-        try:
-            node = topology.get_node_by_id(key)
-        except NodeNotFound:
-            node = topology._node_cls()
-            topology._nodes[key] = node
-        return node
-
-
-def port_hook(topology: Topology, key: PortId):
-    if key:
-        try:
-            port = topology.get_port_by_id(key)
-        except PortNotFound:
-            port = topology._port_cls()
-            topology._ports[key] = port
-        return port
-
-
-def link_hook(topology: Topology, key: LinkId):
-    if key:
-        try:
-            link = topology.get_link_by_id(key)
-        except LinkNotFound:
-            link = topology._link_cls()
-            topology._links[key] = link
-        return link
-
-
-def copy_into_dataclass(source, target):
-    # from https://stackoverflow.com/q/57962873
-    for field in dataclasses.fields(source):
-        attr = getattr(source, field.name)
-        setattr(target, field.name, attr)
-
-
 def restore_topology(model_constructor: 'NM', exported: Dict) -> NM:
     model: 'NetworkModel' = model_constructor()
 
@@ -60,9 +23,9 @@ def restore_topology(model_constructor: 'NM', exported: Dict) -> NM:
 
     # get topologies
     for topology in model.topologies():
-        topology_node_hook = partial(node_hook, topology)
-        topology_port_hook = partial(port_hook, topology)
-        topology_link_hook = partial(link_hook, topology)
+        topology_node_hook = partial(_node_hook, topology)
+        topology_port_hook = partial(_port_hook, topology)
+        topology_link_hook = partial(_link_hook, topology)
 
         # TODO: see if want to support forward refs on Paths also
 
@@ -84,6 +47,43 @@ def restore_topology(model_constructor: 'NM', exported: Dict) -> NM:
     # TODO: allow setting network model level properties? eg test2 on the CustomNetworkModel - if so need to export also
 
     return model
+
+
+def _node_hook(topology: Topology, key: NodeId):
+    if key:
+        try:
+            node = topology.get_node_by_id(key)
+        except NodeNotFound:
+            node = topology._node_cls()
+            topology._nodes[key] = node
+        return node
+
+
+def _port_hook(topology: Topology, key: PortId):
+    if key:
+        try:
+            port = topology.get_port_by_id(key)
+        except PortNotFound:
+            port = topology._port_cls()
+            topology._ports[key] = port
+        return port
+
+
+def _link_hook(topology: Topology, key: LinkId):
+    if key:
+        try:
+            link = topology.get_link_by_id(key)
+        except LinkNotFound:
+            link = topology._link_cls()
+            topology._links[key] = link
+        return link
+
+
+def _copy_into_dataclass(source, target):
+    # from https://stackoverflow.com/q/57962873
+    for field in dataclasses.fields(source):
+        attr = getattr(source, field.name)
+        setattr(target, field.name, attr)
 
 
 def _restore_links(dacite_config: dacite.Config, topology: Topology, topology_data: Dict) -> None:
@@ -111,7 +111,7 @@ def _restore_links(dacite_config: dacite.Config, topology: Topology, topology_da
             topology._links[link_id] = new_link
             link = new_link
         else:
-            copy_into_dataclass(new_link, link)
+            _copy_into_dataclass(new_link, link)
 
         model.used_link_ids.add(link_id)
 
@@ -140,7 +140,7 @@ def _restore_ports(dacite_config: dacite.Config, topology: Topology, topology_da
             topology._ports[port_id] = new_port
             port = new_port
         else:
-            copy_into_dataclass(new_port, port)
+            _copy_into_dataclass(new_port, port)
 
         model.used_port_ids.add(port_id)
 
@@ -188,7 +188,7 @@ def _restore_nodes(dacite_config: dacite.Config, topology: Topology, topology_da
             topology._nodes[node_id] = new_node
             node = new_node
         else:
-            copy_into_dataclass(new_node, node)
+            _copy_into_dataclass(new_node, node)
 
         model.used_node_ids.add(node_id)
 
