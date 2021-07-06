@@ -36,10 +36,13 @@ TODO:
 
 2. diff exported first iteration and exported after export/import step
 
+3. try with nested types eg list of ports on a node or path, dataclasses instead of int/float primitives on a node
+
 """
 
+# TODO: see if can create a standard decorator/partial that init eq and repr false
 
-@dataclass(eq=False)
+@dataclass(eq=False, repr=False)
 class PhysicalNode(Node[PT, PL, PP]):
     link_test: Optional[PL] = None
     val92: str = None
@@ -50,13 +53,14 @@ class PhysicalNode(Node[PT, PL, PP]):
 
 
 
-@dataclass(eq=False)
+@dataclass(eq=False, repr=False)
 class PhysicalLink(Link[PT, PN, PP]):
     link_test = 345
     link_bc = 21
+    node_test: PN = None
 
 
-@dataclass(eq=False)
+@dataclass(eq=False, repr=False)
 class PhysicalPort(Port[PT, PL, PP]):
     port_test: float = 567
 
@@ -110,6 +114,7 @@ def test_generic_workflow():
     assert (len(t_ibgp.links()) == 26)
 
     r1 = network_model.test_phy.create_node(DeviceType.ROUTER, "r1")
+
     r1.set("x", 100)
     r1.set("y", 100)
     r2 = network_model.test_phy.create_node(DeviceType.ROUTER, "r2")
