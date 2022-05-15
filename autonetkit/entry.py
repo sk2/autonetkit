@@ -1,18 +1,33 @@
-import sys
-
 from autonetkit.workflow.workflow import BaseWorkflow
+import argparse
 
 
-def main(filename):
+def parse_args() -> argparse.Namespace:
+    """
+    Standalone parser for for command arguments
+    """
+    # create an arg parser
+    parser = argparse.ArgumentParser("autonetkit")
+    parser.add_argument("-f", type=str, dest="filename")
+
+    return parser.parse_args()
+
+
+def main():
+    """
+    Entry point for autonetkit
     """
 
-    @param filename:
-    """
+    args = parse_args()
+
     workflow = BaseWorkflow()
-    network_model = workflow.load(filename)
+    network_model = workflow.load(args.filename)
     workflow.run(network_model, target_platform="kathara")
 
 
-if __name__ == '__main__':
-    filename = sys.argv[1]
-    main(filename)
+if __name__ == "__main__":
+    """
+    entrypoint for running directly
+    """
+
+    main()

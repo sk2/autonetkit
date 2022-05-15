@@ -6,3 +6,4 @@ dist/*
 /autonetkit/tests/output/
 /autonetkit/output/
 /autonetkit/tutorial/output/
+autonetkit.egg-info/
