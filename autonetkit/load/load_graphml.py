@@ -4,13 +4,18 @@ import networkx as nx
 
 from autonetkit.load.common import add_loopback
 from autonetkit.design.utils.graph_utils import normalise_node_locations
-from autonetkit.load.model import StructuredNode, StructuredPort, StructuredTopology, StructuredLink
+from autonetkit.load.model import (
+    StructuredNode,
+    StructuredPort,
+    StructuredTopology,
+    StructuredLink,
+)
 from autonetkit.load.preprocess import process_structured_topology
 from autonetkit.network_model.network_model import NetworkModel
 from autonetkit.network_model.types import PortType, DeviceType
 
 
-def import_from_graphml(filename: str, network_model_cls= NetworkModel) -> NetworkModel:
+def import_from_graphml(filename: str, network_model_cls=NetworkModel) -> NetworkModel:
     """
 
     @param filename:
@@ -39,14 +44,15 @@ def import_from_graphml(filename: str, network_model_cls= NetworkModel) -> Netwo
         # create loopback zero
         device_type = node_data.get("device_type").title()
         get = node_data.get("x")
-        node = StructuredNode(type=device_type,
-                              label=label,
-                              x=get,
-                              y=node_data.get("y"),
-                              asn=node_data.get("asn"),
-                              target=node_data.get("target"),
-                              data = node_metadata
-                              )
+        node = StructuredNode(
+            type=device_type,
+            label=label,
+            x=get,
+            y=node_data.get("y"),
+            asn=node_data.get("asn"),
+            target=node_data.get("target"),
+            data=node_metadata,
+        )
 
         topology.nodes.append(node)
         node_map[nx_node_id] = node
@@ -79,7 +85,9 @@ def import_from_graphml(filename: str, network_model_cls= NetworkModel) -> Netwo
         topology.links.append(link)
 
     # TODO: later match this to the YAML physical inventory etc
-    network_model = process_structured_topology(topology, network_model_cls)
+    # network_model = process_structured_topology(topology, network_model_cls)
+    # two arguments are not implemented yet
+    network_model = process_structured_topology(topology)
     t_in = network_model.get_topology("input")
 
     normalise_node_locations(t_in)
